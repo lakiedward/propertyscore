@@ -1,0 +1,26 @@
+<!doctype html>
+{{ if eq .Data.locale "en" }}
+<html lang="en">
+  <body style="font-family: Arial, sans-serif; color: #171717">
+    <h2>Confirm your account</h2>
+    <p>
+      Thanks for signing up to Property Score. Confirm your email address to start using your
+      account.
+    </p>
+    <p><a href="{{ .ConfirmationURL }}">Confirm my email</a></p>
+    <p>If you didn't create an account, you can ignore this email.</p>
+  </body>
+</html>
+{{ else }}
+<html lang="ro">
+  <body style="font-family: Arial, sans-serif; color: #171717">
+    <h2>Confirmă-ți contul</h2>
+    <p>
+      Îți mulțumim că te-ai înregistrat în Property Score. Confirmă adresa de email ca să începi să
+      folosești contul.
+    </p>
+    <p><a href="{{ .ConfirmationURL }}">Confirm adresa de email</a></p>
+    <p>Dacă nu ai creat tu acest cont, poți ignora acest email.</p>
+  </body>
+</html>
+{{ end }}

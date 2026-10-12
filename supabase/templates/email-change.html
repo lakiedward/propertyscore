@@ -1,0 +1,22 @@
+<!doctype html>
+{{ if eq .Data.locale "en" }}
+<html lang="en">
+  <body style="font-family: Arial, sans-serif; color: #171717">
+    <h2>Confirm your new email address</h2>
+    <p>You asked to change the email address of your Property Score account to:</p>
+    <p><strong>{{ .NewEmail }}</strong></p>
+    <p><a href="{{ .ConfirmationURL }}">Confirm the new email address</a></p>
+    <p>If you didn't ask for this change, you can ignore this email.</p>
+  </body>
+</html>
+{{ else }}
+<html lang="ro">
+  <body style="font-family: Arial, sans-serif; color: #171717">
+    <h2>Confirmă noua adresă de email</h2>
+    <p>Ai cerut schimbarea adresei de email a contului tău Property Score în:</p>
+    <p><strong>{{ .NewEmail }}</strong></p>
+    <p><a href="{{ .ConfirmationURL }}">Confirm noua adresă de email</a></p>
+    <p>Dacă nu ai cerut tu această schimbare, poți ignora acest email.</p>
+  </body>
+</html>
+{{ end }}
