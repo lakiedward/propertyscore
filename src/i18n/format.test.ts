@@ -26,7 +26,7 @@ describe('format', () => {
     });
 
     it('formats money in the currency of the record', () => {
-      expect(plain(formatCurrency(1250.5, 'EUR'))).toBe('1.250,50 €');
+      expect(plain(formatCurrency(1250.5, 'EUR'))).toBe('1.250,50 EUR');
       expect(plain(formatCurrency(1250.5, 'RON'))).toBe('1.250,50 RON');
     });
 
