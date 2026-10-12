@@ -484,7 +484,7 @@ export type PropertyStatus = Enums<'property_status'>;
   - **Searching text** goes through the `unaccent` extension (`unaccent(title) ilike unaccent('%' || q || '%')`, wrapped in an RPC or a generated column with a trigram index), so `brasov` finds `Brașov`.
   - **The user's language preference** lives in `profiles.locale` (`text not null default 'ro' check (locale in ('ro', 'en'))`).
 - **Seed data** in `supabase/seed.sql`: realistic but fake data, with a few known test users for E2E tests. Include Romanian diacritics (ă, â, î, ș, ț) in seed text so encoding, sorting and search problems show up early, and include one test user per language.
-- **Environments**: development runs only against the local Supabase stack (`supabase start`); there is no hosted dev or staging project. Production is one hosted project, `property-score-prod` (ref `zksoblghnnirkjvewrsv`, `eu-central-1`). Migrations reach it through CI (`supabase db push` on a version tag), never from a laptop. Hosted auth settings (site URL, redirect URLs, email templates) are mirrored from `config.toml` by hand.
+- **Environments**: development runs only against the local Supabase stack (`supabase start`); there is no hosted dev or staging project. Production is one hosted project, `property-score` (ref `zksoblghnnirkjvewrsv`, `eu-central-1`). Migrations reach it through CI (`supabase db push` on a version tag), never from a laptop. Hosted auth settings (site URL, redirect URLs, email templates) are mirrored from `config.toml` by hand.
 
 ---
 
