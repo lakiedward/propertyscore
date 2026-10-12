@@ -11,7 +11,7 @@ paths:
 - The schema changes only through `supabase migration new <verb>_<object>`, written as SQL, applied with `pnpm db:reset`, reviewed in the PR. Never edit a hosted project in the dashboard; if it happened, capture it with `supabase db diff` as a migration.
 - Never edit a migration that has reached `main`; write a new one.
 - After a migration: `pnpm db:reset`, `pnpm db:types`, commit both. CI fails when the generated types drift.
-- Never run `supabase db push`, `apply_migration` or `execute_sql` that writes against a hosted project; migrations reach staging and production only through `deploy-db.yml`. Read-only MCP tools (`list_tables`, `get_advisors`, `search_docs`) are fine.
+- Never run `supabase db push`, `apply_migration` or `execute_sql` that writes against a hosted project; migrations reach dev and production only through `deploy-db.yml`. Read-only MCP tools (`list_tables`, `get_advisors`, `search_docs`) are fine.
 
 ## Tables and columns
 

@@ -160,5 +160,5 @@ pnpm db:types             # regenerate src/lib/supabase/database.types.ts from t
 ## Git
 
 - `main` plus pull-request branches named `<type>/<ticket>-<short-desc>` (`feat/PS-42-score-filter`); commits in Conventional Commits style (`feat(properties): add score filter`).
-- Migrations reach staging on merge to `main` and production on a `vX.Y.Z` tag through `deploy-db.yml`, never from a laptop.
+- Migrations reach dev on merge to `main` and production on a `vX.Y.Z` tag through `deploy-db.yml`, never from a laptop.
 - Never commit `.env.local`, `supabase/functions/.env`, `supabase/.temp`, `e2e/.auth`, Playwright reports, coverage, or anything under `.claude/` except `.claude/rules/` and `.claude/skills/` (the `.gitignore` written at scaffolding time covers these).

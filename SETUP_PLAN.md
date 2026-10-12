@@ -484,7 +484,7 @@ export type PropertyStatus = Enums<'property_status'>;
   - **Searching text** goes through the `unaccent` extension (`unaccent(title) ilike unaccent('%' || q || '%')`, wrapped in an RPC or a generated column with a trigram index), so `brasov` finds `Brașov`.
   - **The user's language preference** lives in `profiles.locale` (`text not null default 'ro' check (locale in ('ro', 'en'))`).
 - **Seed data** in `supabase/seed.sql`: realistic but fake data, with a few known test users for E2E tests. Include Romanian diacritics (ă, â, î, ș, ț) in seed text so encoding, sorting and search problems show up early, and include one test user per language.
-- **Environments**: one hosted Supabase project per environment (`staging`, `production`). Migrations reach them through CI (`supabase db push`), never from a laptop.
+- **Environments**: one hosted Supabase project per environment (`dev`, `production`). Migrations reach them through CI (`supabase db push`), never from a laptop. `dev` is `property-score-dev` (ref `zksoblghnnirkjvewrsv`, `eu-central-1`); `production` is created closer to launch.
 
 ---
 
@@ -739,7 +739,7 @@ If logged-out pages that search engines should index are added (for example shar
 import { z } from 'zod';
 
 const envSchema = z.object({
-  VITE_APP_ENV: z.enum(['local', 'staging', 'production']),
+  VITE_APP_ENV: z.enum(['local', 'dev', 'production']),
   VITE_SUPABASE_URL: z.url(),
   VITE_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
   VITE_SENTRY_DSN: z.string().optional(),
@@ -752,7 +752,7 @@ export const env = envSchema.parse(import.meta.env);
 - **Files:**
   - `.env.example` (committed) lists every variable with safe placeholder values.
   - `.env.local` (git-ignored) holds local values; after `supabase start`, use the local URL and publishable key it prints.
-  - Staging and production values are set in the hosting provider and CI, never committed.
+  - Dev and production values are set in the hosting provider and CI, never committed.
 - **Use the Supabase publishable key** (`sb_publishable_…`) in the browser. The secret key (`sb_secret_…`, formerly service role) never goes in a `VITE_` variable.
 - **No environment-specific code branches** beyond what `VITE_APP_ENV` drives (Sentry on/off, log level, debug tools such as TanStack Query Devtools, which only load when the environment is `local`).
 
@@ -768,7 +768,7 @@ export const env = envSchema.parse(import.meta.env);
   - Session Replay is off until there is a privacy review, because it records user screens.
 - **`lib/logger.ts`** is a ~20-line wrapper with `debug | info | warn | error`.
   - In local, it logs to the console.
-  - In staging and production, `warn` and `error` become Sentry breadcrumbs or events, and `debug` and `info` are dropped.
+  - In dev and production, `warn` and `error` become Sentry breadcrumbs or events, and `debug` and `info` are dropped.
   - App code never calls `console.*` directly (ESLint `no-console`).
 - **Never log** tokens, passwords, full sessions or personal data.
 - **Backend observability**: Supabase dashboard logs (API, Postgres, Auth, Edge Functions), plus the **Security and Performance Advisors**, reviewed before every release. Edge Functions log JSON lines with a request ID.
@@ -904,7 +904,7 @@ The architecture above is deliberately thin. Keep it that way:
 8. Set up the tooling: ESLint (with `eslint-plugin-i18next`), Prettier, EditorConfig, Vitest + RTL + MSW, Playwright, Knip, lefthook and the translation check script.
 9. Add the GitHub Actions workflows:
    - `ci.yml` on every PR: typecheck, lint, format check, translation check, unit tests, DB tests, E2E and build, plus the check that generated types match the migrations.
-   - `deploy-db.yml`: `supabase db push` to staging on merge to `main`, and to production on a version tag.
+   - `deploy-db.yml`: `supabase db push` to dev on merge to `main`, and to production on a version tag.
    - Frontend deploys go through the hosting provider's Git integration.
 10. Hosting: any static host (Vercel, Netlify or Cloudflare Pages) with an SPA fallback to `index.html`, and with security headers set (CSP allowing the Supabase and Sentry domains, HSTS, `X-Content-Type-Options`).
 
