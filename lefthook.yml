@@ -1,0 +1,11 @@
+pre-commit:
+  piped: true
+  jobs:
+    - name: prettier
+      glob: '*.{ts,tsx,js,json,css,md,yml,yaml,html}'
+      run: pnpm exec prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
+    - name: eslint
+      glob: '*.{ts,tsx,js}'
+      run: pnpm exec eslint --fix {staged_files}
+      stage_fixed: true

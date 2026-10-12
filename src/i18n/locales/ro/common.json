@@ -1,0 +1,62 @@
+{
+  "app": {
+    "name": "Property Score"
+  },
+  "actions": {
+    "close": "Închide",
+    "retry": "Încearcă din nou",
+    "goHome": "Înapoi la pagina principală",
+    "signOut": "Deconectare"
+  },
+  "language": {
+    "label": "Limbă",
+    "ro": "Română",
+    "en": "English"
+  },
+  "home": {
+    "pageTitle": "Panou",
+    "title": "Bun venit",
+    "description": "Ești conectat ca {{email}}. Proprietățile tale vor apărea aici."
+  },
+  "pages": {
+    "notFound": {
+      "pageTitle": "Pagina nu există",
+      "title": "Pagina nu există",
+      "description": "Adresa pe care ai deschis-o nu există sau a fost mutată."
+    },
+    "error": {
+      "title": "Ceva n-a mers bine"
+    },
+    "loading": "Se încarcă…"
+  },
+  "errors": {
+    "unauthenticated": "Sesiunea a expirat. Autentifică-te din nou.",
+    "forbidden": "Nu ai acces la această acțiune.",
+    "not_found": "Nu am găsit ce cauți.",
+    "conflict": "Există deja o înregistrare cu aceste date.",
+    "validation": "Unele date nu sunt valide.",
+    "network": "Nu ne putem conecta la server. Verifică conexiunea la internet.",
+    "unknown": "A apărut o eroare neașteptată. Încearcă din nou.",
+    "reasons": {
+      "invalid_credentials": "Emailul sau parola nu sunt corecte.",
+      "email_not_confirmed": "Confirmă adresa de email înainte de autentificare.",
+      "user_already_exists": "Există deja un cont cu acest email.",
+      "weak_password": "Parola este prea slabă. Alege una mai lungă sau mai variată.",
+      "rate_limited": "Prea multe încercări. Așteaptă puțin și încearcă din nou."
+    }
+  },
+  "validation": {
+    "required": "Câmpul este obligatoriu.",
+    "email": "Introdu o adresă de email validă.",
+    "number": "Introdu un număr.",
+    "invalid": "Valoarea nu este validă.",
+    "minLength_one": "Introdu cel puțin {{count}} caracter.",
+    "minLength_few": "Introdu cel puțin {{count}} caractere.",
+    "minLength_other": "Introdu cel puțin {{count}} de caractere.",
+    "maxLength_one": "Introdu cel mult {{count}} caracter.",
+    "maxLength_few": "Introdu cel mult {{count}} caractere.",
+    "maxLength_other": "Introdu cel mult {{count}} de caractere.",
+    "min": "Valoarea minimă este {{min}}.",
+    "max": "Valoarea maximă este {{max}}."
+  }
+}

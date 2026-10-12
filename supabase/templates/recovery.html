@@ -1,0 +1,26 @@
+<!doctype html>
+{{ if eq .Data.locale "en" }}
+<html lang="en">
+  <body style="font-family: Arial, sans-serif; color: #171717">
+    <h2>Reset your password</h2>
+    <p>
+      We received a request to reset the password for your Property Score account. Follow the link
+      below to choose a new one.
+    </p>
+    <p><a href="{{ .ConfirmationURL }}">Choose a new password</a></p>
+    <p>If you didn't ask to reset your password, you can ignore this email.</p>
+  </body>
+</html>
+{{ else }}
+<html lang="ro">
+  <body style="font-family: Arial, sans-serif; color: #171717">
+    <h2>Resetează parola</h2>
+    <p>
+      Am primit o cerere de resetare a parolei pentru contul tău Property Score. Folosește linkul de
+      mai jos ca să alegi o parolă nouă.
+    </p>
+    <p><a href="{{ .ConfirmationURL }}">Alege o parolă nouă</a></p>
+    <p>Dacă nu ai cerut tu resetarea parolei, poți ignora acest email.</p>
+  </body>
+</html>
+{{ end }}
