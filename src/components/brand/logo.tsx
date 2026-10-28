@@ -4,29 +4,48 @@ import { cn } from '@/lib/utils';
 import { BrandMark } from './brand-mark';
 import type { BrandProduct, BrandTone } from './brand-marks';
 
-const logoVariants = cva('inline-flex items-center font-brand leading-none whitespace-nowrap', {
+const logoVariants = cva('inline-flex items-center leading-none whitespace-nowrap', {
   variants: {
     size: {
+      '2xs': 'gap-1 text-logo-2xs',
+      inline: 'gap-1.5 text-logo-inline',
       xs: 'gap-1 text-logo-xs',
       sm: 'gap-1.5 text-logo-sm',
       md: 'gap-1.5 text-logo-md',
+      card: 'gap-2 text-logo-card',
+      bundle: 'gap-2 text-logo-bundle',
       lg: 'gap-3 text-logo-lg',
       xl: 'gap-3.5 text-logo-xl',
+    },
+    typeface: {
+      brand: 'font-brand',
+      body: 'font-sans',
     },
   },
   defaultVariants: {
     size: 'md',
+    typeface: 'brand',
   },
 });
 
-const MARK_SIZE = { xs: 20, sm: 28, md: 34, lg: 44, xl: 52 } as const;
+const MARK_SIZE = {
+  '2xs': 18,
+  inline: 20,
+  xs: 20,
+  sm: 28,
+  md: 34,
+  card: 34,
+  bundle: 34,
+  lg: 44,
+  xl: 52,
+} as const;
 
 const leadVariants = cva('tracking-brand', {
   variants: {
     product: {
       core: 'font-semibold',
       physical: 'font-semibold',
-      smartcheck: 'font-medium',
+      smartcheck: 'font-semibold',
     },
     tone: {
       color: '',
@@ -36,7 +55,7 @@ const leadVariants = cva('tracking-brand', {
   compoundVariants: [
     { product: 'core', tone: 'color', className: 'text-brand' },
     { product: 'physical', tone: 'color', className: 'text-brand' },
-    { product: 'smartcheck', tone: 'color', className: 'text-info' },
+    { product: 'smartcheck', tone: 'color', className: 'text-info-ink' },
   ],
 });
 
@@ -75,6 +94,7 @@ export function Logo({
   product = 'core',
   tone = 'color',
   size,
+  typeface,
   hasMark = true,
   isDecorative = false,
   className,
@@ -83,7 +103,7 @@ export function Logo({
 
   return (
     <span
-      className={cn(logoVariants({ size }), className)}
+      className={cn(logoVariants({ size, typeface }), className)}
       role={isDecorative ? undefined : 'img'}
       aria-label={isDecorative ? undefined : t(`brand.${product}`)}
       aria-hidden={isDecorative ? true : undefined}

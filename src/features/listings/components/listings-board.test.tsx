@@ -19,7 +19,7 @@ describe('ListingsBoard', () => {
 
     const list = await screen.findByRole('list', { name: roListings.board.listLabel });
     expect(await within(list).findAllByRole('button')).toHaveLength(2);
-    expect(screen.getByText('2 anunțuri de vânzare · Timișoara')).toBeInTheDocument();
+    expect(screen.getByText('2 anunțuri de vânzare · Timișoara · exemple')).toBeInTheDocument();
     expect(within(list).getAllByRole('button')[0]).toHaveAttribute('aria-pressed', 'true');
   });
 
@@ -31,7 +31,9 @@ describe('ListingsBoard', () => {
     );
     await renderWithProviders(<ListingsBoard transaction="rent" onTransactionChange={vi.fn()} />);
 
-    expect(await screen.findByText('1 anunț de închiriat · Timișoara')).toBeInTheDocument();
+    expect(
+      await screen.findByText('1 anunț de închiriat · Timișoara · exemple'),
+    ).toBeInTheDocument();
     expect(screen.getByText('450 € / lună')).toBeInTheDocument();
   });
 
@@ -82,6 +84,8 @@ describe('ListingsBoard', () => {
     server.resetHandlers();
     await user.click(screen.getByRole('button', { name: roCommon.actions.retry }));
 
-    expect(await screen.findByText('2 anunțuri de vânzare · Timișoara')).toBeInTheDocument();
+    expect(
+      await screen.findByText('2 anunțuri de vânzare · Timișoara · exemple'),
+    ).toBeInTheDocument();
   });
 });

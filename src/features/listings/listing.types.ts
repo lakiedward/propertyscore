@@ -9,5 +9,4 @@ export type ListingFilters = {
   limit: number;
 };
 
-export type ListingPage = Awaited<ReturnType<typeof listListings>>;
-export type Listing = ListingPage['items'][number];
+export type Listing = Awaited<ReturnType<typeof listListings>>['items'][number];

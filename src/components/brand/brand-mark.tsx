@@ -7,11 +7,14 @@ const brandMarkVariants = cva('block shrink-0', {
   variants: {
     size: {
       16: 'size-4',
+      18: 'size-4.5',
       20: 'size-5',
+      22: 'size-5.5',
       24: 'size-6',
       28: 'size-7',
       32: 'size-8',
       34: 'size-8.5',
+      40: 'size-10',
       44: 'size-11',
       48: 'size-12',
       52: 'size-13',

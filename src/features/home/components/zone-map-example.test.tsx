@@ -14,17 +14,11 @@ describe('ZoneMapExample', () => {
     const { user } = await renderWithProviders(<ZoneMapExample />);
 
     expect(await screen.findByRole('region', { name: map.mapLabel })).toBeInTheDocument();
-    expect(screen.getByText(/Colegiul Național C\. D\. Loga, 7 min pe jos/)).toBeInTheDocument();
+    expect(screen.getByText(/Colegiul Național C\. D\. Loga/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('radio', { name: map.layers.safety }));
 
     expect(screen.getByText(map.safetyScore.replace('{{score}}', '78'))).toBeInTheDocument();
     expect(screen.queryByText(/Colegiul Național/)).not.toBeInTheDocument();
-  });
-
-  it('labels the map as an example', async () => {
-    await renderWithProviders(<ZoneMapExample />);
-
-    expect(screen.getByText(map.exampleTag)).toBeInTheDocument();
   });
 });

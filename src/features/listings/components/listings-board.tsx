@@ -81,20 +81,20 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
   };
 
   return (
-    <div className="flex flex-col gap-3.5 rounded-2xl bg-card p-3.5 shadow-md">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div className="mt-2 flex flex-col rounded-2xl bg-card p-3.5 shadow-bundle">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-1 pt-1 pb-3.5">
         <ToggleGroup
           type="single"
           value={transaction}
           onValueChange={handleTransactionChange}
           aria-label={t('board.transactionLabel')}
-          className="gap-1 rounded-lg bg-secondary p-1"
+          className="gap-1 rounded-full bg-surface-leaf p-1"
         >
           {TRANSACTIONS.map((option) => (
             <ToggleGroupItem
               key={option}
               value={option}
-              className="h-10 rounded-md px-4 text-label text-brand data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              className="h-10 rounded-full px-4 text-small font-bold text-brand data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
             >
               {t(`transaction.${option}`)}
             </ToggleGroupItem>
@@ -123,8 +123,8 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
           description={t('board.empty.description')}
         />
       ) : (
-        <div className="grid gap-3.5 lg:h-140 lg:grid-cols-[1.45fr_1fr]">
-          <div className="relative h-95 lg:h-full">
+        <div className="grid grid-cols-1 gap-3.5 lg:h-140 lg:grid-cols-[1.45fr_1fr]">
+          <div className="relative h-95 overflow-hidden rounded-xl lg:h-full">
             {hasMapError ? (
               <Alert className="h-full">
                 <AlertDescription>{t('board.mapError')}</AlertDescription>
@@ -198,6 +198,7 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
                             currency={currency}
                             period={listing.transaction === 'rent' ? 'month' : undefined}
                             size="sm"
+                            className="text-lg tracking-[-0.02em] text-brand"
                           />
                         }
                         meta={[

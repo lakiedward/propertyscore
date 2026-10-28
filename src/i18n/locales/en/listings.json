@@ -5,16 +5,16 @@
   },
   "verification": {
     "physical": "Physically checked",
-    "smartcheck": "SmartCheck",
+    "smartcheck": "Smart Check",
     "none": "No report"
   },
   "board": {
     "transactionLabel": "Listing type",
     "count": {
-      "sale_one": "{{count}} home for sale · {{city}}",
-      "sale_other": "{{count}} homes for sale · {{city}}",
-      "rent_one": "{{count}} home for rent · {{city}}",
-      "rent_other": "{{count}} homes for rent · {{city}}"
+      "sale_one": "{{count}} home for sale · {{city}} · examples",
+      "sale_other": "{{count}} homes for sale · {{city}} · examples",
+      "rent_one": "{{count}} home for rent · {{city}} · examples",
+      "rent_other": "{{count}} homes for rent · {{city}} · examples"
     },
     "mapLabel": "Map of listings",
     "listLabel": "Listings",

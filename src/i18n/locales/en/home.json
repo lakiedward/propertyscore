@@ -12,14 +12,14 @@
     "lead": "PropertyScore checks the home against clear criteria and puts what it finds in the context of the area and the market. Choose the on-site inspection or the online analysis of an address.",
     "servicesLabel": "The two PropertyScore services",
     "smartCheck": {
-      "name": "SmartCheck",
+      "name": "Smart Check",
       "strong": "Safety score, average asking rents and prices.",
       "text": "Six chapters about the area, amenities and walking routes, with sources and missing data explained.",
       "action": "See the online example"
     },
     "physical": {
-      "name": "PropertyScore Physical",
-      "included": "SmartCheck included · the {{price}} online report",
+      "name": "Property Fizic",
+      "included": "included in the price · the {{price}} online report",
       "strong": "Checks across five chapters, an explained score, findings and recommendations.",
       "text": "Buyer and seller also get the market context. Photos, the floor plan and the 360° tour complete the report; for sellers we prepare the listing for free.",
       "action": "Discover the inspection"
@@ -46,8 +46,8 @@
     "leadStrong": "Enter the address or the listing link. You get an online report about the neighbourhood:",
     "lead": "safety, the 15-minute city, transport, green spaces, schools, health, shops and the asking prices nearby. Every figure shows its source and date.",
     "price": {
-      "label": "SmartCheck, {{price}}, online report",
-      "name": "SmartCheck",
+      "label": "Smart Check, {{price}}, online report",
+      "name": "Smart Check",
       "kind": "Online area report",
       "features": "8 scores · safety map · local prices",
       "cta": "Check an address",
@@ -56,7 +56,7 @@
     "report": {
       "title": "What the report gives you",
       "text": "An overall score and seven scores about the area, plus the asking prices nearby. Each comes with its explanation, sources and date.",
-      "overallLabel": "Overall SmartCheck score",
+      "overallLabel": "Overall Smart Check score",
       "overallText": "The average of the seven area scores. The report shows how much each one weighed.",
       "outOf": "out of 100",
       "scoreLabel": "{{score}} out of 100",
@@ -92,7 +92,7 @@
       },
       "pricesName": "Local prices",
       "pricesText": "Asking rents and prices for similar homes.",
-      "pricesValue": "{{price}}/m²"
+      "priceUnit": "€/m²"
     },
     "map": {
       "eyebrow": "In detail · Area map",
@@ -119,9 +119,7 @@
         "safety": "Safety"
       },
       "mapLabel": "Map of the area around the sample address, Timișoara",
-      "exampleTag": "Example · Timișoara",
       "walkMinutes": "{{minutes}} min",
-      "walkItem": "{{name}}, {{minutes}} min walk ({{meters}} m)",
       "transitStops": "3 stops within 400 m",
       "transitLines": "6 tram and bus lines",
       "transitTime": "17 min on average to the centre",
@@ -153,7 +151,7 @@
         }
       }
     },
-    "crossSell": "Want to know the condition of the home too? <strong>PropertyScore Physical</strong> includes SmartCheck."
+    "crossSell": "Want to know the condition of the home too? <strong>Property Fizic</strong> includes Smart Check."
   },
   "physical": {
     "titleLead": "Know what we check.",
@@ -170,11 +168,10 @@
     "leadStrong": "During the visit, an architect or inspector goes through five chapters: building, apartment, systems, comfort and risks.",
     "lead": "The report explains the PropertyScore score, the findings, the limits of the inspection and the recommended next steps. The included online analysis adds the area context and market benchmarks.",
     "price": {
-      "label": "PropertyScore Physical, {{price}}, SmartCheck included",
-      "name": "PropertyScore Physical",
+      "label": "Property Fizic, {{price}}, Smart Check included",
       "kind": "On-site inspection",
-      "included": "Includes SmartCheck",
-      "cta": "Book the inspection"
+      "cta": "Book the inspection",
+      "include": "Includes"
     },
     "explorer": {
       "title": "Explore what we check.",
@@ -303,7 +300,7 @@
       ]
     },
     "finding": {
-      "kicker": "Example from a PropertyScore Physical report",
+      "kicker": "Example from a Property Fizic report",
       "title": "See what a real finding looks like",
       "text": "Window, damp or systems: the observation, the impact, the recommendation and the photos.",
       "open": "Open the example",
@@ -358,5 +355,467 @@
         }
       }
     }
+  },
+  "deliverables": {
+    "titleLead": "One package.",
+    "titleAccent": "<home>The home</home> and <area>the area</area>, explained.",
+    "leadStrong": "With the inspection you also get Smart Check, at no extra cost.",
+    "lead": "The visit report shows the condition of the home, and the online report shows what the area is like. Both the buyer and the seller receive them.",
+    "bundle": {
+      "label": "The {{price}} package: Property Fizic with Smart Check included",
+      "physicalKind": "The condition of the home, on site",
+      "physicalItems": [
+        "The visit report",
+        "Photos and floor plan",
+        "360° tour",
+        "Free listing for sellers"
+      ],
+      "smartCheckKind": "The area, from public data",
+      "smartCheckItems": [
+        "8 explained scores",
+        "Safety map",
+        "Routes and transport",
+        "Local asking prices"
+      ],
+      "separate": "{{price}} on its own",
+      "totalLabel": "The whole package",
+      "cta": "Book the inspection"
+    },
+    "tabsLabel": "See the report and the materials",
+    "tabs": {
+      "report": {
+        "name": "Property Fizic",
+        "text": "Findings, photos and recommendations"
+      },
+      "zone": {
+        "name": "Smart Check",
+        "text": "Safety, market and surroundings"
+      },
+      "visual": {
+        "name": "Photos, plan and 360°",
+        "text": "Every room, at hand after the visit"
+      }
+    },
+    "report": {
+      "eyebrow": "01 / The physical inspection report",
+      "titleLead": "What we observed.",
+      "titleAccent": "What is worth clarifying.",
+      "text": "Documented findings, photos and recommendations. You understand what was checked during the visit and where further investigation is needed.",
+      "photoAlt": "Illustrative image of a window being inspected",
+      "photoCaption": "Illustrative visit · sample apartment",
+      "listTitle": "From the visit report",
+      "listDate": "28.09.2026 · fictional example",
+      "lines": [
+        {
+          "title": "Windows · living room",
+          "text": "Frames and seals documented with photos.",
+          "status": "Observed"
+        },
+        {
+          "title": "Heating · living room",
+          "text": "Radiator visible. Operation needs a test.",
+          "status": "To clarify"
+        },
+        {
+          "title": "Flooring · living room",
+          "text": "Accessible surfaces photographed; hidden layers not assessed.",
+          "status": "Limit noted"
+        }
+      ],
+      "boxTitle": "For a better-prepared conversation",
+      "boxText": "You can go back to the photo of a finding, ask the seller for clarification and see which further checks would help."
+    },
+    "zone": {
+      "eyebrow": "02 / The online analysis · included in Fizic",
+      "titleLead": "Understand the area.",
+      "titleAccent": "Put the price in context.",
+      "text": "You start from the address and confirm the point on the map. The apartment details help choose the comparables. The online report can also be bought on its own, for <strong>{{price}}</strong>.",
+      "indicatorsLabel": "Sample indicators from the online report",
+      "comparison": "Sample comparison: 2 rooms · 60 m²",
+      "gaugeLabel": "Fictional area safety score: {{score}} out of 100",
+      "scoreEyebrow": "PropertyScore score",
+      "scoreTitle": "Safety and quiet",
+      "scoreText": "An indicator of the area context, explained through the data and sources used.",
+      "rentLabel": "Average asking rent",
+      "rentValue": "{{price}} / month",
+      "rentText": "For comparable apartments.",
+      "priceLabel": "Average asking price",
+      "priceText": "Asking sale price · <strong>{{perM2}}/m²</strong>",
+      "marketNote": "In the report, market benchmarks come with the property type, the area analysed, the period, the number of comparables and the source. If the data is insufficient, the report says so.",
+      "chaptersTitle": "6 chapters about your area",
+      "chapters": [
+        "Education",
+        "Health",
+        "Transport",
+        "Shopping and services",
+        "Green spaces",
+        "Safety and quiet"
+      ],
+      "methodTitle": "How do we compare rents and prices?",
+      "method": [
+        {
+          "title": "Similar homes",
+          "text": "Property type, number of rooms and area, based on the known details."
+        },
+        {
+          "title": "Area and period",
+          "text": "The area analysed, the listing period and the number of comparables appear next to the average."
+        },
+        {
+          "title": "Asking prices",
+          "text": "Monthly rent, sale price per apartment and €/m². They are benchmarks from listings, not transaction prices."
+        },
+        {
+          "title": "Insufficient data",
+          "text": "We flag when there is no meaningful average. We never fill results with assumed values."
+        }
+      ],
+      "routesTitle": "What do you learn about everyday routes?",
+      "routesText": "Stops, schools, healthcare, shops and parks, with names and positions on the map. You see the distance and the estimated walking time when routing data exists. The example below shows the route colours.",
+      "map": {
+        "title": "Around the home",
+        "all": "All routes",
+        "filterLabel": "Highlight routes by category",
+        "alt": "Illustrative map of an imaginary neighbourhood. From the home in the centre, routes follow the streets: blue to two stops, orange to the school, green to the park, purple to the shop.",
+        "filters": {
+          "transport": {
+            "name": "Transport stops",
+            "text": "Blue · bus and tram"
+          },
+          "school": {
+            "name": "Schools",
+            "text": "Orange"
+          },
+          "park": {
+            "name": "Parks",
+            "text": "Green"
+          },
+          "shops": {
+            "name": "Shops",
+            "text": "Purple"
+          }
+        },
+        "status": {
+          "all": "Routes start at the home and follow the streets.",
+          "transport": "Blue: from the home to the bus stop and to the tram stop.",
+          "school": "Orange: the way from the home to the school in the example.",
+          "park": "Green: the way from the home to the park entrance.",
+          "shops": "Purple: the way from the home to the nearby shop."
+        },
+        "streets": {
+          "castanilor": "Str. Castanilor",
+          "gradinii": "Str. Grădinii",
+          "lalelelor": "Str. Lalelelor",
+          "livezii": "Str. Livezii"
+        },
+        "pois": {
+          "bus": "Bus",
+          "tram": "Tram",
+          "school": "School",
+          "park": "Park",
+          "shop": "Shop"
+        },
+        "home": "The home",
+        "north": "N",
+        "caption": "Real places, distances and walking times, where routing data exists."
+      },
+      "sourcesTitle": "Sources, dates and limits, in plain sight.",
+      "sourcesText": "Every result shows where it comes from and how recent it is. City-level data is marked separately; insufficient information is flagged explicitly. The score describes the area context, and the condition of the apartment is checked during the visit."
+    },
+    "visual": {
+      "eyebrow": "03 / Photos, plan and 360° tour",
+      "titleLead": "Go back into every room.",
+      "titleAccent": "Even after the visit.",
+      "text": "Buyer and seller get all the materials, along with the physical and online report, even if the property is not published in a listing.",
+      "photos": {
+        "living": "Illustrative living room",
+        "bedroom": "Illustrative bedroom",
+        "bath": "Illustrative bathroom"
+      },
+      "lines": [
+        {
+          "title": "Presentation photos",
+          "text": "Taken during the visit, included in the materials",
+          "status": "included"
+        },
+        {
+          "title": "Finding photos",
+          "text": "Linked to the inspector's observations",
+          "status": "dated"
+        },
+        {
+          "title": "Polycam plan + 360° images",
+          "text": "Pick a room on the plan and step into its panorama",
+          "status": "included"
+        }
+      ],
+      "note": "Presentation plan made with Polycam; pick a room on the plan to open its 360° panorama."
+    },
+    "shellNote": "Illustrative preview. The report content depends on the visit and the available data.",
+    "listing": {
+      "cardBadge": "Physically checked · {{date}}",
+      "cardTitle": "2-room apartment, Centre",
+      "cardArea": "Centre area, Timișoara",
+      "cardFacts": {
+        "area": "60 m²",
+        "rooms": "2 rooms",
+        "floor": "floor 2/4",
+        "year": "1984"
+      },
+      "titleLead": "Selling? Get your listing",
+      "titleAccent": "ready-made. For free.",
+      "text": "After the inspection, we use the photos, the plan and the reports to prepare a complete listing on PropertyScore. You pay nothing extra, and the listing appears only after you confirm it.",
+      "steps": [
+        {
+          "title": "We do the inspection",
+          "text": "Property Fizic · {{price}}"
+        },
+        {
+          "title": "We prepare the listing",
+          "text": "From the visit materials"
+        },
+        {
+          "title": "You confirm and we publish",
+          "text": "In the list and on the map"
+        }
+      ],
+      "includesTitle": "What the listing contains",
+      "includes": [
+        "Professional photos",
+        "Polycam plan",
+        "360° tour by room",
+        "The physical report in the listing",
+        "The Smart Check scores",
+        "Local rents and prices"
+      ],
+      "cta": "Book the inspection · {{price}}",
+      "link": "See where the listing appears"
+    }
+  },
+  "listings": {
+    "titleLead": "Find your home.",
+    "titleAccent": "You see at once what is <v>verified</v>.",
+    "leadStrong": "Looking to buy or to rent?",
+    "lead": "Every listing shows clearly what was checked: an on-site inspection, a Smart Check report about the area, or no report.",
+    "legendLabel": "What the labels mean",
+    "cards": {
+      "included": {
+        "eyebrow": "Chose Property Fizic?",
+        "title": "We prepare the listing for free",
+        "text": "With the photos, the plan and the reports from the package. We publish it once you confirm."
+      },
+      "self": {
+        "eyebrow": "Just want to publish?",
+        "title": "Post your listing yourself, for free",
+        "text": "You do not need to buy a report. The listing appears in the list and on the map."
+      }
+    }
+  },
+  "partners": {
+    "eyebrow": "For agencies and estate agents",
+    "titleLead": "Bring a seller.",
+    "titleAccent": "Get {{price}}.",
+    "text": "For every client who books a Property Fizic inspection with your code, you get {{commission}} of the {{price}}. You follow clients through each stage and download the full report, all from one portal.",
+    "steps": [
+      {
+        "title": "Get a code",
+        "text": "The partner account is free"
+      },
+      {
+        "title": "The client books the inspection",
+        "text": "With your code, {{price}}"
+      },
+      {
+        "title": "Get {{commission}}",
+        "text": "For every paid inspection"
+      }
+    ],
+    "calculator": {
+      "label": "How many properties do you bring each month?",
+      "value_one": "{{count}} property",
+      "value_other": "{{count}} properties",
+      "perMonth": "Per month",
+      "perYear": "Per year",
+      "note": "Only completed and paid inspections count. Agencies choose who gets paid: the agency or the agent.",
+      "unit_one": "property",
+      "unit_other": "properties"
+    },
+    "cta": "Become a partner",
+    "existing": "I already have a partner account"
+  },
+  "pricing": {
+    "titleLead": "Choose how much you want to know.",
+    "titleAccent": "About the <area>area</area> or about the <home>home</home>.",
+    "leadStrong": "Start with Smart Check to compare addresses.",
+    "lead": "Once you have found the right home, Property Fizic shows its condition and what to clarify before you decide. Smart Check is included.",
+    "physical": {
+      "summary": "The condition of the home, checked on site. Plus everything Smart Check tells you.",
+      "included": "Includes Smart Check",
+      "features": [
+        {
+          "title": "Someone comes to see the home",
+          "text": "The inspector checks what is visible and accessible and notes what could not be confirmed."
+        },
+        {
+          "title": "A report with next steps",
+          "text": "Findings with photos, possible impact, recommendations and the limits of the inspection."
+        },
+        {
+          "title": "Photos, plan and 360° tour",
+          "text": "The home's materials, for buyer and seller."
+        },
+        {
+          "title": "Free listing for sellers",
+          "text": "We prepare it and publish it once you confirm."
+        }
+      ],
+      "cta": "Pick the visit date",
+      "secondary": "See what you get"
+    },
+    "smartCheck": {
+      "summary": "The area and the market, from public data. You only need the address.",
+      "limit": "Does not check the condition of the home",
+      "features": [
+        {
+          "title": "Safety and quiet",
+          "text": "The area score, explained through the sources used."
+        },
+        {
+          "title": "Rents and prices",
+          "text": "Average asking prices and €/m² for comparable homes."
+        },
+        {
+          "title": "Everyday life",
+          "text": "Transport, schools, parks and shops nearby."
+        },
+        {
+          "title": "Sources and missing data",
+          "text": "The period, the area analysed and what we do not know."
+        }
+      ],
+      "cta": "Check an address",
+      "secondary": "See a sample report"
+    },
+    "comparison": {
+      "label": "What the Fizic package adds",
+      "title": "What you get with each",
+      "intro": "<strong>Smart Check</strong> tells you what the <strong>area</strong> is like. <strong>Property Fizic</strong> tells you what the <strong>home</strong> is like, and includes Smart Check too.",
+      "featureColumn": "What you get",
+      "rows": [
+        {
+          "label": "What the area is like: prices, transport, safety",
+          "physical": "Yes, the full Smart Check analysis",
+          "smartCheck": "Yes, prices, amenities and safety"
+        },
+        {
+          "label": "Someone comes to see the home",
+          "physical": "Yes, an inspector visits on site",
+          "smartCheck": "No, we analyse from the address only"
+        },
+        {
+          "label": "Find out the home's problems",
+          "physical": "Yes, what we found, with photos and what to do",
+          "smartCheck": "No, we do not see inside"
+        },
+        {
+          "label": "Plan, photos and 360° tour",
+          "physical": "Yes, plan, photos and 360° tour",
+          "smartCheck": "No"
+        },
+        {
+          "label": "A sale listing made by us",
+          "physical": "Yes, we make it, for free",
+          "smartCheck": "You publish it yourself, also for free"
+        }
+      ],
+      "values": {
+        "yes": "Included",
+        "no": "Not included",
+        "partial": "Partly"
+      }
+    },
+    "consultation": {
+      "eyebrow": "Talk to an expert",
+      "titleLead": "Have a report and want to understand it?",
+      "titleAccent": "Talk to an expert.",
+      "text": "Video or phone, whenever suits you.",
+      "short": "<strong>30 min</strong> for one clear question",
+      "long": "<strong>60 min</strong> for a complete decision",
+      "topicsTitle": "What we can talk about",
+      "topics": [
+        {
+          "title": "We explain the report",
+          "text": "What the scores mean and what really matters."
+        },
+        {
+          "title": "What to check at the viewing",
+          "text": "A list of questions for the owner."
+        },
+        {
+          "title": "How to negotiate the price",
+          "text": "Arguments from the findings and from local prices."
+        },
+        {
+          "title": "Compare areas",
+          "text": "Which neighbourhood suits you better."
+        }
+      ],
+      "cta": "Book a consultation"
+    },
+    "finePrint": "Address coverage and team availability are confirmed for your home. The plan is a presentation plan, not a cadastral document."
+  },
+  "faq": {
+    "titleLead": "What you can find out.",
+    "titleAccent": "And what you can't.",
+    "items": [
+      {
+        "q": "What is the difference between Fizic and Online?",
+        "a": "PropertyScore Fizic includes the visit, the inspector's observations, the full online report, the photos, the 360° images and the Polycam plan. For sellers, it also includes preparing the listing on PropertyScore for free. Online includes the area safety score, rent and sale benchmarks and nearby amenities; the condition inside is checked during the visit."
+      },
+      {
+        "q": "Do I pay RON 500 or RON 500 + 30?",
+        "a": "RON 500 in total: the inspection, the full online report, the photos, the 360° images, the plan and preparing the listing for sellers are included. The RON 30 is the price of the online report bought on its own."
+      },
+      {
+        "q": "What does the area safety score show?",
+        "a": "The PropertyScore score brings together the indicators available for the address's area: context from public data, proximity to services, lighting and surrounding factors, and local reports where available. The report explains the sources, the period and the limits; city-level data is marked as such. The score is a context indicator, not a statistic of incidents at that address."
+      },
+      {
+        "q": "What do the average rent and average price in the area mean?",
+        "a": "They are benchmarks from asking rents and prices for comparable apartments, by location and the available characteristics. You see the monthly rent, the asking price per apartment and the price per m² separately, with the source, the period and the area analysed. When the data is not enough for a meaningful average, the report says so. The values in the example on this page are fictional."
+      },
+      {
+        "q": "What does the RON 30 online report include?",
+        "a": "Six chapters about the area: education, health, transport, shopping and services, green spaces, safety and quiet. You get the explained safety score, rent and sale benchmarks from comparable listings and a map of useful places. Distances and walking times appear where routing data is available. Every result shows its source and period; insufficient data is flagged explicitly."
+      },
+      {
+        "q": "What information do I need for the online analysis?",
+        "a": "The location of the apartment is essential: the address and confirming the point on the map. Rooms, area, floor, lift, parking or heating are optional details. You can continue even if you do not know them."
+      },
+      {
+        "q": "Is it useful if I want to rent?",
+        "a": "Yes. You can compare the asking rent with benchmarks for similar apartments and see the safety score, transport, parks and services nearby. The actual condition of the apartment has to be checked separately."
+      },
+      {
+        "q": "What can and can't the inspection confirm?",
+        "a": "The report documents what could be observed or checked during the visit and marks the limits. The inspection does not replace a structural survey, a legal check or full testing of the systems."
+      },
+      {
+        "q": "What do I get as a buyer?",
+        "a": "With PropertyScore Fizic you get the inspection report, the full online report, the photos, the presentation plan and the 360° tour. The materials are available to you even if the home is not published on PropertyScore. Preparing the listing is an extra benefit for sellers, included in the same package."
+      },
+      {
+        "q": "What are the plan and the 360° tour for?",
+        "a": "During the visit we photograph every room with a 360° camera and make the presentation plan with Polycam. A click on a room in the plan takes you through an animated transition to its panorama. Buyer and seller get these materials in the physical package, whether or not the property is published. For sellers, we also include them in the listing we prepare. The example here uses static photos and a schematic plan; the presentation plan is not cadastral."
+      },
+      {
+        "q": "Can I publish a listing for free without PropertyScore?",
+        "a": "Yes, publishing your own listing is free. For sale or rent, you can add the photos, the description and the details of the home, and the listing appears in the list and on the property map. The report is optional; without it, the listing is marked “No report”. If you choose PropertyScore Fizic for a sale, we prepare the professional presentation for free in the RON 500 package."
+      },
+      {
+        "q": "How do I get the professional listing included in Fizic?",
+        "a": "If you are selling and choose PropertyScore Fizic, we create a professional listing for free from the photos, the plan and the 360° images taken during the visit. The listing brings together the physical report and the full online report, organised around the property. Once you confirm publication, it appears in the listings and on the PropertyScore map. Preparing it is included in the RON 500."
+      }
+    ]
   }
 }

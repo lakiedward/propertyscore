@@ -4,8 +4,8 @@
   },
   "brand": {
     "core": "PropertyScore",
-    "physical": "PropertyScore Physical",
-    "smartcheck": "SmartCheck",
+    "physical": "Property Fizic",
+    "smartcheck": "Smart Check",
     "wordmark": {
       "core": {
         "lead": "Property",
@@ -13,7 +13,7 @@
       },
       "physical": {
         "lead": "Property",
-        "mark": "Physical"
+        "mark": "Fizic"
       },
       "smartcheck": {
         "lead": "Smart",
@@ -84,8 +84,8 @@
     "skipToContent": "Skip to content",
     "sections": {
       "label": "Page sections",
-      "smartCheck": "SmartCheck",
-      "physical": "Physical inspection",
+      "smartCheck": "Smart Check",
+      "physical": "Property Fizic",
       "deliverables": "What you get",
       "listings": "Homes",
       "pricing": "Pricing",
@@ -97,8 +97,8 @@
       "signIn": "Sign in",
       "account": "My account",
       "publish": "Post a free listing",
-      "smartCheck": "Check an address with SmartCheck",
-      "physical": "Book a PropertyScore Physical inspection"
+      "smartCheck": "Check an address with Smart Check",
+      "physical": "Book a Property Fizic inspection"
     },
     "menu": {
       "label": "Menu",
@@ -117,7 +117,7 @@
       "services": {
         "title": "PropertyScore services",
         "physical": "Physical inspection",
-        "smartCheck": "SmartCheck · online analysis",
+        "smartCheck": "Smart Check · online analysis",
         "consultation": "Talk to an expert",
         "pricing": "Pricing",
         "priceFrom": "from {{price}}"
@@ -136,7 +136,7 @@
       "services": {
         "title": "Services",
         "physical": "Physical inspection · {{price}}",
-        "smartCheck": "SmartCheck · {{price}}",
+        "smartCheck": "Smart Check · {{price}}",
         "deliverables": "What you get",
         "consultation": "Consultation",
         "pricing": "Pricing"
@@ -150,19 +150,25 @@
       },
       "account": {
         "title": "Account",
-        "account": "My account",
         "partner": "Become a partner",
-        "questions": "FAQ"
+        "questions": "FAQ",
+        "portal": "Partner portal"
       },
       "copyright": "© {{year}} PropertyScore · Timișoara, Romania",
       "contactLabel": "Contact",
-      "email": "contact@propertyscore.ro"
+      "email": "contact@propertyscore.ro",
+      "legalLabel": "Legal links",
+      "legal": {
+        "terms": "Terms",
+        "privacy": "Privacy",
+        "cookies": "Cookies"
+      }
     }
   },
   "trust": {
     "physical": "Physically checked by PropertyScore",
-    "smartcheck": "SmartCheck score {{score}} out of 100",
-    "smartcheckShort": "SmartCheck",
+    "smartcheck": "Smart Check score {{score}} out of 100",
+    "smartcheckShort": "Smart Check",
     "none": "No PropertyScore report",
     "physicalShort": "Physically checked",
     "noneShort": "No report"

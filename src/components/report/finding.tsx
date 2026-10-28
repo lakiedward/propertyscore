@@ -24,7 +24,10 @@ export function Finding({ reference, title, status, fields, className }: Finding
       <h4 className="text-h3">{title}</h4>
       <dl className="flex flex-col divide-y divide-border-subtle">
         {fields.map((field) => (
-          <div key={field.key} className="grid gap-1 py-3 lg:grid-cols-[8rem_1fr] lg:gap-4">
+          <div
+            key={field.key}
+            className="grid grid-cols-1 gap-1 py-3 lg:grid-cols-[8rem_1fr] lg:gap-4"
+          >
             <dt className="text-caption font-bold text-muted-foreground">{field.label}</dt>
             <dd className="text-small">{field.value}</dd>
           </div>

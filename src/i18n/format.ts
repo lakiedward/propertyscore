@@ -73,6 +73,31 @@ export function formatPrice(amount: number, currency: Currency): string {
   });
 }
 
+export type PriceParts = {
+  amount: string;
+  currency: string;
+  isCurrencyFirst: boolean;
+};
+
+export function formatPriceParts(amount: number, currency: Currency): PriceParts {
+  const parts = new Intl.NumberFormat(formatLocale(), {
+    style: 'currency',
+    currency,
+    currencyDisplay: PRICE_CURRENCY_DISPLAY[currentLocale()],
+    maximumFractionDigits: 0,
+  }).formatToParts(amount);
+  const currencyIndex = parts.findIndex((part) => part.type === 'currency');
+  const amountIndex = parts.findIndex((part) => part.type === 'integer');
+  return {
+    amount: parts
+      .filter((part) => part.type === 'integer' || part.type === 'group')
+      .map((part) => part.value)
+      .join(''),
+    currency: parts[currencyIndex]?.value ?? currency,
+    isCurrencyFirst: currencyIndex < amountIndex,
+  };
+}
+
 function separators(): { group: string; decimal: string } {
   const parts = new Intl.NumberFormat(formatLocale()).formatToParts(12_345.6);
   return {

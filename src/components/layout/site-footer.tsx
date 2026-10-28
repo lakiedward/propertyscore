@@ -2,23 +2,20 @@ import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
-import { Button } from '@/components/ui/button';
 import { SERVICE_PRICES } from '@/config/pricing';
 import { formatPrice } from '@/i18n/format';
 import { HOME_SECTION, type HomeSectionId } from './site-navigation';
-
-type SiteFooterProps = {
-  isSignedIn: boolean;
-};
 
 type FooterLink =
   | { key: string; label: string; hash: HomeSectionId; transaction?: 'sale' | 'rent' }
   | { key: string; label: string; to: '/login' | '/account' };
 
-const FOOTER_LINK_CLASS =
-  'inline-flex min-h-touch items-center text-body text-on-inverse-muted transition-colors duration-(--duration-fast) hover:text-on-inverse focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none';
+const LEGAL_KEYS = ['terms', 'privacy', 'cookies'] as const;
 
-export function SiteFooter({ isSignedIn }: SiteFooterProps) {
+const FOOTER_LINK_CLASS =
+  'inline-flex items-center text-label font-normal text-on-inverse-bright transition-colors duration-(--duration-fast) hover:text-on-inverse focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none';
+
+export function SiteFooter() {
   const { t } = useTranslation();
   const physicalPrice = formatPrice(
     SERVICE_PRICES.physical.amount,
@@ -82,12 +79,8 @@ export function SiteFooter({ isSignedIn }: SiteFooterProps) {
     {
       title: t('site.footer.account.title'),
       links: [
-        {
-          key: 'account',
-          label: t('site.footer.account.account'),
-          to: isSignedIn ? '/account' : '/login',
-        },
         { key: 'partner', label: t('site.footer.account.partner'), hash: HOME_SECTION.partners },
+        { key: 'portal', label: t('site.footer.account.portal'), hash: HOME_SECTION.partners },
         {
           key: 'questions',
           label: t('site.footer.account.questions'),
@@ -99,29 +92,37 @@ export function SiteFooter({ isSignedIn }: SiteFooterProps) {
 
   return (
     <footer className="bg-surface-inverse text-on-inverse">
-      <div className="mx-auto grid max-w-wide gap-10 px-gutter pt-18 pb-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_repeat(3,1fr)]">
-        <div className="flex flex-col gap-5 sm:col-span-2 lg:col-span-1">
-          <Logo tone="inverse" size="md" />
-          <p className="max-w-sm text-body text-on-inverse-muted">{t('site.footer.tagline')}</p>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="inverse" shape="pill">
-              <Link to="/" hash={HOME_SECTION.physical}>
-                <BrandMark product="physical" size={20} />
-                {t('site.footer.physicalCta')}
-              </Link>
-            </Button>
-            <Button asChild variant="info" shape="pill">
-              <Link to="/" hash={HOME_SECTION.smartCheck}>
-                <BrandMark product="smartcheck" tone="inverse" size={20} />
-                {t('site.footer.smartCheckCta')}
-              </Link>
-            </Button>
+      <div className="page-wrap grid grid-cols-1 gap-10 pt-18 sm:grid-cols-2 lg:grid-cols-[1.6fr_repeat(3,1fr)]">
+        <div className="flex flex-col gap-4 sm:col-span-2 lg:col-span-1">
+          <Logo tone="inverse" size="md" className="gap-1" />
+          <p className="max-w-95 text-label leading-[1.6] font-normal text-on-inverse-muted">
+            {t('site.footer.tagline')}
+          </p>
+          <div className="flex flex-wrap gap-2.5">
+            <Link
+              to="/"
+              hash={HOME_SECTION.physical}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-cta py-0 pr-4 pl-2.5 text-small font-extrabold text-brand transition-colors hover:bg-cta-hover focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
+            >
+              <BrandMark product="physical" size={22} />
+              {t('site.footer.physicalCta')}
+            </Link>
+            <Link
+              to="/"
+              hash={HOME_SECTION.smartCheck}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-info py-0 pr-4 pl-2.5 text-small font-extrabold text-on-inverse transition-colors hover:bg-info-hover focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
+            >
+              <BrandMark product="smartcheck" tone="inverse" size={22} />
+              {t('site.footer.smartCheckCta')}
+            </Link>
           </div>
         </div>
         {columns.map((column) => (
           <nav key={column.title} aria-label={column.title} className="flex flex-col gap-1">
-            <h2 className="pb-2 text-eyebrow text-cta uppercase">{column.title}</h2>
-            <ul className="flex flex-col">
+            <h2 className="mb-3.5 text-caption font-extrabold tracking-[0.06em] text-cta uppercase">
+              {column.title}
+            </h2>
+            <ul className="flex flex-col gap-2.5">
               {column.links.map((link) => (
                 <li key={link.key}>
                   {'to' in link ? (
@@ -144,15 +145,20 @@ export function SiteFooter({ isSignedIn }: SiteFooterProps) {
           </nav>
         ))}
       </div>
-      <div className="border-t border-on-inverse/15">
-        <div className="mx-auto flex max-w-wide flex-col gap-2 px-gutter py-6 text-caption text-on-inverse-muted sm:flex-row sm:items-center sm:justify-between">
+      <div className="page-wrap mt-12 border-t border-on-inverse/14 pb-8">
+        <div className="flex flex-col flex-wrap gap-x-6 gap-y-3 pt-6 text-caption text-on-inverse-faint sm:flex-row sm:justify-between">
           <p>{t('site.footer.copyright', { year: new Date().getFullYear() })}</p>
-          <a
-            href={`mailto:${t('site.footer.email')}`}
-            className="inline-flex min-h-touch items-center hover:text-on-inverse focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
-          >
-            {t('site.footer.email')}
-          </a>
+          <nav aria-label={t('site.footer.legalLabel')} className="flex flex-wrap gap-x-5 gap-y-2">
+            {LEGAL_KEYS.map((key) => (
+              <span key={key}>{t(`site.footer.legal.${key}`)}</span>
+            ))}
+            <a
+              href={`mailto:${t('site.footer.email')}`}
+              className="hover:text-on-inverse focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
+            >
+              {t('site.footer.email')}
+            </a>
+          </nav>
         </div>
       </div>
     </footer>

@@ -5,6 +5,7 @@ import { ExampleLabel } from '@/components/feedback/example-label';
 import { StatusPill } from '@/components/feedback/status-pill';
 import { Photo } from '@/components/media/photo';
 import { Finding } from '@/components/report/finding';
+import { BrandMark } from '@/components/brand/brand-mark';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -21,24 +22,33 @@ export function FindingExample() {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-4 rounded-2xl bg-surface-inverse p-6 text-on-inverse sm:flex-row sm:items-center sm:justify-between sm:p-8">
-        <div className="flex flex-col gap-1.5">
-          <p className="text-caption text-on-inverse-muted">{t('physical.finding.kicker')}</p>
-          <p className="text-h3">{t('physical.finding.title')}</p>
-          <p className="text-small text-on-inverse-muted">{t('physical.finding.text')}</p>
+      <div className="flex flex-col gap-5 rounded-photo bg-primary px-6 py-5.5 text-on-inverse shadow-service sm:flex-row sm:items-center sm:justify-between">
+        <BrandMark product="physical" size={44} className="hidden sm:block" />
+        <div className="flex flex-1 flex-col gap-1">
+          <p className="text-meta font-extrabold tracking-[0.06em] text-cta uppercase">
+            {t('physical.finding.kicker')}
+          </p>
+          <p className="text-[19px] leading-[1.55] font-extrabold tracking-[-0.02em] w520:text-h3">
+            {t('physical.finding.title')}
+          </p>
+          <p className="text-label font-[750] text-on-inverse">{t('physical.finding.text')}</p>
         </div>
-        <CollapsibleTrigger className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-cta px-5 text-label text-cta-foreground transition-colors hover:bg-cta-hover focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:ring-offset-2 focus-visible:ring-offset-surface-inverse focus-visible:outline-none">
+        <CollapsibleTrigger className="inline-flex h-12 shrink-0 items-center justify-center gap-2.5 rounded-full bg-cta py-0 pr-2 pl-4.5 text-label font-extrabold text-brand transition-colors hover:bg-cta-hover focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:ring-offset-2 focus-visible:ring-offset-primary focus-visible:outline-none">
           {t(isOpen ? 'physical.finding.close' : 'physical.finding.open')}
-          <ChevronDownIcon
-            aria-hidden
-            className={cn(
-              'size-4 transition-transform duration-(--duration-fast)',
-              isOpen && 'rotate-180',
-            )}
-          />
+          <span
+            aria-hidden="true"
+            className="grid size-8 place-items-center rounded-full bg-primary text-cta"
+          >
+            <ChevronDownIcon
+              className={cn(
+                'size-4 transition-transform duration-(--duration-fast)',
+                isOpen && 'rotate-180',
+              )}
+            />
+          </span>
         </CollapsibleTrigger>
       </div>
-      <CollapsibleContent className="grid gap-6 rounded-2xl bg-surface-subtle p-5 ring-1 ring-border-subtle sm:p-8 lg:grid-cols-[2fr_3fr]">
+      <CollapsibleContent className="grid grid-cols-1 gap-6 rounded-2xl bg-surface-subtle p-5 ring-1 ring-border-subtle sm:p-8 lg:grid-cols-[2fr_3fr]">
         <div className="flex flex-col gap-4">
           <p className="text-small text-muted-foreground">{t('physical.finding.intro')}</p>
           <Photo

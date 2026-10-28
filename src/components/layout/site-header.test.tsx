@@ -4,9 +4,7 @@ import { renderWithProviders } from '@/test/render';
 import { SiteHeader } from './site-header';
 
 function renderHeader(isSignedIn = false) {
-  return renderWithProviders(
-    <SiteHeader isSignedIn={isSignedIn} languageSwitcher={null} menuLanguageSwitcher={null} />,
-  );
+  return renderWithProviders(<SiteHeader isSignedIn={isSignedIn} menuLanguageSwitcher={null} />);
 }
 
 describe('SiteHeader', () => {

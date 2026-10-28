@@ -51,6 +51,7 @@ One master brand and two product sub-brands that share its symbol and wordmark. 
 | Teal | 50 `#E6F2EA` · 200 `#B4D6BF` · 600 `#24704A` |
 | Grey | 100 `#ECEDE8` · 300 `#C9CEC6` · 500 `#7F8B83` |
 | Other | white `#FFFFFF` · scrim `rgba(11,48,38,.5)` · on-inverse muted `#C6D6CB` · placeholder `#7D8E83` · green highlight `#E4F0D2` · blue 800 `#223B49` |
+| Home design tints (copied from the home export) | blue 600 `#2F5164` · green 350 `#9FB9A6` · green 650 `#3B5847` · green deep `#0B3428` · ink strong `#38513F` · ink soft `#425E4B` · ink faint `#6B7B6D` · on-inverse soft `#D8E6DC` · on-inverse faint `#B9CCC0` · on-inverse bright `#EAF2EC` · on-info soft `#E3ECF1` · leaf 75 `#EEF3E4` · leaf 90 `#E4EFD6` · green 250 `#B9CDBB` · cream scene `#F3F4ED` · cream chip `#F3F2EA` · aqua 75 `#D8EFEC` · aqua 650 `#0F6B61` · aqua 700 `#0F4D47` · amber 800 `#8A4B18` · safety soft `#7FD1B9` / `#F2A48E` · photo note `rgba(255,253,241,.875)` |
 | Category hues (rule 14, approved with the home design) | sky 50 `#EDF6FC` · 100 `#D4EAF8` · 300 `#8CC6EC` · 600 `#1F6B9A` · 800 `#123F5E`; coral `#FDF1EC` · `#FADCCF` · `#F2A184` · `#9E4A22` · `#6E2A16`; sun `#FFF8DC` · `#FDEBA6` · `#F6C93E` · `#7E5F00` · `#4E3A00`; berry `#F9EFF5` · `#F0D7E7` · `#D69AC2` · `#8A356F` · `#561F45`; leaf `#F0F7E7` · `#DCEDC6` · `#A3D06F` · `#3F6E1B` · `#2B4A10`; aqua (the design's "teal", renamed to keep the status teal apart) `#E9F5F3` · `#CBE7E3` · `#7CC4BB` · `#1C6B67` · `#0F4341` |
 
 ### 3.2 Semantic colours (CSS variables in `:root`, exposed to Tailwind in `@theme inline` as `--color-<name>`)
@@ -102,6 +103,12 @@ PropertyScore additions:
 | `on-info-muted` | `#DCE6EC` | secondary text on `info` fills |
 | `info-hover`, `info-foreground` | blue 700, white | filled SmartCheck buttons and surfaces |
 | `map-safety-up`, `map-safety-down`, `map-water` | `#2E9C82`, `#D0583C`, `#C9D8E1` | safety factors and water on maps |
+| `info-ink`, `info-ink-muted` | blue 800, blue 600 | SmartCheck text on light surfaces |
+| `ink-strong`, `ink-soft`, `ink-faint` | the three ink tints above | Property Fizic body text, intros, small notes |
+| `nav-link`, `border-control` | green 650, green 350 | header links; outlined controls and the menu button |
+| `primary-deep`, `on-inverse-soft`, `on-inverse-faint`, `on-inverse-bright`, `on-info-soft` | as above | price-box footers and text on forest / blue |
+| `surface-leaf`, `surface-physical-col`, `surface-scene`, `surface-subtle-warm`, `surface-aqua`, `faq-line` | as above | chips, comparison column, explorer scene, fact chips, consultation, FAQ rules |
+| `aqua-ink`, `aqua-strong`, `status-attention`, `map-safety-*-soft`, `photo-note` | as above | consultation text, "De clarificat" status, safety factor circles, photo captions |
 | `category-<key>`, `-surface`, `-fill` | 600 / 100 / 300 of the category hues | keys `education` (sky), `health` (coral), `transport` (sun), `shopping` (berry), `green` (leaf), `safety` (aqua), `city` (blue) |
 
 Contrast notes from the source: red 600 is 5.9:1, amber 700 6.2:1 and teal 600 5.4:1 on cream; keep text colours to these tokens.
@@ -112,16 +119,24 @@ The design system ships light only. `styling.md` requires dark tokens from day o
 
 ### 3.4 Typography
 
-- **Font family:** `--font-sans` Manrope Variable (body and UI), `--font-heading` Bricolage Grotesque Variable (`h1`–`h4`, applied in the base layer), `--font-brand` Sora Variable (only inside the brand components), self-hosted with `latin-ext` (decision D15, settled by the home design). Mono: `Consolas, "SFMono-Regular", Menlo, monospace`, only for IDs and hashes.
+- **Font family:** `--font-sans` Manrope Variable for body, UI and every heading (`--font-heading` points to the same family: the home design sets all titles in its body font), `--font-brand` Sora Variable (only inside the brand components), self-hosted with `latin-ext`. Bricolage Grotesque is not used. Mono: `Consolas, "SFMono-Regular", Menlo, monospace`, only for IDs and hashes.
 - **Weights:** 400 regular, 600 semibold, 700 bold, 800 heavy (headings, prices, scores).
 - **Roles** (Tailwind `--text-<role>` with `--text-<role>--line-height`, and matching `--tracking-<role>`):
 
 | Class | Size | Line height | Tracking | Weight |
 | --- | --- | --- | --- | --- |
-| `text-display` | `clamp(40px, 4.6vw, 68px)` | 1.04 | -0.045em | 800, `text-balance` |
-| `text-section` | `clamp(34px, 3.8vw, 56px)` | 1.08 | -0.035em | 800 (section titles on public pages) |
+| `text-display` | `clamp(40px, 4.6vw, 68px)` | 1.04 | -0.047em | 760 (home hero) |
+| `text-section` | `clamp(34px, 4vw, 58px)` | 1.12 | -0.035em | 740 (section titles on public pages) |
+| `text-section-sm` | `clamp(35px, 3.5vw, 51px)` | 1.12 | -0.04em | 740 (Property Fizic section title) |
+| `text-band` | `clamp(32px, 3.6vw, 50px)` | 1.02 | -0.04em | 800 (titles on dark bands) |
+| `text-intro` | 21px | 1.55 | — | 400 (section intros) |
+| `text-lead-sm` | 17px | 1.6 | — | 400 |
+| `text-service` | 13.5px | 1.55 | — | 400 (service card copy) |
+| `text-price-card`, `text-price-box` | 30px, 34px | 1 | -0.04em | 800 |
+| `text-score-2xl` | 72px | 1 | -0.05em | 800 |
+| `text-nav-sm` | 11px | — | — | small labels copied from the design |
 | `text-h1` | `clamp(34px, 4vw, 48px)` | 1.08 | -0.03em | 800 |
-| `text-h2` | `clamp(28px, 3vw, 40px)` | 1.12 | -0.025em | 800 |
+| `text-h2` | `clamp(28px, 3vw, 40px)` | 1.08 | -0.025em | 800 |
 | `text-h3` | 24px | 1.2 | -0.015em | 700 |
 | `text-h4` | 19px | 1.3 | — | 700 |
 | `text-lead` | 19px | 1.55 | — | 400, `muted-foreground` |
@@ -133,7 +148,7 @@ The design system ships light only. `styling.md` requires dark tokens from day o
 | `text-price` | 28px (sm 20px, lg `clamp(28px, 4vw, 40px)`) | 1.1 | -0.02em | 800, tabular |
 | `text-score` | 44px (sm 20, md 32, xl 64) | 1 | -0.03em | 800, tabular |
 | `text-eyebrow` | 13px | 1.3 | 0.06em | 700, uppercase, `muted-foreground` |
-| `text-logo-sm/md/lg/xl` | 19 / 22 / 30 / 34px | 1 | `tracking-brand` −0.04em | brand components only |
+| `text-logo-2xs/inline/xs/sm/md/card/bundle/lg/xl` | 12.5 / 14 / 15 / 19 / 22 / 24 / 26 / 30 / 34px | 1 | `tracking-brand` −0.04em | brand components only |
 
 Numbers in prices, scores, tables and counters use `tabular-nums`. Body text never goes below 16px in the comfortable density.
 
@@ -141,17 +156,19 @@ Numbers in prices, scores, tables and counters use `tabular-nums`. Body text nev
 
 - **Space:** 4px base, which is Tailwind's default scale (`1` = 4px … `12` = 48px, `16` = 64px, `20` = 80px, `24` = 96px, `32` = 128px).
 - **Radius** (set explicitly in `@theme inline`, replacing shadcn's computed radii): `rounded-sm` 4px tags · `rounded-md` 8px controls and buttons · `rounded-lg` 11px cards, service cards, listboxes · `rounded-xl` 17px media, listing cards, maps · `rounded-2xl` 24px hero panels · `rounded-full` badges, chips, pills.
-- **Shadow** (forest-tinted, restrained): `shadow-sm` `0 1px 2px rgba(16,63,50,.06)` · `shadow-md` `0 10px 28px -16px rgba(16,63,50,.28)` (card hover, popovers) · `shadow-lg` `0 24px 56px -24px rgba(16,63,50,.38)` (dialogs). Cards have no shadow at rest.
+- **Shadow** (forest-tinted, restrained): `shadow-sm` `0 1px 2px rgba(16,63,50,.06)` · `shadow-md` `0 10px 28px -16px rgba(16,63,50,.28)` (card hover, popovers) · `shadow-lg` `0 24px 56px -24px rgba(16,63,50,.38)` (dialogs). The home design adds named shadows copied from it: `shadow-header`, `-service`, `-photo`, `-float`, `-info`, `-tile`, `-tile-sm`, `-explorer`, `-pin`, `-bundle`, `-plus`, `-shell`, `-tab`, `-sample`, `-calculator`, `-link-card`, `-listing-selected`, `-aqua`, `-price` (values in `globals.css`).
+- **Extra radii from the home design:** `rounded-note` 7px, `rounded-icon` 12px, `rounded-float` 13px, `rounded-photo` 20px.
 - **Motion:** durations `--duration-instant` 90ms, `--duration-fast` 160ms, `--duration-base` 240ms, `--duration-slow` 420ms, `--duration-scene` 640ms (used as `duration-(--duration-fast)`); easings `ease-standard` `cubic-bezier(.2,.7,.2,1)` and `ease-exit` `cubic-bezier(.4,0,1,1)`. Everything collapses to 1ms under `prefers-reduced-motion`.
 - **Icons:** sizes 16, 20 (default), 24, 32 → `size-4`, `size-5`, `size-6`, `size-8`.
 - **Layers:** base 0 · raised 10 · sticky header 100 · map overlay 200 · drawer 300 · dialog 400 · toast 500.
 
 ### 3.6 Layout
 
-- Containers: `max-w-narrow` 760px (reports, forms), `max-w-default` 1180px, `max-w-wide` 1360px (map + list, public sections), with gutter `px-gutter` `clamp(20px, 4vw, 40px)`.
+- Containers: `max-w-narrow` 760px (reports, forms), `max-w-default` 1180px, `max-w-wide` 1360px, with gutter `px-gutter` `clamp(20px, 4vw, 40px)`. Public pages use the design's `page-wrap` utility instead: `min(1360px, 100% - 64px)` wide, `min(100% - 36px, 650px)` at 820px and below, `100% - 30px` at 520px and below. Paragraphs copied from the design are capped at `max-w-copy` (68ch).
+- Public-site breakpoints follow the home design, as max-width steps turned into Tailwind variants: `w480` 481, `w520` 521, `w560` 561, `w760` 761, `w820` 821, `w860` 861, `w900` 901, `w960` 961, `w1080` 1081, `w1180` 1181 (each `wNNN:` applies above NNN px; `max-wNNN:` at NNN px and below). App shells keep `sm`/`md`/`lg`/`xl`.
 - Section spacing on public pages: `py-section` `clamp(64px, 9vw, 112px)`.
 - 12-column grid, 24px gap.
-- Header height (`h-header`): 76px comfortable, 60px compact, 56px field. The public site header shows its section links from `xl` (1280px) and collapses them into the menu below (at `lg` the six links do not fit beside the actions); app shells collapse below `lg`; other source breakpoints (960, 860, 720, 640, 560, 420) map to the nearest Tailwind breakpoint (`lg`, `md`, `sm`), mobile first.
+- Header height (`h-header`): 76px comfortable, 60px compact, 56px field. The public site header is full width (20px side padding), white, with a `border` bottom line and `shadow-header`; menu button, logo, the six section links (a second full-width row below 960px, a 4-column grid below 820px), then sign-in, "Publică anunț gratuit" (from 560px), Smart Check (from 560px) and Property Fizic buttons at 36px; no language switch in the bar (it lives in the menu drawer); app shells collapse below `lg`; other source breakpoints (960, 860, 720, 640, 560, 420) map to the nearest Tailwind breakpoint (`lg`, `md`, `sm`), mobile first.
 
 ### 3.7 Density modes
 
@@ -184,6 +201,7 @@ Build each component the first time a step needs it, at the location below, with
 | **feedback** | | |
 | Dialog | shadcn `dialog` | width 520 default; becomes a bottom sheet on mobile (`sheet`) via shadcn `drawer`/`sheet` |
 | Drawer | shadcn `sheet` | sides right (default, 420px), left, bottom |
+| ExampleLabel | `components/feedback/example-label.tsx` | tones `light`, `dark`; marks example and illustrative content ("Exemplu", "Valori de exemplu", "Imagine ilustrativă") |
 | EmptyState | `components/layout/empty-state.tsx` | kinds `empty`, `error`, `offline`, `pending`, `insufficient`; icon, title, text, actions |
 | Notice | shadcn `alert`, extended | tones `info`, `success`, `warning`, `error`, `neutral`; optional title, actions, dismiss |
 | Skeleton | shadcn `skeleton` | lines, radius |
@@ -211,6 +229,7 @@ Build each component the first time a step needs it, at the location below, with
 | MediaUpload | `components/media/media-upload.tsx` | drop zone (over, invalid), file list (queued, error), camera capture |
 | SignaturePad | `features/field-inspection/components/signature-pad.tsx` | empty, signed (with time), invalid |
 | **navigation** | | |
+| SiteFooter, SiteMenu | `components/layout/site-footer.tsx`, `site-menu.tsx` | footer on `surface-inverse` with brand block, two CTAs and link columns; menu drawer on `sheet` (left, forest) with page sections, services with prices and the segmented RO/EN switch |
 | SiteHeader | `components/layout/site-header.tsx` | tones `cream` (default), `white`, `forest`; brand 22/800; nav links with active underline; RO/EN switcher (forest when pressed); mobile panel below `lg`; `scrolled` border |
 | Breadcrumbs | `components/navigation/breadcrumbs.tsx` | truncates current item at 32ch |
 | Tabs | shadcn `tabs` | `underline` (3px forest indicator) and `pill` (mist track, white selected); count bubble |
@@ -222,7 +241,7 @@ Build each component the first time a step needs it, at the location below, with
 | Price | `components/property/price.tsx` | currency from data, period ("/ lună"), previous price struck through, €/m², sizes sm/md/lg, "Preț la cerere" |
 | PropertyFacts | `components/property/property-facts.tsx` | `grid` (hairline cells) and `inline` (icons + values); missing values italic |
 | FilterChip | `components/property/filter-chip.tsx` | selected forest, count, removable |
-| ServiceCard | `components/property/service-card.tsx` | tones `white`, `forest` (lime icon tile), `mist`; eyebrow, price, features with check icons, actions, badge |
+| ServiceCard | `components/property/service-card.tsx` | tones `white`, `forest` (lime icon tile), `online` (filled blue, approved with the home design), `mist`; eyebrow, price, features with check icons, actions, badge |
 | PricingComparison | `components/property/pricing-comparison.tsx` | highlighted column (green 50), yes/no cells with icons, stacks into labelled rows on mobile |
 | **report** | | |
 | ReportSection | `components/report/report-section.tsx` | number, eyebrow, title, intro, sources line, aside |
@@ -254,10 +273,14 @@ The `ui_kits` in the export (Home, Booking, Listing, MapList, Report, Dashboard,
 9. **Text on forest** is white, secondary text `on-inverse-muted`; text on lime is forest.
 10. **Selection colour** is lime 300 with forest text.
 11. **Density** comes from the shell (`data-density`), never from per-component overrides.
-12. **Gradients, tints and patterns** are built only from design-system colours (for example `from-primary to-primary-hover`, cream → mist), used sparingly; the hexagon-grid pattern is an SVG in `currentColor` at low opacity. Additions approved from Claude Design's visual language board (patterns, illustration set, motion specs) are recorded in this file before use.
+12. **Highlights:** key words in public headings use the `marker-cta` or `marker-info` utilities from `globals.css`; never an inline gradient.
+13. **Gradients, tints and patterns** are built only from design-system colours (for example `from-primary to-primary-hover`, cream → mist), used sparingly; the hexagon-grid pattern is an SVG in `currentColor` at low opacity. Additions approved from Claude Design's visual language board (patterns, illustration set, motion specs) are recorded in this file before use.
 13. **Logos only through the brand components.** Every PropertyScore, Physical or SmartCheck logo, mark or product name badge is a `Logo`, `BrandMark` or `ProductTag`; never retype the wordmark in text, recolour it outside its tones, stretch, rotate or outline it, or place it on a photo without a solid panel. Physical lockups and tags use only the forest/lime world, SmartCheck only the blue world, matching rule 2. Use `inverse` on `surface-inverse`, `mono-*` in one-colour documents (invoices, consent PDFs). Keep the clear space and minimum sizes from the Prompt L construction sheet (recorded here when approved). One `Logo` per header; product lockups appear where the page is about that product, the master logo everywhere else.
 14. **Expressive accent palette** (approved with the home design; values in §3.1, tokens `category-*` in §3.2): Claude Design adds six category hues (Educație, Sănătate, Transport, Cumpărături & servicii, Spații verzi, Siguranță & liniște), each with 50/100/300/600/800 steps. Once approved, record them here as `--ps-<hue>-<step>` primitives and `category-<key>` / `category-<key>-surface` semantic tokens. They are for category icon tiles, map POIs, illustrations, marketing sections and category charts only; they never replace forest (physical), slate blue (online), lime (main action) or the status colours, and never carry status alone. Use colour at scale on public pages (forest, lime and blue sections), calmer in account, partner and admin.
 
 ## 6. Changing the design system
+
+**A Claude Design export wins over this file.** When a screen is copied from an export, its values are used one to one; anything this file does not have yet is added here and in `globals.css` in the same change (as was done for the home page). One-off values that appear once in a screen may stay as Tailwind arbitrary values in that screen.
+
 
 Adding a token or a shared component, or changing a value, is a design-system change: update this file, `src/styles/globals.css`, and note it for the Claude Design project so later batch designs use the same values. A one-off visual need in a single screen is solved with existing tokens, not a new one.

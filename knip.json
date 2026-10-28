@@ -3,13 +3,11 @@
   "entry": ["src/routes/**/*.tsx", "src/i18n/i18next.d.ts", "scripts/*.ts", "e2e/**/*.setup.ts"],
   "project": ["src/**/*.{ts,tsx}", "scripts/**/*.ts", "e2e/**/*.ts"],
   "ignore": ["src/lib/supabase/database.types.ts", "src/components/ui/**"],
-  "ignoreFiles": ["src/lib/utils.ts"],
   "ignoreDependencies": [
     "shadcn",
     "tw-animate-css",
     "tailwindcss",
     "@fontsource-variable/manrope",
-    "@fontsource-variable/bricolage-grotesque",
     "@fontsource-variable/sora"
   ]
 }

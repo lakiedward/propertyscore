@@ -3,7 +3,6 @@ import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MapFeatureCollection, MapMarkerItem, MapOverlay } from '@/components/map/map-canvas';
 import { boundsOf, type LngLat } from '@/components/map/map.config';
-import { ExampleLabel } from '@/components/feedback/example-label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatNumber } from '@/i18n/format';
@@ -208,25 +207,25 @@ export function ZoneMapExample() {
           }
         }}
         aria-label={t('smartCheck.map.layersLabel')}
-        className="w-fit flex-wrap gap-1 rounded-lg bg-on-inverse/10 p-1"
+        className="w-fit flex-wrap gap-1.5 rounded-full bg-on-inverse/8 p-1.25"
       >
         {LAYERS.map((option) => (
           <ToggleGroupItem
             key={option}
             value={option}
-            className="h-11 rounded-md px-4 text-label text-on-inverse hover:bg-on-inverse/10 hover:text-on-inverse data-[state=on]:bg-card data-[state=on]:text-info"
+            className="h-10 rounded-full px-4 text-small font-bold text-on-info-muted hover:bg-on-inverse/10 hover:text-on-inverse data-[state=on]:bg-card data-[state=on]:text-info-ink"
           >
             {t(`smartCheck.map.layers.${option}`)}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
-      <div className="relative aspect-square max-h-140 min-h-95 w-full overflow-hidden rounded-xl bg-surface-alt">
+      <div className="relative aspect-square max-h-155 min-h-95 w-full overflow-hidden rounded-2xl bg-info-ink-muted">
         {hasMapError ? (
           <p className="grid size-full place-items-center p-6 text-center text-small text-muted-foreground">
             {t('smartCheck.map.error')}
           </p>
         ) : (
-          <Suspense fallback={<Skeleton className="size-full rounded-xl" />}>
+          <Suspense fallback={<Skeleton className="size-full rounded-2xl" />}>
             <MapCanvas
               label={t('smartCheck.map.mapLabel')}
               center={ZONE_HOME}
@@ -241,40 +240,41 @@ export function ZoneMapExample() {
             />
           </Suspense>
         )}
-        <ExampleLabel label={t('smartCheck.map.exampleTag')} className="absolute top-3 left-3" />
       </div>
-      <ul className="flex flex-col gap-1.5 text-small text-on-inverse-muted" aria-live="polite">
+      <ul
+        className="flex flex-wrap gap-x-4.5 gap-y-2 text-caption text-on-info-muted"
+        aria-live="polite"
+      >
         {layer === 'walk'
           ? ZONE_ROUTES.map((route) => (
-              <li key={route.id} className="flex items-center gap-2">
+              <li key={route.id} className="flex items-center gap-1.75">
                 <span
                   aria-hidden
                   className={cn('size-2.5 rounded-full', CATEGORY_DOT_CLASS[toHue(route.category)])}
                 />
-                {t('smartCheck.map.walkItem', {
-                  name: route.name,
-                  minutes: route.minutes,
-                  meters: formatNumber(route.meters),
-                })}
+                {route.name}{' '}
+                <b className="font-bold text-on-inverse">
+                  {t('smartCheck.map.walkMinutes', { minutes: route.minutes })}
+                </b>
               </li>
             ))
           : layer === 'transit'
             ? TRANSIT_FACTS.map((key) => (
-                <li key={key} className="flex items-center gap-2">
+                <li key={key} className="flex items-center gap-1.75">
                   <span aria-hidden className="size-2.5 rounded-full bg-category-transport" />
                   {t(`smartCheck.map.${key}`)}
                 </li>
               ))
             : [
-                <li key="up" className="flex items-center gap-2">
+                <li key="up" className="flex items-center gap-1.75">
                   <span aria-hidden className="size-2.5 rounded-full bg-map-safety-up" />
                   {t('smartCheck.map.safetyUp')}
                 </li>,
-                <li key="down" className="flex items-center gap-2">
+                <li key="down" className="flex items-center gap-1.75">
                   <span aria-hidden className="size-2.5 rounded-full bg-map-safety-down" />
                   {t('smartCheck.map.safetyDown')}
                 </li>,
-                <li key="score" className="flex items-center gap-2">
+                <li key="score" className="flex items-center gap-1.75">
                   <span aria-hidden className="size-2.5 rounded-full bg-cta" />
                   {t('smartCheck.map.safetyScore', { score: ZONE_SAFETY_SCORE })}
                 </li>,

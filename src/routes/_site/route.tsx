@@ -25,13 +25,12 @@ function SiteLayout() {
       </a>
       <SiteHeader
         isSignedIn={Boolean(user)}
-        languageSwitcher={<LanguageSwitcher userId={userId} />}
         menuLanguageSwitcher={<LanguageSwitcher userId={userId} variant="segmented" />}
       />
       <main id="main" tabIndex={-1} className="flex-1 outline-none">
         <Outlet />
       </main>
-      <SiteFooter isSignedIn={Boolean(user)} />
+      <SiteFooter />
     </div>
   );
 }

@@ -4,8 +4,8 @@
   },
   "brand": {
     "core": "PropertyScore",
-    "physical": "PropertyScore Physical",
-    "smartcheck": "SmartCheck",
+    "physical": "Property Fizic",
+    "smartcheck": "Smart Check",
     "wordmark": {
       "core": {
         "lead": "Property",
@@ -13,7 +13,7 @@
       },
       "physical": {
         "lead": "Property",
-        "mark": "Physical"
+        "mark": "Fizic"
       },
       "smartcheck": {
         "lead": "Smart",
@@ -86,8 +86,8 @@
     "skipToContent": "Sari la conținut",
     "sections": {
       "label": "Secțiunile paginii",
-      "smartCheck": "SmartCheck",
-      "physical": "Inspecție fizică",
+      "smartCheck": "Smart Check",
+      "physical": "Property Fizic",
       "deliverables": "Ce primești",
       "listings": "Locuințe",
       "pricing": "Prețuri",
@@ -99,8 +99,8 @@
       "signIn": "Intră în cont",
       "account": "Contul meu",
       "publish": "Publică anunț gratuit",
-      "smartCheck": "Verifică o adresă cu SmartCheck",
-      "physical": "Programează inspecția PropertyScore Physical"
+      "smartCheck": "Verifică o adresă cu Smart Check",
+      "physical": "Programează inspecția Property Fizic"
     },
     "menu": {
       "label": "Meniu",
@@ -119,7 +119,7 @@
       "services": {
         "title": "Servicii PropertyScore",
         "physical": "Inspecție fizică",
-        "smartCheck": "SmartCheck · analiză online",
+        "smartCheck": "Smart Check · analiză online",
         "consultation": "Consultanță cu un expert",
         "pricing": "Prețuri",
         "priceFrom": "de la {{price}}"
@@ -138,7 +138,7 @@
       "services": {
         "title": "Servicii",
         "physical": "Inspecție fizică · {{price}}",
-        "smartCheck": "SmartCheck · {{price}}",
+        "smartCheck": "Smart Check · {{price}}",
         "deliverables": "Ce primești",
         "consultation": "Consultanță",
         "pricing": "Prețuri"
@@ -152,19 +152,25 @@
       },
       "account": {
         "title": "Cont",
-        "account": "Contul meu",
         "partner": "Devino partener",
-        "questions": "Întrebări frecvente"
+        "questions": "Întrebări frecvente",
+        "portal": "Portal parteneri"
       },
       "copyright": "© {{year}} PropertyScore · Timișoara, România",
       "contactLabel": "Contact",
-      "email": "contact@propertyscore.ro"
+      "email": "contact@propertyscore.ro",
+      "legalLabel": "Linkuri legale",
+      "legal": {
+        "terms": "Termeni",
+        "privacy": "Confidențialitate",
+        "cookies": "Cookie-uri"
+      }
     }
   },
   "trust": {
     "physical": "Verificat fizic de PropertyScore",
-    "smartcheck": "Scor SmartCheck {{score}} din 100",
-    "smartcheckShort": "SmartCheck",
+    "smartcheck": "Scor Smart Check {{score}} din 100",
+    "smartcheckShort": "Smart Check",
     "none": "Fără raport PropertyScore",
     "physicalShort": "Verificat fizic",
     "noneShort": "Fără raport"

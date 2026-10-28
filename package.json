@@ -28,7 +28,6 @@
     "db:types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts"
   },
   "dependencies": {
-    "@fontsource-variable/bricolage-grotesque": "5.3.0",
     "@fontsource-variable/manrope": "5.3.0",
     "@fontsource-variable/sora": "5.3.0",
     "@hookform/resolvers": "5.9.1",

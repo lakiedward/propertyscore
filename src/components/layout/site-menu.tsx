@@ -106,7 +106,12 @@ export function SiteMenu({ isSignedIn, languageSwitcher }: SiteMenuProps) {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t('site.header.openMenu')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-11 shrink-0 rounded-md border border-border-control text-brand hover:bg-surface-alt hover:text-brand"
+          aria-label={t('site.header.openMenu')}
+        >
           <MenuIcon aria-hidden />
         </Button>
       </SheetTrigger>

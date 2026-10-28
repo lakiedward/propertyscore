@@ -13,7 +13,7 @@ Which tokens and components exist, their values and their meaning are defined in
 
 - **Tailwind 4 utilities in `className`** for layout, spacing, typography, colour and radius. Configuration is CSS-first in `src/styles/globals.css` (`@import "tailwindcss"`, `@theme`, the tokens); no `tailwind.config.js` unless a plugin requires one.
 - **Colours only through semantic tokens** (`bg-background`, `text-foreground`, `text-muted-foreground`, `bg-primary`, `border-border`, `text-destructive`, and the PropertyScore tokens such as `bg-cta`, `text-brand`, `bg-trust-physical`, `text-data-declared`) defined as CSS variables in `globals.css` with the shadcn names plus the design-system additions. Never a raw hex, `rgb()` or Tailwind palette class (`text-gray-500`, `bg-blue-600`) in components; a new colour is a new token used in both themes.
-- **No arbitrary values for magic numbers** (`p-[13px]`, `w-[37%]`, `text-[0.7rem]`). Use the scale; when the design truly needs an off-scale value used more than once, add a token. Arbitrary values are allowed only for CSS-variable references and grid templates (`grid-cols-[9rem_1fr]`).
+- **No arbitrary values for magic numbers** (`p-[13px]`, `w-[37%]`, `text-[0.7rem]`). Use the scale; when the design truly needs an off-scale value used more than once, add a token. Arbitrary values are allowed for CSS-variable references, grid templates (`grid-cols-[9rem_1fr]`) and one-off values copied exactly from a design export (a single title size, weight or tracking that appears once).
 - **Merge classes with `cn()`** from `@/lib/utils` whenever a component accepts `className` or classes are conditional; never template-string concatenation. `@/lib/utils` registers the design-system font sizes, tracking and radii with the merger, so `text-caption` and `text-foreground` survive together; the shadcn CLI writes `import { cn } from 'cn'`, which is changed to `@/lib/utils` when a primitive is added.
 - **Variants with `cva`** (`class-variance-authority`) as the shadcn components do; never a chain of ternaries producing class strings.
 - **No `@apply`**, no CSS Modules, no inline `style` except for values computed at runtime (a progress width, a chart colour from data). When the same set of classes repeats, extract a component.
@@ -28,7 +28,7 @@ Which tokens and components exist, their values and their meaning are defined in
 
 ## Layout and responsiveness
 
-- Mobile first: base classes target phones, `sm:` 640, `md:` 768, `lg:` 1024, `xl:` 1280 add up. No custom breakpoints, no `max-*` variants except to undo a single case.
+- Mobile first: base classes target phones, `sm:` 640, `md:` 768, `lg:` 1024, `xl:` 1280 add up. Public pages copied from a design export use the design's breakpoints (`w480` … `w1180`, `design-system.md` §3.6); no other custom breakpoints, no `max-*` variants except to undo a single case.
 - No horizontal page scroll at 360px; wide tables scroll inside their own container.
 - Text containers wrap or truncate with `truncate` + `Tooltip`; never fixed widths on text-bearing elements (Romanian strings are longer).
 

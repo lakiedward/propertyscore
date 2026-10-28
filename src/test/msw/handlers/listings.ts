@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { buildListing } from '@/test/factories/listing';
 import { supabaseUrl } from '../supabase-url';
 
-export const SEEDED_LISTINGS = [
+const SEEDED_LISTINGS = [
   buildListing({ title: 'Apartament cu 3 camere', price: 125000, verification: 'physical' }),
   buildListing({ title: '3 camere cu balcon', verification: 'smartcheck', smartcheck_score: 74 }),
   buildListing({ title: '2 camere mobilat', transaction: 'rent', price: 450 }),

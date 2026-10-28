@@ -25,7 +25,7 @@ export type ZoneRoute = {
   path: LngLat[];
 };
 
-export type SafetyFactorId =
+type SafetyFactorId =
   | 'lighting'
   | 'police'
   | 'embassy'

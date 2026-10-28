@@ -5,18 +5,18 @@
   },
   "verification": {
     "physical": "Verificat fizic",
-    "smartcheck": "SmartCheck",
+    "smartcheck": "Smart Check",
     "none": "Fără raport"
   },
   "board": {
     "transactionLabel": "Tipul anunțurilor",
     "count": {
-      "sale_one": "{{count}} anunț de vânzare · {{city}}",
-      "sale_few": "{{count}} anunțuri de vânzare · {{city}}",
-      "sale_other": "{{count}} de anunțuri de vânzare · {{city}}",
-      "rent_one": "{{count}} anunț de închiriat · {{city}}",
-      "rent_few": "{{count}} anunțuri de închiriat · {{city}}",
-      "rent_other": "{{count}} de anunțuri de închiriat · {{city}}"
+      "sale_one": "{{count}} anunț de vânzare · {{city}} · exemple",
+      "sale_few": "{{count}} anunțuri de vânzare · {{city}} · exemple",
+      "sale_other": "{{count}} de anunțuri de vânzare · {{city}} · exemple",
+      "rent_one": "{{count}} anunț de închiriat · {{city}} · exemple",
+      "rent_few": "{{count}} anunțuri de închiriat · {{city}} · exemple",
+      "rent_other": "{{count}} de anunțuri de închiriat · {{city}} · exemple"
     },
     "mapLabel": "Harta anunțurilor",
     "listLabel": "Anunțuri",

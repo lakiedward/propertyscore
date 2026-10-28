@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Accordion as AccordionPrimitive } from 'radix-ui';
-import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { PlusIcon } from 'lucide-react';
 
 function Accordion({ className, ...props }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
   return (
@@ -38,19 +38,16 @@ function AccordionTrigger({
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
-          'group/accordion-trigger relative flex flex-1 items-start justify-between rounded-lg border border-transparent py-2.5 text-left text-sm font-medium transition-all outline-none hover:underline focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:after:border-ring disabled:pointer-events-none disabled:opacity-50 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4 **:data-[slot=accordion-trigger-icon]:text-muted-foreground',
+          'group/accordion-trigger relative flex min-h-touch flex-1 items-center justify-between gap-4 rounded-lg border border-transparent py-4 text-left text-label font-bold transition-all outline-none hover:text-brand focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:after:border-ring disabled:pointer-events-none disabled:opacity-50 aria-expanded:text-brand **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-5',
           className,
         )}
         {...props}
       >
         {children}
-        <ChevronDownIcon
+        <PlusIcon
           data-slot="accordion-trigger-icon"
-          className="pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden"
-        />
-        <ChevronUpIcon
-          data-slot="accordion-trigger-icon"
-          className="pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline"
+          aria-hidden
+          className="pointer-events-none shrink-0 text-brand transition-transform duration-(--duration-fast) group-aria-expanded/accordion-trigger:rotate-45"
         />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
@@ -70,7 +67,7 @@ function AccordionContent({
     >
       <div
         className={cn(
-          'h-(--radix-accordion-content-height) pt-0 pb-2.5 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4',
+          'h-(--radix-accordion-content-height) pt-0 pb-4 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4',
           className,
         )}
       >
