@@ -4,7 +4,7 @@
 
 React 19 single-page application for Property Score (TypeScript, Vite), with Supabase as the whole backend: Postgres, Auth, Storage and Edge Functions. There is no custom API server. Authenticated users manage and score properties on list, detail and form screens; mobile first, comfortable on desktop. The UI is **bilingual, Romanian (default) and English**: every visible string goes through i18next, and no feature merges with only one language.
 
-This file and the rule files in `.claude/rules/` are the operative coding rules and workflow. `SETUP_PLAN.md` is the decision record that explains *why* each choice was made and which alternatives were rejected. When a skill, a design mock or existing code disagrees with the rules, the rules win; when a rule turns out to be wrong, fix the rule and the matching section of `SETUP_PLAN.md` in the same change.
+`IMPLEMENTATION_PLAN.md` is the product specification: routes, page contents, user flows, data model, state machines, business rules and delivery phases. Check it before building any product feature. Build steps are implemented with the `/implement <step> <design>` skill, a selection of pages from the design (possibly spanning several steps) is planned and then built with `/plan-from-design <design> <pages>`, and progress is checked with `/plan-sync`; all three live in `.claude/skills/`. This file and the rule files in `.claude/rules/` are the operative coding rules and workflow. `SETUP_PLAN.md` is the decision record that explains *why* each choice was made and which alternatives were rejected. When a skill, a design mock or existing code disagrees with the rules, the rules win; when a rule turns out to be wrong, fix the rule and the matching section of `SETUP_PLAN.md` in the same change.
 
 ## Key rules
 
@@ -15,7 +15,7 @@ This file and the rule files in `.claude/rules/` are the operative coding rules 
 - **The schema changes only through migrations** in `supabase/migrations/`, followed by `pnpm db:types`. Never edit a hosted project in the dashboard, never hand-edit `database.types.ts`.
 - **Never write comments, in any file.** No explanatory comments, section headers, TODOs, commented-out code or JSDoc in TypeScript, TSX (`{/* */}`), CSS, SQL migrations and pgTAP tests, Edge Functions, scripts, JSON/JSONC, YAML, TOML, email templates or dotfiles such as `.gitignore`, `.env.example` and `.editorconfig`. Code and configuration must be self-documenting through names, types and small functions; explain in the conversation or the PR description instead. The only lines allowed in comment syntax are functional directives a tool reads (`/// <reference types="vite/client" />`, `// @ts-expect-error <reason>`, `// eslint-disable-next-line <rule> -- <reason>`, `// prettier-ignore`) and the headers of generated files (`src/routeTree.gen.ts`, `src/lib/supabase/database.types.ts`, shadcn files the CLI writes). SQL that needs a description for the database itself uses `comment on …`, which is data, not a comment.
 - **Do NOT create summary or changelog files** (no `CHANGES.md`, `SUMMARY.md`, etc.). Explain changes in the conversation.
-- **Do NOT run tests unless explicitly asked.** Never run `pnpm test`, `pnpm test:run`, `pnpm test:e2e` or `pnpm db:test` without a user request.
+- **Do NOT run tests unless explicitly asked.** Never run `pnpm test`, `pnpm test:run`, `pnpm test:e2e` or `pnpm db:test` without a user request. Approving an `/implement` proposal or a `/plan-from-design` plan counts as a request for `pnpm test:run` and `pnpm db:test` for the steps it covers; `pnpm test:e2e` still needs its own request.
 - **Keep the workspace clean.** No temporary files unless required for the implementation.
 - **Never guess or assume.** If you don't have enough information about an API, a value, a file location, a library behaviour or the user's intent, search the project first (grep, read more files, follow imports). For library questions read the current official docs (Supabase, TanStack, React, i18next, shadcn/ui); for the live database use the Supabase MCP server's read tools (`list_tables`, `get_advisors`, `search_docs`). If the answer is still unclear, ask the user. A confident-sounding guess is worse than admitting uncertainty.
 - **Do not add libraries.** Add a dependency only when a feature needs it, and record it under Tech stack below. Deliberately not installed: Next.js or any SSR framework, Redux / RTK / MobX, SWR, Axios, Formik, `react-intl` / Lingui, MUI / Ant / Chakra or any second component library, CSS-in-JS, `moment` / `dayjs`, Jest, Cypress, Enzyme, a second icon set, a second toast library. Zustand, `recharts` and `@tanstack/react-table` are pre-approved but added only when the first feature needs them.
@@ -31,6 +31,7 @@ The detailed rules live in `.claude/rules/` and load automatically when a matchi
 | `.claude/rules/supabase.md`  | migrations, RLS, Postgres functions, generated types, Storage, Edge Functions, auth email templates, pgTAP     | `supabase/**`, `src/lib/supabase/**`                                                                            |
 | `.claude/rules/i18n.md`      | Romanian and English translations, keys, plurals, formatting, diacritics                                       | `src/i18n/**`, `src/**/*.tsx`, `supabase/templates/**`, `scripts/check-translations.ts`                         |
 | `.claude/rules/styling.md`   | Tailwind 4, tokens, shadcn/ui, icons, fonts, responsive layout                                                 | `src/**/*.tsx`, `src/**/*.css`, `components.json`                                                               |
+| `.claude/rules/design-system.md` | PropertyScore design system: token values, density modes, component catalogue and where each lives, usage rules | `src/**/*.tsx`, `src/**/*.css`, `components.json`                                                               |
 | `.claude/rules/testing.md`   | Vitest, React Testing Library, MSW, factories                                                                  | `src/**/*.test.ts`, `src/**/*.test.tsx`, `src/test/**`, `vitest.config.ts`                                      |
 | `.claude/rules/e2e.md`       | the Playwright suite against the local Supabase stack                                                          | `e2e/**`, `playwright.config.ts`                                                                                |
 
@@ -46,7 +47,7 @@ Pin exact versions when installing (`pnpm add -E`) and record them here.
 - **Server state:** TanStack Query 5 (+ devtools in local only)
 - **Forms:** React Hook Form 7 + Zod 4 + `@hookform/resolvers`
 - **Backend client:** `@supabase/supabase-js` 2 typed with the generated `Database`; Supabase CLI for the local stack, migrations, type generation and pgTAP
-- **UI:** Tailwind CSS 4 (`@tailwindcss/vite`), shadcn/ui on Radix primitives (`radix-ui`), `class-variance-authority`, `cn` (shadcn's drop-in for `clsx` + `tailwind-merge`, re-exported from `@/lib/utils`), `tw-animate-css`, `lucide-react`, `sonner`, self-hosted fonts through `@fontsource-variable/geist` (with `latin-ext`)
+- **UI:** Tailwind CSS 4 (`@tailwindcss/vite`), shadcn/ui on Radix primitives (`radix-ui`), `class-variance-authority`, `cn` (shadcn's drop-in for `clsx` + `tailwind-merge`, re-exported from `@/lib/utils`), `tw-animate-css`, `lucide-react`, `sonner`, self-hosted fonts through `@fontsource-variable/geist` (with `latin-ext`); visual language from the PropertyScore design system (`.claude/rules/design-system.md`)
 - **i18n:** `i18next` + `react-i18next`, `date-fns` locales only for the date picker
 - **Monitoring:** `@sentry/react` + `@sentry/vite-plugin`
 - **Unit and component tests:** Vitest, React Testing Library, `@testing-library/user-event`, `@testing-library/jest-dom`, MSW 2
@@ -99,6 +100,7 @@ src/
 │   ├── <entity>.schemas.ts  <entity>.types.ts  <entity>.utils.ts
 │   └── index.ts
 ├── components/{ui/, layout/}    shadcn primitives; app shell, page header, empty states
+├── components/<group>/          shared design-system components used by more than one feature (brand, trust, property, report, map, media, forms, feedback, navigation)
 ├── lib/{supabase/{client.ts, database.types.ts, errors.ts}, errors.ts, logger.ts, utils.ts}
 ├── config/env.ts
 ├── i18n/{i18n.ts, i18next.d.ts, format.ts, locales/{ro,en}/<namespace>.json}
