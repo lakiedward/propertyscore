@@ -1,66 +1,87 @@
 # Resolving the selection
 
-The user names pages or parts in their own words. This turns them into a confirmed scope: screens, plan pages, build steps and what is deferred.
+The user names pages or parts in their own words. This turns them into a confirmed scope: the screens and sections to build, the shared pieces they need, and how links out of the selection are handled. The design is the specification; `IMPLEMENTATION_PLAN.md` is not consulted.
 
-## 1. Words to screens to pages
+## 1. Words to screens and sections
 
 | The user says | Resolve with |
 | --- | --- |
-| A URL or route (`/login`, `/check/result`) | `IMPLEMENTATION_PLAN.md` §3.7 route table, then the inventory screens mapped to it |
-| A page name ("home page", "pagina de login") | The inventory screen titles and headings, then §3.7 |
-| A flow ("booking an inspection", "the online report") | §4 flows: every page the flow passes through, in order |
-| A design batch ("batch B") | §10.2 screen list for the batch |
-| A component or section ("the header", "the score badge") | The inventory's shared components, then the design-system catalogue in `.claude/rules/design-system.md` §4 and the step that builds it (usually S1 or S3) |
-| A feature ("favourites", "partners") | §10.3 step goals, then the pages of that step in §10.6 |
+| A page name ("home page", "pagina de login") | The inventory screen titles and headings |
+| A URL or route (`/login`, `/check`) | The URL the export shows for the screen, then the route tree in `src/routes/` |
+| A section or component ("the header", "the pricing section", "the score badge") | The inventory sections and shared components, then the catalogue in `.claude/rules/design-system.md` §4 |
+| A flow ("booking an inspection") | The screens the export links in sequence for that flow, confirmed with the user |
+| "X, ignore the pages it links to" | Only the named screens; every link out becomes a row of §3 |
 
-A part the inventory marks `unsure`, a word that matches several pages, or a screen that is `not in plan` is shown to the user with the candidates and confirmed before planning.
+A word that matches several screens, or a screen the inventory could not identify with certainty, is shown to the user with the candidates and confirmed before planning.
 
-## 2. Pages to steps
+## 2. What the selection needs
 
-1. For every page, take its step(s) from §10.6. A page split across steps (`/` is S7 + S25, `/account` is S8 and S15) is split into **parts**: the sections each step owns, read from the step's entry in §10.3 and the page's §5 spec.
-2. Add components the selected screens use that a step owns but that do not exist yet (for example the site header from S3, `PropertyScoreBadge` from S1), found through the code report.
-3. For every step, follow §10.3 "Depends on" recursively, and read each step's §10.7 status and baseline commit.
+For every selected screen, list what it needs that does not exist yet, from the inventory and the code indexes (`gap-analysis.md` §3):
 
-## 3. Prerequisites and deferred parts
+- **Foundations**: the design-system tokens and fonts in `globals.css` (`design-system.md` §3) when they are not applied yet, and the catalogue components the screens render (`design-system.md` §4), built at the catalogue's location.
+- **Layouts**: the frame the screen sits in (site header, footer, mobile menu, language switch, account or admin shell), as drawn in the export. A layout is built only as far as the selected screens use it.
+- **Routes**: the file routes for the selected screens, and the layout routes above them.
+- **Languages**: Romanian and English for every selected screen, plus the language switch where the screen has a header or menu, even when the design draws one language (`requirements-analysis.md` §9).
+- **Data**: for every section that shows records the product stores, the backend that serves it (`requirements-analysis.md`). Nothing is deferred because another page will need it too; the data is built here, scoped to what the selected screens show and do.
 
-Plan rule 10.1.2: a page is built in the same step as, or after, the migration and RPCs it reads. No page is built on mock data.
+Content and data are told apart per section:
 
-For each prerequisite step that is not `done`, and each selected page section owned by a later step, the user chooses:
-
-| Option | When it fits | Effect on the plan |
+| The section shows | Treat as | Example |
 | --- | --- | --- |
-| **Include the prerequisite** (recommended when it is small or a foundation: S1, S2, S3) | The selected screen cannot work without it | Its pages, data and tests become plan steps before the selected ones |
-| **Build only what the prerequisite does not block** | The dependency covers a separable section | The section is deferred: not rendered until its step lands, listed under "Deferred" with the step it waits for |
-| **Narrow the selection** | The prerequisite chain is long (for example `/` listings carousel needs S22 to S25) | The selection drops that part; it is recorded for its step |
+| Marketing copy, explanations, steps, FAQ | copy: translation keys | "Trei pași. Raportul e gata în câteva minute." |
+| Content the design labels as an example or illustration of the product ("exemplu", "valori fictive", "imagine ilustrativă") | copy: translated static content, keeping the label | sample report scores 82/100 |
+| Records that vary per user, property or time (listings, stats, cities, prices of listed properties, a user's orders) | data: tables, queries, seed rows | the listings map and list |
+| Product prices and offers shown as fixed text | copy, unless the screen shows they are managed somewhere; ask when unclear | "Smart Check 30 lei" |
 
-Never stub data, fake a table in the frontend or hard-code content that the plan says comes from the database. A deferred section is absent, not faked. Purely static content (marketing copy, legal pages) is not data and needs no table unless §7 or §5 says it is managed in `/admin/content`.
+When it is unclear which row a section belongs to, ask before planning; never fake data with hard-coded records.
 
-Pages already `implemented` in the code (for example `/login` and `/sign-up` from scaffolding) are in scope only as a **restyle or extension**: the plan lists the visual and structural changes the design asks for and keeps the existing behaviour, tests and translation keys.
+## 3. Links out of the selection
+
+Every link and CTA on the selected screens whose target screen is not in the selection gets one row:
+
+| Element | Target in the design | Route exists | Handling |
+| --- | --- | --- | --- |
+| "Intră în cont" | Login | yes (`/login`) | `Link` to the existing route |
+| "Verifică o adresă" | Verifica v2 | no | one of the options below, chosen by the user |
+
+Options for a target with no route, presented in the plan as an open question with a recommendation:
+
+| Option | Effect |
+| --- | --- |
+| **In-page target** | Points to the section on the selected screen that explains the same thing (for example the pricing section), until the target screen is built |
+| **Hidden** | The element is not rendered until its screen exists |
+| **Minimal route** | A thin route with a translated "coming soon" state, so typed `Link`s work; listed as a route in the plan |
+
+Never a hand-built URL string or an `<a href>` to a route that does not exist. In-page anchors to sections of the same screen are fine.
 
 ## 4. Scope table
 
-Shown to the user before asking about prerequisites:
+Shown to the user before planning:
 
 ```
-| Part the user named | Design screen(s) | Plan page | Step | Step status | Code status | In scope as |
-| login | Autentificare (mobile, desktop) | /login | done | done | implemented | restyle |
-| home | Acasă | / hero, how it works, pricing teaser | S7 | not started | missing | build |
-| home | Acasă · listings carousel | / listings section | S25 | not started | missing | ask: defer or include S22–S25 |
+| Part the user named | Design screen · sections | Route | Code status | In scope as |
+| home | Home · hero, SmartCheck, inspection, package, listings, partners, pricing, FAQ | / | missing | build |
+| home | Home · header, menu drawer, footer | site layout | missing | build (layout) |
+| login | Login | /login | implemented | restyle |
 
-Prerequisites not done
-| Step | Why it is needed | Size | Recommendation |
-| S1 Design system | tokens and components every screen uses | medium | include |
-| S3 Routing skeleton | {-$locale} site layout, header, footer | medium | include |
+Needed by the selection
+| Piece | Kind | Status | Why |
+| design-system tokens and fonts | foundation | missing | every section |
+| TrustBadge, ScoreValue, Stepper | catalogue components | missing | listings legend, score tiles, steps |
+| listings, listing_photos, cities | data | missing | listings map and list |
 
-Open decisions the scope depends on
-| D1 URL language | affects every public route | recommendation: English segments |
+Links out of the selection
+| Element | Target | Route exists | Recommendation |
+| "Verifică o adresă" | Verifica v2 | no | in-page target #preturi |
 ```
+
+Screens already `implemented` in the code are in scope only as a **restyle or extension**: the plan lists the visual and structural changes the design asks for and keeps the existing behaviour, tests and translation keys.
 
 ## 5. Result
 
 The confirmed scope written at the top of the plan:
 
-- screens in scope, each with its plan page, the step and part that builds it, and `build`, `restyle` or `extend`;
-- prerequisite steps included, in §10.3 order;
-- deferred sections and narrowed parts, each with the step that will build it;
+- screens and sections in scope, each with its route and `build`, `restyle` or `extend`;
+- the foundations, layouts and data the selection needs;
+- links out of the selection and their handling;
 - decisions made in this phase, with the user's answer.

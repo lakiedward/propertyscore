@@ -1,6 +1,6 @@
 # Execution, verification and reporting
 
-Only after explicit approval of the proposal.
+Only after explicit approval of the proposal. `/plan-from-design` uses §1 to §5 for its approved plan, without slice 10, the §10.3 "Done when" walk-through (its plan has its own) and §6 recording.
 
 ## 1. Git
 

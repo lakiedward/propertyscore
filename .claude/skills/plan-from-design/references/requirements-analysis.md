@@ -1,10 +1,10 @@
 # Requirements analysis: from screens to schema, backend, auth and integrations
 
-The design says what a screen shows and lets people do. The plan says where the data lives and what the rules are. This reference turns both into concrete requirements, every item traceable to its source.
+The design says what a screen shows and lets people do. This reference turns that into concrete requirements (data, schema, backend, access, integrations), every item traceable to its source. `IMPLEMENTATION_PLAN.md` is not a source.
 
 ## 1. Sources and precedence
 
-Use the precedence in `.claude/skills/implement/references/gap-analysis.md` §1. In short: rules decide how, the design decides how it looks, the plan decides data, permissions and behaviour, and the code and local schema decide what already exists. A design element that needs data, permissions or behaviour the plan does not describe is **new from design** and needs the user's yes.
+The precedence table in this skill's `SKILL.md` (Sources): rules decide how, the selected screens decide what is shown and done, and the code and local schema decide what already exists. Data, permissions and business rules are derived from what the screens show and do. A rule the screens imply but do not settle (who may see a value, when a record expires, what a price depends on) is an open question for the user, never a guess.
 
 ## 2. Screen data inventory (from the design)
 
@@ -21,21 +21,21 @@ For every screen in scope, the design spec subagent lists:
 | Visibility | who sees the element (anonymous, owner, inspector, admin) | "Editează" only for the owner |
 | Static content | text that is copy, not data | hero headline → translation keys |
 
-Values that are clearly copy go to translations; values that vary per user, property or time are data.
+Values that are clearly copy go to translations; values that vary per user, property or time are data (`selection.md` §2 tells them apart). Content the design labels as an example stays copy and keeps its label.
 
 ## 3. Data requirements matrix
 
-Combine the inventory with the plan digest and the code report:
+Combine the inventory with the code report:
 
 ```
-| Screen | Element | Kind | Served by | Plan ref | Status | Note |
-| / | featured listings | list | listings (status = published), listing_photos | §7.7, S25 | in plan · deferred | |
-| /account/appointments | appointment status chip | displayed | appointments.status (enum appointment_status) | §7.6, §8.1 | in plan | |
-| /inspection/confirmation | "Adaugă în calendar" | action | client-side .ics from appointment fields | §5.2 [D] | new from design · UI only | no data |
-| /account | avatar | displayed | profiles.avatar_path + bucket avatars | — | new from design · needs data | ask |
+| Screen | Section · element | Kind | Served by | Design ref | Status | Note |
+| / | listings · map pins | list | listings (status = published), listing_locations | Home #proprietati | new | seeded with 12 listings |
+| / | listings · sale/rent toggle | input | search param transaction | Home #proprietati | new | |
+| / | SmartCheck · sample scores | displayed | copy, labelled "Valori de exemplu" | Home #smart-check | copy | |
+| /account | language | displayed | profiles.locale | Account header | exists | |
 ```
 
-Status values: `exists` (in the local schema and code), `in plan` (in §7 but not built), `new from design · UI only` (case 1 of `design-analysis.md` §6, no new data), `new from design · needs data` (case 2, needs a yes), `deferred` (owned by a later step).
+Status values: `exists` (in the local schema and code), `new` (built in this plan), `copy` (translation keys, no data).
 
 Served by is one of: `table.column`, a view, an RPC, an Edge Function, a Storage bucket, a computed value (and where it is computed), the auth session, or `copy`.
 
@@ -43,12 +43,12 @@ Served by is one of: `table.column`, a view, an RPC, an Edge Function, a Storage
 
 From the matrix, list every table the scope reads or writes and, for each one:
 
-1. **Reconcile with §7 and the migrations.** Start from the plan's table definition and what already exists. Never recreate an existing table; extend it with a new migration. Never edit a migration that is on `main`.
+1. **Reconcile with the migrations.** Start from what already exists and from the screens' data inventory. Never recreate an existing table; extend it with a new migration. Never edit a migration that is on `main`.
 2. **Columns**: name, type, nullability, default, `check`, `unique`, foreign key with `on delete` behaviour. Apply `.claude/rules/supabase.md`: `id`, `created_at`, `updated_at` and its trigger, `owner_id` for user-owned rows, money as `numeric(12, 2)` plus `currency`, enums with English codes, `unaccent` and trigram for searched text, `"ro-x-icu"` collation for sorted names.
 3. **Relationships**: cardinality and the owning side, with a short diagram when there are more than three tables.
 4. **Indexes**: every foreign key, every column a policy filters on, every column the screens filter or sort on (from the matrix).
-5. **RLS**: from the §7.12 matrix and the matrix's Visibility column, one policy per operation and role, named as an English sentence, with `using` and `with check`. Role checks go through `private` `security definer` helpers; roles come from the `user_role` claim. Columns the client must not write get column privileges or a trigger.
-6. **Functions and triggers**: multi-table writes, state transitions (§8) and calculations (§9) as Postgres functions with error codes; `security invoker` unless `definer` is required.
+5. **RLS**: from the matrix's Visibility column and the auth table of §6, one policy per operation and role, named as an English sentence, with `using` and `with check`. Role checks go through `private` `security definer` helpers; roles come from the `user_role` claim. Columns the client must not write get column privileges or a trigger.
+6. **Functions and triggers**: multi-table writes, state transitions and calculations the screens imply, as Postgres functions with error codes; `security invoker` unless `definer` is required.
 7. **Views**: only when a screen needs a read model that would otherwise need several queries; `security_invoker = true`.
 8. **Storage**: buckets, public or private, size limit, MIME types, object path pattern, `storage.objects` policies.
 9. **Seed**: the rows the screens need to be reviewed locally, with Romanian diacritics, for each test user and role.
@@ -59,8 +59,8 @@ From the matrix, list every table the scope reads or writes and, for each one:
 
 For each server-side behaviour the scope needs:
 
-| Behaviour | Where | Trigger | Rules enforced | Errors (codes) | Plan ref |
-| Book a slot | RPC `book_inspection_slot` | wizard submit | slot free, hold 15 min, state `pending_payment` | `slot_taken`, `slot_expired` | §7.14, §8.1 |
+| Behaviour | Where | Trigger | Rules enforced | Errors (codes) | Design ref |
+| Search listings in view | RPC `search_listings` | map moved, toggle changed | published only, transaction filter | `invalid_bbox` | Home #proprietati |
 
 Choose the place with `.claude/rules/supabase.md`: SQL functions for business rules and multi-table writes, Edge Functions only for third-party APIs with secrets, webhooks and secret-key work, `pg_cron` for timeouts. Frontend code never enforces a rule the database does not also enforce.
 
@@ -70,15 +70,15 @@ For each screen in scope:
 
 | Screen | Anonymous | Signed in | Owner | Inspector | Admin | Guard (`beforeLoad`) | RLS policies relied on |
 
-Plus: sign-in methods the screens use (password, email OTP, magic link, per §11 D5), redirects (§3.4), session handling (`.claude/rules/data-api.md`), email templates touched (`supabase/templates/`, both languages), and auth settings in `supabase/config.toml`.
+Plus: sign-in methods the screens use (password, email OTP, magic link), redirects, session handling (`.claude/rules/data-api.md`), email templates touched (`supabase/templates/`, both languages), and auth settings in `supabase/config.toml`.
 
 ## 7. Integrations
 
 For each third-party service the scope touches (payments, maps, geocoding, email, SMS, analytics, monitoring):
 
-| Service | Used for | Called from | Secret and where it lives | Webhook and its verification | Local testing | Failure behaviour | Plan ref |
+| Service | Used for | Called from | Secret and where it lives | Webhook and its verification | Local testing | Failure behaviour | Design ref |
 
-Secrets never reach a `VITE_` variable. An integration whose provider or account is not decided yet is an open question; a decision in §11 that blocks it is listed with the plan's recommendation.
+Secrets never reach a `VITE_` variable. An integration whose provider or account is not decided yet (a map tile provider, a geocoder) is an open question with options and a recommendation; a new dependency it needs is listed for approval and recorded in the `CLAUDE.md` Tech stack.
 
 ## 8. Design fidelity check
 
@@ -86,7 +86,25 @@ Used during execution after each screen, and again in verification:
 
 1. Open the running page in the in-app browser (`preview_start` with `property-score-dev`) and the matching design screen in a second tab (the normalised export file), both at 375 px and then 1440 px. For a screen whose mobile source is `derived` (`design-analysis.md` §8.5) there is nothing to compare at 375 px: check the page instead against the approved derived layout and the §8.5 patterns.
 2. Screenshot both and compare section by section: layout and order, spacing rhythm, type scale and weight, colours, radii, shadows, icons, copy, states.
-3. Every difference is one of: a bug to fix now; a design-system deviation already listed in the plan (keep the design-system version); a rule requirement (accessibility, translations, semantic structure); or a new difference to ask about.
+3. Repeat the comparison with the page in English: same layout, nothing cut off or overflowing, no untranslated string. Every difference is one of: a bug to fix now; a design-system deviation already listed in the plan (keep the design-system version); a rule requirement (accessibility, translations, semantic structure); or a new difference to ask about.
 4. Resize the running page through 360, 768, 1024 and 1440 px: no horizontal scroll, nothing overlapping or cut off, touch targets at `--touch-min`, and the layout switching at the spec's breakpoints.
 5. Check the screen's code against its markup mapping (`.claude/skills/implement/references/design-analysis.md` §8): every block became the mapped component, and nothing from the export survived (class names, `style` attributes, arbitrary pixel values, inline SVG icons, demo data, hardcoded text).
 6. Repeat until only listed, accepted differences remain. Keep the final pair of screenshots for the report.
+
+## 9. Languages (Romanian and English, always)
+
+Every screen is built bilingual, RO (default) and EN, even when the design is drawn in one language only, has no language switch, or shows the switch without wiring it. A plan that delivers one language is incomplete. Rules: `.claude/rules/i18n.md`.
+
+| Item | Requirement |
+| --- | --- |
+| Source language | The language the design is drawn in is the source; the other is written in the same change. Uncertain translations are listed in the plan and in the report, never left out or copied across |
+| Coverage | Every visible string, `aria-label`, `title`, `alt`, placeholder, toast, page title, validation and error message, and the design's example and illustrative content, as keys in both `ro` and `en` |
+| Language switch | Present on every screen in scope (header and, where the screen has one, the mobile menu), even if the design omits it: labels in their own language with `lang`, `changeLocale`, `localStorage`, `profiles.locale` when signed in, `<html lang>`. No language in the URL |
+| Formatting | Dates, numbers, prices and units through `@/i18n/format` (`ro-RO`, `en-GB`); the currency comes from the record or constant, never from the language |
+| Plurals and sentences | Counts with `count` and `_one` / `_few` / `_other` for Romanian; whole sentences with interpolation; links and emphasis inside sentences through `<Trans>` |
+| Enum and status labels | Translation keys by database code under the feature namespace |
+| Stored user content | Shown as entered, not translated (listing titles, addresses, descriptions); the plan says so for each such field |
+| Third-party text | Hidden English strings of shadcn/Radix primitives, map attribution and controls translated where the library allows |
+| Layout | Romanian runs 20–30% longer: no fixed widths on text; every screen checked in both languages at 375 and 1440 px |
+
+The plan's Languages section (`plan-template.md` §9) lists the namespaces, the source language, where the switch lives, the formatted values, the plurals, the stored fields shown untranslated, and the phrasings to review.

@@ -1,6 +1,6 @@
 # Plan template
 
-Fill every section; write "none" rather than deleting one. Tables and bullets, no prose padding. Mark each item **Required** (needed for the scope to work and for the "Done when" of its steps) or **Optional** (an improvement the user may decline). Every item cites its source: design screen, plan section (§), rule file, or code evidence (`file:line`).
+Fill every section; write "none" rather than deleting one. Tables and bullets, no prose padding. Mark each item **Required** (needed for the scope to work and for the "Done when" of its steps) or **Optional** (an improvement the user may decline). Every item cites its source: design screen and section, rule file, or code evidence (`file:line`). `IMPLEMENTATION_PLAN.md` is not a source.
 
 ```markdown
 # <Selection in plain words>: implementation plan
@@ -9,15 +9,15 @@ Design: <export name> · <hash short> · inventory and specs: .claude/design-cac
 Baseline: <commit> · branch: feat/<slug> · plan file: .claude/plans/<slug>/plan.md
 
 ## 1. Summary
-Three to five bullets: what will exist when this is done, which build steps it completes or advances, what is deferred, how many migrations, the decisions you must make.
+Three to five bullets: what will exist when this is done, the foundations and data it adds, how many migrations, how links out of the selection are handled, the decisions you must make.
 
 ## 2. Scope
 ### Screens
-| Screen | Plan page | Step / part | Build, restyle or extend | Design screen(s) | Mobile source (drawn / responsive css / derived) |
-### Prerequisites included
-| Step | Why | What it adds |
-### Deferred and narrowed
-| Section | Waits for step | Shown meanwhile as |
+| Screen · sections | Route | Build, restyle or extend | Design screen(s) | Mobile source (drawn / responsive css / derived) |
+### Needed by the selection
+| Piece | Kind (foundation / layout / route / data) | Status | Why |
+### Links out of the selection
+| Element | Target in the design | Route exists | Handling |
 ### Decisions already made
 | Decision | Answer | Asked in |
 
@@ -69,18 +69,20 @@ New tokens for `globals.css`; new catalogue entries for `design-system.md`.
 | Route | Guard | Search params | Loading | Empty | Error | Special states |
 ### Forms
 | Form | Zod schema | Fields | Server errors mapped |
-### Translations
+### Languages (Romanian and English, `requirements-analysis.md` §9)
+- Source language: <the design's>; written in this plan: <the other>
+- Language switch: <where, which variant>; persisted in `localStorage` and `profiles.locale` when signed in
 | Namespace | New keys (ro + en) | Plurals |
+| Formatted value | Formatter | RO example | EN example |
+| Stored field shown untranslated | Why |
+| Phrasing to review | RO | EN draft |
 ### New dependencies
 none / <name@exact-version>, reason, Tech stack entry
 
-## 10. Design, plan and code differences
-### Plan updates from the design (UI only, applied in this plan)
-### New functionality proposed by the design (needs your yes)
-### Recorded for other steps
-### Conflicts (your decision)
+## 10. Design, rules and code differences
 ### Design-system deviations (built the design-system way unless you approve)
-### Design gaps (built from the plan, including derived mobile layouts: stacking order, what collapses)
+### Rule requirements the design does not show (accessibility, translations, security)
+### Design gaps (states and layouts the screens need but do not draw, including derived mobile layouts: stacking order, what collapses)
 ### Diverged code (your decision)
 
 ## 11. Decisions
@@ -95,11 +97,10 @@ Numbered; each with options and a recommendation. All are answered before approv
 ## 14. Implementation steps
 One block per plan step, in order. Each block:
 
-### P1 · <name> (builds S<n> <part>)
-- Slices: database → schema checkpoint → Edge Functions → data access → translations → tokens and shared components → feature components → routes → tests → plan updates
+### P1 · <name>
+- Slices: database → schema checkpoint → Edge Functions → data access → translations → tokens and shared components → feature components → routes → tests
 - Files: created and changed, grouped by layer
-- Done when: the §10.3 checks for the part built, plus the screen's design fidelity check
-- §10.7 row afterwards: status and note
+- Done when: concrete checks for what this step builds (the screen renders its seeded data in RO and EN, a denied RLS case fails, …), plus the screen's design fidelity check
 
 ## 15. Validation
 - Commands: typecheck, lint, format:check, i18n:check, knip, db:lint, advisors, test:run, db:test, build
