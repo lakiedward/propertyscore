@@ -57,6 +57,22 @@ export function formatCurrency(amount: number, currency: Currency): string {
   return formatNumber(amount, { style: 'currency', currency });
 }
 
+const PRICE_CURRENCY_DISPLAY: Readonly<
+  Record<Locale, Intl.NumberFormatOptions['currencyDisplay']>
+> = {
+  ro: 'narrowSymbol',
+  en: 'symbol',
+};
+
+export function formatPrice(amount: number, currency: Currency): string {
+  return formatNumber(amount, {
+    style: 'currency',
+    currency,
+    currencyDisplay: PRICE_CURRENCY_DISPLAY[currentLocale()],
+    maximumFractionDigits: 0,
+  });
+}
+
 function separators(): { group: string; decimal: string } {
   const parts = new Intl.NumberFormat(formatLocale()).formatToParts(12_345.6);
   return {

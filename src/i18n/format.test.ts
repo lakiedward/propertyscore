@@ -4,6 +4,7 @@ import {
   formatDateTime,
   formatNumber,
   formatPercent,
+  formatPrice,
   formatRelative,
   parseLocaleNumber,
 } from './format';
@@ -28,6 +29,11 @@ describe('format', () => {
     it('formats money in the currency of the record', () => {
       expect(plain(formatCurrency(1250.5, 'EUR'))).toBe('1.250,50 EUR');
       expect(plain(formatCurrency(1250.5, 'RON'))).toBe('1.250,50 RON');
+    });
+
+    it('formats prices as whole amounts with the local currency symbol', () => {
+      expect(plain(formatPrice(125000, 'EUR'))).toBe('125.000 €');
+      expect(plain(formatPrice(500, 'RON'))).toBe('500 lei');
     });
 
     it('formats percentages', () => {
@@ -60,6 +66,11 @@ describe('format', () => {
   describe('in English', () => {
     beforeEach(async () => {
       await changeLocale('en');
+    });
+
+    it('formats prices as whole amounts with the currency symbol', () => {
+      expect(plain(formatPrice(125000, 'EUR'))).toBe('€125,000');
+      expect(plain(formatPrice(500, 'RON'))).toBe('RON 500');
     });
 
     it('formats numbers with a comma for thousands and a dot for decimals', () => {
