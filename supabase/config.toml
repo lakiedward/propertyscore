@@ -54,6 +54,12 @@ port = 54324
 enabled = true
 file_size_limit = "50MiB"
 
+[storage.buckets.listing-photos]
+public = true
+file_size_limit = "5MiB"
+allowed_mime_types = ["image/webp", "image/jpeg", "image/png"]
+objects_path = "./seed-storage/listing-photos"
+
 [storage.s3_protocol]
 enabled = true
 

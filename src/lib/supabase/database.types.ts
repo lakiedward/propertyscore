@@ -23,7 +23,21 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "profiles": {
+            "listings": {
+                  Row: {
+                    "area_m2": number,"city": string,"created_at": string,"currency": string,"id": string,"latitude": number,"longitude": number,"owner_id": string,"photo_path": string | null,"price": number,"published_at": string | null,"rooms": number,"smartcheck_score": number | null,"status": Database["public"]['Enums']["listing_status"],"street_label": string,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at": string,"verification": Database["public"]['Enums']["listing_verification"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "area_m2": number,"city": string,"created_at"?: string,"currency": string,"id"?: string,"latitude": number,"longitude": number,"owner_id"?: string,"photo_path"?: string | null,"price": number,"published_at"?: string | null,"rooms": number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label": string,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"verification"?: Database["public"]['Enums']["listing_verification"]
+                  }
+                  Update: {
+                    "area_m2"?: number,"city"?: string,"created_at"?: string,"currency"?: string,"id"?: string,"latitude"?: number,"longitude"?: number,"owner_id"?: string,"photo_path"?: string | null,"price"?: number,"published_at"?: string | null,"rooms"?: number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label"?: string,"title"?: string,"transaction"?: Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"verification"?: Database["public"]['Enums']["listing_verification"]
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"profiles": {
                   Row: {
                     "created_at": string,"id": string,"locale": string,"updated_at": string
                   }
@@ -46,7 +60,7 @@ export type Database = {
             [_ in never]: never
           }
           Enums: {
-            [_ in never]: never
+            "listing_status": "draft"|"published","listing_transaction": "sale"|"rent","listing_verification": "physical"|"smartcheck"|"none"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -166,7 +180,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            
+            "listing_status": ["draft", "published"],"listing_transaction": ["sale", "rent"],"listing_verification": ["physical", "smartcheck", "none"]
           }
         }
 } as const
