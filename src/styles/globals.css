@@ -492,6 +492,26 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@utility marker-cta {
+  background-image: linear-gradient(
+    transparent 62%,
+    var(--cta) 62%,
+    var(--cta) 92%,
+    transparent 92%
+  );
+  box-decoration-break: clone;
+}
+
+@utility marker-info {
+  background-image: linear-gradient(
+    transparent 62%,
+    var(--info-border) 62%,
+    var(--info-border) 92%,
+    transparent 92%
+  );
+  box-decoration-break: clone;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

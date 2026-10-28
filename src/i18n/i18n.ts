@@ -2,9 +2,11 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import enAuth from './locales/en/auth.json';
 import enCommon from './locales/en/common.json';
+import enHome from './locales/en/home.json';
 import enListings from './locales/en/listings.json';
 import roAuth from './locales/ro/auth.json';
 import roCommon from './locales/ro/common.json';
+import roHome from './locales/ro/home.json';
 import roListings from './locales/ro/listings.json';
 import { configureValidationMessages } from './validation';
 
@@ -15,8 +17,8 @@ const DEFAULT_LOCALE: Locale = 'ro';
 const LOCALE_STORAGE_KEY = 'locale';
 
 export const resources = {
-  ro: { common: roCommon, auth: roAuth, listings: roListings },
-  en: { common: enCommon, auth: enAuth, listings: enListings },
+  ro: { common: roCommon, auth: roAuth, listings: roListings, home: roHome },
+  en: { common: enCommon, auth: enAuth, listings: enListings, home: enHome },
 } as const;
 
 export function isLocale(value: unknown): value is Locale {
@@ -71,7 +73,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: DEFAULT_LOCALE,
   supportedLngs: SUPPORTED_LOCALES,
   defaultNS: 'common',
-  ns: ['common', 'auth', 'listings'],
+  ns: ['common', 'auth', 'listings', 'home'],
   interpolation: { escapeValue: false },
   initAsync: false,
 });

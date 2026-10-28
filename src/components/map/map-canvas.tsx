@@ -15,10 +15,28 @@ import { MAP_STYLE_URL, type LngLat, type LngLatBounds } from './map.config';
 
 setWorkerUrl(mapWorkerUrl);
 
+type MapGeometry =
+  { type: 'LineString'; coordinates: LngLat[] } | { type: 'Point'; coordinates: LngLat };
+
+export type MapFeatureCollection = {
+  type: 'FeatureCollection';
+  features: { type: 'Feature'; properties: Record<string, string>; geometry: MapGeometry }[];
+};
+
+export type MapOverlay = {
+  id: string;
+  data: MapFeatureCollection;
+  isVisible: boolean;
+} & (
+  | { kind: 'line'; colorToken: string; width: number; hasCasing?: boolean }
+  | { kind: 'circle'; colorToken: string; radius: number; opacity: number }
+);
+
 export type MapMarkerItem = {
   id: string;
   position: LngLat;
   node: ReactNode;
+  anchor?: 'bottom' | 'center' | 'left';
 };
 
 type MapCanvasProps = {
@@ -28,6 +46,7 @@ type MapCanvasProps = {
   bounds?: LngLatBounds | undefined;
   focus?: LngLat | undefined;
   markers: readonly MapMarkerItem[];
+  overlays?: readonly MapOverlay[];
   onError: () => void;
   className?: string;
 };
@@ -43,12 +62,14 @@ export function MapCanvas({
   bounds,
   focus,
   markers,
+  overlays = [],
   onError,
   className,
 }: MapCanvasProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<MapLibreMap>();
+  const [isStyleReady, setIsStyleReady] = useState(false);
   const reportError = useEffectEvent(() => {
     onError();
   });
@@ -88,6 +109,7 @@ export function MapCanvas({
       if (instance.getLayer('water')) {
         instance.setPaintProperty('water', 'fill-color', themeColor('--map-water'));
       }
+      setIsStyleReady(true);
     });
     instance.on('error', () => {
       if (!instance.isStyleLoaded()) {
@@ -103,8 +125,18 @@ export function MapCanvas({
       resizeObserver.disconnect();
       instance.remove();
       setMap(undefined);
+      setIsStyleReady(false);
     };
   }, [zoomInLabel, zoomOutLabel]);
+
+  useEffect(() => {
+    if (!map || !isStyleReady) {
+      return;
+    }
+    for (const overlay of overlays) {
+      applyOverlay(map, overlay);
+    }
+  }, [map, isStyleReady, overlays]);
 
   const fitToBounds = useEffectEvent((target: MapLibreMap) => {
     if (bounds) {
@@ -139,7 +171,12 @@ export function MapCanvas({
       <div ref={containerRef} className="size-full" />
       {map
         ? markers.map((marker) => (
-            <MapMarker key={marker.id} map={map} position={marker.position}>
+            <MapMarker
+              key={marker.id}
+              map={map}
+              position={marker.position}
+              anchor={marker.anchor ?? 'bottom'}
+            >
               {marker.node}
             </MapMarker>
           ))
@@ -148,24 +185,65 @@ export function MapCanvas({
   );
 }
 
+function applyOverlay(map: MapLibreMap, overlay: MapOverlay) {
+  const visibility = overlay.isVisible ? 'visible' : 'none';
+  if (!map.getSource(overlay.id)) {
+    map.addSource(overlay.id, { type: 'geojson', data: overlay.data });
+    const color = themeColor(overlay.colorToken);
+    if (overlay.kind === 'line') {
+      if (overlay.hasCasing) {
+        map.addLayer({
+          id: `${overlay.id}-casing`,
+          type: 'line',
+          source: overlay.id,
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: { 'line-color': themeColor('--card'), 'line-width': overlay.width + 4 },
+        });
+      }
+      map.addLayer({
+        id: overlay.id,
+        type: 'line',
+        source: overlay.id,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': color, 'line-width': overlay.width },
+      });
+    } else {
+      map.addLayer({
+        id: overlay.id,
+        type: 'circle',
+        source: overlay.id,
+        paint: {
+          'circle-color': color,
+          'circle-radius': overlay.radius,
+          'circle-opacity': overlay.opacity,
+        },
+      });
+    }
+  }
+  for (const layerId of [overlay.id, `${overlay.id}-casing`]) {
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, 'visibility', visibility);
+    }
+  }
+}
+
 type MapMarkerProps = {
   map: MapLibreMap;
   position: LngLat;
+  anchor: 'bottom' | 'center' | 'left';
   children: ReactNode;
 };
 
-function MapMarker({ map, position, children }: MapMarkerProps) {
+function MapMarker({ map, position, anchor, children }: MapMarkerProps) {
   const [element] = useState(() => document.createElement('div'));
   const [longitude, latitude] = position;
 
   useEffect(() => {
-    const marker = new Marker({ element, anchor: 'bottom' })
-      .setLngLat([longitude, latitude])
-      .addTo(map);
+    const marker = new Marker({ element, anchor }).setLngLat([longitude, latitude]).addTo(map);
     return () => {
       marker.remove();
     };
-  }, [map, element, longitude, latitude]);
+  }, [map, element, anchor, longitude, latitude]);
 
   return createPortal(children, element);
 }

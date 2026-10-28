@@ -1,0 +1,363 @@
+{
+  "pageTitle": "Inspecție fizică și analiză online a locuinței",
+  "examples": {
+    "label": "Exemplu",
+    "values": "Valori de exemplu, pentru previzualizare.",
+    "fictional": "Exemplu fictiv",
+    "illustrative": "Imagine ilustrativă"
+  },
+  "hero": {
+    "titleLead": "Cunoaște locuința.",
+    "titleAccent": "Înțelege zona.",
+    "lead": "PropertyScore verifică locuința după criterii clare și pune observațiile în contextul zonei și al pieței. Alegi inspecția la fața locului sau analiza online a adresei.",
+    "servicesLabel": "Cele două servicii PropertyScore",
+    "smartCheck": {
+      "name": "SmartCheck",
+      "strong": "Scor de siguranță, chirii și prețuri medii cerute.",
+      "text": "Șase capitole despre zonă, facilități și trasee pietonale, cu surse și date lipsă explicate.",
+      "action": "Vezi exemplul online"
+    },
+    "physical": {
+      "name": "PropertyScore Physical",
+      "included": "SmartCheck inclus în preț · raportul online de {{price}}",
+      "strong": "Verificări pe cinci capitole, scor explicat, constatări și recomandări.",
+      "text": "Cumpărătorul și vânzătorul primesc și contextul pieței. Fotografiile, planul și turul 360° completează raportul; pentru vânzător pregătim anunțul gratuit.",
+      "action": "Descoperă inspecția"
+    },
+    "note": "Cei {{smartCheckPrice}} sunt deja incluși în inspecția de {{physicalPrice}}.",
+    "imageAlt": "Living luminos, imagine ilustrativă pentru prezentarea serviciului",
+    "floatTitle": "Din vizită, într-un raport clar.",
+    "floatText": "Ce s-a observat în apartament, fotografii și contextul zonei."
+  },
+  "smartCheck": {
+    "titleLead": "Știi cum e zona.",
+    "titleAccent": "Înainte de vizionare.",
+    "chipsLabel": "Ce analizează raportul",
+    "categories": {
+      "safety": "Siguranță",
+      "city": "Oraș de 15 minute",
+      "transport": "Transport",
+      "green": "Spații verzi",
+      "education": "Educație",
+      "health": "Sănătate",
+      "shopping": "Cumpărături",
+      "prices": "Prețuri în zonă"
+    },
+    "leadStrong": "Introduci adresa sau linkul anunțului. Primești un raport online despre cartier:",
+    "lead": "siguranță, orașul de 15 minute, transport, spații verzi, școli, sănătate, magazine și prețurile cerute în jur. Fiecare cifră are sursa și data lângă ea.",
+    "price": {
+      "label": "SmartCheck, {{price}}, raport online",
+      "name": "SmartCheck",
+      "kind": "Raport online despre zonă",
+      "features": "8 scoruri · hartă de siguranță · prețuri în zonă",
+      "cta": "Verifică o adresă",
+      "example": "Vezi un raport exemplu"
+    },
+    "report": {
+      "title": "Ce primești în raport",
+      "text": "Un scor general și șapte scoruri despre zonă, plus prețurile cerute în jur. Fiecare vine cu explicația, sursele și data.",
+      "overallLabel": "Scor general SmartCheck",
+      "overallText": "Media celor șapte scoruri de zonă. În raport vezi cât a cântărit fiecare.",
+      "outOf": "din 100",
+      "scoreLabel": "{{score}} din 100",
+      "tiles": {
+        "safety": {
+          "name": "Siguranță și liniște",
+          "text": "Ce crește și ce scade siguranța, pe hartă."
+        },
+        "city": {
+          "name": "Oraș de 15 minute",
+          "text": "Câte nevoi zilnice rezolvi pe jos."
+        },
+        "transport": {
+          "name": "Transport",
+          "text": "Stații, linii și timpul până în oraș."
+        },
+        "green": {
+          "name": "Spații verzi",
+          "text": "Parcurile din jur și cât mergi până la ele."
+        },
+        "education": {
+          "name": "Educație",
+          "text": "Grădinițe, școli și licee la pas."
+        },
+        "health": {
+          "name": "Sănătate",
+          "text": "Farmacii, cabinete și cel mai apropiat spital."
+        },
+        "shopping": {
+          "name": "Cumpărături",
+          "text": "Magazine, piețe și servicii de cartier."
+        }
+      },
+      "pricesName": "Prețuri în zonă",
+      "pricesText": "Chiria și prețul cerute pentru locuințe asemănătoare.",
+      "pricesValue": "{{price}}/m²"
+    },
+    "map": {
+      "eyebrow": "În detaliu · Harta zonei",
+      "titleLead": "Vezi zona pe hartă.",
+      "titleAccent": "Drum cu drum.",
+      "text": "Traseele pe jos până la școală, stație, parc, farmacie și magazin, liniile de transport care trec pe lângă casă și harta de siguranță. La siguranță, fiecare element din OpenStreetMap crește sau scade scorul, iar cele mai îndepărtate contează mai puțin.",
+      "upTitle": "Cresc scorul",
+      "downTitle": "Scad scorul",
+      "factors": {
+        "lighting": "Iluminat stradal",
+        "police": "Secție de poliție",
+        "embassy": "Ambasade și instituții păzite",
+        "eveningShops": "Magazine deschise seara",
+        "mixedArea": "Zonă mixtă",
+        "nightBars": "Baruri deschise noaptea",
+        "abandoned": "Clădiri abandonate",
+        "unlit": "Străzi neiluminate",
+        "vacant": "Terenuri virane"
+      },
+      "layersLabel": "Ce arată harta",
+      "layers": {
+        "walk": "Trasee pe jos",
+        "transit": "Transport",
+        "safety": "Siguranță"
+      },
+      "mapLabel": "Harta zonei din jurul adresei de exemplu, Timișoara",
+      "exampleTag": "Exemplu · Timișoara",
+      "walkMinutes": "{{minutes}} min",
+      "walkItem": "{{name}}, {{minutes}} min pe jos ({{meters}} m)",
+      "transitStops": "3 stații în 400 m",
+      "transitLines": "6 linii de tramvai și autobuz",
+      "transitTime": "17 min în medie până în oraș",
+      "line": "Linia {{line}}",
+      "stopLines": "Linii {{lines}}",
+      "safetyUp": "Crește scorul",
+      "safetyDown": "Scade scorul",
+      "safetyScore": "Scor la adresă: {{score}} / 100",
+      "home": "Adresa de exemplu",
+      "error": "Harta nu s-a putut încărca. Legenda de mai jos arată aceleași informații.",
+      "safetyPoint": "{{factor}} · {{effect}}"
+    },
+    "steps": {
+      "titleLead": "Trei pași.",
+      "titleAccent": "Raportul e gata în câteva minute.",
+      "cta": "Verifică o adresă · {{price}}",
+      "items": {
+        "address": {
+          "title": "Introduci adresa sau linkul",
+          "text": "Orice locuință din oraș, de vânzare sau de închiriat."
+        },
+        "pin": {
+          "title": "Confirmi punctul pe hartă",
+          "text": "Adaugi camerele și suprafața, pentru comparații corecte."
+        },
+        "report": {
+          "title": "Primești raportul online",
+          "text": "Scorurile, harta zonei și întrebări pentru vizionare."
+        }
+      }
+    },
+    "crossSell": "Vrei să afli și starea locuinței? <strong>PropertyScore Physical</strong> include SmartCheck."
+  },
+  "physical": {
+    "titleLead": "Știi ce verificăm.",
+    "titleAccent": "Înțelegi ce înseamnă.",
+    "chipsLabel": "Ce verifică inspecția",
+    "chips": {
+      "building": "Clădire",
+      "apartment": "Apartament",
+      "systems": "Instalații",
+      "comfort": "Confort",
+      "risks": "Riscuri",
+      "media": "Foto, plan și tur 360°"
+    },
+    "leadStrong": "La vizită, un arhitect sau inspector parcurge cinci capitole de verificare: clădire, apartament, instalații, confort și riscuri.",
+    "lead": "Raportul explică scorul PropertyScore, observațiile, limitele verificării și pașii recomandați. Analiza online inclusă adaugă contextul zonei și reperele pieței.",
+    "price": {
+      "label": "PropertyScore Physical, {{price}}, SmartCheck inclus",
+      "name": "PropertyScore Physical",
+      "kind": "Inspecție la fața locului",
+      "included": "Include SmartCheck",
+      "cta": "Programează inspecția"
+    },
+    "explorer": {
+      "title": "Explorează ce verificăm.",
+      "hint": "Alege un capitol sau un punct de pe clădire.",
+      "navLabel": "Capitolele inspecției",
+      "pinsLabel": "Alege capitolul direct pe ilustrație",
+      "pinLabel": "Explorează capitolul {{chapter}}",
+      "sceneTag": "Ilustrație de explorat",
+      "imageAlt": "Ilustrație arhitecturală a unei clădiri cu un apartament deschis în secțiune, pentru explorarea capitolelor inspecției",
+      "imageNote": "Imagine ilustrativă, fără legătură cu o proprietate reală.",
+      "questionCount_one": "{{count}} întrebare urmărită",
+      "questionCount_few": "{{count}} întrebări urmărite",
+      "questionCount_other": "{{count}} de întrebări urmărite",
+      "limit": "Întrebările ghidează observația. Scorul și concluziile se explică în raport; elementele inaccesibile sau neverificate sunt marcate ca atare.",
+      "chapters": {
+        "building": {
+          "label": "Clădire",
+          "scene": "Clădire și acces",
+          "caption": "De la fațadă și spațiile comune, până la felul în care intri în clădire.",
+          "title": "Cum se prezintă clădirea și accesul?",
+          "questions": [
+            "Care este adresa verificată, tipul clădirii și câte niveluri are?",
+            "În ce stare vizibilă se află fațada?",
+            "Cum se prezintă scara, holurile și celelalte spații comune?",
+            "Există lift și cum se prezintă?",
+            "Există spații comerciale la parter?",
+            "Se simt mirosuri neplăcute pe scară?",
+            "Accesul este controlat prin interfon sau ușă securizată?",
+            "Există camere de supraveghere vizibile?"
+          ]
+        },
+        "apartment": {
+          "label": "Apartament",
+          "scene": "Spațiul în care locuiești",
+          "caption": "Compartimentarea, lumina și starea vizibilă a camerelor, privite împreună.",
+          "title": "Cum este organizat și întreținut apartamentul?",
+          "questions": [
+            "La ce etaj este, ce tip de locuință și ce tip de apartament este?",
+            "Se află sub terasă sau deasupra unor spații tehnice?",
+            "Care sunt orientarea principală și expunerea pe două laturi?",
+            "Ce suprafață utilă, înălțime liberă și compartimentare are?",
+            "Există balcon sau logie?",
+            "Cum arată pereții, tavanele și pardoselile accesibile?",
+            "Cum se închid ferestrele și ușile interioare și de intrare?",
+            "Cum se prezintă materialele și execuția finisajelor?"
+          ]
+        },
+        "systems": {
+          "label": "Instalații",
+          "scene": "Instalațiile accesibile",
+          "caption": "Electricitate, apă și încălzire: ce se poate observa și ce necesită verificări suplimentare.",
+          "title": "Ce se poate observa la instalațiile accesibile?",
+          "questions": [
+            "Cum se prezintă instalația electrică aparentă și tabloul electric vizibil?",
+            "Cum se prezintă instalația sanitară aparentă?",
+            "Cum pare presiunea apei la proba vizuală, dacă este posibilă?",
+            "Există aer condiționat și ce tip de încălzire este indicat?",
+            "Cum este distribuită încălzirea în locuință?",
+            "Există ventilație naturală în bucătărie și baie?"
+          ]
+        },
+        "comfort": {
+          "label": "Confort",
+          "scene": "Viața de zi cu zi",
+          "caption": "Zgomotul la vizită, traficul și locurile utile din apropierea locuinței.",
+          "title": "Cum se simte locuința și ce se află în apropiere?",
+          "questions": [
+            "Ce zgomot ambiental se aude în momentul vizitei?",
+            "Este locuința expusă la trafic intens?",
+            "Există un magazin alimentar în apropiere?",
+            "Există transport public, parc sau spațiu verde și unități de învățământ la cel mult 800 m?",
+            "Există spital sau clinică la cel mult 1 km?"
+          ]
+        },
+        "risks": {
+          "label": "Riscuri",
+          "scene": "Detaliile care cer atenție",
+          "caption": "Umezeală, mirosuri sau neconcordanțe care merită documentate și clarificate.",
+          "title": "Ce semnale cer atenție sau verificări suplimentare?",
+          "questions": [
+            "Există indicii vizibile de umezeală sau igrasie?",
+            "Sunt semne de cosmetizare recentă care merită clarificate?",
+            "Există neconcordanțe evidente între finisaje și instalațiile vizibile?",
+            "Se simt mirosuri neobișnuite în apartament sau sub chiuvetele accesibile?",
+            "Este accesul dificil sau sunt vizibile probleme de vecinătate?",
+            "Ce observații suplimentare notează inspectorul și ce nu a putut verifica?"
+          ]
+        }
+      }
+    },
+    "journey": {
+      "title": "Cum funcționează inspecția",
+      "roleLabel": "Alege rolul",
+      "roles": {
+        "buyer": "Sunt cumpărător",
+        "seller": "Sunt vânzător"
+      },
+      "serviceName": "Inspecție fizică · {{price}}",
+      "serviceText": "Pentru cumpărător și vânzător: vizită, raport fizic și online, fotografii, plan și tur 360°. Pentru vânzător, și anunț profesional gratuit.",
+      "buyer": [
+        {
+          "title": "Alegi locuința",
+          "text": "Pornești de la apartamentul pe care vrei să îl înțelegi mai bine."
+        },
+        {
+          "title": "Se confirmă accesul",
+          "text": "Vânzătorul confirmă vizita; inspectorul documentează locuința la fața locului."
+        },
+        {
+          "title": "Primești raportul, planul și 360°",
+          "text": "Cumpărătorul și vânzătorul primesc raportul fizic și online, fotografiile, planul și turul 360°, chiar dacă locuința nu este publicată pe site."
+        }
+      ],
+      "seller": [
+        {
+          "title": "Stabilești vizita",
+          "text": "Indici proprietatea și stabilești accesul pentru inspector."
+        },
+        {
+          "title": "Documentăm proprietatea",
+          "text": "Verificăm locuința, facem fotografii și imagini 360° în fiecare cameră și realizăm planul cu Polycam."
+        },
+        {
+          "title": "Primești raportul și anunțul",
+          "text": "Raportul fizic include tot raportul online. Pregătim gratuit anunțul; după confirmarea ta, apare în anunțuri și pe harta PropertyScore."
+        }
+      ]
+    },
+    "finding": {
+      "kicker": "Exemplu din raportul PropertyScore Physical",
+      "title": "Vezi cum arată o constatare reală",
+      "text": "Fereastră, umezeală sau instalații: observația, impactul, recomandarea și fotografiile.",
+      "open": "Deschide exemplul",
+      "close": "Închide exemplul",
+      "intro": "Un exemplu fictiv arată cum transformăm o verificare în observație, impact posibil, recomandare și fotografie asociată.",
+      "photoAlt": "Imagine ilustrativă cu o inspectoare care fotografiază rama unei ferestre în apartament",
+      "photoCaption": "Imagine ilustrativă a vizitei",
+      "eyebrow": "Din vizită, în raport",
+      "heading": "Exemplu de constatare din raport.",
+      "reportIntro": "Fiecare constatare arată metoda de verificare, observația, impactul posibil și intervenția recomandată.",
+      "tabsLabel": "Exemple de constatări",
+      "fields": {
+        "method": "Metodă de verificare",
+        "observation": "Constatare",
+        "impact": "Impact posibil",
+        "recommendation": "Recomandare",
+        "photos": "Documentare foto"
+      },
+      "examples": {
+        "windows": {
+          "tab": "Ferestre",
+          "status": "Remediere recomandată",
+          "ref": "F-01 · Living · fereastră",
+          "title": "Închidere neuniformă a ferestrei.",
+          "method": "Examinare vizuală și probă manuală de deschidere–închidere.",
+          "observation": "Partea mobilă atinge rama în colțul inferior, iar mânerul opune rezistență la închidere. Garnitura prezintă o porțiune desprinsă.",
+          "impact": "Posibilă reducere a etanșării și a confortului termic. Pierderile de aer nu au fost măsurate.",
+          "recommendation": "Verificarea și reglarea mecanismului de închidere de către un specialist în tâmplărie, remedierea garniturii și repetarea probei de închidere.",
+          "photos": "Fotografii de ansamblu și detaliu ale zonei de contact și ale garniturii, asociate constatării F-01."
+        },
+        "damp": {
+          "tab": "Umezeală",
+          "status": "Investigație recomandată",
+          "ref": "U-01 · Dormitor · perete exterior",
+          "title": "Urme de umezeală pe finisajul peretelui.",
+          "method": "Inspecție vizuală a suprafeței accesibile; fără măsurători de umiditate.",
+          "observation": "În colțul inferior al peretelui sunt vizibile o pată și desprinderi locale ale vopselei. Sursa și caracterul activ al umezelii nu sunt confirmate.",
+          "impact": "Finisajul este afectat local. Refacerea lui poate avea un rezultat temporar dacă sursa umezelii persistă.",
+          "recommendation": "Identificarea sursei prin verificări de specialitate și măsurători de umiditate, înainte de refacerea finisajului.",
+          "photos": "Fotografie de ansamblu pentru localizare și detalii ale petei și ale finisajului, asociate constatării U-01."
+        },
+        "systems": {
+          "tab": "Instalații",
+          "status": "Fără deficiențe vizibile",
+          "ref": "I-01 · Living · radiator",
+          "title": "Racorduri fără urme vizibile de scurgere.",
+          "method": "Examinare vizuală a radiatorului și a racordurilor accesibile. Instalația nu a fost pusă în funcțiune.",
+          "observation": "Nu se observă urme de apă, depuneri sau coroziune la îmbinările accesibile, în momentul vizitei.",
+          "impact": "Observația descrie starea vizibilă. Etanșeitatea sub presiune și funcționarea încălzirii rămân neconfirmate.",
+          "recommendation": "Probă de funcționare și verificarea racordurilor în regim de lucru de către personal de specialitate, înainte de confirmarea stării instalației.",
+          "photos": "Fotografie de ansamblu și detalii ale racordurilor accesibile, asociate constatării I-01."
+        }
+      }
+    }
+  }
+}
