@@ -1,6 +1,25 @@
 {
   "app": {
-    "name": "Property Score"
+    "name": "PropertyScore"
+  },
+  "brand": {
+    "core": "PropertyScore",
+    "physical": "PropertyScore Physical",
+    "smartcheck": "SmartCheck",
+    "wordmark": {
+      "core": {
+        "lead": "Property",
+        "mark": "Score"
+      },
+      "physical": {
+        "lead": "Property",
+        "mark": "Physical"
+      },
+      "smartcheck": {
+        "lead": "Smart",
+        "mark": "Check"
+      }
+    }
   },
   "actions": {
     "close": "Închide",
