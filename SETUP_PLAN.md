@@ -603,7 +603,7 @@ What this gives us:
 - **Icons**: `lucide-react` only.
 - **Responsive**: mobile-first with Tailwind's default breakpoints (`sm` 640, `md` 768, `lg` 1024, `xl` 1280). No custom breakpoint ladder.
 - **Dark mode**: tokens are defined for both themes from day one (shadcn does this), and the `dark` class goes on `<html>`. Whether we ship a theme toggle is a product decision.
-- **Self-host fonts** with `@fontsource/*`, including the `latin-ext` subset for Romanian ș/ț/ă/â/î; no Google Fonts requests at runtime.
+- **Self-host fonts** with `@fontsource/*`, including the `latin-ext` subset for Romanian ș/ț/ă/â/î; no Google Fonts requests at runtime. The fonts are the ones the Claude Design home export uses: Manrope (body, `--font-sans`), Bricolage Grotesque (headings, `--font-heading`) and Sora (brand wordmarks only, `--font-brand`), all variable `@fontsource-variable/*` packages. They replaced Geist, which was a placeholder until the design settled decision D15; Segoe UI, the design system's original stack, cannot be self-hosted.
 - **Charts** (score visualisations): add `recharts`, through shadcn's chart wrapper, only when the first chart is built.
 - `prettier-plugin-tailwindcss` sorts class names. Long class lists are fine. When the same set of classes repeats, extract a component, not an `@apply` class.
 

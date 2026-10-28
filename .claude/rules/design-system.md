@@ -25,7 +25,7 @@ Cream pages, forest-green brand and primary actions, a lime accent used sparingl
 
 ### 2.1 Brand family
 
-One master brand and two product sub-brands that share its symbol and wordmark (logos designed with Claude Design Prompt L in `CLAUDE_DESIGN_PLAN.md`; status **pending** until that prompt's result is approved and its SVGs are in the repository):
+One master brand and two product sub-brands that share its symbol and wordmark. The marks come from the Claude Design home export and live once in `src/components/brand/brand-marks.ts` (inline SVG paths, fills from tokens); the wordmark is text in `--font-brand` rendered only by `Logo` ("Property" 600 + boxed "Score" / "Physical" 800, "Smart" 500 + boxed "Check" 800). `public/favicon.svg` is the one static copy of the core mark:
 
 | Brand | Product | Colour world | Used for |
 | --- | --- | --- | --- |
@@ -50,7 +50,8 @@ One master brand and two product sub-brands that share its symbol and wordmark (
 | Amber | 50 `#FDF4DC` · 200 `#EED18A` · 400 `#E2AE3A` · 700 `#7A5200` |
 | Teal | 50 `#E6F2EA` · 200 `#B4D6BF` · 600 `#24704A` |
 | Grey | 100 `#ECEDE8` · 300 `#C9CEC6` · 500 `#7F8B83` |
-| Other | white `#FFFFFF` · scrim `rgba(11,48,38,.5)` · on-inverse muted `#C6D6CB` · placeholder `#7D8E83` |
+| Other | white `#FFFFFF` · scrim `rgba(11,48,38,.5)` · on-inverse muted `#C6D6CB` · placeholder `#7D8E83` · green highlight `#E4F0D2` · blue 800 `#223B49` |
+| Category hues (rule 14, approved with the home design) | sky 50 `#EDF6FC` · 100 `#D4EAF8` · 300 `#8CC6EC` · 600 `#1F6B9A` · 800 `#123F5E`; coral `#FDF1EC` · `#FADCCF` · `#F2A184` · `#9E4A22` · `#6E2A16`; sun `#FFF8DC` · `#FDEBA6` · `#F6C93E` · `#7E5F00` · `#4E3A00`; berry `#F9EFF5` · `#F0D7E7` · `#D69AC2` · `#8A356F` · `#561F45`; leaf `#F0F7E7` · `#DCEDC6` · `#A3D06F` · `#3F6E1B` · `#2B4A10`; aqua (the design's "teal", renamed to keep the status teal apart) `#E9F5F3` · `#CBE7E3` · `#7CC4BB` · `#1C6B67` · `#0F4341` |
 
 ### 3.2 Semantic colours (CSS variables in `:root`, exposed to Tailwind in `@theme inline` as `--color-<name>`)
 
@@ -96,6 +97,12 @@ PropertyScore additions:
 | `disabled`, `disabled-border`, `disabled-foreground` | grey 100, grey 300, grey 500 | disabled controls |
 | `scrim` | scrim | dialog and drawer overlay |
 | `focus-inverse` | lime 300 | focus ring on forest surfaces |
+| `brand-highlight` | `#E4F0D2` | the boxed "Score" in the PropertyScore wordmark |
+| `surface-online-inverse` | blue 800 `#223B49` | dark online sections (SmartCheck map band) |
+| `on-info-muted` | `#DCE6EC` | secondary text on `info` fills |
+| `info-hover`, `info-foreground` | blue 700, white | filled SmartCheck buttons and surfaces |
+| `map-safety-up`, `map-safety-down`, `map-water` | `#2E9C82`, `#D0583C`, `#C9D8E1` | safety factors and water on maps |
+| `category-<key>`, `-surface`, `-fill` | 600 / 100 / 300 of the category hues | keys `education` (sky), `health` (coral), `transport` (sun), `shopping` (berry), `green` (leaf), `safety` (aqua), `city` (blue) |
 
 Contrast notes from the source: red 600 is 5.9:1, amber 700 6.2:1 and teal 600 5.4:1 on cream; keep text colours to these tokens.
 
@@ -105,13 +112,14 @@ The design system ships light only. `styling.md` requires dark tokens from day o
 
 ### 3.4 Typography
 
-- **Font family:** the design system uses `"Segoe UI", Arial, sans-serif` (the deployed homepage's system stack). Segoe UI cannot be self-hosted and `styling.md` requires self-hosted fonts, so `--font-sans` stays `Geist Variable` (already installed, `latin-ext`) until decision D15 says otherwise. Mono: `Consolas, "SFMono-Regular", Menlo, monospace`, only for IDs and hashes.
+- **Font family:** `--font-sans` Manrope Variable (body and UI), `--font-heading` Bricolage Grotesque Variable (`h1`–`h4`, applied in the base layer), `--font-brand` Sora Variable (only inside the brand components), self-hosted with `latin-ext` (decision D15, settled by the home design). Mono: `Consolas, "SFMono-Regular", Menlo, monospace`, only for IDs and hashes.
 - **Weights:** 400 regular, 600 semibold, 700 bold, 800 heavy (headings, prices, scores).
 - **Roles** (Tailwind `--text-<role>` with `--text-<role>--line-height`, and matching `--tracking-<role>`):
 
 | Class | Size | Line height | Tracking | Weight |
 | --- | --- | --- | --- | --- |
-| `text-display` | `clamp(40px, 5.2vw, 64px)` | 1.03 | -0.035em | 800, `text-balance` |
+| `text-display` | `clamp(40px, 4.6vw, 68px)` | 1.04 | -0.045em | 800, `text-balance` |
+| `text-section` | `clamp(34px, 3.8vw, 56px)` | 1.08 | -0.035em | 800 (section titles on public pages) |
 | `text-h1` | `clamp(34px, 4vw, 48px)` | 1.08 | -0.03em | 800 |
 | `text-h2` | `clamp(28px, 3vw, 40px)` | 1.12 | -0.025em | 800 |
 | `text-h3` | 24px | 1.2 | -0.015em | 700 |
@@ -124,7 +132,8 @@ The design system ships light only. `styling.md` requires dark tokens from day o
 | `text-label` | 15px | 1.35 | — | 600 |
 | `text-price` | 28px (sm 20px, lg `clamp(28px, 4vw, 40px)`) | 1.1 | -0.02em | 800, tabular |
 | `text-score` | 44px (sm 20, md 32, xl 64) | 1 | -0.03em | 800, tabular |
-| eyebrow | 13px | — | 0.06em | 700, uppercase, `muted-foreground` |
+| `text-eyebrow` | 13px | 1.3 | 0.06em | 700, uppercase, `muted-foreground` |
+| `text-logo-sm/md/lg/xl` | 19 / 22 / 30 / 34px | 1 | `tracking-brand` −0.04em | brand components only |
 
 Numbers in prices, scores, tables and counters use `tabular-nums`. Body text never goes below 16px in the comfortable density.
 
@@ -139,10 +148,10 @@ Numbers in prices, scores, tables and counters use `tabular-nums`. Body text nev
 
 ### 3.6 Layout
 
-- Containers: narrow 760px (reports, forms), default 1180px, wide 1320px (map + list), with gutter `clamp(20px, 4vw, 40px)`.
-- Section spacing on public pages: `clamp(64px, 9vw, 112px)`.
+- Containers: `max-w-narrow` 760px (reports, forms), `max-w-default` 1180px, `max-w-wide` 1360px (map + list, public sections), with gutter `px-gutter` `clamp(20px, 4vw, 40px)`.
+- Section spacing on public pages: `py-section` `clamp(64px, 9vw, 112px)`.
 - 12-column grid, 24px gap.
-- Header height: 72px comfortable, 60px compact, 56px field. The header collapses into the menu below `lg` (1024px); other source breakpoints (960, 860, 720, 640, 560, 420) map to the nearest Tailwind breakpoint (`lg`, `md`, `sm`), mobile first.
+- Header height (`h-header`): 76px comfortable, 60px compact, 56px field. The header collapses into the menu below `lg` (1024px); other source breakpoints (960, 860, 720, 640, 560, 420) map to the nearest Tailwind breakpoint (`lg`, `md`, `sm`), mobile first.
 
 ### 3.7 Density modes
 
@@ -162,13 +171,13 @@ Build each component the first time a step needs it, at the location below, with
 
 | Design system component | Our implementation | Variants and notes |
 | --- | --- | --- |
-| **brand** (pending, Prompt L) | | |
+| **brand** | | |
 | Logo | `components/brand/logo.tsx` | `product` `core` · `physical` · `smartcheck`; `layout` `horizontal` (default) · `stacked` · `compact` (SmartCheck only: "SmartCheck" + "by PropertyScore"); `tone` `color` · `inverse` · `mono-forest` · `mono-white` · `mono-black`; sizes sm 24 · md 32 · lg 40 · xl 56 px high; inline SVG paths with fills from tokens (`fill-brand`, `fill-trust-physical-mark`, `fill-info`, `fill-on-inverse`), never hex; accessible name from `t('common:brand.<product>')`, `aria-hidden` when a visible name repeats it; links to home only inside `SiteHeader` |
 | BrandMark | `components/brand/brand-mark.tsx` | symbol only, same `product` and `tone`; sizes 16 · 20 · 24 · 32 · 48 · 64; `pulse` loading variant that stays static under reduced motion |
 | ProductTag | `components/brand/product-tag.tsx` on shadcn `badge` | `physical` (forest world, lime mark) · `smartcheck` (blue 50, blue 700 text, blue mark); with the product mark; for product names in cards, checkout lines, report and book headers, account and admin rows |
 | Static brand files | `public/brand/` | `favicon.svg`, `favicon.ico`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `og-core.png`, `og-physical.png`, `og-smartcheck.png`, `email-header-<product>.png`; exported names from Prompt L (`ps-<product>-<layout>-<tone>.svg`) become paths in the components above, not files under `public/` |
 | **actions** | | |
-| Button | `components/ui/button.tsx` (shadcn, extend its `cva`) | `default` (primary forest) · `cta` (lime) · `outline` (white, forest border = DS secondary) · `ghost` · `destructive` (danger) · `inverse` (white on forest); sizes `sm` 36, `default` 44, `lg` 52, `icon`; optional price pill (`rounded-full`, 16% white on dark, 10% forest on light); `loading` shows a spinner and sets `aria-busy`; press moves 1px down |
+| Button | `components/ui/button.tsx` (shadcn, extend its `cva`) | `default` (primary forest) · `cta` (lime) · `info` (filled blue, SmartCheck actions) · `outline` (white, forest border = DS secondary) · `ghost` · `destructive` (danger) · `inverse` (white on forest); `shape` `default` · `pill`; sizes `sm` 36, `default` 44, `lg` 52, `icon`; optional price pill (`rounded-full`, 16% white on dark, 10% forest on light); `loading` shows a spinner and sets `aria-busy`; press moves 1px down |
 | IconButton | `Button` with `size="icon"` | variants ghost, outline, default, `overlay` (white 94% + `shadow-sm`, on photos); `round` shape; pressed favourite turns `destructive` |
 | TextLink | `components/navigation/text-link.tsx` on the router `Link` | bold brand link, underline on hover, optional arrow that moves 3px; `inline` underlined variant; `inverse` tone |
 | Icon | `lucide-react` directly | DS icon `i_tram_front` = `TramFront`; no wrapper, no second set |
@@ -247,7 +256,7 @@ The `ui_kits` in the export (Home, Booking, Listing, MapList, Report, Dashboard,
 11. **Density** comes from the shell (`data-density`), never from per-component overrides.
 12. **Gradients, tints and patterns** are built only from design-system colours (for example `from-primary to-primary-hover`, cream → mist), used sparingly; the hexagon-grid pattern is an SVG in `currentColor` at low opacity. Additions approved from Claude Design's visual language board (patterns, illustration set, motion specs) are recorded in this file before use.
 13. **Logos only through the brand components.** Every PropertyScore, Physical or SmartCheck logo, mark or product name badge is a `Logo`, `BrandMark` or `ProductTag`; never retype the wordmark in text, recolour it outside its tones, stretch, rotate or outline it, or place it on a photo without a solid panel. Physical lockups and tags use only the forest/lime world, SmartCheck only the blue world, matching rule 2. Use `inverse` on `surface-inverse`, `mono-*` in one-colour documents (invoices, consent PDFs). Keep the clear space and minimum sizes from the Prompt L construction sheet (recorded here when approved). One `Logo` per header; product lockups appear where the page is about that product, the master logo everywhere else.
-14. **Expressive accent palette** (pending): Claude Design adds six category hues (Educație, Sănătate, Transport, Cumpărături & servicii, Spații verzi, Siguranță & liniște), each with 50/100/300/600/800 steps. Once approved, record them here as `--ps-<hue>-<step>` primitives and `category-<key>` / `category-<key>-surface` semantic tokens. They are for category icon tiles, map POIs, illustrations, marketing sections and category charts only; they never replace forest (physical), slate blue (online), lime (main action) or the status colours, and never carry status alone. Use colour at scale on public pages (forest, lime and blue sections), calmer in account, partner and admin.
+14. **Expressive accent palette** (approved with the home design; values in §3.1, tokens `category-*` in §3.2): Claude Design adds six category hues (Educație, Sănătate, Transport, Cumpărături & servicii, Spații verzi, Siguranță & liniște), each with 50/100/300/600/800 steps. Once approved, record them here as `--ps-<hue>-<step>` primitives and `category-<key>` / `category-<key>-surface` semantic tokens. They are for category icon tiles, map POIs, illustrations, marketing sections and category charts only; they never replace forest (physical), slate blue (online), lime (main action) or the status colours, and never carry status alone. Use colour at scale on public pages (forest, lime and blue sections), calmer in account, partner and admin.
 
 ## 6. Changing the design system
 

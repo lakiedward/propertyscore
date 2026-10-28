@@ -19,6 +19,7 @@ export default defineConfig([
     'playwright-report',
     'test-results',
     'supabase',
+    '.claude',
     'src/routeTree.gen.ts',
     'src/lib/supabase/database.types.ts',
   ]),

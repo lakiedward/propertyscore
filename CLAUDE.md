@@ -47,7 +47,7 @@ Pin exact versions when installing (`pnpm add -E`) and record them here.
 - **Server state:** TanStack Query 5 (+ devtools in local only)
 - **Forms:** React Hook Form 7 + Zod 4 + `@hookform/resolvers`
 - **Backend client:** `@supabase/supabase-js` 2 typed with the generated `Database`; Supabase CLI for the local stack, migrations, type generation and pgTAP
-- **UI:** Tailwind CSS 4 (`@tailwindcss/vite`), shadcn/ui on Radix primitives (`radix-ui`), `class-variance-authority`, `cn` (shadcn's drop-in for `clsx` + `tailwind-merge`, re-exported from `@/lib/utils`), `tw-animate-css`, `lucide-react`, `sonner`, self-hosted fonts through `@fontsource-variable/geist` (with `latin-ext`); visual language from the PropertyScore design system (`.claude/rules/design-system.md`)
+- **UI:** Tailwind CSS 4 (`@tailwindcss/vite`), shadcn/ui on Radix primitives (`radix-ui`), `class-variance-authority`, `cn` (shadcn's drop-in for `clsx` + `tailwind-merge`, re-exported from `@/lib/utils`), `tw-animate-css`, `lucide-react`, `sonner`, self-hosted fonts through `@fontsource-variable/manrope` 5.3.0 (body), `@fontsource-variable/bricolage-grotesque` 5.3.0 (headings) and `@fontsource-variable/sora` 5.3.0 (brand wordmarks), each with `latin-ext`; visual language from the PropertyScore design system (`.claude/rules/design-system.md`)
 - **i18n:** `i18next` + `react-i18next`, `date-fns` locales only for the date picker
 - **Monitoring:** `@sentry/react` + `@sentry/vite-plugin`
 - **Unit and component tests:** Vitest, React Testing Library, `@testing-library/user-event`, `@testing-library/jest-dom`, MSW 2
@@ -61,7 +61,7 @@ Pin exact versions when installing (`pnpm add -E`) and record them here.
 Scaffolding from `SETUP_PLAN.md` section 25 is done through step 9:
 
 - Vite + React + TypeScript project, Node 24 (`.nvmrc`), all core packages from the Tech stack.
-- shadcn primitives in `src/components/ui/` (`alert`, `button`, `card`, `dialog`, `dropdown-menu`, `field`, `input`, `label`, `separator`, `skeleton`, `sonner`) and the layout components in `src/components/layout/`.
+- shadcn primitives in `src/components/ui/` (`accordion`, `alert`, `badge`, `button` with the design-system variants, `card`, `collapsible`, `dialog`, `dropdown-menu`, `field`, `input`, `label`, `separator`, `sheet`, `skeleton`, `slider`, `sonner`, `table`, `tabs`, `toggle`, `toggle-group`), the design-system tokens and fonts in `globals.css`, the brand components in `src/components/brand/` and the layout components in `src/components/layout/`.
 - Supabase: first migration `create_profiles` (with `locale`, the sign-up trigger, `unaccent`, RLS), pgTAP tests, `seed.sql` with the three test users, generated `database.types.ts`, bilingual auth email templates for `confirmation`, `recovery` and `email_change`.
 - App wiring: `config/env.ts`, the Supabase client and error mapping, `AppError`, `logger`, Sentry, the query client, the router with `_public` (login, sign-up) and `_authenticated` (guard + app shell) route groups.
 - Features: `auth` (sign-in, sign-up, sign-out, `useAuth`) and `profile` (locale sync, language switcher).
