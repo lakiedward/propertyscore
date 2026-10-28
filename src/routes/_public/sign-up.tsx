@@ -6,7 +6,7 @@ import { pageTitle } from '@/i18n/page-title';
 export const Route = createFileRoute('/_public/sign-up')({
   beforeLoad: ({ context }) => {
     if (context.auth.session) {
-      throw redirect({ to: '/' });
+      throw redirect({ to: '/account' });
     }
   },
   head: () => ({ meta: [{ title: pageTitle(i18n.t('auth:signUp.pageTitle')) }] }),

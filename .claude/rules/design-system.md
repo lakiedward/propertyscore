@@ -151,7 +151,7 @@ Numbers in prices, scores, tables and counters use `tabular-nums`. Body text nev
 - Containers: `max-w-narrow` 760px (reports, forms), `max-w-default` 1180px, `max-w-wide` 1360px (map + list, public sections), with gutter `px-gutter` `clamp(20px, 4vw, 40px)`.
 - Section spacing on public pages: `py-section` `clamp(64px, 9vw, 112px)`.
 - 12-column grid, 24px gap.
-- Header height (`h-header`): 76px comfortable, 60px compact, 56px field. The header collapses into the menu below `lg` (1024px); other source breakpoints (960, 860, 720, 640, 560, 420) map to the nearest Tailwind breakpoint (`lg`, `md`, `sm`), mobile first.
+- Header height (`h-header`): 76px comfortable, 60px compact, 56px field. The public site header shows its section links from `xl` (1280px) and collapses them into the menu below (at `lg` the six links do not fit beside the actions); app shells collapse below `lg`; other source breakpoints (960, 860, 720, 640, 560, 420) map to the nearest Tailwind breakpoint (`lg`, `md`, `sm`), mobile first.
 
 ### 3.7 Density modes
 

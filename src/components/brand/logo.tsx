@@ -7,6 +7,7 @@ import type { BrandProduct, BrandTone } from './brand-marks';
 const logoVariants = cva('inline-flex items-center font-brand leading-none whitespace-nowrap', {
   variants: {
     size: {
+      xs: 'gap-1 text-logo-xs',
       sm: 'gap-1.5 text-logo-sm',
       md: 'gap-1.5 text-logo-md',
       lg: 'gap-3 text-logo-lg',
@@ -18,7 +19,7 @@ const logoVariants = cva('inline-flex items-center font-brand leading-none white
   },
 });
 
-const MARK_SIZE = { sm: 28, md: 34, lg: 44, xl: 52 } as const;
+const MARK_SIZE = { xs: 20, sm: 28, md: 34, lg: 44, xl: 52 } as const;
 
 const leadVariants = cva('tracking-brand', {
   variants: {

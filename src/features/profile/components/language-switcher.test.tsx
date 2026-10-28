@@ -39,4 +39,13 @@ describe('LanguageSwitcher', () => {
       expect(updates).toEqual([{ locale: 'en' }]);
     });
   });
+
+  it('switches language from the segmented control', async () => {
+    const { user } = await renderWithProviders(<LanguageSwitcher variant="segmented" />);
+
+    await user.click(screen.getByRole('radio', { name: enCommon.language.en }));
+
+    expect(await screen.findByRole('radio', { name: enCommon.language.en })).toBeChecked();
+    expect(document.documentElement.lang).toBe('en');
+  });
 });

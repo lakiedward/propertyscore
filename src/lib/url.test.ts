@@ -6,9 +6,9 @@ describe('safeRedirectPath', () => {
   });
 
   it.each([undefined, '', 'https://evil.test', '//evil.test', '/\\evil.test', 'properties'])(
-    'falls back to the home page for %s',
+    'falls back to the account page for %s',
     (value) => {
-      expect(safeRedirectPath(value)).toBe('/');
+      expect(safeRedirectPath(value)).toBe('/account');
     },
   );
 });

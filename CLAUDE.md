@@ -63,7 +63,7 @@ Scaffolding from `SETUP_PLAN.md` section 25 is done through step 9:
 - Vite + React + TypeScript project, Node 24 (`.nvmrc`), all core packages from the Tech stack.
 - shadcn primitives in `src/components/ui/` (`accordion`, `alert`, `badge`, `button` with the design-system variants, `card`, `collapsible`, `dialog`, `dropdown-menu`, `field`, `input`, `label`, `separator`, `sheet`, `skeleton`, `slider`, `sonner`, `table`, `tabs`, `toggle`, `toggle-group`), the design-system tokens and fonts in `globals.css`, the brand components in `src/components/brand/` and the layout components in `src/components/layout/`.
 - Supabase: first migration `create_profiles` (with `locale`, the sign-up trigger, `unaccent`, RLS), pgTAP tests, `seed.sql` with the three test users, generated `database.types.ts`, bilingual auth email templates for `confirmation`, `recovery` and `email_change`.
-- App wiring: `config/env.ts`, the Supabase client and error mapping, `AppError`, `logger`, Sentry, the query client, the router with `_public` (login, sign-up) and `_authenticated` (guard + app shell) route groups.
+- App wiring: `config/env.ts`, the Supabase client and error mapping, `AppError`, `logger`, Sentry, the query client, the router with `_site` (public home in the site layout), `_public` (login, sign-up) and `_authenticated` (guard + app shell, account page at `/account`) route groups.
 - Features: `auth` (sign-in, sign-up, sign-out, `useAuth`) and `profile` (locale sync, language switcher).
 - i18n: `common` and `auth` namespaces in `ro` and `en`, typed keys, `format.ts`, translated Zod messages.
 - Tooling: ESLint, Prettier, EditorConfig, Vitest + RTL + MSW, Playwright, Knip, lefthook, `scripts/check-translations.ts`, and the `ci.yml` / `deploy-db.yml` workflows.
@@ -91,6 +91,7 @@ src/
 ├── app/{app.tsx, router.ts, query-client.ts}
 ├── routes/                      TanStack Router file routes, thin
 │   ├── __root.tsx
+│   ├── _site/                   public pages for everyone (home, marketing) in the site layout
 │   ├── _public/                 login, sign-up, password reset, auth callback
 │   └── _authenticated/route.tsx guard + app shell; feature routes below it
 ├── features/<feature>/
