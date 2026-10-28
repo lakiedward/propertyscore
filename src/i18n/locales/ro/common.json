@@ -160,5 +160,18 @@
       "contactLabel": "Contact",
       "email": "contact@propertyscore.ro"
     }
+  },
+  "trust": {
+    "physical": "Verificat fizic de PropertyScore",
+    "smartcheck": "Scor SmartCheck {{score}} din 100",
+    "smartcheckShort": "SmartCheck",
+    "none": "Fără raport PropertyScore",
+    "physicalShort": "Verificat fizic",
+    "noneShort": "Fără raport"
+  },
+  "map": {
+    "attribution": "© OpenFreeMap © OpenMapTiles © OpenStreetMap",
+    "zoomIn": "Mărește",
+    "zoomOut": "Micșorează"
   }
 }

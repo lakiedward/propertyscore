@@ -48,6 +48,7 @@ Pin exact versions when installing (`pnpm add -E`) and record them here.
 - **Forms:** React Hook Form 7 + Zod 4 + `@hookform/resolvers`
 - **Backend client:** `@supabase/supabase-js` 2 typed with the generated `Database`; Supabase CLI for the local stack, migrations, type generation and pgTAP
 - **UI:** Tailwind CSS 4 (`@tailwindcss/vite`), shadcn/ui on Radix primitives (`radix-ui`), `class-variance-authority`, `cn` (shadcn's drop-in for `clsx` + `tailwind-merge`, re-exported from `@/lib/utils`), `tw-animate-css`, `lucide-react`, `sonner`, self-hosted fonts through `@fontsource-variable/manrope` 5.3.0 (body), `@fontsource-variable/bricolage-grotesque` 5.3.0 (headings) and `@fontsource-variable/sora` 5.3.0 (brand wordmarks), each with `latin-ext`; visual language from the PropertyScore design system (`.claude/rules/design-system.md`)
+- **Maps:** `maplibre-gl` 6.14.0 with OpenFreeMap vector tiles (`tiles.openfreemap.org`, no key), loaded lazily through `components/map/map-canvas.tsx`, worker set with `setWorkerUrl` and Vite's `?worker&url`
 - **i18n:** `i18next` + `react-i18next`, `date-fns` locales only for the date picker
 - **Monitoring:** `@sentry/react` + `@sentry/vite-plugin`
 - **Unit and component tests:** Vitest, React Testing Library, `@testing-library/user-event`, `@testing-library/jest-dom`, MSW 2

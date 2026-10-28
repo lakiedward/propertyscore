@@ -1,0 +1,43 @@
+{
+  "transaction": {
+    "sale": "De cumpărat",
+    "rent": "De închiriat"
+  },
+  "verification": {
+    "physical": "Verificat fizic",
+    "smartcheck": "SmartCheck",
+    "none": "Fără raport"
+  },
+  "board": {
+    "transactionLabel": "Tipul anunțurilor",
+    "count": {
+      "sale_one": "{{count}} anunț de vânzare · {{city}}",
+      "sale_few": "{{count}} anunțuri de vânzare · {{city}}",
+      "sale_other": "{{count}} de anunțuri de vânzare · {{city}}",
+      "rent_one": "{{count}} anunț de închiriat · {{city}}",
+      "rent_few": "{{count}} anunțuri de închiriat · {{city}}",
+      "rent_other": "{{count}} de anunțuri de închiriat · {{city}}"
+    },
+    "mapLabel": "Harta anunțurilor",
+    "listLabel": "Anunțuri",
+    "empty": {
+      "title": "Nu sunt anunțuri acum",
+      "description": "Revino curând sau publică tu primul anunț, gratuit."
+    },
+    "error": {
+      "title": "Anunțurile nu s-au încărcat",
+      "description": "Verifică conexiunea și încearcă din nou."
+    },
+    "mapError": "Harta nu s-a putut încărca. Lista anunțurilor rămâne disponibilă."
+  },
+  "card": {
+    "rooms_one": "{{count}} cameră",
+    "rooms_few": "{{count}} camere",
+    "rooms_other": "{{count}} de camere",
+    "area": "{{area}} m²",
+    "label": "{{title}}, {{price}}, {{badge}}"
+  },
+  "price": {
+    "perMonth": "{{price}} / lună"
+  }
+}

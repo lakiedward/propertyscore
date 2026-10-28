@@ -203,7 +203,7 @@ Build each component the first time a step needs it, at the location below, with
 | QuestionCard | `features/field-inspection/components/question-card.tsx` | four answer buttons coloured by `answer-*`, photo/video requirement (`none`, `optional`, `required`), counts, note |
 | SyncStatus | `features/field-inspection/components/sync-status.tsx` | `online`, `syncing`, `offline`, `error`, pending count, last sync |
 | **map** | | |
-| MapCanvas, MapPin, MapCluster, MapLegend, MapPopup | `components/map/*` on the map library chosen in D16 | pins: `physical` (forest fill, white text, lime icon), `online` (white, blue 500 border, blue 700 score), `none` (white, green 300 border, smaller 26px), selected, highlight, dot; cluster shows verified count; legend with counts |
+| MapCanvas, MapPin, MapCluster, MapLegend, MapPopup | `components/map/*` on `maplibre-gl` with OpenFreeMap tiles (`MapCanvas` is lazy-loaded) | pins: `physical` (forest fill, white text), `online` (blue 500 fill, white text), `none` (white, green 300 border); label is the price on listing maps; selected and highlight turn lime with a forest border; cluster shows verified count; legend with counts |
 | **media** | | |
 | Photo | `components/media/photo.tsx` | ratio (4/3 default), 17px radius, caption, label, `placeholder` and `missing` states |
 | PhotoGallery | `components/media/photo-gallery.tsx` | grid + lightbox, total count |
