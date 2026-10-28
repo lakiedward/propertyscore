@@ -168,7 +168,7 @@ Pure domain logic (scoring rules, formatting, calculations) goes in `*.utils.ts`
 - **Composition over configuration.** Prefer `children` and small composable components to a single component with 15 boolean props.
 - **Suspense for loading where it fits.** Route loaders call `queryClient.ensureQueryData(...)`, and components use `useSuspenseQuery`. The route's `pendingComponent` and `errorComponent` handle loading and error states, so components contain no `if (isLoading)` branches.
 - **Keys are stable IDs**, never array indexes, for lists that change.
-- **Accessibility is not optional.** Use semantic HTML, and give every input a label (shadcn `Form` components do this). Dialogs and menus come from Radix, which handles focus management. `eslint-plugin-jsx-a11y` is on.
+- **Accessibility is not optional.** Use semantic HTML, and give every input a label (the shadcn `Field` components do this). Dialogs and menus come from Radix, which handles focus management. `eslint-plugin-jsx-a11y` is on.
 - **Use React 19 APIs where they simplify code**: `ref` as a prop (no `forwardRef` in new code) and `use()` for context. Don't use React 19 form Actions for data mutations; TanStack Query mutations are the single mutation path.
 
 ---
@@ -293,12 +293,12 @@ Rules:
 ## 7. Forms and validation
 
 - **React Hook Form + Zod**: each form has one schema in `*.schemas.ts`, and the schema gives us the form type with `z.infer`.
-- Use the shadcn `Form` components (`FormField`, `FormItem`, `FormMessage`) for consistent labels, errors and ARIA.
-- Submitting calls a mutation hook (`useCreateProperty().mutateAsync`). The form's submit button reads `isPending` from the mutation (or `formState.isSubmitting`).
+- Use React Hook Form's `Controller` with the shadcn `Field` components (`Field`, `FieldLabel`, `FieldError`, `FieldGroup`, `FieldSet`) for consistent labels, errors and ARIA. This is the pattern shadcn's current form guide uses; the older `Form` wrapper (`FormField`, `FormItem`, `FormMessage`) hides the wiring behind context and was not installed, so every form shows its label, `aria-invalid` and error explicitly.
+- Submitting calls a mutation hook: `mutateAsync` when server errors map back to fields (`useCreateProperty().mutateAsync`), `mutate` when the only server error is form-level (sign-in). The form's submit button reads `isPending` from the mutation (or `formState.isSubmitting`).
 - **Server errors are mapped back to fields** when they can be. A unique-violation `AppError` becomes `setError('title', …)`; anything else shows in a form-level alert.
 - **Client validation is for UX only.** The database enforces the real constraints (`not null`, `check`, `unique`, foreign keys, RLS `with check`). Keep both in sync. When they disagree, the database wins.
 - Schemas describe *form input*. If the insert payload has a different shape, convert it in a small, explicit function next to the schema, not inside the component.
-- **Validation messages are translation keys, not text.** Schemas are plain module-level values that don't know the current language, so each message is a key from the `validation` section of `common.json`. `FormMessage` passes it through `t()`. Changing the language then re-translates errors that are already on screen.
+- **Validation messages are translation keys, not text.** Schemas are plain module-level values that don't know the current language, so each message is a key from the `validation` section of `common.json`. `FieldError` shows it through the `useValidationMessage` helper in `i18n/validation.ts`, which passes it to `t()`. Changing the language then re-translates errors that are already on screen.
 - **Numbers and decimals accept both formats.** Romanian users type `1.250,50` and English users type `1,250.50`. Number fields parse input with the current locale's separators (a `parseLocaleNumber` helper in `i18n/format.ts`), not with a bare `z.coerce.number()`.
 
 `features/properties/property.schemas.ts`:
@@ -314,7 +314,7 @@ export const propertyFormSchema = z.object({
 export type PropertyFormValues = z.infer<typeof propertyFormSchema>;
 ```
 
-Messages that need values (such as "at least 3 characters") read them from the Zod issue (`minimum`, `maximum`) and pass them to `t()` as interpolation values, in one shared helper used by `FormMessage`.
+Messages that need values (such as "at least 3 characters") read them from the Zod issue (`minimum`, `maximum`) and pass them to `t()` as interpolation values, in one shared helper (`i18n/validation.ts`) used inside every `FieldError`.
 
 ---
 
@@ -597,7 +597,7 @@ What this gives us:
 ## 17. Styling and UI components
 
 - **Tailwind CSS 4** via `@tailwindcss/vite`. Configuration is CSS-first, in `src/styles/globals.css` (`@import "tailwindcss"` plus `@theme` tokens). No `tailwind.config.js` unless a plugin requires one.
-- **Design tokens** (colours, radius, fonts) are CSS variables in `globals.css`, using the shadcn token names (`--background`, `--primary`, …). Components use semantic classes (`bg-primary`), never raw hex values.
+- **Design tokens** (colours, radius, fonts) are CSS variables in `globals.css`, using the shadcn token names (`--background`, `--primary`, …) plus the PropertyScore additions. Their values, the density modes and the component catalogue come from the PropertyScore design system, recorded in `.claude/rules/design-system.md`. Components use semantic classes (`bg-primary`), never raw hex values.
 - **shadcn/ui**: components are added with the CLI into `src/components/ui/` and are ours to edit. Edit them only for design-system-wide changes. Feature-specific variants go in feature components that wrap the primitive.
 - **`cn()`** merges classes. It comes from shadcn's `cn` package (a drop-in for `clsx` + `tailwind-merge`) and is re-exported from `lib/utils.ts`, which `components.json` points to. **`class-variance-authority`** handles component variants, as shadcn does.
 - **Icons**: `lucide-react` only.

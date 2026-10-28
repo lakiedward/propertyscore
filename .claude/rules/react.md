@@ -67,7 +67,9 @@ Reference implementation (follow the shape):
 ```tsx
 export function PropertyForm({ onSaved }: PropertyFormProps) {
   const { t } = useTranslation('properties');
+  const validationMessage = useValidationMessage();
   const createProperty = useCreateProperty();
+  const titleId = useId();
   const form = useForm<PropertyFormValues>({
     resolver: zodResolver(propertyFormSchema),
     defaultValues: { title: '', address: '', price: undefined },
@@ -83,33 +85,31 @@ export function PropertyForm({ onSaved }: PropertyFormProps) {
   });
 
   return (
-    <Form {...form}>
-      <form onSubmit={handleSubmit} noValidate>
-        <FormField
-          control={form.control}
+    <form onSubmit={(event) => void handleSubmit(event)} noValidate>
+      <FieldGroup>
+        <Controller
           name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('form.title.label')}</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={titleId}>{t('form.title.label')}</FieldLabel>
+              <Input {...field} id={titleId} aria-invalid={fieldState.invalid} />
+              <FieldError>{validationMessage(fieldState.error?.message)}</FieldError>
+            </Field>
           )}
         />
-        <Button type="submit" disabled={createProperty.isPending}>
-          {t('common:actions.save')}
-        </Button>
-      </form>
-    </Form>
+      </FieldGroup>
+      <Button type="submit" disabled={createProperty.isPending}>
+        {t('common:actions.save')}
+      </Button>
+    </form>
   );
 }
 ```
 
-- One Zod schema per form in `<entity>.schemas.ts`; the form type is `z.infer` of it. Messages in schemas are translation keys (`'validation.minLength'`), translated by `FormMessage`; never English text.
-- Always the shadcn `Form` / `FormField` / `FormItem` / `FormLabel` / `FormControl` / `FormMessage` components, so labels, errors and ARIA are wired consistently. Every input has a visible label.
-- Submit goes through a mutation hook with `mutateAsync`; the submit button is disabled only while the mutation is pending, never because the form is invalid, so pressing it reveals every error.
+- One Zod schema per form in `<entity>.schemas.ts`; the form type is `z.infer` of it. Messages in schemas are translation keys (`'validation.minLength'`), translated by `useValidationMessage` from `@/i18n/validation` inside `FieldError`; never English text.
+- Always React Hook Form's `Controller` with the shadcn `Field` components from `@/components/ui/field` (`FieldGroup`, `FieldSet`, `FieldLegend`, `Field`, `FieldLabel`, `FieldDescription`, `FieldError`), so labels, errors and ARIA are wired the same way everywhere. Every input has a visible `FieldLabel` tied to it with `htmlFor` and a `useId` id; the control gets `aria-invalid` and the `Field` gets `data-invalid` from `fieldState.invalid`. Radio and checkbox groups use `FieldSet` with a `FieldLegend`. There is no shadcn `Form` wrapper in the project; do not add it.
+- Submit goes through a mutation hook: `mutateAsync` with `applyServerErrors` when server errors map to fields, or `mutate` with the mutation's error in a form-level `Alert` when they never do (the sign-in form); the submit button is disabled only while the mutation is pending, never because the form is invalid, so pressing it reveals every error.
 - Server errors map back to fields through the shared `applyServerErrors(form, error)` helper (an `AppError` with `field` becomes `setError(field, …)`); other errors show a form-level `Alert`. Mutations whose form handles the error set `meta: { silent: true }` so the global toast is skipped.
 - Number inputs parse with `parseLocaleNumber` from `@/i18n/format`, never a bare `Number()` or `z.coerce.number()`, because Romanian input uses `,` as the decimal separator.
 - When the insert payload differs from the form values, convert with a small explicit function next to the schema (`toPropertyInsert`), never inside the component.
