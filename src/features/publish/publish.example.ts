@@ -1,4 +1,5 @@
 import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
+import type { LngLat } from '@/components/map/map.config';
 import type { Currency } from '@/i18n/format';
 
 export const PUBLISH_REDIRECT = `/publish#${PUBLISH_SECTION.steps}`;
@@ -28,4 +29,9 @@ export const TIER_LISTING = {
 export const PUBLISHING_COST = { amount: 0, currency: 'RON' } as const satisfies {
   amount: number;
   currency: Currency;
+};
+
+export const EXAMPLE_LOCATION: { center: LngLat; zoom: number } = {
+  center: [21.2365, 45.747],
+  zoom: 14.4,
 };

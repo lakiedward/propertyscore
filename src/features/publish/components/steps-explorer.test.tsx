@@ -3,6 +3,10 @@ import roPublish from '@/i18n/locales/ro/publish.json';
 import { renderWithProviders } from '@/test/render';
 import { StepsExplorer } from './steps-explorer';
 
+vi.mock('@/components/map/map-canvas', () => ({
+  MapCanvas: ({ label }: { label: string }) => <div role="region" aria-label={label} />,
+}));
+
 const items = roPublish.steps.items;
 
 function stepTab(title: string) {
@@ -47,5 +51,14 @@ describe('StepsExplorer', () => {
 
     await user.click(screen.getByRole('button', { name: roPublish.steps.previous }));
     expect(screen.getByRole('heading', { name: items.location.title })).toBeInTheDocument();
+  });
+
+  it('shows the example map on the address step', async () => {
+    const { user } = await renderWithProviders(<StepsExplorer />);
+
+    await user.click(stepTab(items.location.title));
+
+    expect(await screen.findByText(roPublish.steps.preview.mapNote)).toBeInTheDocument();
+    expect(screen.getAllByText(roPublish.steps.preview.mapLabel)).not.toHaveLength(0);
   });
 });

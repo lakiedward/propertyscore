@@ -138,7 +138,7 @@
       },
       "surfaceValue": "{{value}} m²",
       "floorValue": "{{floor}} of {{floors}}",
-      "mapLabel": "Schematic map · example data",
+      "mapLabel": "Example · Complex area, Timișoara",
       "mapNote": "The circle is what the public sees. Only you see the pin.",
       "phoneLabel": "Contact phone",
       "phoneValue": "0744 555 211",

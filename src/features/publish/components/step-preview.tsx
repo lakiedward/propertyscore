@@ -1,14 +1,4 @@
-import {
-  CloudCheckIcon,
-  KeyRoundIcon,
-  LocateFixedIcon,
-  MapPinIcon,
-  MinusIcon,
-  MoveIcon,
-  PlusIcon,
-  SendIcon,
-  TagIcon,
-} from 'lucide-react';
+import { CloudCheckIcon, KeyRoundIcon, MoveIcon, SendIcon, TagIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/i18n/format';
@@ -18,6 +8,7 @@ import inspectionImage from '@/assets/home/inspection-window.webp';
 import bedroomImage from '@/assets/home/room-bedroom.webp';
 import { HERO_LISTING } from '../publish.example';
 import { PUBLISH_STEPS, type PublishStepKey } from '../publish.steps';
+import { ExampleLocationMap } from './example-location-map';
 
 const PHOTO_GRID = [
   { key: 'cover', src: heroImage },
@@ -151,18 +142,7 @@ function PreviewBody({ stepKey }: { stepKey: PublishStepKey }) {
     case 'location':
       return (
         <>
-          <span className="relative block h-47.5 overflow-hidden rounded-xl border border-border map-schematic">
-            <span className="absolute top-3 right-3 flex flex-col gap-1.5">
-              <MapControl icon={<PlusIcon />} />
-              <MapControl icon={<MinusIcon />} />
-              <MapControl icon={<LocateFixedIcon />} />
-            </span>
-            <span className="absolute top-1/2 left-1/2 size-30 -translate-1/2 rounded-full border-2 border-dashed border-primary bg-primary/12" />
-            <MapPinIcon className="absolute top-1/2 left-1/2 size-7.5 -translate-x-1/2 -translate-y-full text-primary" />
-            <span className="absolute right-2 bottom-1.5 rounded-[3px] bg-card/80 px-1.5 py-px text-[10px] leading-[1.55] text-muted-foreground">
-              {t('steps.preview.mapLabel')}
-            </span>
-          </span>
+          <ExampleLocationMap />
           <PreviewNote>{t('steps.preview.mapNote')}</PreviewNote>
         </>
       );
@@ -227,14 +207,6 @@ function PreviewNote({ icon, children }: { icon?: ReactNode; children: ReactNode
     <span className="flex items-center gap-1.5 text-small leading-normal text-muted-foreground [&_svg]:size-3.5">
       {icon}
       {children}
-    </span>
-  );
-}
-
-function MapControl({ icon }: { icon: ReactNode }) {
-  return (
-    <span className="grid size-11 place-items-center rounded-md bg-card/94 text-brand shadow-sm [&_svg]:size-5">
-      {icon}
     </span>
   );
 }

@@ -4,6 +4,10 @@ import roPublish from '@/i18n/locales/ro/publish.json';
 import { buildSession } from '@/test/factories/auth';
 import { renderAppRoute } from '@/test/render';
 
+vi.mock('@/components/map/map-canvas', () => ({
+  MapCanvas: ({ label }: { label: string }) => <div role="region" aria-label={label} />,
+}));
+
 const signedIn = { session: buildSession(), user: buildSession().user };
 
 describe('PublishPage', { timeout: 20_000 }, () => {
