@@ -1,0 +1,226 @@
+{
+  "pageTitle": "Publică un anunț gratuit",
+  "hero": {
+    "eyebrow": "Pentru proprietari",
+    "titleLead": "Anunțul tău, publicat gratuit în",
+    "titleAccent": "10 minute",
+    "lead": "Vânzare sau închiriere. Completezi 6 pași simpli, noi îl verificăm, iar cumpărătorii te contactează direct.",
+    "seeSteps": "Vezi cum arată pașii",
+    "startSignedOut": "Autentifică-te și începe anunțul",
+    "startSignedIn": "Începe anunțul",
+    "accountHint": "Ai nevoie de un cont gratuit. Nu ai? Îl creezi în 1 minut, pe aceeași pagină.",
+    "stats": {
+      "cost": { "label": "cost și comision" },
+      "time": { "value": "~10 min", "label": "până la trimitere" },
+      "review": { "value": "24 h", "label": "verificare maximă" }
+    },
+    "card": {
+      "summary": "Exemplu de anunț: apartament cu 3 camere în zona Complex, Timișoara, de vânzare.",
+      "transaction": "De vânzare",
+      "morePhotos": "+{{count}}",
+      "title": "Apartament 3 camere, Complex",
+      "area": "Zona Complex, Timișoara",
+      "pricePerSqm": "{{price}}/m²",
+      "surface": "{{value}} m²",
+      "rooms": "{{count}} camere",
+      "floor": "et. {{floor}}/{{floors}}",
+      "ownerInitials": "IS",
+      "ownerName": "Ioana Stan",
+      "ownerRole": "Proprietar",
+      "showPhone": "Arată telefonul",
+      "progress": "Pasul 5 din 6",
+      "pinTitle": "Pinul e pe clădire",
+      "pinText": "Publicul vede doar zona",
+      "published": "Publicat azi, 14:20"
+    }
+  },
+  "path": {
+    "eyebrow": "De ce îți trebuie cont",
+    "titleLead": "Pregătești liber,",
+    "titleAccent": "publici din cont.",
+    "intro": "Contul e gratuit. Așa doar tu poți edita sau retrage anunțul, iar mesajele ajung la tine.",
+    "steps": {
+      "prepare": {
+        "tag": "Fără cont",
+        "title": "Citești pașii și pregătești totul",
+        "text": "Pozele, suprafața din acte și prețul. Pagina aceasta îți arată tot ce urmează."
+      },
+      "account": {
+        "tag": "Cont gratuit",
+        "title": "Intri în cont sau îți faci unul",
+        "text": "Email și parolă, durează un minut."
+      },
+      "publish": {
+        "tag": "Public",
+        "title": "Trimiți, noi verificăm, apare pe site",
+        "text": "În maximum 24 de ore anunțul e în căutare și pe hartă. Dacă ceva nu e în regulă, îți scriem motivul."
+      }
+    },
+    "signIn": "Intră în cont",
+    "signUp": "Creează cont",
+    "continue": "Ești conectat · Continuă",
+    "note": "Nu pierzi nimic din ce completezi: după ce intri în cont, te aducem direct la formular."
+  },
+  "steps": {
+    "titleLead": "Anunțul tău,",
+    "titleAccent": "în 6 pași.",
+    "intro": "Apasă pe un pas ca să vezi ce completezi și cum arată formularul.",
+    "duration": { "title": "Cam 10 minute", "text": "de la început la trimitere" },
+    "autosave": { "title": "Salvare automată", "text": "continui oricând de unde ai rămas" },
+    "listLabel": "Pași",
+    "stepNumber": "Pasul {{number}}",
+    "stepOf": "Pasul {{number}} din {{total}}",
+    "previous": "Anterior",
+    "next": "Următorul pas",
+    "items": {
+      "type": {
+        "title": "Vânzare sau închiriere",
+        "text": "Alegi tipul și pui prețul. Pentru chirie, suma pe lună.",
+        "points": ["Preț total sau chirie lunară", "EUR sau RON"],
+        "tip": "Îți arătăm media din zonă înainte să publici."
+      },
+      "photos": {
+        "title": "Fotografii",
+        "text": "Încarci 5–15 fotografii și alegi coperta.",
+        "points": [
+          "Ordonezi trăgând sau cu săgețile",
+          "Orizontal, lumină de zi",
+          "Fără persoane, acte sau date personale"
+        ],
+        "tip": "Prima fotografie decide dacă cineva deschide anunțul."
+      },
+      "description": {
+        "title": "Titlu și descriere",
+        "text": "Câteva rânduri sincere despre locuință.",
+        "points": ["Tipul, camerele și zona în titlu", "Ce s-a renovat și când"],
+        "tip": "Fără superlative. Cumpărătorii caută fapte."
+      },
+      "details": {
+        "title": "Detalii",
+        "text": "Cifrele după care se filtrează căutarea.",
+        "points": [
+          "Suprafață utilă, camere",
+          "Etaj din etajele clădirii",
+          "Anul construcției, tipul"
+        ],
+        "tip": "Ia suprafața din acte, nu estimată."
+      },
+      "location": {
+        "title": "Adresă și pin",
+        "text": "Adresa exactă rămâne la noi. Publicul vede doar zona.",
+        "points": ["Pinul pe clădirea corectă", "Cerc public de aproximativ 300 m"],
+        "tip": "Pinul corect aduce distanțele corecte pe anunț."
+      },
+      "contact": {
+        "title": "Contact și publicare",
+        "text": "Lași un telefon și trimiți. Aici îți trebuie cont.",
+        "points": ["Telefonul apare doar la cerere", "Mesajele vin pe email și în cont"],
+        "tip": "Verificăm anunțul în maximum 24 de ore."
+      }
+    },
+    "preview": {
+      "summary": "Previzualizare a formularului pentru pasul „{{step}}”.",
+      "newListing": "Anunț nou",
+      "saved": "Salvat",
+      "sale": "Vânzare",
+      "rent": "Închiriere",
+      "totalPrice": "Preț total",
+      "cover": "Copertă",
+      "dragToSort": "Trage ca să ordonezi",
+      "titleLabel": "Titlu",
+      "titleValue": "Apartament 3 camere, Complex",
+      "descriptionLabel": "Descriere",
+      "descriptionValue": "Apartament luminos, la etajul 2. Livingul are ferestre spre sud. Instalații refăcute în 2019.",
+      "facts": {
+        "surface": "Suprafață utilă",
+        "rooms": "Camere",
+        "floor": "Etaj",
+        "year": "An construcție"
+      },
+      "surfaceValue": "{{value}} m²",
+      "floorValue": "{{floor}} din {{floors}}",
+      "mapNote": "Cercul e ce vede publicul. Pinul îl vezi doar tu.",
+      "phoneLabel": "Telefon de contact",
+      "phoneValue": "0744 555 211",
+      "submit": "Trimite spre publicare",
+      "submitNote": "Necesită cont · verificare în max. 24 h"
+    }
+  },
+  "checklist": {
+    "needTitle": "Ce să ai la îndemână",
+    "need": {
+      "photos": { "title": "5–15 fotografii", "text": "Ziua, cu luminile aprinse" },
+      "surface": { "title": "Suprafața din acte", "text": "Extras CF sau contract" },
+      "year": { "title": "Anul construcției", "text": "Aproximativ e în regulă" },
+      "price": { "title": "Prețul sau chiria", "text": "Comparăm cu zona" },
+      "phone": { "title": "Telefon de contact", "text": "Apare doar la cerere" },
+      "email": { "title": "Un email", "text": "Pentru cont și mesaje" }
+    },
+    "flowTitle": "După ce trimiți",
+    "flow": {
+      "sent": { "title": "Trimis spre publicare", "text": "Primești confirmarea pe email" },
+      "review": {
+        "title": "Verificăm în max. 24 h",
+        "text": "Poze, preț plauzibil, date personale"
+      },
+      "published": { "title": "Publicat", "text": "În căutare și pe hartă" },
+      "messages": { "title": "Primești mesaje", "text": "Pe email și în cont, la Cereri" }
+    }
+  },
+  "tiers": {
+    "titleLead": "Același apartament.",
+    "titleAccent": "Altă încredere.",
+    "intro": "Un anunț verificat răspunde la întrebări înainte să fie puse. Vezi cum apare al tău în căutare la fiecare nivel.",
+    "listing": {
+      "meta": "{{count}} camere · {{area}} m²",
+      "area": "Fabric, Timișoara"
+    },
+    "trust": "Încredere",
+    "trustLevel": "Încredere: {{level}} din {{total}}",
+    "plain": {
+      "chip": "Fără raport",
+      "declared": "Date declarate de proprietar",
+      "name": "Anunț simplu",
+      "price": "Gratuit",
+      "text": "Doar ce declari tu. Cumpărătorul trebuie să te creadă pe cuvânt."
+    },
+    "smartCheck": {
+      "zone": "Zonă {{score}} / 100",
+      "text": "Arăți cum e zona: siguranță, transport, școli și prețuri, cu sursă.",
+      "more": "Ce include Smart Check"
+    },
+    "physical": {
+      "tour": "Tur 360°",
+      "condition": "Stare {{score}} / 10",
+      "text": "Un inspector verifică locuința. Noi facem pozele, planul și turul 360°.",
+      "more": "Ce include Property Fizic"
+    },
+    "note": "Publici gratuit acum. Raportul îl comanzi oricând din Anunțurile mele, iar insigna apare automat când e gata.",
+    "illustrative": "Exemplu ilustrativ."
+  },
+  "faq": {
+    "title": "Ce ne întreabă proprietarii",
+    "items": [
+      {
+        "q": "Chiar e gratuit?",
+        "a": "Da. Publicarea nu costă nimic și nu luăm comision din vânzare sau chirie."
+      },
+      {
+        "q": "De ce trebuie să am cont?",
+        "a": "Ca doar tu să poți edita sau retrage anunțul și ca mesajele de la cumpărători să ajungă la tine. Contul se face cu email și parolă, în 1 minut."
+      },
+      {
+        "q": "Cine vede adresa exactă?",
+        "a": "Doar noi. Pe site apare zona și un cerc de aproximativ 300 m."
+      },
+      {
+        "q": "Ce se întâmplă dacă anunțul e respins?",
+        "a": "Îți scriem motivul, de exemplu o fotografie cu acte. Corectezi și retrimiți din Anunțurile mele."
+      },
+      {
+        "q": "Pot adăuga un raport mai târziu?",
+        "a": "Da. Din Anunțurile mele apeși „Comandă PropertyScore pentru acest anunț”."
+      }
+    ]
+  }
+}

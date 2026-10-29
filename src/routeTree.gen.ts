@@ -16,6 +16,7 @@ import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticate
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
+import { Route as SitePublishRouteImport } from './routes/_site/publish'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -49,18 +50,25 @@ const SiteIndexRoute = SiteIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SiteRouteRoute,
 } as any)
+const SitePublishRoute = SitePublishRouteImport.update({
+  id: '/publish',
+  path: '/publish',
+  getParentRoute: () => SiteRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
   '/account': typeof AuthenticatedAccountRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/publish': typeof SitePublishRoute
 }
 export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
   '/account': typeof AuthenticatedAccountRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/publish': typeof SitePublishRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,13 +78,14 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_public/login': typeof PublicLoginRoute
   '/_public/sign-up': typeof PublicSignUpRoute
+  '/_site/publish': typeof SitePublishRoute
   '/_site/': typeof SiteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/account' | '/login' | '/sign-up'
+  fullPaths: '/' | '/account' | '/login' | '/sign-up' | '/publish'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/login' | '/sign-up'
+  to: '/' | '/account' | '/login' | '/sign-up' | '/publish'
   id:
     | '__root__'
     | '/_authenticated'
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_public/login'
     | '/_public/sign-up'
+    | '/_site/publish'
     | '/_site/'
   fileRoutesById: FileRoutesById
 }
@@ -145,6 +155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteIndexRouteImport
       parentRoute: typeof SiteRouteRoute
     }
+    '/_site/publish': {
+      id: '/_site/publish'
+      path: '/publish'
+      fullPath: '/publish'
+      preLoaderRoute: typeof SitePublishRouteImport
+      parentRoute: typeof SiteRouteRoute
+    }
   }
 }
 
@@ -174,10 +191,12 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
 )
 
 interface SiteRouteRouteChildren {
+  SitePublishRoute: typeof SitePublishRoute
   SiteIndexRoute: typeof SiteIndexRoute
 }
 
 const SiteRouteRouteChildren: SiteRouteRouteChildren = {
+  SitePublishRoute: SitePublishRoute,
   SiteIndexRoute: SiteIndexRoute,
 }
 

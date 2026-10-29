@@ -14,13 +14,15 @@ type SiteMenuProps = {
   languageSwitcher: ReactNode;
 };
 
-type MenuLink = {
-  key: string;
-  label: string;
-  hash: HomeSectionId;
-  meta?: string;
-  transaction?: 'sale' | 'rent';
-};
+type MenuLink =
+  | {
+      key: string;
+      label: string;
+      hash: HomeSectionId;
+      meta?: string;
+      transaction?: 'sale' | 'rent';
+    }
+  | { key: string; label: string; to: '/publish'; meta?: string };
 
 export function SiteMenu({ isSignedIn, languageSwitcher }: SiteMenuProps) {
   const { t } = useTranslation();
@@ -93,11 +95,7 @@ export function SiteMenu({ isSignedIn, languageSwitcher }: SiteMenuProps) {
     {
       title: t('site.menu.owners.title'),
       links: [
-        {
-          key: 'publish',
-          label: t('site.menu.owners.publish'),
-          hash: HOME_SECTION.listingIncluded,
-        },
+        { key: 'publish', label: t('site.menu.owners.publish'), to: '/publish' },
         { key: 'partners', label: t('site.menu.owners.partners'), hash: HOME_SECTION.partners },
       ],
     },
@@ -160,9 +158,13 @@ export function SiteMenu({ isSignedIn, languageSwitcher }: SiteMenuProps) {
               {group.links.map((link) => (
                 <Link
                   key={link.key}
-                  to="/"
-                  hash={link.hash}
-                  search={link.transaction ? { transaction: link.transaction } : undefined}
+                  {...('to' in link
+                    ? { to: link.to }
+                    : {
+                        to: '/',
+                        hash: link.hash,
+                        search: link.transaction ? { transaction: link.transaction } : undefined,
+                      })}
                   onClick={handleNavigate}
                   className="flex min-h-touch items-center justify-between gap-3 rounded-md px-1 text-body text-on-inverse-muted hover:text-on-inverse focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
                 >

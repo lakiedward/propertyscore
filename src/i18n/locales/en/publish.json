@@ -1,0 +1,231 @@
+{
+  "pageTitle": "Publish a free listing",
+  "hero": {
+    "eyebrow": "For owners",
+    "titleLead": "Your listing, published free in",
+    "titleAccent": "10 minutes",
+    "lead": "Sale or rent. You complete 6 simple steps, we check it, and buyers contact you directly.",
+    "seeSteps": "See what the steps look like",
+    "startSignedOut": "Sign in and start your listing",
+    "startSignedIn": "Start your listing",
+    "accountHint": "You need a free account. Don't have one? Create it in 1 minute, on the same page.",
+    "stats": {
+      "cost": { "label": "cost and commission" },
+      "time": { "value": "~10 min", "label": "until you submit" },
+      "review": { "value": "24 h", "label": "maximum review time" }
+    },
+    "card": {
+      "summary": "Example listing: a 3-room apartment for sale in the Complex area, Timișoara.",
+      "transaction": "For sale",
+      "morePhotos": "+{{count}}",
+      "title": "3-room apartment, Complex",
+      "area": "Complex area, Timișoara",
+      "pricePerSqm": "{{price}}/m²",
+      "surface": "{{value}} m²",
+      "rooms": "{{count}} rooms",
+      "floor": "floor {{floor}}/{{floors}}",
+      "ownerInitials": "IS",
+      "ownerName": "Ioana Stan",
+      "ownerRole": "Owner",
+      "showPhone": "Show phone number",
+      "progress": "Step 5 of 6",
+      "pinTitle": "The pin is on the building",
+      "pinText": "The public only sees the area",
+      "published": "Published today, 14:20"
+    }
+  },
+  "path": {
+    "eyebrow": "Why you need an account",
+    "titleLead": "Prepare freely,",
+    "titleAccent": "publish from your account.",
+    "intro": "The account is free. This way only you can edit or withdraw the listing, and messages reach you.",
+    "steps": {
+      "prepare": {
+        "tag": "No account",
+        "title": "Read the steps and get everything ready",
+        "text": "The photos, the floor area from your documents and the price. This page shows you everything that follows."
+      },
+      "account": {
+        "tag": "Free account",
+        "title": "Sign in or create an account",
+        "text": "Email and password, it takes a minute."
+      },
+      "publish": {
+        "tag": "Public",
+        "title": "You submit, we check, it goes live",
+        "text": "Within 24 hours your listing is in search and on the map. If something is not right, we tell you why."
+      }
+    },
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "continue": "You're signed in · Continue",
+    "note": "You lose nothing you fill in: after you sign in, we take you straight to the form."
+  },
+  "steps": {
+    "titleLead": "Your listing,",
+    "titleAccent": "in 6 steps.",
+    "intro": "Tap a step to see what you fill in and what the form looks like.",
+    "duration": { "title": "About 10 minutes", "text": "from start to submission" },
+    "autosave": { "title": "Autosave", "text": "pick up any time where you left off" },
+    "listLabel": "Steps",
+    "stepNumber": "Step {{number}}",
+    "stepOf": "Step {{number}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next step",
+    "items": {
+      "type": {
+        "title": "Sale or rent",
+        "text": "Choose the type and set the price. For rent, the monthly amount.",
+        "points": ["Total price or monthly rent", "EUR or RON"],
+        "tip": "We show you the area average before you publish."
+      },
+      "photos": {
+        "title": "Photos",
+        "text": "Upload 5–15 photos and choose the cover.",
+        "points": [
+          "Reorder by dragging or with the arrows",
+          "Landscape, daylight",
+          "No people, documents or personal data"
+        ],
+        "tip": "The first photo decides whether someone opens the listing."
+      },
+      "description": {
+        "title": "Title and description",
+        "text": "A few honest lines about the home.",
+        "points": ["Type, rooms and area in the title", "What was renovated and when"],
+        "tip": "No superlatives. Buyers look for facts."
+      },
+      "details": {
+        "title": "Details",
+        "text": "The figures that search filters use.",
+        "points": ["Usable area, rooms", "Floor out of the building's floors", "Year built, type"],
+        "tip": "Take the area from your documents, not an estimate."
+      },
+      "location": {
+        "title": "Address and pin",
+        "text": "The exact address stays with us. The public only sees the area.",
+        "points": ["The pin on the right building", "A public circle of about 300 m"],
+        "tip": "A correct pin gives correct distances on the listing."
+      },
+      "contact": {
+        "title": "Contact and publishing",
+        "text": "Leave a phone number and submit. This is where you need an account.",
+        "points": [
+          "Your phone number shows only on request",
+          "Messages arrive by email and in your account"
+        ],
+        "tip": "We check the listing within 24 hours."
+      }
+    },
+    "preview": {
+      "summary": "Preview of the form for the \"{{step}}\" step.",
+      "newListing": "New listing",
+      "saved": "Saved",
+      "sale": "Sale",
+      "rent": "Rent",
+      "totalPrice": "Total price",
+      "cover": "Cover",
+      "dragToSort": "Drag to reorder",
+      "titleLabel": "Title",
+      "titleValue": "3-room apartment, Complex",
+      "descriptionLabel": "Description",
+      "descriptionValue": "Bright apartment on the 2nd floor. The living room has south-facing windows. Plumbing and wiring redone in 2019.",
+      "facts": {
+        "surface": "Usable area",
+        "rooms": "Rooms",
+        "floor": "Floor",
+        "year": "Year built"
+      },
+      "surfaceValue": "{{value}} m²",
+      "floorValue": "{{floor}} of {{floors}}",
+      "mapNote": "The circle is what the public sees. Only you see the pin.",
+      "phoneLabel": "Contact phone",
+      "phoneValue": "0744 555 211",
+      "submit": "Submit for publishing",
+      "submitNote": "Requires an account · reviewed within 24 h"
+    }
+  },
+  "checklist": {
+    "needTitle": "What to have at hand",
+    "need": {
+      "photos": { "title": "5–15 photos", "text": "Daytime, with the lights on" },
+      "surface": {
+        "title": "Area from your documents",
+        "text": "Land register extract or contract"
+      },
+      "year": { "title": "Year built", "text": "An approximate year is fine" },
+      "price": { "title": "Price or rent", "text": "We compare it with the area" },
+      "phone": { "title": "Contact phone", "text": "Shown only on request" },
+      "email": { "title": "An email address", "text": "For your account and messages" }
+    },
+    "flowTitle": "After you submit",
+    "flow": {
+      "sent": { "title": "Submitted for publishing", "text": "You get a confirmation by email" },
+      "review": {
+        "title": "We check within 24 h",
+        "text": "Photos, a plausible price, personal data"
+      },
+      "published": { "title": "Published", "text": "In search and on the map" },
+      "messages": {
+        "title": "You receive messages",
+        "text": "By email and in your account, under Requests"
+      }
+    }
+  },
+  "tiers": {
+    "titleLead": "Same apartment.",
+    "titleAccent": "Different trust.",
+    "intro": "A verified listing answers questions before they are asked. See how yours appears in search at each level.",
+    "listing": {
+      "meta": "{{count}} rooms · {{area}} m²",
+      "area": "Fabric, Timișoara"
+    },
+    "trust": "Trust",
+    "trustLevel": "Trust: {{level}} of {{total}}",
+    "plain": {
+      "chip": "No report",
+      "declared": "Data declared by the owner",
+      "name": "Basic listing",
+      "price": "Free",
+      "text": "Only what you declare. The buyer has to take your word for it."
+    },
+    "smartCheck": {
+      "zone": "Area {{score}} / 100",
+      "text": "Show what the area is like: safety, transport, schools and prices, with sources.",
+      "more": "What Smart Check includes"
+    },
+    "physical": {
+      "tour": "360° tour",
+      "condition": "Condition {{score}} / 10",
+      "text": "An inspector checks the home. We take the photos, the floor plan and the 360° tour.",
+      "more": "What Property Fizic includes"
+    },
+    "note": "Publish for free now. Order the report any time from My listings, and the badge appears automatically when it's ready.",
+    "illustrative": "Illustrative example."
+  },
+  "faq": {
+    "title": "What owners ask us",
+    "items": [
+      {
+        "q": "Is it really free?",
+        "a": "Yes. Publishing costs nothing and we take no commission on the sale or rent."
+      },
+      {
+        "q": "Why do I need an account?",
+        "a": "So that only you can edit or withdraw the listing, and messages from buyers reach you. The account takes an email and a password, in 1 minute."
+      },
+      {
+        "q": "Who sees the exact address?",
+        "a": "Only us. The site shows the area and a circle of about 300 m."
+      },
+      {
+        "q": "What happens if the listing is rejected?",
+        "a": "We tell you why, for example a photo showing documents. You fix it and resubmit from My listings."
+      },
+      {
+        "q": "Can I add a report later?",
+        "a": "Yes. In My listings, tap \"Order PropertyScore for this listing\"."
+      }
+    ]
+  }
+}

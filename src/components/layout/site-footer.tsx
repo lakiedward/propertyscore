@@ -8,7 +8,7 @@ import { HOME_SECTION, type HomeSectionId } from './site-navigation';
 
 type FooterLink =
   | { key: string; label: string; hash: HomeSectionId; transaction?: 'sale' | 'rent' }
-  | { key: string; label: string; to: '/login' | '/account' };
+  | { key: string; label: string; to: '/login' | '/account' | '/publish' };
 
 const LEGAL_KEYS = ['terms', 'privacy', 'cookies'] as const;
 
@@ -69,11 +69,7 @@ export function SiteFooter() {
           transaction: 'rent',
         },
         { key: 'map', label: t('site.footer.homes.map'), hash: HOME_SECTION.listings },
-        {
-          key: 'publish',
-          label: t('site.footer.homes.publish'),
-          hash: HOME_SECTION.listingIncluded,
-        },
+        { key: 'publish', label: t('site.footer.homes.publish'), to: '/publish' },
       ],
     },
     {

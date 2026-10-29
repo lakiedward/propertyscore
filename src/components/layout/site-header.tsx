@@ -63,8 +63,7 @@ export function SiteHeader({ isSignedIn, menuLanguageSwitcher }: SiteHeaderProps
             <span className="sr-only w1180:not-sr-only">{accountLabel}</span>
           </Link>
           <Link
-            to="/"
-            hash={HOME_SECTION.listingIncluded}
+            to="/publish"
             className={cn(
               actionClassName,
               'hidden border-border-control text-brand hover:bg-surface-alt w560:inline-flex',
