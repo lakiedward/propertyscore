@@ -118,10 +118,10 @@ export function SiteMenu({ isSignedIn, languageSwitcher }: SiteMenuProps) {
       <SheetContent
         side="left"
         showCloseButton={false}
-        className="w-full gap-0 overflow-y-auto border-none bg-surface-inverse p-0 text-on-inverse data-[side=left]:w-full data-[side=left]:sm:max-w-105"
+        className="flex w-full flex-col gap-0 overflow-hidden border-none bg-surface-inverse p-0 text-on-inverse data-[side=left]:w-full data-[side=left]:sm:max-w-105"
       >
         <SheetTitle className="sr-only">{t('site.menu.label')}</SheetTitle>
-        <div className="flex h-header items-center justify-between px-5">
+        <div className="flex min-h-19 shrink-0 items-center justify-between gap-4 border-b border-on-inverse/14 px-5.5">
           <Link
             to="/"
             hash={HOME_SECTION.main}
@@ -141,7 +141,10 @@ export function SiteMenu({ isSignedIn, languageSwitcher }: SiteMenuProps) {
             </Button>
           </SheetClose>
         </div>
-        <nav aria-label={t('site.menu.nav')} className="flex flex-col gap-7 px-5 pt-2 pb-10">
+        <nav
+          aria-label={t('site.menu.nav')}
+          className="flex min-h-0 scrollbar-inverse flex-1 flex-col gap-7 overflow-y-auto px-5.5 pt-6 pb-10"
+        >
           <Link
             to="/"
             hash={HOME_SECTION.main}

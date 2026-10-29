@@ -669,6 +669,21 @@
   }
 }
 
+@utility scrollbar-inverse {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--on-inverse) 28%, transparent) transparent;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--on-inverse) 28%, transparent);
+  }
+}
+
 @utility marker-cta {
   background-image: linear-gradient(
     transparent 62%,

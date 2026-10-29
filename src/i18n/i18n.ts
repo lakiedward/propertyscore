@@ -42,18 +42,8 @@ function storeLocale(locale: Locale) {
   }
 }
 
-function detectBrowserLocale(): Locale | undefined {
-  for (const language of navigator.languages) {
-    const prefix = language.toLowerCase().split('-')[0];
-    if (isLocale(prefix)) {
-      return prefix;
-    }
-  }
-  return undefined;
-}
-
 function detectInitialLocale(): Locale {
-  return readStoredLocale() ?? detectBrowserLocale() ?? DEFAULT_LOCALE;
+  return readStoredLocale() ?? DEFAULT_LOCALE;
 }
 
 export function currentLocale(): Locale {

@@ -620,8 +620,7 @@ The app ships in **Romanian (`ro`)** and **English (`en`)** from the first scree
 - **The starting language is chosen in this order**, and the first match wins:
   1. `profiles.locale` of the signed-in user, so the choice follows them across devices;
   2. the `locale` value in `localStorage`, for visitors who aren't signed in yet;
-  3. the browser language: `ro*` → `ro`, `en*` → `en`;
-  4. otherwise `ro`.
+  3. otherwise `ro`. The browser language is deliberately ignored: the site always opens in Romanian until the person chooses English (owner's decision; an English-language browser used to switch the first visit to English).
 - **The language switcher** sits in the app header and on the login screen. Each option is labelled in its own language ("Română", "English") with a matching `lang` attribute. Switching:
   - calls `i18n.changeLanguage()`;
   - writes `localStorage`;
@@ -632,7 +631,7 @@ The app ships in **Romanian (`ro`)** and **English (`en`)** from the first scree
 
 ### Setup
 
-- **Libraries**: `i18next` + `react-i18next`. Nothing else is needed for two languages: no ICU message format, no backend plugin, no language-detector plugin (the four-step detection above is ~15 lines in `i18n.ts`).
+- **Libraries**: `i18next` + `react-i18next`. Nothing else is needed for two languages: no ICU message format, no backend plugin, no language-detector plugin (the three-step detection above is a few lines in `i18n.ts`).
 - **One namespace per feature** (`properties.json`, `auth.json`), plus `common.json` for shared words, `errors.*` and `validation.*`. Components load their namespace with `useTranslation('properties')`.
 - **Both languages are bundled** while the JSON is small. When the translations pass ~50 KB, switch to loading namespaces on demand with `i18next-resources-to-backend` and dynamic imports. That change touches only `i18n.ts`.
 
