@@ -1,61 +1,67 @@
 import { act, renderHook } from '@testing-library/react';
 import { useActiveSection } from './use-active-section';
 
-type ObserverCallback = (entries: Partial<IntersectionObserverEntry>[]) => void;
+function placeSection(id: string, top: number) {
+  const section = document.createElement('section');
+  section.id = id;
+  vi.spyOn(section, 'getBoundingClientRect').mockReturnValue(
+    DOMRect.fromRect({ y: top, height: 400 }),
+  );
+  document.body.append(section);
+  return section;
+}
+
+function moveSection(section: HTMLElement, top: number) {
+  vi.spyOn(section, 'getBoundingClientRect').mockReturnValue(
+    DOMRect.fromRect({ y: top, height: 400 }),
+  );
+}
+
+async function scroll() {
+  await act(async () => {
+    window.dispatchEvent(new Event('scroll'));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  });
+}
 
 describe('useActiveSection', () => {
-  let notify: ObserverCallback = () => undefined;
-  const disconnect = vi.fn();
-
-  const first = document.createElement('section');
-  const second = document.createElement('section');
-  first.id = 'first';
-  second.id = 'second';
-
-  beforeEach(() => {
-    document.body.append(first, second);
-    vi.stubGlobal(
-      'IntersectionObserver',
-      class {
-        constructor(callback: ObserverCallback) {
-          notify = callback;
-        }
-        observe = vi.fn();
-        disconnect = disconnect;
-      },
-    );
-  });
-
   afterEach(() => {
-    vi.unstubAllGlobals();
-    first.remove();
-    second.remove();
+    document.body.replaceChildren();
+    vi.restoreAllMocks();
   });
 
-  it('reports the first section in view, in page order', () => {
+  it('marks the last section whose top passed under the header', async () => {
+    const first = placeSection('first', 300);
+    const second = placeSection('second', 900);
     const { result } = renderHook(() => useActiveSection(['first', 'second']));
 
-    act(() => {
-      notify([{ target: second, isIntersecting: true, intersectionRatio: 1 }]);
-    });
-    expect(result.current).toBe('second');
+    expect(result.current).toBeUndefined();
 
-    act(() => {
-      notify([{ target: first, isIntersecting: true, intersectionRatio: 0.3 }]);
-    });
+    moveSection(first, 40);
+    await scroll();
     expect(result.current).toBe('first');
 
-    act(() => {
-      notify([{ target: first, isIntersecting: false, intersectionRatio: 0 }]);
-    });
+    moveSection(first, -500);
+    moveSection(second, 100);
+    await scroll();
     expect(result.current).toBe('second');
   });
 
-  it('stops observing when unmounted', () => {
-    const { unmount } = renderHook(() => useActiveSection(['first']));
+  it('finds sections that render after the header', async () => {
+    const { result } = renderHook(() => useActiveSection(['late']));
 
-    unmount();
+    placeSection('late', 0);
+    await scroll();
 
-    expect(disconnect).toHaveBeenCalled();
+    expect(result.current).toBe('late');
+  });
+
+  it('marks nothing on a page without these sections', async () => {
+    placeSection('other', 0);
+    const { result } = renderHook(() => useActiveSection(['first', 'second']));
+
+    await scroll();
+
+    expect(result.current).toBeUndefined();
   });
 });

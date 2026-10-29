@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router';
 import { UserRoundIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
 import { useActiveSection } from '@/hooks/use-active-section';
+import { useScrollProgress } from '@/hooks/use-scroll-progress';
 import { cn } from '@/lib/utils';
 import { SiteMenu } from './site-menu';
 import { HOME_SECTION, HOME_SECTION_IDS, HOME_SECTION_LINKS } from './site-navigation';
@@ -19,11 +20,20 @@ const actionClassName =
 
 export function SiteHeader({ isSignedIn, menuLanguageSwitcher }: SiteHeaderProps) {
   const { t } = useTranslation();
+  const headerRef = useRef<HTMLElement>(null);
   const activeSection = useActiveSection(HOME_SECTION_IDS);
+  useScrollProgress(headerRef);
   const accountLabel = t(isSignedIn ? 'site.header.account' : 'site.header.signIn');
 
   return (
-    <header className="sticky top-0 z-100 border-b border-border bg-card shadow-header">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-100 border-b border-border bg-card shadow-header"
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 -bottom-px h-0.5 origin-left scale-x-[var(--page-progress,0)] bg-primary"
+      />
       <div className="flex min-h-header flex-wrap items-center gap-x-6.5 gap-y-3 px-5 py-2 w820:py-0">
         <SiteMenu isSignedIn={isSignedIn} languageSwitcher={menuLanguageSwitcher} />
         <Link
@@ -43,10 +53,12 @@ export function SiteHeader({ isSignedIn, menuLanguageSwitcher }: SiteHeaderProps
               key={link.id}
               to="/"
               hash={link.id}
+              activeOptions={{ includeHash: true }}
               aria-current={activeSection === link.id ? 'location' : undefined}
+              data-section-active={activeSection === link.id}
               className={cn(
                 'flex min-h-11 items-center justify-center text-nav-sm font-nav whitespace-nowrap text-nav-link hover:underline hover:underline-offset-5 focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none w520:text-meta w820:min-h-8 w1080:text-caption',
-                'aria-[current=location]:font-extrabold aria-[current=location]:text-brand aria-[current=location]:underline aria-[current=location]:decoration-2 aria-[current=location]:underline-offset-6',
+                'data-[section-active=true]:font-extrabold data-[section-active=true]:text-brand data-[section-active=true]:underline data-[section-active=true]:decoration-2 data-[section-active=true]:underline-offset-6',
               )}
             >
               {t(link.labelKey)}
