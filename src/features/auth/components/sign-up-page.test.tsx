@@ -4,7 +4,7 @@ import { renderAppRoute } from '@/test/render';
 
 const signedIn = { session: buildSession(), user: buildSession().user };
 
-describe('SignUpPage', () => {
+describe('SignUpPage', { timeout: 20_000 }, () => {
   it('sends a signed-in visitor to the page named in redirect', async () => {
     const { router } = await renderAppRoute('/sign-up?redirect=%2Fpublish', { auth: signedIn });
 

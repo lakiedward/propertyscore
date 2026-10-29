@@ -12,7 +12,7 @@ export type PublishStepKey = 'type' | 'photos' | 'description' | 'details' | 'lo
 
 type StepHue = 'slate' | 'coral' | 'berry' | 'sky' | 'leaf' | 'aqua';
 
-export type StepHueClasses = {
+type StepHueClasses = {
   tile: string;
   activeTile: string;
   label: string;
