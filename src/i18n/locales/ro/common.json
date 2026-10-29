@@ -1,6 +1,25 @@
 {
   "app": {
-    "name": "Property Score"
+    "name": "PropertyScore"
+  },
+  "brand": {
+    "core": "PropertyScore",
+    "physical": "Property Fizic",
+    "smartcheck": "Smart Check",
+    "wordmark": {
+      "core": {
+        "lead": "Property",
+        "mark": "Score"
+      },
+      "physical": {
+        "lead": "Property",
+        "mark": "Fizic"
+      },
+      "smartcheck": {
+        "lead": "Smart",
+        "mark": "Check"
+      }
+    }
   },
   "actions": {
     "close": "Închide",
@@ -11,9 +30,13 @@
   "language": {
     "label": "Limbă",
     "ro": "Română",
-    "en": "English"
+    "en": "English",
+    "short": {
+      "ro": "RO",
+      "en": "EN"
+    }
   },
-  "home": {
+  "account": {
     "pageTitle": "Panou",
     "title": "Bun venit",
     "description": "Ești conectat ca {{email}}. Proprietățile tale vor apărea aici."
@@ -58,5 +81,103 @@
     "maxLength_other": "Introdu cel mult {{count}} de caractere.",
     "min": "Valoarea minimă este {{min}}.",
     "max": "Valoarea maximă este {{max}}."
+  },
+  "site": {
+    "skipToContent": "Sari la conținut",
+    "sections": {
+      "label": "Secțiunile paginii",
+      "smartCheck": "Smart Check",
+      "physical": "Property Fizic",
+      "deliverables": "Ce primești",
+      "listings": "Locuințe",
+      "pricing": "Prețuri",
+      "questions": "Întrebări"
+    },
+    "header": {
+      "openMenu": "Deschide meniul",
+      "brandHome": "PropertyScore, înapoi la început",
+      "signIn": "Intră în cont",
+      "account": "Contul meu",
+      "publish": "Publică anunț gratuit",
+      "smartCheck": "Verifică o adresă cu Smart Check",
+      "physical": "Programează inspecția Property Fizic"
+    },
+    "menu": {
+      "label": "Meniu",
+      "nav": "Meniu principal",
+      "close": "Închide meniul",
+      "home": "Acasă",
+      "onThisPage": "Pe această pagină",
+      "forSale": {
+        "title": "De vânzare",
+        "all": "Toate anunțurile de vânzare"
+      },
+      "forRent": {
+        "title": "De închiriat",
+        "all": "Toate anunțurile de închiriat"
+      },
+      "services": {
+        "title": "Servicii PropertyScore",
+        "physical": "Inspecție fizică",
+        "smartCheck": "Smart Check · analiză online",
+        "consultation": "Consultanță cu un expert",
+        "pricing": "Prețuri",
+        "priceFrom": "de la {{price}}"
+      },
+      "owners": {
+        "title": "Proprietari și agenți",
+        "publish": "Publică anunț gratuit",
+        "partners": "Pentru agenți și agenții"
+      },
+      "language": "Limba"
+    },
+    "footer": {
+      "tagline": "Știi mai multe. Alegi informat. Verificăm locuința la fața locului și explicăm zona din date publice.",
+      "physicalCta": "Programează inspecția",
+      "smartCheckCta": "Verifică o adresă",
+      "services": {
+        "title": "Servicii",
+        "physical": "Inspecție fizică · {{price}}",
+        "smartCheck": "Smart Check · {{price}}",
+        "deliverables": "Ce primești",
+        "consultation": "Consultanță",
+        "pricing": "Prețuri"
+      },
+      "homes": {
+        "title": "Locuințe",
+        "buy": "De cumpărat",
+        "rent": "De închiriat",
+        "map": "Harta proprietăților",
+        "publish": "Publică anunț gratuit"
+      },
+      "account": {
+        "title": "Cont",
+        "partner": "Devino partener",
+        "questions": "Întrebări frecvente",
+        "portal": "Portal parteneri"
+      },
+      "copyright": "© {{year}} PropertyScore · Timișoara, România",
+      "contactLabel": "Contact",
+      "email": "contact@propertyscore.ro",
+      "legalLabel": "Linkuri legale",
+      "legal": {
+        "terms": "Termeni",
+        "privacy": "Confidențialitate",
+        "cookies": "Cookie-uri"
+      }
+    }
+  },
+  "trust": {
+    "physical": "Verificat fizic de PropertyScore",
+    "smartcheck": "Scor Smart Check {{score}} din 100",
+    "smartcheckShort": "Smart Check",
+    "none": "Fără raport PropertyScore",
+    "physicalShort": "Verificat fizic",
+    "noneShort": "Fără raport"
+  },
+  "map": {
+    "attribution": "© OpenFreeMap © OpenMapTiles © OpenStreetMap",
+    "zoomIn": "Mărește",
+    "zoomOut": "Micșorează"
   }
 }

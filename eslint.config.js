@@ -19,6 +19,7 @@ export default defineConfig([
     'playwright-report',
     'test-results',
     'supabase',
+    '.claude',
     'src/routeTree.gen.ts',
     'src/lib/supabase/database.types.ts',
   ]),
@@ -145,7 +146,25 @@ export default defineConfig([
     ignores: ['src/**/*.test.tsx', 'src/components/ui/**'],
     plugins: { i18next },
     rules: {
-      'i18next/no-literal-string': ['error', { mode: 'jsx-only' }],
+      'i18next/no-literal-string': [
+        'error',
+        {
+          mode: 'jsx-only',
+          'jsx-attributes': {
+            exclude: [
+              'className',
+              '.+ClassName',
+              'styleName',
+              'style',
+              'type',
+              'key',
+              'id',
+              'width',
+              'height',
+            ],
+          },
+        },
+      ],
     },
   },
   {

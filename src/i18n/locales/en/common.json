@@ -1,6 +1,25 @@
 {
   "app": {
-    "name": "Property Score"
+    "name": "PropertyScore"
+  },
+  "brand": {
+    "core": "PropertyScore",
+    "physical": "Property Fizic",
+    "smartcheck": "Smart Check",
+    "wordmark": {
+      "core": {
+        "lead": "Property",
+        "mark": "Score"
+      },
+      "physical": {
+        "lead": "Property",
+        "mark": "Fizic"
+      },
+      "smartcheck": {
+        "lead": "Smart",
+        "mark": "Check"
+      }
+    }
   },
   "actions": {
     "close": "Close",
@@ -11,9 +30,13 @@
   "language": {
     "label": "Language",
     "ro": "Română",
-    "en": "English"
+    "en": "English",
+    "short": {
+      "ro": "RO",
+      "en": "EN"
+    }
   },
-  "home": {
+  "account": {
     "pageTitle": "Dashboard",
     "title": "Welcome",
     "description": "You are signed in as {{email}}. Your properties will appear here."
@@ -56,5 +79,103 @@
     "maxLength_other": "Enter at most {{count}} characters.",
     "min": "The minimum value is {{min}}.",
     "max": "The maximum value is {{max}}."
+  },
+  "site": {
+    "skipToContent": "Skip to content",
+    "sections": {
+      "label": "Page sections",
+      "smartCheck": "Smart Check",
+      "physical": "Property Fizic",
+      "deliverables": "What you get",
+      "listings": "Homes",
+      "pricing": "Pricing",
+      "questions": "Questions"
+    },
+    "header": {
+      "openMenu": "Open the menu",
+      "brandHome": "PropertyScore, back to the top",
+      "signIn": "Sign in",
+      "account": "My account",
+      "publish": "Post a free listing",
+      "smartCheck": "Check an address with Smart Check",
+      "physical": "Book a Property Fizic inspection"
+    },
+    "menu": {
+      "label": "Menu",
+      "nav": "Main menu",
+      "close": "Close the menu",
+      "home": "Home",
+      "onThisPage": "On this page",
+      "forSale": {
+        "title": "For sale",
+        "all": "All homes for sale"
+      },
+      "forRent": {
+        "title": "For rent",
+        "all": "All homes for rent"
+      },
+      "services": {
+        "title": "PropertyScore services",
+        "physical": "Physical inspection",
+        "smartCheck": "Smart Check · online analysis",
+        "consultation": "Talk to an expert",
+        "pricing": "Pricing",
+        "priceFrom": "from {{price}}"
+      },
+      "owners": {
+        "title": "Owners and agents",
+        "publish": "Post a free listing",
+        "partners": "For agents and agencies"
+      },
+      "language": "Language"
+    },
+    "footer": {
+      "tagline": "Know more. Choose with confidence. We inspect the home on site and explain the area from public data.",
+      "physicalCta": "Book an inspection",
+      "smartCheckCta": "Check an address",
+      "services": {
+        "title": "Services",
+        "physical": "Physical inspection · {{price}}",
+        "smartCheck": "Smart Check · {{price}}",
+        "deliverables": "What you get",
+        "consultation": "Consultation",
+        "pricing": "Pricing"
+      },
+      "homes": {
+        "title": "Homes",
+        "buy": "To buy",
+        "rent": "To rent",
+        "map": "Property map",
+        "publish": "Post a free listing"
+      },
+      "account": {
+        "title": "Account",
+        "partner": "Become a partner",
+        "questions": "FAQ",
+        "portal": "Partner portal"
+      },
+      "copyright": "© {{year}} PropertyScore · Timișoara, Romania",
+      "contactLabel": "Contact",
+      "email": "contact@propertyscore.ro",
+      "legalLabel": "Legal links",
+      "legal": {
+        "terms": "Terms",
+        "privacy": "Privacy",
+        "cookies": "Cookies"
+      }
+    }
+  },
+  "trust": {
+    "physical": "Physically checked by PropertyScore",
+    "smartcheck": "Smart Check score {{score}} out of 100",
+    "smartcheckShort": "Smart Check",
+    "none": "No PropertyScore report",
+    "physicalShort": "Physically checked",
+    "noneShort": "No report"
+  },
+  "map": {
+    "attribution": "© OpenFreeMap © OpenMapTiles © OpenStreetMap",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out"
   }
 }

@@ -1,0 +1,40 @@
+{
+  "transaction": {
+    "sale": "To buy",
+    "rent": "To rent"
+  },
+  "verification": {
+    "physical": "Physically checked",
+    "smartcheck": "Smart Check",
+    "none": "No report"
+  },
+  "board": {
+    "transactionLabel": "Listing type",
+    "count": {
+      "sale_one": "{{count}} home for sale · {{city}} · examples",
+      "sale_other": "{{count}} homes for sale · {{city}} · examples",
+      "rent_one": "{{count}} home for rent · {{city}} · examples",
+      "rent_other": "{{count}} homes for rent · {{city}} · examples"
+    },
+    "mapLabel": "Map of listings",
+    "listLabel": "Listings",
+    "empty": {
+      "title": "No listings right now",
+      "description": "Check back soon, or post the first listing yourself for free."
+    },
+    "error": {
+      "title": "The listings did not load",
+      "description": "Check your connection and try again."
+    },
+    "mapError": "The map could not load. The list of listings is still available."
+  },
+  "card": {
+    "rooms_one": "{{count}} room",
+    "rooms_other": "{{count}} rooms",
+    "area": "{{area}} m²",
+    "label": "{{title}}, {{price}}, {{badge}}"
+  },
+  "price": {
+    "perMonth": "{{price}} / month"
+  }
+}

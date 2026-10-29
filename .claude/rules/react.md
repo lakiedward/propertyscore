@@ -118,7 +118,7 @@ export function PropertyForm({ onSaved }: PropertyFormProps) {
 ## Routing
 
 - File-based TanStack Router routes; `routeTree.gen.ts` is generated and committed.
-- `_public/` for logged-out pages (authenticated users are redirected into the app), `_authenticated/` for everything behind login; its `route.tsx` holds the guard (`beforeLoad` → `redirect({ to: '/login', search: { redirect: location.href } })`) and the app shell.
+- `_site/` for public pages everyone may see, signed in or not (home and marketing), inside the site layout (`SiteHeader`, `SiteFooter`); `_public/` for logged-out pages (authenticated users are redirected into the app), `_authenticated/` for everything behind login; its `route.tsx` holds the guard (`beforeLoad` → `redirect({ to: '/login', search: { redirect: location.href } })`) and the app shell.
 - Router context carries `queryClient` and `auth`; loaders and guards use them, never module imports of singletons.
 - Every route that fetches data has a `loader`, a `pendingComponent`, and an `errorComponent` or the root default. Loaders throw `notFound()` when a record does not exist or RLS hides it.
 - Search params are validated with Zod in `validateSearch`; navigate with `<Link to search>` / `useNavigate`, never by building URL strings.

@@ -4,7 +4,7 @@
 
 React 19 single-page application for Property Score (TypeScript, Vite), with Supabase as the whole backend: Postgres, Auth, Storage and Edge Functions. There is no custom API server. Authenticated users manage and score properties on list, detail and form screens; mobile first, comfortable on desktop. The UI is **bilingual, Romanian (default) and English**: every visible string goes through i18next, and no feature merges with only one language.
 
-`IMPLEMENTATION_PLAN.md` is the product specification: routes, page contents, user flows, data model, state machines, business rules and delivery phases. Check it before building any product feature. Build steps are implemented with the `/implement <step> <design>` skill, a selection of pages from the design (possibly spanning several steps) is planned and then built with `/plan-from-design <design> <pages>`, and progress is checked with `/plan-sync`; all three live in `.claude/skills/`. This file and the rule files in `.claude/rules/` are the operative coding rules and workflow. `SETUP_PLAN.md` is the decision record that explains *why* each choice was made and which alternatives were rejected. When a skill, a design mock or existing code disagrees with the rules, the rules win; when a rule turns out to be wrong, fix the rule and the matching section of `SETUP_PLAN.md` in the same change.
+`IMPLEMENTATION_PLAN.md` is the product specification for step-based work: routes, page contents, user flows, data model, state machines, business rules and delivery phases. Check it before building a feature with `/implement <step> <design>`. `/plan-from-design <design> <pages>` is the exception: it plans and builds a selection of pages with the design as the only product specification (data, schema and rules derived from the screens) and does not read or update `IMPLEMENTATION_PLAN.md`. Both skills live in `.claude/skills/`. This file and the rule files in `.claude/rules/` are the operative coding rules and workflow. `SETUP_PLAN.md` is the decision record that explains *why* each choice was made and which alternatives were rejected. When a skill, a design mock or existing code disagrees with the rules, the rules win; when a rule turns out to be wrong, fix the rule and the matching section of `SETUP_PLAN.md` in the same change.
 
 ## Key rules
 
@@ -47,7 +47,8 @@ Pin exact versions when installing (`pnpm add -E`) and record them here.
 - **Server state:** TanStack Query 5 (+ devtools in local only)
 - **Forms:** React Hook Form 7 + Zod 4 + `@hookform/resolvers`
 - **Backend client:** `@supabase/supabase-js` 2 typed with the generated `Database`; Supabase CLI for the local stack, migrations, type generation and pgTAP
-- **UI:** Tailwind CSS 4 (`@tailwindcss/vite`), shadcn/ui on Radix primitives (`radix-ui`), `class-variance-authority`, `cn` (shadcn's drop-in for `clsx` + `tailwind-merge`, re-exported from `@/lib/utils`), `tw-animate-css`, `lucide-react`, `sonner`, self-hosted fonts through `@fontsource-variable/geist` (with `latin-ext`); visual language from the PropertyScore design system (`.claude/rules/design-system.md`)
+- **UI:** Tailwind CSS 4 (`@tailwindcss/vite`), shadcn/ui on Radix primitives (`radix-ui`), `class-variance-authority`, `cn` (shadcn's drop-in for `clsx` + `tailwind-merge`, re-exported from `@/lib/utils`), `tw-animate-css`, `lucide-react`, `sonner`, self-hosted fonts through `@fontsource-variable/manrope` 5.3.0 (body and headings) and `@fontsource-variable/sora` 5.3.0 (brand wordmarks), each with `latin-ext`; visual language from the PropertyScore design system (`.claude/rules/design-system.md`)
+- **Maps:** `maplibre-gl` 6.14.0 with OpenFreeMap vector tiles (`tiles.openfreemap.org`, no key), loaded lazily through `components/map/map-canvas.tsx`, worker set with `setWorkerUrl` and Vite's `?worker&url`
 - **i18n:** `i18next` + `react-i18next`, `date-fns` locales only for the date picker
 - **Monitoring:** `@sentry/react` + `@sentry/vite-plugin`
 - **Unit and component tests:** Vitest, React Testing Library, `@testing-library/user-event`, `@testing-library/jest-dom`, MSW 2
@@ -61,11 +62,12 @@ Pin exact versions when installing (`pnpm add -E`) and record them here.
 Scaffolding from `SETUP_PLAN.md` section 25 is done through step 9:
 
 - Vite + React + TypeScript project, Node 24 (`.nvmrc`), all core packages from the Tech stack.
-- shadcn primitives in `src/components/ui/` (`alert`, `button`, `card`, `dialog`, `dropdown-menu`, `field`, `input`, `label`, `separator`, `skeleton`, `sonner`) and the layout components in `src/components/layout/`.
+- shadcn primitives in `src/components/ui/` (`accordion`, `alert`, `badge`, `button` with the design-system variants, `card`, `collapsible`, `dialog`, `dropdown-menu`, `field`, `input`, `label`, `separator`, `sheet`, `skeleton`, `slider`, `sonner`, `table`, `tabs`, `toggle`, `toggle-group`), the design-system tokens and fonts in `globals.css`, the brand components in `src/components/brand/` and the layout components in `src/components/layout/`.
 - Supabase: first migration `create_profiles` (with `locale`, the sign-up trigger, `unaccent`, RLS), pgTAP tests, `seed.sql` with the three test users, generated `database.types.ts`, bilingual auth email templates for `confirmation`, `recovery` and `email_change`.
-- App wiring: `config/env.ts`, the Supabase client and error mapping, `AppError`, `logger`, Sentry, the query client, the router with `_public` (login, sign-up) and `_authenticated` (guard + app shell) route groups.
-- Features: `auth` (sign-in, sign-up, sign-out, `useAuth`) and `profile` (locale sync, language switcher).
-- i18n: `common` and `auth` namespaces in `ro` and `en`, typed keys, `format.ts`, translated Zod messages.
+- App wiring: `config/env.ts`, the Supabase client and error mapping, `AppError`, `logger`, Sentry, the query client, the router with `_site` (public home in the site layout), `_public` (login, sign-up) and `_authenticated` (guard + app shell, account page at `/account`) route groups.
+- Features: `auth` (sign-in, sign-up, sign-out, `useAuth`), `profile` (locale sync, language switcher with menu and segmented variants), `home` (the public home page at `/`, built with `/plan-from-design`) and `listings` (published listings on a map and list).
+- Supabase: migration `create_listings` (enums, `listings` with public-read RLS, public `listing-photos` bucket), 12 seeded listings with photos in `supabase/seed-storage/`, pgTAP tests.
+- i18n: `common`, `auth`, `listings` and `home` namespaces in `ro` and `en`, typed keys, `format.ts` (with `formatPrice`), translated Zod messages.
 - Tooling: ESLint, Prettier, EditorConfig, Vitest + RTL + MSW, Playwright, Knip, lefthook, `scripts/check-translations.ts`, and the `ci.yml` / `deploy-db.yml` workflows.
 
 Not built yet: step 10 (hosting, SPA fallback, security headers) waits on the hosting decision in section 26; the password-reset and auth-callback pages; every product feature (properties, scoring). Anything the rules describe that is not in the file system does not exist yet: check before importing, and create it following the rules when a feature needs it. Update this section as pieces land.
@@ -91,6 +93,7 @@ src/
 ├── app/{app.tsx, router.ts, query-client.ts}
 ├── routes/                      TanStack Router file routes, thin
 │   ├── __root.tsx
+│   ├── _site/                   public pages for everyone (home, marketing) in the site layout
 │   ├── _public/                 login, sign-up, password reset, auth callback
 │   └── _authenticated/route.tsx guard + app shell; feature routes below it
 ├── features/<feature>/

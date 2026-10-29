@@ -2,8 +2,12 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import enAuth from './locales/en/auth.json';
 import enCommon from './locales/en/common.json';
+import enHome from './locales/en/home.json';
+import enListings from './locales/en/listings.json';
 import roAuth from './locales/ro/auth.json';
 import roCommon from './locales/ro/common.json';
+import roHome from './locales/ro/home.json';
+import roListings from './locales/ro/listings.json';
 import { configureValidationMessages } from './validation';
 
 export const SUPPORTED_LOCALES = ['ro', 'en'] as const;
@@ -13,8 +17,8 @@ const DEFAULT_LOCALE: Locale = 'ro';
 const LOCALE_STORAGE_KEY = 'locale';
 
 export const resources = {
-  ro: { common: roCommon, auth: roAuth },
-  en: { common: enCommon, auth: enAuth },
+  ro: { common: roCommon, auth: roAuth, listings: roListings, home: roHome },
+  en: { common: enCommon, auth: enAuth, listings: enListings, home: enHome },
 } as const;
 
 export function isLocale(value: unknown): value is Locale {
@@ -38,18 +42,8 @@ function storeLocale(locale: Locale) {
   }
 }
 
-function detectBrowserLocale(): Locale | undefined {
-  for (const language of navigator.languages) {
-    const prefix = language.toLowerCase().split('-')[0];
-    if (isLocale(prefix)) {
-      return prefix;
-    }
-  }
-  return undefined;
-}
-
 function detectInitialLocale(): Locale {
-  return readStoredLocale() ?? detectBrowserLocale() ?? DEFAULT_LOCALE;
+  return readStoredLocale() ?? DEFAULT_LOCALE;
 }
 
 export function currentLocale(): Locale {
@@ -69,7 +63,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: DEFAULT_LOCALE,
   supportedLngs: SUPPORTED_LOCALES,
   defaultNS: 'common',
-  ns: ['common', 'auth'],
+  ns: ['common', 'auth', 'listings', 'home'],
   interpolation: { escapeValue: false },
   initAsync: false,
 });

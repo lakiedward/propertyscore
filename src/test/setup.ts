@@ -3,7 +3,20 @@ import '@/i18n/i18n';
 import { changeLocale } from '@/i18n/i18n';
 import { server } from './msw/server';
 
+class ResizeObserverStub {
+  observe() {
+    return undefined;
+  }
+  unobserve() {
+    return undefined;
+  }
+  disconnect() {
+    return undefined;
+  }
+}
+
 beforeAll(() => {
+  vi.stubGlobal('ResizeObserver', ResizeObserverStub);
   server.listen({ onUnhandledRequest: 'error' });
 });
 

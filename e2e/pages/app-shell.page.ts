@@ -17,8 +17,8 @@ export class AppShellPage {
     return this.page.getByRole('button', { name: this.text.actions.signOut });
   }
 
-  get homeHeading(): Locator {
-    return this.page.getByRole('heading', { name: this.text.home.title });
+  get accountHeading(): Locator {
+    return this.page.getByRole('heading', { name: this.text.account.title });
   }
 
   async switchLanguage(to: keyof typeof COMMON_TEXT) {

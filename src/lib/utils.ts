@@ -1,1 +1,52 @@
-export { cn } from 'cn';
+import { createCn } from 'cn/config';
+
+const FONT_SIZES = [
+  'display',
+  'section',
+  'section-sm',
+  'band',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'intro',
+  'lead-sm',
+  'lead',
+  'body',
+  'service',
+  'small',
+  'caption',
+  'meta',
+  'label',
+  'eyebrow',
+  'price-sm',
+  'price-card',
+  'price-box',
+  'price',
+  'price-lg',
+  'score-sm',
+  'score-md',
+  'score',
+  'score-xl',
+  'score-2xl',
+  'logo-2xs',
+  'nav-sm',
+  'logo-xs',
+  'logo-sm',
+  'logo-md',
+  'logo-card',
+  'logo-bundle',
+  'logo-inline',
+  'logo-lg',
+  'logo-xl',
+];
+
+export const cn = createCn({
+  extend: {
+    classGroups: {
+      'font-size': [{ text: FONT_SIZES }],
+      tracking: [{ tracking: ['brand'] }],
+      rounded: [{ rounded: ['wordmark'] }],
+    },
+  },
+});
