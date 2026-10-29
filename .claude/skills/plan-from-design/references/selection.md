@@ -48,9 +48,10 @@ Options for a target with no route, presented in the plan as an open question wi
 
 | Option | Effect |
 | --- | --- |
-| **In-page target** | Points to the section on the selected screen that explains the same thing (for example the pricing section), until the target screen is built |
-| **Hidden** | The element is not rendered until its screen exists |
+| **In-page target** (default) | Points to the section on the selected screen that explains the same thing (for example the pricing section), until the target screen is built |
 | **Minimal route** | A thin route with a translated "coming soon" state, so typed `Link`s work; listed as a route in the plan |
+
+The element itself is always rendered as the design draws it, even when its only in-page target is its own section: hiding it breaks the one-to-one copy.
 
 Never a hand-built URL string or an `<a href>` to a route that does not exist. In-page anchors to sections of the same screen are fine.
 

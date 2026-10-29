@@ -82,14 +82,15 @@ Secrets never reach a `VITE_` variable. An integration whose provider or account
 
 ## 8. Design fidelity check
 
-Used during execution after each screen, and again in verification:
+Used during execution after each section, and again in verification. The method and the scripts are in `design-measurement.md`.
 
-1. Open the running page in the in-app browser (`preview_start` with `property-score-dev`) and the matching design screen in a second tab (the normalised export file), both at 375 px and then 1440 px. For a screen whose mobile source is `derived` (`design-analysis.md` §8.5) there is nothing to compare at 375 px: check the page instead against the approved derived layout and the §8.5 patterns.
-2. Screenshot both and compare section by section: layout and order, spacing rhythm, type scale and weight, colours, radii, shadows, icons, copy, states.
-3. Repeat the comparison with the page in English: same layout, nothing cut off or overflowing, no untranslated string. Every difference is one of: a bug to fix now; a design-system deviation already listed in the plan (keep the design-system version); a rule requirement (accessibility, translations, semantic structure); or a new difference to ask about.
-4. Resize the running page through 360, 768, 1024 and 1440 px: no horizontal scroll, nothing overlapping or cut off, touch targets at `--touch-min`, and the layout switching at the spec's breakpoints.
-5. Check the screen's code against its markup mapping (`.claude/skills/implement/references/design-analysis.md` §8): every block became the mapped component, and nothing from the export survived (class names, `style` attributes, arbitrary pixel values, inline SVG icons, demo data, hardcoded text).
-6. Repeat until only listed, accepted differences remain. Keep the final pair of screenshots for the report.
+1. Serve the export through the dev server and open it in a second tab next to the running page (`design-measurement.md` §1).
+2. At 1440 px, 375 px and each breakpoint the design defines: extract the design (`design-measurement.md` §2), extract the page, diff them, and fix every line that is not explained by `design-measurement.md` §3 (`y` offsets, line breaks from a different font).
+3. Screenshot the same region of both tabs and compare what the diff cannot see: images, illustrations, icons, rings and charts, decorative panels, card order.
+4. Repeat with the page in English: same layout, nothing cut off or overflowing, no untranslated string.
+5. Overflow sweep at 360, 375, 640, 768, 1024, 1280 and 1440 px in both languages: `document.documentElement.scrollWidth` equals the viewport width; every element sits inside its container (tab lists contain their tabs, grids do not grow past their columns, prices and lockups wrap instead of overflowing).
+6. Check the code against the markup mapping (`.claude/skills/implement/references/design-analysis.md` §8): every block became a component, nothing from the export survived (class names, `style` attributes, inline SVG icons, demo data, hardcoded text). Measured values are allowed; they live in tokens or, used once, as arbitrary values.
+7. Repeat until only explained differences remain. Keep the final pair of screenshots and the final diff for the report.
 
 ## 9. Languages (Romanian and English, always)
 
@@ -99,7 +100,7 @@ Every screen is built bilingual, RO (default) and EN, even when the design is dr
 | --- | --- |
 | Source language | The language the design is drawn in is the source; the other is written in the same change. Uncertain translations are listed in the plan and in the report, never left out or copied across |
 | Coverage | Every visible string, `aria-label`, `title`, `alt`, placeholder, toast, page title, validation and error message, and the design's example and illustrative content, as keys in both `ro` and `en` |
-| Language switch | Present on every screen in scope (header and, where the screen has one, the mobile menu), even if the design omits it: labels in their own language with `lang`, `changeLocale`, `localStorage`, `profiles.locale` when signed in, `<html lang>`. No language in the URL |
+| Language switch | Where the design draws it (for example only in the menu drawer), working: labels in their own language with `lang`, `changeLocale`, `localStorage`, `profiles.locale` when signed in, `<html lang>`. If the design draws none, ask where it goes rather than adding one to the header. No language in the URL. The site opens in Romanian until the person chooses English |
 | Formatting | Dates, numbers, prices and units through `@/i18n/format` (`ro-RO`, `en-GB`); the currency comes from the record or constant, never from the language |
 | Plurals and sentences | Counts with `count` and `_one` / `_few` / `_other` for Romanian; whole sentences with interpolation; links and emphasis inside sentences through `<Trans>` |
 | Enum and status labels | Translation keys by database code under the feature namespace |

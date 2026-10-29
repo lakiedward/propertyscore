@@ -80,7 +80,8 @@ New tokens for `globals.css`; new catalogue entries for `design-system.md`.
 none / <name@exact-version>, reason, Tech stack entry
 
 ## 10. Design, rules and code differences
-### Design-system deviations (built the design-system way unless you approve)
+### Differences between the rendered design and the current page (when the selection already exists in code), section by section
+### Design-system additions (tokens, text roles, breakpoints, container, variants the design needs; built the design's way and recorded in `design-system.md`)
 ### Rule requirements the design does not show (accessibility, translations, security)
 ### Design gaps (states and layouts the screens need but do not draw, including derived mobile layouts: stacking order, what collapses)
 ### Diverged code (your decision)
@@ -104,7 +105,7 @@ One block per plan step, in order. Each block:
 
 ## 15. Validation
 - Commands: typecheck, lint, format:check, i18n:check, knip, db:lint, advisors, test:run, db:test, build
-- Browser: every screen at 375 and 1440 px (375 against the drawn or derived mobile layout), resized through 360, 768 and 1024 px, RO and EN, every state, keyboard path, side by side with the design
+- Browser: the measured diff and side-by-side screenshots against the rendered design (`design-measurement.md`) for every section at 1440 px, 375 px and the design's breakpoints, in RO and EN; overflow sweep from 360 px up; every state; keyboard path
 - End-to-end tests: only if you ask
 
 ## 16. Out of scope

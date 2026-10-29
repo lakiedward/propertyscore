@@ -1,6 +1,6 @@
 # Gap analysis
 
-Shared by `/implement` (one step) and `/plan-sync` (every step). `/plan-from-design` uses only §3 and §5, with its own precedence and labels measured against the design, not `IMPLEMENTATION_PLAN.md`. The goal is to know what exists, cheaply and correctly, before anything is proposed.
+Used by `/implement` (one step). `/plan-from-design` uses only §3 and §5, with its own precedence and labels measured against the design, not `IMPLEMENTATION_PLAN.md`. The goal is to know what exists, cheaply and correctly, before anything is proposed.
 
 ## 1. Which source wins
 
