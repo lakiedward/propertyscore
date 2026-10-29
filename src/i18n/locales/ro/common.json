@@ -93,6 +93,13 @@
       "pricing": "Prețuri",
       "questions": "Întrebări"
     },
+    "publishSections": {
+      "account": "Cum publici",
+      "steps": "Cei 6 pași",
+      "checklist": "Ce îți trebuie",
+      "verified": "Anunț verificat",
+      "questions": "Întrebări"
+    },
     "header": {
       "openMenu": "Deschide meniul",
       "brandHome": "PropertyScore, înapoi la început",

@@ -3,8 +3,10 @@ import roCommon from '@/i18n/locales/ro/common.json';
 import { renderWithProviders } from '@/test/render';
 import { SiteHeader } from './site-header';
 
-function renderHeader(isSignedIn = false) {
-  return renderWithProviders(<SiteHeader isSignedIn={isSignedIn} menuLanguageSwitcher={null} />);
+function renderHeader(isSignedIn = false, path = '/') {
+  return renderWithProviders(<SiteHeader isSignedIn={isSignedIn} menuLanguageSwitcher={null} />, {
+    path,
+  });
 }
 
 describe('SiteHeader', () => {
@@ -19,6 +21,24 @@ describe('SiteHeader', () => {
       'href',
       '/login',
     );
+  });
+
+  it('links the sections of the publish page while on it', async () => {
+    const { user } = await renderHeader(false, '/publish');
+
+    const sections = screen.getByRole('navigation', { name: roCommon.site.sections.label });
+    expect(
+      within(sections).getByRole('link', { name: roCommon.site.publishSections.steps }),
+    ).toHaveAttribute('href', '/publish#steps');
+    expect(
+      within(sections).queryByRole('link', { name: roCommon.site.sections.pricing }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: roCommon.site.header.openMenu }));
+    const menu = await screen.findByRole('dialog', { name: roCommon.site.menu.label });
+    expect(
+      within(menu).getByRole('link', { name: roCommon.site.publishSections.verified }),
+    ).toHaveAttribute('href', '/publish#verified');
   });
 
   it('links the account page when signed in', async () => {

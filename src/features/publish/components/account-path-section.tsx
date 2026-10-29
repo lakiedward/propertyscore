@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { PUBLISH_REDIRECT, PUBLISH_SECTION } from '../publish.example';
+import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
+import { PUBLISH_REDIRECT } from '../publish.example';
 
 type PathStepKey = 'prepare' | 'account' | 'publish';
 
@@ -29,7 +30,11 @@ export function AccountPathSection({ isSignedIn }: AccountPathSectionProps) {
   const { t } = useTranslation('publish');
 
   return (
-    <section aria-labelledby="account-path-title" className="bg-background">
+    <section
+      id={PUBLISH_SECTION.account}
+      aria-labelledby="account-path-title"
+      className="bg-background"
+    >
       <div className="page-wrap flex flex-col gap-7 py-11 w767:py-20">
         <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
           <div className="flex flex-col gap-1.5">

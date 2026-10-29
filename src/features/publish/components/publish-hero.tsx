@@ -3,7 +3,8 @@ import { ArrowRightIcon, CirclePlayIcon, KeyRoundIcon, LockIcon, LogInIcon } fro
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/i18n/format';
-import { PUBLISH_REDIRECT, PUBLISH_SECTION, PUBLISHING_COST } from '../publish.example';
+import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
+import { PUBLISH_REDIRECT, PUBLISHING_COST } from '../publish.example';
 import { ExampleListingCard } from './example-listing-card';
 
 type PublishHeroProps = {

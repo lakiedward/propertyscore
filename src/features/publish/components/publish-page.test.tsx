@@ -15,11 +15,11 @@ describe('PublishPage', { timeout: 20_000 }, () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: roPublish.hero.startSignedOut })).toHaveAttribute(
       'href',
-      '/login?redirect=%2Fpublish%23cum',
+      '/login?redirect=%2Fpublish%23steps',
     );
     expect(screen.getByRole('link', { name: roPublish.path.signUp })).toHaveAttribute(
       'href',
-      '/sign-up?redirect=%2Fpublish%23cum',
+      '/sign-up?redirect=%2Fpublish%23steps',
     );
     expect(screen.getByText(roPublish.hero.accountHint)).toBeInTheDocument();
   });
@@ -29,11 +29,11 @@ describe('PublishPage', { timeout: 20_000 }, () => {
 
     expect(await screen.findByRole('link', { name: roPublish.hero.startSignedIn })).toHaveAttribute(
       'href',
-      '#cum',
+      '#steps',
     );
     expect(screen.getByRole('link', { name: roPublish.path.continue })).toHaveAttribute(
       'href',
-      '#cum',
+      '#steps',
     );
     expect(screen.queryByText(roPublish.hero.accountHint)).not.toBeInTheDocument();
   });

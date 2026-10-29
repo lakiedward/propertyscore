@@ -91,6 +91,13 @@
       "pricing": "Pricing",
       "questions": "Questions"
     },
+    "publishSections": {
+      "account": "How to publish",
+      "steps": "The 6 steps",
+      "checklist": "What you need",
+      "verified": "Verified listing",
+      "questions": "Questions"
+    },
     "header": {
       "openMenu": "Open the menu",
       "brandHome": "PropertyScore, back to the top",

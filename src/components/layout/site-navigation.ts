@@ -21,7 +21,7 @@ export const HOME_SECTION = {
   questions: 'questions',
 } as const satisfies Record<string, HomeSectionId>;
 
-export const HOME_SECTION_LINKS = [
+const HOME_SECTION_LINKS = [
   { id: 'smart-check', labelKey: 'site.sections.smartCheck' },
   { id: 'physical', labelKey: 'site.sections.physical' },
   { id: 'deliverables', labelKey: 'site.sections.deliverables' },
@@ -30,4 +30,33 @@ export const HOME_SECTION_LINKS = [
   { id: 'questions', labelKey: 'site.sections.questions' },
 ] as const satisfies readonly { id: HomeSectionId; labelKey: string }[];
 
-export const HOME_SECTION_IDS = HOME_SECTION_LINKS.map((link) => link.id);
+export type PublishSectionId = 'account' | 'steps' | 'checklist' | 'verified' | 'questions';
+
+export const PUBLISH_SECTION = {
+  account: 'account',
+  steps: 'steps',
+  checklist: 'checklist',
+  verified: 'verified',
+  questions: 'questions',
+} as const satisfies Record<string, PublishSectionId>;
+
+const PUBLISH_SECTION_LINKS = [
+  { id: 'account', labelKey: 'site.publishSections.account' },
+  { id: 'steps', labelKey: 'site.publishSections.steps' },
+  { id: 'checklist', labelKey: 'site.publishSections.checklist' },
+  { id: 'verified', labelKey: 'site.publishSections.verified' },
+  { id: 'questions', labelKey: 'site.publishSections.questions' },
+] as const satisfies readonly { id: PublishSectionId; labelKey: string }[];
+
+export type SectionNav =
+  | { page: '/'; links: typeof HOME_SECTION_LINKS }
+  | { page: '/publish'; links: typeof PUBLISH_SECTION_LINKS };
+
+const PUBLISH_PATH = '/publish';
+
+export function sectionNavFor(pathname: string): SectionNav {
+  if (pathname === PUBLISH_PATH) {
+    return { page: PUBLISH_PATH, links: PUBLISH_SECTION_LINKS };
+  }
+  return { page: '/', links: HOME_SECTION_LINKS };
+}

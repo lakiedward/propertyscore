@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
-import { HOME_SECTION } from '@/components/layout/site-navigation';
+import { HOME_SECTION, PUBLISH_SECTION } from '@/components/layout/site-navigation';
 import { SERVICE_PRICES } from '@/config/pricing';
 import { SplitPrice } from '@/components/property/split-price';
 import { formatNumber, formatPrice } from '@/i18n/format';
@@ -47,7 +47,11 @@ export function TrustTiersSection() {
   const { t } = useTranslation('publish');
 
   return (
-    <section aria-labelledby="publish-tiers-title" className="bg-surface-inverse">
+    <section
+      id={PUBLISH_SECTION.verified}
+      aria-labelledby="publish-tiers-title"
+      className="bg-surface-inverse"
+    >
       <div className="page-wrap flex flex-col gap-16 py-11 w767:py-20">
         <div className="flex flex-col items-center gap-4.5 text-center">
           <h2

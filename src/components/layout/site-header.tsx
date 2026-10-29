@@ -8,7 +8,8 @@ import { useActiveSection } from '@/hooks/use-active-section';
 import { useScrollProgress } from '@/hooks/use-scroll-progress';
 import { cn } from '@/lib/utils';
 import { SiteMenu } from './site-menu';
-import { HOME_SECTION, HOME_SECTION_IDS, HOME_SECTION_LINKS } from './site-navigation';
+import { HOME_SECTION } from './site-navigation';
+import { useSectionNav } from './use-section-nav';
 
 type SiteHeaderProps = {
   isSignedIn: boolean;
@@ -21,7 +22,8 @@ const actionClassName =
 export function SiteHeader({ isSignedIn, menuLanguageSwitcher }: SiteHeaderProps) {
   const { t } = useTranslation();
   const headerRef = useRef<HTMLElement>(null);
-  const activeSection = useActiveSection(HOME_SECTION_IDS);
+  const sectionNav = useSectionNav();
+  const activeSection = useActiveSection(sectionNav.links.map((link) => link.id));
   useScrollProgress(headerRef);
   const accountLabel = t(isSignedIn ? 'site.header.account' : 'site.header.signIn');
 
@@ -48,10 +50,10 @@ export function SiteHeader({ isSignedIn, menuLanguageSwitcher }: SiteHeaderProps
           aria-label={t('site.sections.label')}
           className="order-3 grid w-full grid-cols-[1fr_1.1fr_1.4fr_0.8fr] gap-1 w820:flex w820:justify-between w960:order-none w960:ml-auto w960:w-auto w960:justify-start w960:gap-3.25 w1080:gap-6.25"
         >
-          {HOME_SECTION_LINKS.map((link) => (
+          {sectionNav.links.map((link) => (
             <Link
               key={link.id}
-              to="/"
+              to={sectionNav.page}
               hash={link.id}
               activeOptions={{ includeHash: true }}
               aria-current={activeSection === link.id ? 'location' : undefined}

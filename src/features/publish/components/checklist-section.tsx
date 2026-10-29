@@ -12,6 +12,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
 import { cn } from '@/lib/utils';
 
 const NEED_ITEMS: readonly {
@@ -50,7 +51,11 @@ export function ChecklistSection() {
   const { t } = useTranslation('publish');
 
   return (
-    <section aria-label={t('checklist.needTitle')} className="bg-card">
+    <section
+      id={PUBLISH_SECTION.checklist}
+      aria-label={t('checklist.needTitle')}
+      className="bg-card"
+    >
       <div className="page-wrap grid grid-cols-1 gap-5 pb-11 w767:pb-20 w1059:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <div className={CARD_CLASS}>
           <h2 className="text-h3 text-foreground">{t('checklist.needTitle')}</h2>

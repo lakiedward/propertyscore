@@ -1,8 +1,5 @@
+import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
 import type { Currency } from '@/i18n/format';
-
-export const PUBLISH_SECTION = {
-  steps: 'cum',
-} as const;
 
 export const PUBLISH_REDIRECT = `/publish#${PUBLISH_SECTION.steps}`;
 

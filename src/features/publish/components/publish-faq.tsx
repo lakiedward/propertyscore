@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
 import {
   Accordion,
   AccordionContent,
@@ -11,7 +12,7 @@ export function PublishFaq() {
   const items = t('faq.items', { returnObjects: true });
 
   return (
-    <section aria-labelledby="publish-faq-title" className="bg-card">
+    <section id={PUBLISH_SECTION.questions} aria-labelledby="publish-faq-title" className="bg-card">
       <div className="page-wrap grid grid-cols-1 gap-7 py-11 w767:py-20 w1059:grid-cols-[360px_minmax(0,1fr)]">
         <h2 id="publish-faq-title" className="text-h2 leading-[1.12] text-foreground">
           {t('faq.title')}

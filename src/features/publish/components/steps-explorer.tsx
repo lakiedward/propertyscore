@@ -8,10 +8,10 @@ import {
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { PUBLISH_SECTION } from '../publish.example';
 import { PUBLISH_STEPS, type PublishStepKey } from '../publish.steps';
 import { StepPreview } from './step-preview';
 
@@ -41,7 +41,7 @@ export function StepsExplorer() {
     <section
       id={PUBLISH_SECTION.steps}
       aria-labelledby="publish-steps-title"
-      className="scroll-mt-24 bg-card py-11 w767:py-20"
+      className="bg-card py-11 w767:py-20"
     >
       <div className="page-wrap flex flex-col gap-8">
         <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-5">
