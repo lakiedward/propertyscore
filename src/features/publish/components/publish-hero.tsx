@@ -39,7 +39,7 @@ export function PublishHero({ isSignedIn }: PublishHeroProps) {
             className="text-[38px] leading-[1.14] font-extrabold tracking-[-0.04em] text-foreground w767:text-[60px]"
           >
             {t('hero.titleLead')}{' '}
-            <span className="rounded-[10px] bg-cta box-decoration-clone px-[0.14em] leading-[1.02]">
+            <span className="inline-block rounded-[10px] bg-cta px-[0.14em] leading-[1.02]">
               {t('hero.titleAccent')}
             </span>
           </h1>
