@@ -1,6 +1,7 @@
 import { useAuth } from '@/features/auth';
 import { AccountPathSection } from './account-path-section';
 import { PublishHero } from './publish-hero';
+import { StepsExplorer } from './steps-explorer';
 
 export function PublishPage() {
   const { user } = useAuth();
@@ -10,6 +11,7 @@ export function PublishPage() {
     <>
       <PublishHero isSignedIn={isSignedIn} />
       <AccountPathSection isSignedIn={isSignedIn} />
+      <StepsExplorer />
     </>
   );
 }

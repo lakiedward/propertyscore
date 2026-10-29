@@ -139,6 +139,7 @@
       },
       "surfaceValue": "{{value}} m²",
       "floorValue": "{{floor}} din {{floors}}",
+      "mapLabel": "Hartă schematică · date de exemplu",
       "mapNote": "Cercul e ce vede publicul. Pinul îl vezi doar tu.",
       "phoneLabel": "Telefon de contact",
       "phoneValue": "0744 555 211",

@@ -118,7 +118,7 @@ export function ExampleListingCard() {
             </div>
           </div>
         </div>
-        <div className="absolute bottom-4 left-0 flex w-57.5 flex-col gap-2.5 rounded-2xl bg-card p-4 shadow-progress w767:bottom-3 w767:-left-7 w767:w-67.5">
+        <div className="absolute bottom-4 left-0 flex w-57.5 flex-col gap-2.5 rounded-[16px] bg-card p-4 shadow-progress w767:bottom-3 w767:-left-7 w767:w-67.5">
           <span className="flex justify-between text-meta leading-[1.55] font-extrabold">
             <span className="text-muted-foreground">{t('hero.card.progress')}</span>
             <span className="text-brand tabular-nums">{`${HERO_LISTING.progress}%`}</span>
