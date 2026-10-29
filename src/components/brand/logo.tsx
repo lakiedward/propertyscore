@@ -72,8 +72,13 @@ const markVariants = cva(
         color: '',
         inverse: '',
       },
+      surface: {
+        default: '',
+        accent: '',
+      },
     },
     compoundVariants: [
+      { product: 'physical', surface: 'accent', className: 'bg-primary text-cta' },
       { product: 'core', tone: 'color', className: 'bg-brand-highlight text-brand' },
       { product: 'core', tone: 'inverse', className: 'bg-cta text-cta-foreground' },
       { product: 'smartcheck', tone: 'color', className: 'bg-info text-info-foreground' },
@@ -85,6 +90,7 @@ const markVariants = cva(
 type LogoProps = VariantProps<typeof logoVariants> & {
   product?: BrandProduct;
   tone?: BrandTone;
+  surface?: 'default' | 'accent';
   hasMark?: boolean;
   isDecorative?: boolean;
   className?: string;
@@ -93,6 +99,7 @@ type LogoProps = VariantProps<typeof logoVariants> & {
 export function Logo({
   product = 'core',
   tone = 'color',
+  surface = 'default',
   size,
   typeface,
   hasMark = true,
@@ -113,7 +120,7 @@ export function Logo({
         <span className={leadVariants({ product, tone })}>
           {t(`brand.wordmark.${product}.lead`)}
         </span>
-        <span className={markVariants({ product, tone })}>
+        <span className={cn(markVariants({ product, tone, surface }))}>
           {t(`brand.wordmark.${product}.mark`)}
         </span>
       </span>

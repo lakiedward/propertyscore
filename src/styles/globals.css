@@ -182,6 +182,11 @@
   --color-border-hairline: var(--border-hairline);
   --color-number-ghost: var(--number-ghost);
   --color-heading-accent: var(--heading-accent);
+  --color-on-inverse-mist: var(--on-inverse-mist);
+  --color-on-info-mist: var(--on-info-mist);
+  --color-on-cta-soft: var(--on-cta-soft);
+  --color-zone-chip: var(--zone-chip);
+  --color-border-declared: var(--border-declared);
 
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -225,6 +230,11 @@
   --shadow-preview: 0 18px 40px rgba(16, 63, 50, 0.14);
   --shadow-step: 0 0 0 6px var(--ps-white);
   --shadow-step-active: 0 0 0 6px var(--ps-white), 0 10px 24px rgba(16, 63, 50, 0.18);
+  --shadow-card-soft: 0 1px 2px rgba(16, 63, 50, 0.06), 0 10px 28px rgba(16, 63, 50, 0.09);
+  --shadow-tier-photo: 0 8px 24px rgba(0, 0, 0, 0.18);
+  --shadow-tier-online: 0 14px 34px rgba(0, 0, 0, 0.2);
+  --shadow-tier-physical: 0 22px 48px rgba(0, 0, 0, 0.3);
+  --shadow-tier-chip: 0 4px 12px rgba(0, 0, 0, 0.22);
 
   --font-weight-nav: 670;
   --font-weight-action: 750;
@@ -418,6 +428,11 @@
   --ps-slate-800: #223b49;
   --ps-green-hairline: #e4eae3;
   --ps-green-ghost: #dce7de;
+  --ps-green-mist: #c9d9cf;
+  --ps-green-on-lime: #2e5a48;
+  --ps-green-declared: #b9c9bd;
+  --ps-slate-mist: #dce7ee;
+  --ps-slate-chip: #e2eaf0;
   --ps-schematic-land: #edebdd;
   --ps-schematic-park: #d3e2cf;
   --ps-schematic-water: #c9d9df;
@@ -661,6 +676,11 @@
   --border-hairline: var(--ps-green-hairline);
   --number-ghost: var(--ps-green-ghost);
   --heading-accent: var(--ps-green-600);
+  --on-inverse-mist: var(--ps-green-mist);
+  --on-info-mist: var(--ps-slate-mist);
+  --on-cta-soft: var(--ps-green-on-lime);
+  --zone-chip: var(--ps-slate-chip);
+  --border-declared: var(--ps-green-declared);
 
   --duration-instant: 90ms;
   --duration-fast: 160ms;
