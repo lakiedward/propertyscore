@@ -55,11 +55,11 @@ Pin exact versions when installing (`pnpm add -E`) and record them here.
 - **End-to-end:** Playwright
 - **Database tests:** pgTAP through `supabase test db`
 - **Quality:** ESLint 9 flat config (`typescript-eslint` strict type-checked, `react-hooks`, `react-refresh`, `jsx-a11y`, TanStack Query and Router plugins, `eslint-plugin-i18next`, `testing-library`, `playwright`), Prettier 3 + `prettier-plugin-tailwindcss`, EditorConfig, Knip, lefthook
-- **Delivery:** GitHub Actions (`ci.yml` on pull requests, `deploy-db.yml` for migrations), static hosting with SPA fallback
+- **Delivery:** GitHub Actions (`ci.yml` on pull requests, `deploy-db.yml` for migrations), Netlify through its Git integration (`netlify.toml`: build, SPA fallback, security headers)
 
 ## Implementation status
 
-Scaffolding from `SETUP_PLAN.md` section 25 is done through step 9:
+Scaffolding from `SETUP_PLAN.md` section 25 is done through step 10:
 
 - Vite + React + TypeScript project, Node 24 (`.nvmrc`), all core packages from the Tech stack.
 - shadcn primitives in `src/components/ui/` (`accordion`, `alert`, `badge`, `button` with the design-system variants, `card`, `collapsible`, `dialog`, `dropdown-menu`, `field`, `input`, `label`, `separator`, `sheet`, `skeleton`, `slider`, `sonner`, `table`, `tabs`, `toggle`, `toggle-group`), the design-system tokens and fonts in `globals.css`, the brand components in `src/components/brand/` and the layout components in `src/components/layout/`.
@@ -70,7 +70,7 @@ Scaffolding from `SETUP_PLAN.md` section 25 is done through step 9:
 - i18n: `common`, `auth`, `listings`, `home` and `publish` namespaces in `ro` and `en`, typed keys, `format.ts` (with `formatPrice`), translated Zod messages.
 - Tooling: ESLint, Prettier, EditorConfig, Vitest + RTL + MSW, Playwright, Knip, lefthook, `scripts/check-translations.ts`, and the `ci.yml` / `deploy-db.yml` workflows.
 
-Not built yet: step 10 (hosting, SPA fallback, security headers) waits on the hosting decision in section 26; the backend of password reset (emails, recovery session), resending confirmation emails, OAuth providers and the auth-callback page; every product feature (properties, scoring, the listing form and "Anunțurile mele"). Anything the rules describe that is not in the file system does not exist yet: check before importing, and create it following the rules when a feature needs it. Update this section as pieces land.
+Hosting (step 10) is configured for Netlify in `netlify.toml`: build, SPA fallback and security headers. Not built yet: the backend of password reset (emails, recovery session), resending confirmation emails, OAuth providers and the auth-callback page; every product feature (properties, scoring, the listing form and "Anunțurile mele"). Anything the rules describe that is not in the file system does not exist yet: check before importing, and create it following the rules when a feature needs it. Update this section as pieces land.
 
 ## Project structure
 

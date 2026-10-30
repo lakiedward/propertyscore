@@ -12,6 +12,8 @@ supabase/.temp/
 supabase/.branches/
 supabase/functions/.env
 
+.netlify/
+
 playwright-report/
 test-results/
 blob-report/

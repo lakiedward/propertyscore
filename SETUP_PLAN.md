@@ -906,7 +906,7 @@ The architecture above is deliberately thin. Keep it that way:
    - `ci.yml` on every PR: typecheck, lint, format check, translation check, unit tests, DB tests, E2E and build, plus the check that generated types match the migrations.
    - `deploy-db.yml`: `supabase db push` to production on a `vX.Y.Z` tag. There is no hosted dev environment; merges to `main` only run CI.
    - Frontend deploys go through the hosting provider's Git integration.
-10. Hosting: any static host (Vercel, Netlify or Cloudflare Pages) with an SPA fallback to `index.html`, and with security headers set (CSP allowing the Supabase and Sentry domains, HSTS, `X-Content-Type-Options`).
+10. Hosting: Netlify, connected to the repository through its Git integration and configured in `netlify.toml`: `pnpm build` on Node 24, `dist` published, an SPA fallback to `index.html`, and security headers (CSP allowing the Supabase, Sentry and OpenFreeMap domains, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`). Vercel and Cloudflare Pages would have worked equally well; Netlify was chosen because the owner's other projects already run there. The Supabase URL and publishable key are set as Netlify environment variables for the `production` context only, never committed, so Deploy Previews and branch deploys never reach the production database. HSTS is sent without `includeSubDomains` and `preload` until the production domain is chosen, because a preload entry is hard to withdraw. Sentry stays off on Netlify until `VITE_SENTRY_DSN` is set there; source maps keep uploading from CI (section 20), so `SENTRY_AUTH_TOKEN` is not set in Netlify.
 
 ---
 
@@ -922,4 +922,4 @@ These are product or business choices that change parts of this plan. Decide the
 | Is Romanian the right default for visitors whose browser is in neither language? Is the English audience mainly British/European (`en-GB` formats) or American (`en-US`)? | Language detection and date/number formats (section 18) |
 | Which currencies are prices in: RON, EUR or both? | Money columns, `formatCurrency`, score inputs |
 | Where does the score come from: client formula, Postgres function, or an external data API? | Whether scoring lives in `*.utils.ts`, an RPC, or an Edge Function |
-| Hosting provider and domain | Env management, deploy workflow, CSP |
+| Domain for production (hosting is decided: Netlify, setup step 10) | Supabase auth redirect URLs, CSP |
