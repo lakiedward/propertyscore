@@ -59,7 +59,7 @@ Pin exact versions when installing (`pnpm add -E`) and record them here.
 
 ## Implementation status
 
-Scaffolding from `SETUP_PLAN.md` section 25 is done through step 9:
+Scaffolding from `SETUP_PLAN.md` section 25 is done through step 10:
 
 - Vite + React + TypeScript project, Node 24 (`.nvmrc`), all core packages from the Tech stack.
 - shadcn primitives in `src/components/ui/` (`accordion`, `alert`, `badge`, `button` with the design-system variants, `card`, `collapsible`, `dialog`, `dropdown-menu`, `field`, `input`, `label`, `separator`, `sheet`, `skeleton`, `slider`, `sonner`, `table`, `tabs`, `toggle`, `toggle-group`), the design-system tokens and fonts in `globals.css`, the brand components in `src/components/brand/` and the layout components in `src/components/layout/`.
