@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import roCommon from '../src/i18n/locales/ro/common.json' with { type: 'json' };
+import roAuth from '../src/i18n/locales/ro/auth.json' with { type: 'json' };
 import { AppShellPage } from './pages/app-shell.page';
 import { LoginPage } from './pages/login.page';
 import { testUsers } from './test-users';
@@ -18,7 +18,7 @@ test.describe('Sign in', () => {
     await loginPage.goto();
     await loginPage.signIn(testUsers.ro.email, 'not-the-password');
 
-    await expect(page.getByText(roCommon.errors.reasons.invalid_credentials)).toBeVisible();
+    await expect(page.getByText(roAuth.login.failedText)).toBeVisible();
   });
 
   test('sends a signed-out visitor to the login page and back after signing in', async ({
