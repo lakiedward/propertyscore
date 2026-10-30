@@ -14,7 +14,9 @@ export class LoginPage {
   }
 
   get heading(): Locator {
-    return this.page.getByRole('heading', { name: this.text.login.title });
+    return this.page.getByRole('heading', {
+      name: `${this.text.login.headBold} ${this.text.login.headRest}`,
+    });
   }
 
   async goto() {
@@ -22,8 +24,8 @@ export class LoginPage {
   }
 
   async signIn(email: string, password: string) {
-    await this.page.getByLabel(this.text.fields.email.label).fill(email);
-    await this.page.getByLabel(this.text.fields.password.label).fill(password);
+    await this.page.getByLabel(this.text.fields.email.label, { exact: true }).fill(email);
+    await this.page.getByLabel(this.text.fields.password.label, { exact: true }).fill(password);
     await this.page.getByRole('button', { name: this.text.login.submit }).click();
   }
 }

@@ -17,6 +17,8 @@ import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
 import { Route as SitePublishRouteImport } from './routes/_site/publish'
+import { Route as PublicPasswordResetIndexRouteImport } from './routes/_public/password-reset/index'
+import { Route as PublicPasswordResetNewRouteImport } from './routes/_public/password-reset/new'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -55,6 +57,17 @@ const SitePublishRoute = SitePublishRouteImport.update({
   path: '/publish',
   getParentRoute: () => SiteRouteRoute,
 } as any)
+const PublicPasswordResetIndexRoute =
+  PublicPasswordResetIndexRouteImport.update({
+    id: '/password-reset/',
+    path: '/password-reset/',
+    getParentRoute: () => PublicRouteRoute,
+  } as any)
+const PublicPasswordResetNewRoute = PublicPasswordResetNewRouteImport.update({
+  id: '/password-reset/new',
+  path: '/password-reset/new',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
@@ -62,6 +75,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
   '/publish': typeof SitePublishRoute
+  '/password-reset/new': typeof PublicPasswordResetNewRoute
+  '/password-reset/': typeof PublicPasswordResetIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
@@ -69,6 +84,8 @@ export interface FileRoutesByTo {
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
   '/publish': typeof SitePublishRoute
+  '/password-reset/new': typeof PublicPasswordResetNewRoute
+  '/password-reset': typeof PublicPasswordResetIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,12 +97,28 @@ export interface FileRoutesById {
   '/_public/sign-up': typeof PublicSignUpRoute
   '/_site/publish': typeof SitePublishRoute
   '/_site/': typeof SiteIndexRoute
+  '/_public/password-reset/new': typeof PublicPasswordResetNewRoute
+  '/_public/password-reset/': typeof PublicPasswordResetIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/account' | '/login' | '/sign-up' | '/publish'
+  fullPaths:
+    | '/'
+    | '/account'
+    | '/login'
+    | '/sign-up'
+    | '/publish'
+    | '/password-reset/new'
+    | '/password-reset/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/login' | '/sign-up' | '/publish'
+  to:
+    | '/'
+    | '/account'
+    | '/login'
+    | '/sign-up'
+    | '/publish'
+    | '/password-reset/new'
+    | '/password-reset'
   id:
     | '__root__'
     | '/_authenticated'
@@ -96,6 +129,8 @@ export interface FileRouteTypes {
     | '/_public/sign-up'
     | '/_site/publish'
     | '/_site/'
+    | '/_public/password-reset/new'
+    | '/_public/password-reset/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -162,6 +197,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitePublishRouteImport
       parentRoute: typeof SiteRouteRoute
     }
+    '/_public/password-reset/': {
+      id: '/_public/password-reset/'
+      path: '/password-reset'
+      fullPath: '/password-reset/'
+      preLoaderRoute: typeof PublicPasswordResetIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/password-reset/new': {
+      id: '/_public/password-reset/new'
+      path: '/password-reset/new'
+      fullPath: '/password-reset/new'
+      preLoaderRoute: typeof PublicPasswordResetNewRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
   }
 }
 
@@ -179,11 +228,15 @@ const AuthenticatedRouteRouteWithChildren =
 interface PublicRouteRouteChildren {
   PublicLoginRoute: typeof PublicLoginRoute
   PublicSignUpRoute: typeof PublicSignUpRoute
+  PublicPasswordResetNewRoute: typeof PublicPasswordResetNewRoute
+  PublicPasswordResetIndexRoute: typeof PublicPasswordResetIndexRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicLoginRoute: PublicLoginRoute,
   PublicSignUpRoute: PublicSignUpRoute,
+  PublicPasswordResetNewRoute: PublicPasswordResetNewRoute,
+  PublicPasswordResetIndexRoute: PublicPasswordResetIndexRoute,
 }
 
 const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(

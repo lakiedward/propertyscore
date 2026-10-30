@@ -16,9 +16,14 @@ import { useUpdateProfileLocale } from '../api/profile.queries';
 type LanguageSwitcherProps = {
   userId?: string | undefined;
   variant?: 'menu' | 'segmented';
+  tone?: 'dark' | 'light';
 };
 
-export function LanguageSwitcher({ userId, variant = 'menu' }: LanguageSwitcherProps) {
+export function LanguageSwitcher({
+  userId,
+  variant = 'menu',
+  tone = 'dark',
+}: LanguageSwitcherProps) {
   const { t } = useTranslation();
   const updateProfileLocale = useUpdateProfileLocale();
   const locale = useLocale();
@@ -32,6 +37,30 @@ export function LanguageSwitcher({ userId, variant = 'menu' }: LanguageSwitcherP
       updateProfileLocale.mutate({ userId, locale: value });
     }
   };
+
+  if (variant === 'segmented' && tone === 'light') {
+    return (
+      <ToggleGroup
+        type="single"
+        value={locale}
+        onValueChange={handleChange}
+        aria-label={t('language.label')}
+        className="inline-flex gap-0.5 rounded-md border border-border bg-card p-0.75"
+      >
+        {SUPPORTED_LOCALES.map((option) => (
+          <ToggleGroupItem
+            key={option}
+            value={option}
+            lang={option}
+            aria-label={t(`language.${option}`)}
+            className="h-7.5 min-w-0 rounded-[6px] px-2.5 text-caption font-semibold text-muted-foreground hover:bg-secondary hover:text-brand data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          >
+            {t(`language.short.${option}`)}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    );
+  }
 
   if (variant === 'segmented') {
     return (

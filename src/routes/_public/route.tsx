@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
-import { CenteredLayout } from '@/components/layout/centered-layout';
+import { AuthLayout } from '@/features/auth';
 import { LanguageSwitcher } from '@/features/profile';
 
 export const Route = createFileRoute('/_public')({
@@ -8,8 +8,8 @@ export const Route = createFileRoute('/_public')({
 
 function PublicLayout() {
   return (
-    <CenteredLayout actions={<LanguageSwitcher />}>
+    <AuthLayout languageSwitcher={<LanguageSwitcher variant="segmented" tone="light" />}>
       <Outlet />
-    </CenteredLayout>
+    </AuthLayout>
   );
 }

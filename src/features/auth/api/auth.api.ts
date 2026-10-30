@@ -25,12 +25,17 @@ export async function signInWithPassword({ email, password }: Credentials) {
   return data.session;
 }
 
-export async function signUp({ email, password, locale }: Credentials & { locale: Locale }) {
+export async function signUp({
+  email,
+  password,
+  fullName,
+  locale,
+}: Credentials & { fullName: string; locale: Locale }) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { locale },
+      data: { locale, full_name: fullName },
       emailRedirectTo: window.location.origin,
     },
   });

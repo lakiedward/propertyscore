@@ -5,6 +5,7 @@
 @import '@fontsource-variable/sora';
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant short (@media (max-height: 640px) and (min-width: 921px));
 
 @theme inline {
   --font-sans: 'Manrope Variable', 'Segoe UI', Arial, sans-serif;
@@ -187,6 +188,16 @@
   --color-on-cta-soft: var(--on-cta-soft);
   --color-zone-chip: var(--zone-chip);
   --color-border-declared: var(--border-declared);
+  --color-social-apple: var(--social-apple);
+  --color-social-apple-hover: var(--social-apple-hover);
+  --color-social-facebook: var(--social-facebook);
+  --color-social-facebook-hover: var(--social-facebook-hover);
+  --color-google-red: var(--google-red);
+  --color-google-blue: var(--google-blue);
+  --color-google-yellow: var(--google-yellow);
+  --color-google-green: var(--google-green);
+  --color-on-photo: var(--on-photo);
+  --color-on-photo-faint: var(--on-photo-faint);
 
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -199,6 +210,7 @@
   --radius-float: 13px;
   --radius-icon: 12px;
   --radius-photo: 20px;
+  --radius-status: 18px;
 
   --shadow-sm: 0 1px 2px rgba(16, 63, 50, 0.06);
   --shadow-md: 0 10px 28px -16px rgba(16, 63, 50, 0.28);
@@ -272,6 +284,7 @@
   --breakpoint-w820: 821px;
   --breakpoint-w860: 861px;
   --breakpoint-w900: 901px;
+  --breakpoint-w920: 921px;
   --breakpoint-w960: 961px;
   --breakpoint-w1059: 1060px;
   --breakpoint-w1080: 1081px;
@@ -433,6 +446,16 @@
   --ps-green-declared: #b9c9bd;
   --ps-slate-mist: #dce7ee;
   --ps-slate-chip: #e2eaf0;
+  --ps-black: #000000;
+  --ps-black-hover: #1f1f1f;
+  --ps-facebook: #1877f2;
+  --ps-facebook-hover: #166fe0;
+  --ps-google-red: #ea4335;
+  --ps-google-blue: #4285f4;
+  --ps-google-yellow: #fbbc05;
+  --ps-google-green: #34a853;
+  --ps-green-on-photo: #e3eee6;
+  --ps-green-on-photo-faint: #d5e8d9;
   --ps-red-50: #fbede8;
   --ps-red-200: #edbdaf;
   --ps-red-600: #a63a24;
@@ -677,6 +700,16 @@
   --on-cta-soft: var(--ps-green-on-lime);
   --zone-chip: var(--ps-slate-chip);
   --border-declared: var(--ps-green-declared);
+  --social-apple: var(--ps-black);
+  --social-apple-hover: var(--ps-black-hover);
+  --social-facebook: var(--ps-facebook);
+  --social-facebook-hover: var(--ps-facebook-hover);
+  --google-red: var(--ps-google-red);
+  --google-blue: var(--ps-google-blue);
+  --google-yellow: var(--ps-google-yellow);
+  --google-green: var(--ps-google-green);
+  --on-photo: var(--ps-green-on-photo);
+  --on-photo-faint: var(--ps-green-on-photo-faint);
 
   --duration-instant: 90ms;
   --duration-fast: 160ms;

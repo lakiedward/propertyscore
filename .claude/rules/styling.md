@@ -35,7 +35,7 @@ Which tokens and components exist, their values and their meaning are defined in
 ## Theme, icons, fonts
 
 - Light and dark tokens are both defined from day one; the `dark` class on `<html>` switches them. Use `dark:` variants only when a token cannot express the difference.
-- Icons: `lucide-react` only, `size-4` inline with text and `size-5` by default; decorative icons `aria-hidden`, icon-only buttons with a translated `aria-label`. No emoji, inline SVG copies or a second icon set.
+- Icons: `lucide-react` only (the one exception: the Google and Facebook sign-in marks in `components/brand/`), `size-4` inline with text and `size-5` by default; decorative icons `aria-hidden`, icon-only buttons with a translated `aria-label`. No emoji, inline SVG copies or a second icon set.
 - Fonts are self-hosted through `@fontsource/*` with the `latin` and `latin-ext` subsets (ș, ț, ă, â, î); no Google Fonts request.
 - Charts, when needed, use `recharts` through the shadcn chart wrapper with the `--chart-*` tokens.
 - Focus styles stay visible (`focus-visible:ring-*` as the shadcn primitives ship them); never `outline-none` without a replacement.
