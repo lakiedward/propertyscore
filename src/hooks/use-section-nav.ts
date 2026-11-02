@@ -1,5 +1,5 @@
 import { useRouterState } from '@tanstack/react-router';
-import { sectionNavFor, type SectionNav } from './site-navigation';
+import { sectionNavFor, type SectionNav } from '@/components/layout/site-navigation';
 
 export function useSectionNav(): SectionNav {
   const pathname = useRouterState({ select: (state) => state.location.pathname });

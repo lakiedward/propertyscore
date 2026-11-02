@@ -1,2 +1,2 @@
-export { listingQueries } from './api/listings.queries';
-export { LISTINGS_PREVIEW_LIMIT, ListingsBoard } from './components/listings-board';
+export { LISTINGS_PREVIEW_LIMIT, listingQueries } from './api/listings.queries';
+export { ListingsBoard } from './components/listings-board';

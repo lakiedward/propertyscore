@@ -36,4 +36,25 @@ describe('useScrollProgress', () => {
     await scrollTo(5000);
     expect(element.style.getPropertyValue('--page-progress')).toBe('1');
   });
+
+  it('keeps the bar empty when the person prefers reduced motion', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
+      matches: query === '(prefers-reduced-motion: reduce)',
+      media: query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    }));
+    const element = document.createElement('header');
+    renderHook(() => {
+      useScrollProgress({ current: element });
+    });
+
+    await scrollTo(1000);
+
+    expect(element.style.getPropertyValue('--page-progress')).toBe('0');
+  });
 });

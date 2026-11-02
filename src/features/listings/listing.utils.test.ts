@@ -4,6 +4,7 @@ describe('listing utils', () => {
   it('keeps the currency of the record', () => {
     expect(toCurrency('EUR')).toBe('EUR');
     expect(toCurrency('RON')).toBe('RON');
+    expect(toCurrency('USD')).toBe('RON');
   });
 
   it('maps the verification to the trust badge kind', () => {

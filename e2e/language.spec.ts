@@ -8,14 +8,14 @@ test.describe('Language for a Romanian user', () => {
   test('shows Romanian and keeps an English choice after a reload', async ({ page }) => {
     await page.goto('/account');
     await expect(new AppShellPage(page, 'ro').accountHeading).toBeVisible();
-    await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
+    await expect(new AppShellPage(page, 'ro').document).toHaveAttribute('lang', 'ro');
 
     await new AppShellPage(page, 'ro').switchLanguage('en');
     await expect(new AppShellPage(page, 'en').accountHeading).toBeVisible();
 
     await page.reload();
     await expect(new AppShellPage(page, 'en').accountHeading).toBeVisible();
-    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(new AppShellPage(page, 'en').document).toHaveAttribute('lang', 'en');
 
     await new AppShellPage(page, 'en').switchLanguage('ro');
     await expect(new AppShellPage(page, 'ro').accountHeading).toBeVisible();
@@ -29,6 +29,6 @@ test.describe('Language for an English user', () => {
     await page.goto('/account');
 
     await expect(new AppShellPage(page, 'en').accountHeading).toBeVisible();
-    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(new AppShellPage(page, 'en').document).toHaveAttribute('lang', 'en');
   });
 });

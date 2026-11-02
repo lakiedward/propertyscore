@@ -24,7 +24,7 @@ select
   extensions.crypt('Parola-Test-2026', extensions.gen_salt('bf')),
   now(),
   '{"provider": "email", "providers": ["email"]}',
-  jsonb_build_object('locale', seed.locale),
+  jsonb_build_object('locale', seed.locale, 'full_name', seed.full_name),
   now(),
   now(),
   '',
@@ -33,10 +33,10 @@ select
   ''
 from (
   values
-    ('a0000000-0000-4000-8000-000000000001'::uuid, 'ana.ro@example.test', 'ro'),
-    ('a0000000-0000-4000-8000-000000000002'::uuid, 'emma.en@example.test', 'en'),
-    ('a0000000-0000-4000-8000-000000000003'::uuid, 'ion.ro@example.test', 'ro')
-) as seed (id, email, locale);
+    ('a0000000-0000-4000-8000-000000000001'::uuid, 'ana.ro@example.test', 'ro', 'Ana Mărginean'),
+    ('a0000000-0000-4000-8000-000000000002'::uuid, 'emma.en@example.test', 'en', 'Emma Stănescu'),
+    ('a0000000-0000-4000-8000-000000000003'::uuid, 'ion.ro@example.test', 'ro', 'Ion Țurcanu')
+) as seed (id, email, locale, full_name);
 
 insert into auth.identities (
   id,

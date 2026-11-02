@@ -1,35 +1,51 @@
 import { screen } from '@testing-library/react';
+import { SERVICE_PRICES } from '@/config/pricing';
+import { formatPrice } from '@/i18n/format';
 import roHome from '@/i18n/locales/ro/home.json';
 import { renderWithProviders } from '@/test/render';
 import { PartnerEarningsCalculator } from './partner-earnings-calculator';
 
 const ANY_SPACE = /\s/g;
+const calculator = roHome.partners.calculator;
+const { amount: commission, currency } = SERVICE_PRICES.partnerCommission;
 
-function amount(expected: string) {
+function normalised(text: string) {
+  return text.replace(ANY_SPACE, ' ');
+}
+
+function price(value: number) {
+  const expected = normalised(formatPrice(value, currency));
   return (_content: string, element: Element | null) =>
-    element?.tagName === 'SPAN' && element.textContent.replace(ANY_SPACE, ' ') === expected;
+    element?.tagName === 'SPAN' && normalised(element.textContent) === expected;
 }
 
 describe('PartnerEarningsCalculator', () => {
   it('starts at five properties a month', async () => {
     await renderWithProviders(<PartnerEarningsCalculator />);
 
-    const slider = screen.getByRole('slider', { name: roHome.partners.calculator.label });
+    const slider = screen.getByRole('slider', { name: calculator.label });
     expect(slider).toHaveAttribute('aria-valuenow', '5');
-    expect(slider).toHaveAttribute('aria-valuetext', '5 proprietăți');
-    expect(screen.getByText(amount('500 lei'))).toBeInTheDocument();
-    expect(screen.getByText(amount('6.000 lei'))).toBeInTheDocument();
+    expect(slider).toHaveAttribute(
+      'aria-valuetext',
+      calculator.value_few.replace('{{count}}', '5'),
+    );
+    expect(screen.getByText(price(5 * commission))).toBeInTheDocument();
+    expect(screen.getByText(price(5 * commission * 12))).toBeInTheDocument();
   });
 
   it('recalculates the earnings from the keyboard', async () => {
     const { user } = await renderWithProviders(<PartnerEarningsCalculator />);
-    const slider = screen.getByRole('slider', { name: roHome.partners.calculator.label });
+    const slider = screen.getByRole('slider', { name: calculator.label });
 
-    slider.focus();
+    await user.tab();
+    expect(slider).toHaveFocus();
     await user.keyboard('{End}');
 
-    expect(slider).toHaveAttribute('aria-valuetext', '20 de proprietăți');
-    expect(screen.getByText(amount('2.000 lei'))).toBeInTheDocument();
-    expect(screen.getByText(amount('24.000 lei'))).toBeInTheDocument();
+    expect(slider).toHaveAttribute(
+      'aria-valuetext',
+      calculator.value_other.replace('{{count}}', '20'),
+    );
+    expect(screen.getByText(price(20 * commission))).toBeInTheDocument();
+    expect(screen.getByText(price(20 * commission * 12))).toBeInTheDocument();
   });
 });

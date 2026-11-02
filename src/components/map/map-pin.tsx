@@ -1,4 +1,5 @@
 import { cva } from 'class-variance-authority';
+import type { TrustKind } from '@/components/trust/trust.utils';
 import { cn } from '@/lib/utils';
 
 const mapPinVariants = cva(
@@ -19,7 +20,7 @@ const mapPinVariants = cva(
 );
 
 type MapPinProps = {
-  kind: 'physical' | 'online' | 'none';
+  kind: TrustKind;
   label: string;
   accessibleName: string;
   isActive: boolean;

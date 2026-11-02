@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
-import { AuthLayout } from '@/features/auth';
+import { AuthLayout, useAuth } from '@/features/auth';
 import { LanguageSwitcher } from '@/features/profile';
 
 export const Route = createFileRoute('/_public')({
@@ -7,8 +7,12 @@ export const Route = createFileRoute('/_public')({
 });
 
 function PublicLayout() {
+  const { user } = useAuth();
+
   return (
-    <AuthLayout languageSwitcher={<LanguageSwitcher variant="segmented" tone="light" />}>
+    <AuthLayout
+      languageSwitcher={<LanguageSwitcher userId={user?.id} variant="segmented" tone="light" />}
+    >
       <Outlet />
     </AuthLayout>
   );

@@ -1,9 +1,16 @@
 {
   "pageTitle": "Publish a free listing",
+  "example": {
+    "title": "3-room apartment, Complex",
+    "surface": "{{value}} m²",
+    "rooms_one": "{{count}} room",
+    "rooms_other": "{{count}} rooms",
+    "floorShort": "floor {{floor}}/{{floors}}",
+    "floor": "{{floor}} of {{floors}}"
+  },
   "hero": {
     "eyebrow": "For owners",
-    "titleLead": "Your listing, published free in",
-    "titleAccent": "10 minutes",
+    "title": "Your listing, published free in <accent>10 minutes</accent>",
     "lead": "Sale or rent. You complete 6 simple steps, we check it, and buyers contact you directly.",
     "seeSteps": "See what the steps look like",
     "startSignedOut": "Sign in and start your listing",
@@ -18,12 +25,8 @@
       "summary": "Example listing: a 3-room apartment for sale in the Complex area, Timișoara.",
       "transaction": "For sale",
       "morePhotos": "+{{count}}",
-      "title": "3-room apartment, Complex",
       "area": "Complex area, Timișoara",
       "pricePerSqm": "{{price}}/m²",
-      "surface": "{{value}} m²",
-      "rooms": "{{count}} rooms",
-      "floor": "floor {{floor}}/{{floors}}",
       "ownerInitials": "IS",
       "ownerName": "Ioana Stan",
       "ownerRole": "Owner",
@@ -36,8 +39,7 @@
   },
   "path": {
     "eyebrow": "Why you need an account",
-    "titleLead": "Prepare freely,",
-    "titleAccent": "publish from your account.",
+    "title": "<lead>Prepare freely,</lead> <accent>publish from your account.</accent>",
     "intro": "The account is free. This way only you can edit or withdraw the listing, and messages reach you.",
     "steps": {
       "prepare": {
@@ -62,8 +64,7 @@
     "note": "You lose nothing you fill in: after you sign in, we take you straight to the form."
   },
   "steps": {
-    "titleLead": "Your listing,",
-    "titleAccent": "in 6 steps.",
+    "title": "Your listing, <accent>in 6 steps.</accent>",
     "intro": "Tap a step to see what you fill in and what the form looks like.",
     "duration": { "title": "About 10 minutes", "text": "from start to submission" },
     "autosave": { "title": "Autosave", "text": "pick up any time where you left off" },
@@ -127,7 +128,6 @@
       "cover": "Cover",
       "dragToSort": "Drag to reorder",
       "titleLabel": "Title",
-      "titleValue": "3-room apartment, Complex",
       "descriptionLabel": "Description",
       "descriptionValue": "Bright apartment on the 2nd floor. The living room has south-facing windows. Plumbing and wiring redone in 2019.",
       "facts": {
@@ -136,8 +136,6 @@
         "floor": "Floor",
         "year": "Year built"
       },
-      "surfaceValue": "{{value}} m²",
-      "floorValue": "{{floor}} of {{floors}}",
       "mapLabel": "Example · Complex area, Timișoara",
       "mapNote": "The circle is what the public sees. Only you see the pin.",
       "phoneLabel": "Contact phone",
@@ -178,13 +176,13 @@
     "titleAccent": "Different trust.",
     "intro": "A verified listing answers questions before they are asked. See how yours appears in search at each level.",
     "listing": {
-      "meta": "{{count}} rooms · {{area}} m²",
+      "meta_one": "{{count}} room · {{area}} m²",
+      "meta_other": "{{count}} rooms · {{area}} m²",
       "area": "Fabric, Timișoara"
     },
     "trust": "Trust",
     "trustLevel": "Trust: {{level}} of {{total}}",
     "plain": {
-      "chip": "No report",
       "declared": "Data declared by the owner",
       "name": "Basic listing",
       "price": "Free",
@@ -201,8 +199,7 @@
       "text": "An inspector checks the home. We take the photos, the floor plan and the 360° tour.",
       "more": "What Property Fizic includes"
     },
-    "note": "Publish for free now. Order the report any time from My listings, and the badge appears automatically when it's ready.",
-    "illustrative": "Illustrative example."
+    "note": "Publish for free now. Order the report any time from My listings, and the badge appears automatically when it's ready. <muted>Illustrative example.</muted>"
   },
   "faq": {
     "title": "What owners ask us",

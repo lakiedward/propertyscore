@@ -27,7 +27,11 @@ function SiteLayout() {
         isSignedIn={Boolean(user)}
         menuLanguageSwitcher={<LanguageSwitcher userId={userId} variant="segmented" />}
       />
-      <main id="main" tabIndex={-1} className="flex-1 outline-none">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="flex-1 focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset"
+      >
         <Outlet />
       </main>
       <SiteFooter />
@@ -35,7 +39,11 @@ function SiteLayout() {
   );
 }
 
-function ProfileLocaleSync({ userId }: { userId: string }) {
+type ProfileLocaleSyncProps = {
+  userId: string;
+};
+
+function ProfileLocaleSync({ userId }: ProfileLocaleSyncProps) {
   useSyncProfileLocale(userId);
   return null;
 }

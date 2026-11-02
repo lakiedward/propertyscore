@@ -1,11 +1,14 @@
 import { PlusIcon } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { Logo } from '@/components/brand/logo';
 import { HOME_SECTION } from '@/components/layout/site-navigation';
 import { ServiceCard } from '@/components/property/service-card';
 import { SERVICE_PRICES } from '@/config/pricing';
 import { formatPrice } from '@/i18n/format';
+import heroSmallImage from '@/assets/home/hero-living-800.webp';
 import heroImage from '@/assets/home/hero-living.webp';
+
+const HERO_SIZES = '(min-width: 821px) 52vw, 100vw';
 
 export function HomeHero() {
   const { t } = useTranslation('home');
@@ -38,9 +41,9 @@ export function HomeHero() {
               amount={SERVICE_PRICES.smartCheck.amount}
               currency={SERVICE_PRICES.smartCheck.currency}
               action={t('hero.smartCheck.action')}
-              brand={<Logo product="smartcheck" tone="inverse" size="card" isDecorative />}
+              brand={<Logo product="smartcheck" tone="inverse" size="card" />}
             >
-              <strong>{t('hero.smartCheck.strong')}</strong> {t('hero.smartCheck.text')}
+              <Trans t={t} i18nKey="hero.smartCheck.text" components={{ strong: <strong /> }} />
             </ServiceCard>
             <ServiceCard
               tone="forest"
@@ -48,7 +51,7 @@ export function HomeHero() {
               amount={SERVICE_PRICES.physical.amount}
               currency={SERVICE_PRICES.physical.currency}
               action={t('hero.physical.action')}
-              brand={<Logo product="physical" tone="inverse" size="card" isDecorative />}
+              brand={<Logo product="physical" tone="inverse" size="card" />}
               extra={
                 <span className="mt-3 flex items-center gap-2 border-t border-on-inverse/16 pt-2.5">
                   <span
@@ -57,20 +60,14 @@ export function HomeHero() {
                   >
                     <PlusIcon className="size-3" strokeWidth={3} />
                   </span>
-                  <Logo
-                    product="smartcheck"
-                    tone="inverse"
-                    size="inline"
-                    typeface="body"
-                    isDecorative
-                  />
+                  <Logo product="smartcheck" tone="inverse" size="inline" typeface="body" />
                   <span className="text-meta font-medium text-on-inverse-faint">
                     {t('hero.physical.included', { price: smartCheckPrice })}
                   </span>
                 </span>
               }
             >
-              <strong>{t('hero.physical.strong')}</strong> {t('hero.physical.text')}
+              <Trans t={t} i18nKey="hero.physical.text" components={{ strong: <strong /> }} />
             </ServiceCard>
           </div>
           <p className="mt-3.5 max-w-copy text-meta text-muted-foreground">
@@ -84,11 +81,12 @@ export function HomeHero() {
           />
           <img
             src={heroImage}
+            srcSet={`${heroSmallImage} 800w, ${heroImage} 1672w`}
+            sizes={HERO_SIZES}
             alt={t('hero.imageAlt')}
             width={1672}
             height={941}
             fetchPriority="high"
-            decoding="async"
             className="absolute inset-0 size-full rounded-photo bg-surface-alt object-cover shadow-photo"
           />
           <div className="absolute top-5 left-3.75 w-52.5 rounded-float bg-card p-3.25 shadow-float w520:w-62 w520:max-w-1/2 w520:px-4.5 w520:py-4 w1080:top-10.75 w1080:-left-10.5">

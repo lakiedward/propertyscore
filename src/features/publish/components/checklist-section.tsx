@@ -67,11 +67,11 @@ export function ChecklistSection() {
                   key={item.key}
                   className="flex items-center gap-3 rounded-lg bg-background px-3 py-2.5"
                 >
-                  <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-card text-brand">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-thumb bg-card text-brand">
                     <Icon aria-hidden className="size-4.5" />
                   </span>
                   <span className="flex flex-col">
-                    <strong className="text-[15px] leading-[1.55] font-bold text-foreground">
+                    <strong className="text-body-sm leading-copy font-bold text-foreground">
                       {t(`checklist.need.${item.key}.title`)}
                     </strong>
                     <span className="text-small leading-normal text-muted-foreground">
@@ -102,7 +102,7 @@ export function ChecklistSection() {
                     <span aria-hidden="true" className={cn('w-0.5 flex-1', item.line)} />
                   </span>
                   <span className="flex flex-col gap-0.5 pt-1 pb-4">
-                    <strong className="text-[15px] leading-[1.55] font-bold text-foreground">
+                    <strong className="text-body-sm leading-copy font-bold text-foreground">
                       {t(`checklist.flow.${item.key}.title`)}
                     </strong>
                     <span className="text-small leading-normal text-muted-foreground">

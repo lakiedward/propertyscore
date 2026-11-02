@@ -40,12 +40,12 @@ const MARK_SIZE = {
   xl: 52,
 } as const;
 
-const leadVariants = cva('tracking-brand', {
+const leadVariants = cva('font-semibold tracking-brand', {
   variants: {
     product: {
-      core: 'font-semibold',
-      physical: 'font-semibold',
-      smartcheck: 'font-semibold',
+      core: '',
+      physical: '',
+      smartcheck: '',
     },
     tone: {
       color: '',
@@ -120,7 +120,7 @@ export function Logo({
         <span className={leadVariants({ product, tone })}>
           {t(`brand.wordmark.${product}.lead`)}
         </span>
-        <span className={cn(markVariants({ product, tone, surface }))}>
+        <span className={markVariants({ product, tone, surface })}>
           {t(`brand.wordmark.${product}.mark`)}
         </span>
       </span>

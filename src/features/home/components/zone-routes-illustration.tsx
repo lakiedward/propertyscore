@@ -7,10 +7,11 @@ import {
   SchoolIcon,
   type LucideIcon,
 } from 'lucide-react';
+import { cva } from 'class-variance-authority';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { cn } from '@/lib/utils';
+import { cn, oneOf } from '@/lib/utils';
 import {
   ILLUSTRATION_BLOCKS,
   ILLUSTRATION_POIS,
@@ -18,31 +19,22 @@ import {
   ILLUSTRATION_ROUTES,
   ILLUSTRATION_TREES,
 } from '../data/zone-routes-illustration';
+import { hueStyle, type HomeHue } from '../home.categories';
 
 const FILTERS = ['transport', 'school', 'park', 'shops'] as const;
 type RouteFilter = (typeof FILTERS)[number];
 const ALL = 'all';
 
-const ROUTE_STROKE: Readonly<Record<RouteFilter, string>> = {
-  transport: 'stroke-category-education',
-  school: 'stroke-category-health',
-  park: 'stroke-category-green',
-  shops: 'stroke-category-shopping',
-};
+const ROUTE_HUE = {
+  transport: 'sky',
+  school: 'coral',
+  park: 'leaf',
+  shops: 'berry',
+} as const satisfies Record<RouteFilter, HomeHue>;
 
-const ROUTE_FILL: Readonly<Record<RouteFilter, string>> = {
-  transport: 'fill-category-education',
-  school: 'fill-category-health',
-  park: 'fill-category-green',
-  shops: 'fill-category-shopping',
-};
-
-const ROUTE_DOT: Readonly<Record<RouteFilter, string>> = {
-  transport: 'bg-category-education',
-  school: 'bg-category-health',
-  park: 'bg-category-green',
-  shops: 'bg-category-shopping',
-};
+const layerVariants = cva('transition-opacity duration-(--duration-base)', {
+  variants: { isActive: { true: 'opacity-100', false: 'opacity-15' } },
+});
 
 const POI_ICON: Readonly<Record<(typeof ILLUSTRATION_POIS)[number]['id'], LucideIcon>> = {
   bus: BusIcon,
@@ -74,7 +66,7 @@ export function ZoneRoutesIllustration() {
             setFilter(ALL);
           }}
           aria-pressed={filter === ALL}
-          className="min-h-touch rounded-md px-2 text-small font-bold text-brand underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none aria-pressed:no-underline"
+          className="min-h-touch rounded-md px-2 text-small font-bold text-brand underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card focus-visible:outline-none aria-pressed:no-underline"
         >
           {t('deliverables.zone.map.all')}
         </button>
@@ -134,34 +126,25 @@ export function ZoneRoutesIllustration() {
         {ILLUSTRATION_ROUTES.map((route) => (
           <g
             key={route.id}
-            className={cn(
-              'transition-opacity duration-(--duration-base)',
-              isActive(route.id) ? 'opacity-100' : 'opacity-15',
-            )}
+            className={layerVariants({ isActive: isActive(route.id) })}
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
           >
             <path d={route.path} strokeWidth={11} className="stroke-card" />
-            <path d={route.path} strokeWidth={6} className={ROUTE_STROKE[route.id]} />
+            <path d={route.path} strokeWidth={6} className={hueStyle(ROUTE_HUE[route.id]).stroke} />
           </g>
         ))}
         {ILLUSTRATION_POIS.map((poi) => {
           const Icon = POI_ICON[poi.id];
           return (
-            <g
-              key={poi.id}
-              className={cn(
-                'transition-opacity duration-(--duration-base)',
-                isActive(poi.route) ? 'opacity-100' : 'opacity-15',
-              )}
-            >
+            <g key={poi.id} className={layerVariants({ isActive: isActive(poi.route) })}>
               <circle
                 cx={poi.x}
                 cy={poi.y}
                 r={21}
                 strokeWidth={3}
-                className={cn('stroke-card', ROUTE_FILL[poi.route])}
+                className={cn('stroke-card', hueStyle(ROUTE_HUE[poi.route]).fill)}
               />
               <Icon
                 x={poi.x - 11}
@@ -175,7 +158,7 @@ export function ZoneRoutesIllustration() {
                 x={poi.labelX}
                 y={poi.labelY}
                 textAnchor="middle"
-                className={cn('text-label font-bold', ROUTE_FILL[poi.route])}
+                className={cn('text-label font-bold', hueStyle(ROUTE_HUE[poi.route]).fill)}
               >
                 {t(`deliverables.zone.map.pois.${poi.id}`)}
               </text>
@@ -194,7 +177,7 @@ export function ZoneRoutesIllustration() {
         type="single"
         value={filter === ALL ? '' : filter}
         onValueChange={(value) => {
-          setFilter(FILTERS.find((option) => option === value) ?? ALL);
+          setFilter(oneOf(FILTERS, value) ?? ALL);
         }}
         aria-label={t('deliverables.zone.map.filterLabel')}
         className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4"
@@ -206,7 +189,10 @@ export function ZoneRoutesIllustration() {
             className="h-auto min-h-touch flex-col items-start gap-0.5 rounded-lg border border-border bg-card px-3 py-2 text-left data-[state=on]:border-primary data-[state=on]:bg-surface-alt"
           >
             <span className="flex items-center gap-2 text-small font-bold text-foreground">
-              <span aria-hidden className={cn('size-2.5 rounded-full', ROUTE_DOT[option])} />
+              <span
+                aria-hidden
+                className={cn('size-2.5 rounded-full', hueStyle(ROUTE_HUE[option]).dot)}
+              />
               {t(`deliverables.zone.map.filters.${option}.name`)}
             </span>
             <span className="text-meta text-muted-foreground">

@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority';
 import { CheckIcon, MinusIcon, XIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,26 @@ type PricingComparisonProps = {
 
 const VALUE_ICON = { yes: CheckIcon, no: XIcon, partial: MinusIcon } as const;
 
+const columnToneVariants = cva('', {
+  variants: {
+    tone: {
+      physical: 'bg-surface-physical-col',
+      online: 'bg-info-surface',
+    },
+  },
+  defaultVariants: { tone: 'online' },
+});
+
+const valueVariants = cva('grid size-7.5 shrink-0 place-items-center rounded-full', {
+  variants: {
+    value: {
+      yes: 'bg-primary text-cta',
+      no: 'bg-surface-sunken text-muted-foreground',
+      partial: 'bg-warning-surface text-warning',
+    },
+  },
+});
+
 export function PricingComparison({
   caption,
   featureHeader,
@@ -33,7 +54,7 @@ export function PricingComparison({
           <tr>
             <th
               scope="col"
-              className="w-[27%] py-3.5 align-bottom text-body font-extrabold tracking-[0.06em] text-muted-foreground uppercase"
+              className="w-[27%] py-3.5 align-bottom text-body font-extrabold tracking-eyebrow text-muted-foreground uppercase"
             >
               {featureHeader}
             </th>
@@ -41,10 +62,7 @@ export function PricingComparison({
               <th
                 key={column.key}
                 scope="col"
-                className={cn(
-                  'rounded-t-lg p-4',
-                  column.tone === 'physical' ? 'bg-surface-physical-col' : 'bg-info-surface',
-                )}
+                className={cn('rounded-t-lg p-4', columnToneVariants({ tone: column.tone }))}
               >
                 {column.header}
               </th>
@@ -71,21 +89,14 @@ export function PricingComparison({
                     key={column?.key ?? index}
                     className={cn(
                       'p-4 align-top text-label leading-[1.4] font-normal text-muted-foreground',
-                      column?.tone === 'physical' ? 'bg-surface-physical-col' : 'bg-info-surface',
+                      columnToneVariants({ tone: column?.tone }),
                     )}
                   >
                     <span className="mb-1 block text-meta font-bold text-muted-foreground md:hidden">
                       {column?.header}
                     </span>
                     <span className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={cn(
-                          'grid size-7.5 shrink-0 place-items-center rounded-full',
-                          cell.value === 'yes' && 'bg-primary text-cta',
-                          cell.value === 'no' && 'bg-surface-sunken text-muted-foreground',
-                          cell.value === 'partial' && 'bg-warning-surface text-warning',
-                        )}
-                      >
+                      <span className={valueVariants({ value: cell.value })}>
                         <Icon aria-hidden className="size-4" strokeWidth={3} />
                       </span>
                       <span>

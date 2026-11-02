@@ -46,11 +46,11 @@ export function ListingCard({
         onHoverChange(false);
       }}
       className={cn(
-        'grid w-full grid-cols-[6rem_1fr] gap-3.5 rounded-[14px] border-[1.5px] border-border-subtle bg-card p-2 text-left transition-[border-color,box-shadow] duration-(--duration-fast) hover:border-border-strong focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none sm:grid-cols-[7.25rem_1fr]',
+        'grid w-full grid-cols-[6rem_1fr] gap-3.5 rounded-tile border-[1.5px] border-border-subtle bg-card p-2 text-left transition-[border-color,box-shadow] duration-(--duration-fast) hover:border-border-strong focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none sm:grid-cols-[7.25rem_1fr]',
         isSelected && 'border-primary shadow-listing-selected hover:border-primary',
       )}
     >
-      <span className="block min-h-24 overflow-hidden rounded-[10px] bg-surface-alt">
+      <span className="block min-h-24 overflow-hidden rounded-thumb bg-surface-alt">
         {photoUrl ? (
           <img
             src={photoUrl}

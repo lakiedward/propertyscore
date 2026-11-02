@@ -10,11 +10,9 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatPrice } from '@/i18n/format';
 import heroImage from '@/assets/home/hero-living.webp';
-import inspectionImage from '@/assets/home/inspection-window.webp';
-import bedroomImage from '@/assets/home/room-bedroom.webp';
-import { HERO_LISTING } from '../publish.example';
+import { formatPercent, formatPrice } from '@/i18n/format';
+import { HERO_LISTING, HERO_PRICE_PER_SQUARE_METRE, PHOTO_TILES } from '../publish.example';
 
 export function ExampleListingCard() {
   const { t } = useTranslation('publish');
@@ -22,17 +20,20 @@ export function ExampleListingCard() {
     {
       key: 'surface',
       icon: <RulerIcon />,
-      label: t('hero.card.surface', { value: HERO_LISTING.surface }),
+      label: t('example.surface', { value: HERO_LISTING.surface }),
     },
     {
       key: 'rooms',
       icon: <DoorOpenIcon />,
-      label: t('hero.card.rooms', { count: HERO_LISTING.rooms }),
+      label: t('example.rooms', { count: HERO_LISTING.rooms }),
     },
     {
       key: 'floor',
       icon: <BuildingIcon />,
-      label: t('hero.card.floor', { floor: HERO_LISTING.floor, floors: HERO_LISTING.floors }),
+      label: t('example.floorShort', {
+        floor: HERO_LISTING.floor,
+        floors: HERO_LISTING.floors,
+      }),
     },
     { key: 'year', icon: <CalendarIcon />, label: String(HERO_LISTING.year) },
   ];
@@ -60,10 +61,24 @@ export function ExampleListingCard() {
             </span>
             <span className="absolute bottom-4 left-4 flex gap-1.5">
               <Thumb>
-                <img src={bedroomImage} alt="" className="size-full object-cover" />
+                <img
+                  src={PHOTO_TILES.bedroom.src}
+                  alt=""
+                  width={PHOTO_TILES.bedroom.width}
+                  height={PHOTO_TILES.bedroom.height}
+                  decoding="async"
+                  className="size-full object-cover"
+                />
               </Thumb>
               <Thumb>
-                <img src={inspectionImage} alt="" className="size-full object-cover" />
+                <img
+                  src={PHOTO_TILES.window.src}
+                  alt=""
+                  width={PHOTO_TILES.window.width}
+                  height={PHOTO_TILES.window.height}
+                  decoding="async"
+                  className="size-full object-cover"
+                />
               </Thumb>
               <Thumb>
                 <span className="grid size-full place-items-center bg-foreground/72 text-caption font-extrabold text-primary-foreground tabular-nums">
@@ -75,20 +90,20 @@ export function ExampleListingCard() {
           <div className="flex flex-col gap-3 px-5.5 pt-5 pb-5">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-col gap-1">
-                <strong className="text-[28px] leading-none font-extrabold tracking-[-0.035em] text-foreground tabular-nums w767:text-[34px]">
+                <strong className="text-title-sm leading-none font-extrabold tracking-section text-foreground tabular-nums w767:text-[34px]">
                   {formatPrice(HERO_LISTING.price, HERO_LISTING.currency)}
                 </strong>
                 <strong className="text-lg leading-[1.3] font-bold text-foreground">
-                  {t('hero.card.title')}
+                  {t('example.title')}
                 </strong>
-                <span className="flex items-center gap-1 text-small leading-[1.55] text-muted-foreground">
+                <span className="flex items-center gap-1 text-small leading-copy text-muted-foreground">
                   <MapPinIcon className="size-3.5 shrink-0" />
                   {t('hero.card.area')}
                 </span>
               </div>
-              <span className="shrink-0 text-small leading-[1.55] text-muted-foreground tabular-nums">
+              <span className="shrink-0 text-small leading-copy text-muted-foreground tabular-nums">
                 {t('hero.card.pricePerSqm', {
-                  price: formatPrice(HERO_LISTING.pricePerSquareMetre, HERO_LISTING.currency),
+                  price: formatPrice(HERO_PRICE_PER_SQUARE_METRE, HERO_LISTING.currency),
                 })}
               </span>
             </div>
@@ -119,12 +134,17 @@ export function ExampleListingCard() {
           </div>
         </div>
         <div className="absolute bottom-4 left-0 flex w-57.5 flex-col gap-2.5 rounded-[16px] bg-card p-4 shadow-progress w767:bottom-3 w767:-left-7 w767:w-67.5">
-          <span className="flex justify-between text-meta leading-[1.55] font-extrabold">
+          <span className="flex justify-between text-meta leading-copy font-extrabold">
             <span className="text-muted-foreground">{t('hero.card.progress')}</span>
-            <span className="text-brand tabular-nums">{`${HERO_LISTING.progress}%`}</span>
+            <span className="text-brand tabular-nums">
+              {formatPercent(HERO_LISTING.progress / 100)}
+            </span>
           </span>
           <span className="block h-1.5 rounded-full bg-secondary">
-            <span className="block h-full w-[83%] rounded-full bg-primary" />
+            <span
+              className="block h-full rounded-full bg-primary"
+              style={{ width: `${String(HERO_LISTING.progress)}%` }}
+            />
           </span>
           <span className="flex items-center gap-2.5">
             <span className="grid size-7.5 shrink-0 place-items-center rounded-full bg-step-leaf-surface text-step-leaf-ink">
@@ -138,7 +158,7 @@ export function ExampleListingCard() {
             </span>
           </span>
         </div>
-        <div className="absolute top-0 right-0 flex items-center gap-2 rounded-full bg-primary px-4 py-2.75 text-small leading-[1.55] font-extrabold text-primary-foreground shadow-published w767:top-2 w767:right-2">
+        <div className="absolute top-0 right-0 flex items-center gap-2 rounded-full bg-primary px-4 py-2.75 text-small leading-copy font-extrabold text-primary-foreground shadow-published w767:top-2 w767:right-2">
           <CircleCheckIcon className="size-4.5 text-cta" />
           {t('hero.card.published')}
         </div>
@@ -147,7 +167,11 @@ export function ExampleListingCard() {
   );
 }
 
-function Thumb({ children }: { children: ReactNode }) {
+type ThumbProps = {
+  children: ReactNode;
+};
+
+function Thumb({ children }: ThumbProps) {
   return (
     <span className="block h-10.5 w-14 overflow-hidden rounded-md border-2 border-card">
       {children}
@@ -155,7 +179,12 @@ function Thumb({ children }: { children: ReactNode }) {
   );
 }
 
-function FactChip({ icon, label }: { icon: ReactNode; label: string }) {
+type FactChipProps = {
+  icon: ReactNode;
+  label: string;
+};
+
+function FactChip({ icon, label }: FactChipProps) {
   return (
     <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-background px-3 text-caption font-bold text-foreground [&_svg]:size-3.5">
       {icon}

@@ -1,5 +1,33 @@
+import { cva } from 'class-variance-authority';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+
+const statCardVariants = cva('flex flex-col gap-1.5 rounded-lg p-4', {
+  variants: {
+    tone: {
+      light: 'bg-card ring-1 ring-border-subtle',
+      inverse: 'bg-primary text-on-inverse',
+    },
+  },
+});
+
+const statTextVariants = cva('text-caption', {
+  variants: {
+    tone: {
+      light: 'text-muted-foreground',
+      inverse: 'text-on-inverse-muted',
+    },
+  },
+});
+
+const statValueVariants = cva('text-price tabular-nums', {
+  variants: {
+    tone: {
+      light: '',
+      inverse: 'text-cta',
+    },
+  },
+});
 
 type StatCardProps = {
   label: string;
@@ -11,34 +39,10 @@ type StatCardProps = {
 
 export function StatCard({ label, value, hint, tone = 'light', className }: StatCardProps) {
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-1.5 rounded-lg p-4',
-        tone === 'inverse' ? 'bg-primary text-on-inverse' : 'bg-card ring-1 ring-border-subtle',
-        className,
-      )}
-    >
-      <span
-        className={cn(
-          'text-caption',
-          tone === 'inverse' ? 'text-on-inverse-muted' : 'text-muted-foreground',
-        )}
-      >
-        {label}
-      </span>
-      <span className={cn('text-price tabular-nums', tone === 'inverse' && 'text-cta')}>
-        {value}
-      </span>
-      {hint ? (
-        <span
-          className={cn(
-            'text-caption',
-            tone === 'inverse' ? 'text-on-inverse-muted' : 'text-muted-foreground',
-          )}
-        >
-          {hint}
-        </span>
-      ) : null}
+    <div className={cn(statCardVariants({ tone }), className)}>
+      <span className={statTextVariants({ tone })}>{label}</span>
+      <span className={statValueVariants({ tone })}>{value}</span>
+      {hint ? <span className={statTextVariants({ tone })}>{hint}</span> : null}
     </div>
   );
 }

@@ -25,7 +25,7 @@ type PriceProps = VariantProps<typeof priceVariants> & {
 };
 
 export function Price({ amount, currency, period, size, className }: PriceProps) {
-  const { t } = useTranslation('listings');
+  const { t } = useTranslation();
   const price = formatPrice(amount, currency);
 
   return (

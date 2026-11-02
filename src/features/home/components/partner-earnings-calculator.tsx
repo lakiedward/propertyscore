@@ -23,7 +23,7 @@ export function PartnerEarningsCalculator() {
         {t('partners.calculator.label')}
       </p>
       <p className="flex items-baseline gap-2" aria-hidden="true">
-        <span className="text-[56px] leading-none font-extrabold tracking-[-0.04em] tabular-nums">
+        <span className="text-[56px] leading-none font-extrabold tracking-title tabular-nums">
           {formatNumber(count)}
         </span>
         <span className="text-label font-bold">{t('partners.calculator.unit', { count })}</span>
@@ -52,25 +52,25 @@ export function PartnerEarningsCalculator() {
         </div>
       </div>
       <div className="mt-1.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2" aria-live="polite">
-        <div className="flex flex-col gap-1 rounded-[14px] bg-background p-4">
+        <div className="flex flex-col gap-1 rounded-tile bg-background p-4">
           <span className="text-meta font-bold text-muted-foreground">
             {t('partners.calculator.perMonth')}
           </span>
           <SplitPrice
             amount={count * commission.amount}
             currency={commission.currency}
-            className="text-[32px] leading-none font-extrabold tracking-[-0.04em] text-brand"
+            className="text-title-md leading-none font-extrabold tracking-title text-brand"
             currencyClassName="text-label font-extrabold tracking-normal"
           />
         </div>
-        <div className="flex flex-col gap-1 rounded-[14px] bg-primary p-4">
+        <div className="flex flex-col gap-1 rounded-tile bg-primary p-4">
           <span className="text-meta font-bold text-on-inverse-faint">
             {t('partners.calculator.perYear')}
           </span>
           <SplitPrice
             amount={count * commission.amount * MONTHS_PER_YEAR}
             currency={commission.currency}
-            className="text-[32px] leading-none font-extrabold tracking-[-0.04em] text-cta"
+            className="text-title-md leading-none font-extrabold tracking-title text-cta"
             currencyClassName="text-label font-extrabold tracking-normal text-on-inverse"
           />
         </div>

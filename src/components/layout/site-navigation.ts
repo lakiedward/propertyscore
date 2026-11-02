@@ -1,14 +1,3 @@
-export type HomeSectionId =
-  | 'main'
-  | 'smart-check'
-  | 'physical'
-  | 'deliverables'
-  | 'listing-included'
-  | 'listings'
-  | 'partners'
-  | 'pricing'
-  | 'questions';
-
 export const HOME_SECTION = {
   main: 'main',
   smartCheck: 'smart-check',
@@ -19,7 +8,9 @@ export const HOME_SECTION = {
   partners: 'partners',
   pricing: 'pricing',
   questions: 'questions',
-} as const satisfies Record<string, HomeSectionId>;
+} as const;
+
+export type HomeSectionId = (typeof HOME_SECTION)[keyof typeof HOME_SECTION];
 
 const HOME_SECTION_LINKS = [
   { id: 'smart-check', labelKey: 'site.sections.smartCheck' },
@@ -30,15 +21,15 @@ const HOME_SECTION_LINKS = [
   { id: 'questions', labelKey: 'site.sections.questions' },
 ] as const satisfies readonly { id: HomeSectionId; labelKey: string }[];
 
-export type PublishSectionId = 'account' | 'steps' | 'checklist' | 'verified' | 'questions';
-
 export const PUBLISH_SECTION = {
   account: 'account',
   steps: 'steps',
   checklist: 'checklist',
   verified: 'verified',
   questions: 'questions',
-} as const satisfies Record<string, PublishSectionId>;
+} as const;
+
+export type PublishSectionId = (typeof PUBLISH_SECTION)[keyof typeof PUBLISH_SECTION];
 
 const PUBLISH_SECTION_LINKS = [
   { id: 'account', labelKey: 'site.publishSections.account' },

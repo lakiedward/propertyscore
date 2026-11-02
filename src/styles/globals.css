@@ -1,10 +1,33 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
-@import '@fontsource-variable/manrope';
 @import '@fontsource-variable/sora';
 
-@custom-variant dark (&:is(.dark *));
+@font-face {
+  font-family: 'Manrope Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('@fontsource-variable/manrope/files/manrope-latin-ext-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Manrope Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @custom-variant short (@media (max-height: 640px) and (min-width: 921px));
 
 @theme inline {
@@ -211,6 +234,9 @@
   --radius-icon: 12px;
   --radius-photo: 20px;
   --radius-status: 18px;
+  --radius-thumb: 10px;
+  --radius-tile: 14px;
+  --radius-panel: 19px;
 
   --shadow-sm: 0 1px 2px rgba(16, 63, 50, 0.06);
   --shadow-md: 0 10px 28px -16px rgba(16, 63, 50, 0.28);
@@ -250,6 +276,17 @@
 
   --font-weight-nav: 670;
   --font-weight-action: 750;
+  --font-weight-control: 730;
+  --font-weight-title: 740;
+  --font-weight-display: 760;
+
+  --leading-copy: 1.55;
+  --leading-compact: 1.45;
+  --leading-heading: 1.12;
+
+  --tracking-title: -0.04em;
+  --tracking-section: -0.035em;
+  --tracking-eyebrow: 0.06em;
 
   --tracking-brand: -0.04em;
   --radius-wordmark: 0.24em 0.24em 0.24em 0.06em;
@@ -390,6 +427,12 @@
   --text-score-xl--line-height: 1;
   --text-score-xl--letter-spacing: -0.03em;
   --text-score-xl--font-weight: 800;
+  --text-micro: 10px;
+  --text-body-sm: 15px;
+  --text-title-xs: 21px;
+  --text-title-sm: 28px;
+  --text-title-md: 32px;
+  --text-title-lg: 40px;
 }
 
 :root {
@@ -421,6 +464,7 @@
   --ps-cream-chip: #f3f2ea;
   --ps-green-on-inverse-bright: #eaf2ec;
   --ps-green-highlight: #e4f0d2;
+  --ps-green-subtle: #e1e8de;
   --ps-ink-900: #172b22;
   --ps-lime-100: #f4f9cf;
   --ps-lime-300: #dded69;
@@ -598,7 +642,7 @@
   --border-strong: var(--ps-green-400);
   --border-control: var(--ps-green-350);
   --nav-link: var(--ps-green-650);
-  --border-subtle: #e1e8de;
+  --border-subtle: var(--ps-green-subtle);
   --info: var(--ps-blue-500);
   --info-hover: var(--ps-blue-700);
   --info-foreground: var(--ps-white);
@@ -749,40 +793,6 @@
   --stack-gap: 14px;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
 @utility page-wrap {
   width: min(1360px, calc(100% - 64px));
   margin-inline: auto;
@@ -791,6 +801,19 @@
   }
   @media (max-width: 520px) {
     width: calc(100% - 30px);
+  }
+}
+
+@utility touch-target {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, var(--touch-min));
+    height: max(100%, var(--touch-min));
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -824,6 +847,25 @@
   box-decoration-break: clone;
 }
 
+@utility marker-pill {
+  display: inline-block;
+  margin-top: 0.06em;
+  padding: 0 0.14em;
+  border-radius: 10px;
+  background: var(--cta);
+  line-height: 1.02;
+  box-decoration-break: clone;
+}
+
+@utility marker-underline {
+  color: var(--brand);
+  text-decoration-line: underline;
+  text-decoration-color: var(--cta);
+  text-decoration-thickness: 0.18em;
+  text-underline-offset: 0.12em;
+  text-decoration-skip-ink: none;
+}
+
 @utility marker-info {
   background-image: linear-gradient(
     transparent 62%,
@@ -843,16 +885,22 @@
     scroll-padding-top: var(--header-height);
   }
   body {
-    @apply bg-background text-body text-foreground antialiased;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-size: --theme(--text-body);
+    line-height: --theme(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   h1,
   h2,
   h3,
   h4 {
-    @apply font-heading;
+    font-family: --theme(--font-heading);
   }
   ::selection {
-    @apply bg-cta text-cta-foreground;
+    background-color: var(--cta);
+    color: var(--cta-foreground);
   }
   @media (prefers-reduced-motion: no-preference) {
     html {

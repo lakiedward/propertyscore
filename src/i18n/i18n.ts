@@ -1,15 +1,9 @@
-import i18n from 'i18next';
+import i18n, { type BackendModule, type ResourceKey } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import enAuth from './locales/en/auth.json';
 import enCommon from './locales/en/common.json';
-import enHome from './locales/en/home.json';
-import enListings from './locales/en/listings.json';
-import enPublish from './locales/en/publish.json';
 import roAuth from './locales/ro/auth.json';
 import roCommon from './locales/ro/common.json';
-import roHome from './locales/ro/home.json';
-import roListings from './locales/ro/listings.json';
-import roPublish from './locales/ro/publish.json';
 import { configureValidationMessages } from './validation';
 
 export const SUPPORTED_LOCALES = ['ro', 'en'] as const;
@@ -22,18 +16,45 @@ export const resources = {
   ro: {
     common: roCommon,
     auth: roAuth,
-    listings: roListings,
-    home: roHome,
-    publish: roPublish,
   },
   en: {
     common: enCommon,
     auth: enAuth,
-    listings: enListings,
-    home: enHome,
-    publish: enPublish,
   },
 } as const;
+
+const BUNDLED_NAMESPACES = ['common', 'auth'] as const;
+export const FEATURE_NAMESPACES = ['home', 'listings', 'publish'] as const;
+export type FeatureNamespace = (typeof FEATURE_NAMESPACES)[number];
+
+const featureBundles = import.meta.glob<ResourceKey>(
+  ['./locales/*/*.json', '!./locales/*/common.json', '!./locales/*/auth.json'],
+  { import: 'default' },
+);
+
+const featureNamespaceBackend: BackendModule = {
+  type: 'backend',
+  init: () => undefined,
+  read(language, namespace, callback) {
+    const load = featureBundles[`./locales/${language}/${namespace}.json`];
+    if (!load) {
+      callback(null, {});
+      return;
+    }
+    load().then(
+      (bundle) => {
+        callback(null, bundle);
+      },
+      (error: unknown) => {
+        callback(error instanceof Error ? error : new Error(String(error)), false);
+      },
+    );
+  },
+};
+
+export async function loadFeatureNamespaces(namespaces: readonly FeatureNamespace[]) {
+  await i18n.loadNamespaces([...namespaces]);
+}
 
 export function isLocale(value: unknown): value is Locale {
   return SUPPORTED_LOCALES.some((locale) => locale === value);
@@ -71,16 +92,20 @@ export async function changeLocale(locale: Locale) {
 
 configureValidationMessages();
 
-void i18n.use(initReactI18next).init({
-  resources,
-  lng: detectInitialLocale(),
-  fallbackLng: DEFAULT_LOCALE,
-  supportedLngs: SUPPORTED_LOCALES,
-  defaultNS: 'common',
-  ns: ['common', 'auth', 'listings', 'home'],
-  interpolation: { escapeValue: false },
-  initAsync: false,
-});
+void i18n
+  .use(featureNamespaceBackend)
+  .use(initReactI18next)
+  .init({
+    resources,
+    partialBundledLanguages: true,
+    lng: detectInitialLocale(),
+    fallbackLng: DEFAULT_LOCALE,
+    supportedLngs: SUPPORTED_LOCALES,
+    defaultNS: 'common',
+    ns: [...BUNDLED_NAMESPACES],
+    interpolation: { escapeValue: false },
+    initAsync: false,
+  });
 
 document.documentElement.lang = currentLocale();
 

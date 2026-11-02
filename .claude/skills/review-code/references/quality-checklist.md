@@ -40,11 +40,11 @@ Report only issues with a real cost; name when it bites and roughly how much.
 
 ### 3.2 Data fetching
 
-- Waterfalls: a loader awaiting one query before starting an independent one (use `Promise.all` of `ensureQueryData`), a child component that starts a fetch only after its parent's query resolves, a detail page fetching relations in separate requests that one `select` with embedded relations could return.
+- Waterfalls: a loader awaiting one query before starting an independent one (use `Promise.all` of `queryClient.query(…)`), a child component that starts a fetch only after its parent's query resolves, a detail page fetching relations in separate requests that one `select` with embedded relations could return.
 - N+1: a query per list item (photos, scores, owners) instead of one embedded select or an RPC.
 - Over-fetching: more columns than the screen shows, unpaginated lists, `count: 'exact'` when no total is shown (it is a second scan), signed URLs requested per render instead of cached in a query.
 - Under-caching: `staleTime: 0` overrides without reason, keys that change on every render (objects with new dates or unstable arrays), `refetchInterval` where invalidation would do.
-- Prefetching missing where it is cheap and obvious: `Link` `preload="intent"` to a detail page, loader `ensureQueryData` for the first screen.
+- Prefetching missing where it is cheap and obvious: `Link` `preload="intent"` to a detail page, loader `queryClient.query(…)` for the first screen.
 - Mutations that refetch whole lists when the server response already contains the new row and `setQueryData` on the detail is safe.
 
 ### 3.3 Bundle and assets

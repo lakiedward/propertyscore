@@ -19,7 +19,6 @@ export function PasswordInput({ className, ...props }: ComponentProps<typeof Aut
       <button
         type="button"
         aria-label={t(isVisible ? 'fields.password.hide' : 'fields.password.show')}
-        aria-pressed={isVisible}
         onClick={() => {
           setIsVisible((value) => !value);
         }}

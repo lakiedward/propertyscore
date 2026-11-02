@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import roAuth from '@/i18n/locales/ro/auth.json';
+import roCommon from '@/i18n/locales/ro/common.json';
 import { buildSession } from '@/test/factories/auth';
 import { authErrorResponse } from '@/test/msw/handlers/auth';
 import { server } from '@/test/msw/server';
@@ -25,6 +26,9 @@ describe('LoginForm', () => {
 
     expect(await screen.findByText(roAuth.fields.email.error)).toBeInTheDocument();
     expect(screen.getByText(roAuth.fields.password.required)).toBeInTheDocument();
+    expect(screen.getByLabelText(roAuth.fields.email.label)).toHaveAccessibleDescription(
+      roAuth.fields.email.error,
+    );
   });
 
   it('signs in with the typed credentials', async () => {
@@ -47,6 +51,19 @@ describe('LoginForm', () => {
     expect(screen.queryByText(roAuth.login.failedTitle)).not.toBeInTheDocument();
   });
 
+  it('disables the button while signing in', async () => {
+    server.use(
+      http.post(supabaseUrl('/auth/v1/token'), async () => {
+        await delay('infinite');
+      }),
+    );
+    const { user } = await renderWithProviders(<LoginForm />);
+
+    await fillAndSubmit(user);
+
+    expect(await screen.findByRole('button', { name: roAuth.login.pending })).toBeDisabled();
+  });
+
   it('explains wrong credentials', async () => {
     server.use(
       http.post(supabaseUrl('/auth/v1/token'), () => authErrorResponse('invalid_credentials')),
@@ -59,7 +76,19 @@ describe('LoginForm', () => {
     expect(screen.getByText(roAuth.login.failedText)).toBeInTheDocument();
   });
 
-  it('warns when the email is not confirmed yet', async () => {
+  it('shows the generic error for an unexpected failure', async () => {
+    server.use(
+      http.post(supabaseUrl('/auth/v1/token'), () => authErrorResponse('unexpected_failure', 500)),
+    );
+    const { user } = await renderWithProviders(<LoginForm />);
+
+    await fillAndSubmit(user);
+
+    expect(await screen.findByText(roAuth.login.failedTitle)).toBeInTheDocument();
+    expect(screen.getByText(roCommon.errors.unknown)).toBeInTheDocument();
+  });
+
+  it('warns when the email is not confirmed yet, without offering a resend', async () => {
     server.use(
       http.post(supabaseUrl('/auth/v1/token'), () => authErrorResponse('email_not_confirmed')),
     );
@@ -71,9 +100,7 @@ describe('LoginForm', () => {
     expect(
       screen.getByText(roAuth.login.unconfirmedText.replace('{{email}}', 'ana.ro@example.test')),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: roAuth.login.resendConfirmation }),
-    ).toBeInTheDocument();
+    expect(screen.getAllByRole('button')).toHaveLength(5);
   });
 
   it('explains that social sign-in is not available yet', async () => {
@@ -81,11 +108,9 @@ describe('LoginForm', () => {
 
     await user.click(screen.getByRole('button', { name: roAuth.social.google }));
 
-    expect(
-      screen.getByText(
-        roAuth.social.errorTitle.replace('{{provider}}', roAuth.social.providers.google),
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      roAuth.social.unavailable.replace('{{provider}}', roAuth.social.providers.google),
+    );
   });
 
   it('shows and hides the password', async () => {
@@ -95,9 +120,8 @@ describe('LoginForm', () => {
     expect(password).toHaveAttribute('type', 'password');
     await user.click(screen.getByRole('button', { name: roAuth.fields.password.show }));
     expect(password).toHaveAttribute('type', 'text');
-    expect(screen.getByRole('button', { name: roAuth.fields.password.hide })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: roAuth.fields.password.hide })).not.toHaveAttribute(
       'aria-pressed',
-      'true',
     );
   });
 });

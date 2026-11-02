@@ -3,11 +3,6 @@
     "sale": "To buy",
     "rent": "To rent"
   },
-  "verification": {
-    "physical": "Physically checked",
-    "smartcheck": "Smart Check",
-    "none": "No report"
-  },
   "board": {
     "transactionLabel": "Listing type",
     "count": {
@@ -29,12 +24,8 @@
     "mapError": "The map could not load. The list of listings is still available."
   },
   "card": {
-    "rooms_one": "{{count}} room",
-    "rooms_other": "{{count}} rooms",
-    "area": "{{area}} m²",
+    "meta_one": "{{street}} · {{count}} room · {{area}} m²",
+    "meta_other": "{{street}} · {{count}} rooms · {{area}} m²",
     "label": "{{title}}, {{price}}, {{badge}}"
-  },
-  "price": {
-    "perMonth": "{{price}} / month"
   }
 }

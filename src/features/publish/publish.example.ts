@@ -1,3 +1,7 @@
+import livingThumb from '@/assets/publish/hero-living-160.webp';
+import livingCard from '@/assets/publish/hero-living-640.webp';
+import windowThumb from '@/assets/publish/inspection-window-160.webp';
+import bedroomThumb from '@/assets/publish/room-bedroom-160.webp';
 import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
 import type { LngLat } from '@/components/map/map.config';
 import type { Currency } from '@/i18n/format';
@@ -6,7 +10,6 @@ export const PUBLISH_REDIRECT = `/publish#${PUBLISH_SECTION.steps}`;
 
 export const HERO_LISTING = {
   price: 142000,
-  pricePerSquareMetre: 1868,
   currency: 'EUR',
   surface: 76,
   rooms: 3,
@@ -35,3 +38,13 @@ export const EXAMPLE_LOCATION: { center: LngLat; zoom: number } = {
   center: [21.2365, 45.747],
   zoom: 14.4,
 };
+
+export const PHOTO_TILES = {
+  living: { src: livingThumb, width: 160, height: 90 },
+  bedroom: { src: bedroomThumb, width: 160, height: 90 },
+  window: { src: windowThumb, width: 160, height: 107 },
+} as const;
+
+export const TIER_PHOTO = { src: livingCard, width: 640, height: 360 } as const;
+
+export const HERO_PRICE_PER_SQUARE_METRE = Math.round(HERO_LISTING.price / HERO_LISTING.surface);

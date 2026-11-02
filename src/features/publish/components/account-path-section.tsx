@@ -9,7 +9,8 @@ import {
   UserRoundIcon,
   type LucideIcon,
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
 import { PUBLISH_REDIRECT } from '../publish.example';
@@ -38,12 +39,18 @@ export function AccountPathSection({ isSignedIn }: AccountPathSectionProps) {
       <div className="page-wrap flex flex-col gap-7 py-11 w767:py-20">
         <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
           <div className="flex flex-col gap-1.5">
-            <p className="text-eyebrow leading-[1.55] text-muted-foreground uppercase">
+            <p className="text-eyebrow leading-copy text-muted-foreground uppercase">
               {t('path.eyebrow')}
             </p>
-            <h2 id="account-path-title" className="text-h2 leading-[1.12] text-foreground">
-              <span className="block">{t('path.titleLead')}</span>
-              <span className="block text-heading-accent">{t('path.titleAccent')}</span>
+            <h2 id="account-path-title" className="text-h2 leading-heading text-foreground">
+              <Trans
+                t={t}
+                i18nKey="path.title"
+                components={{
+                  lead: <span className="block" />,
+                  accent: <span className="block text-heading-accent" />,
+                }}
+              />
             </h2>
           </div>
           <p className="max-w-105 text-body text-muted-foreground">{t('path.intro')}</p>
@@ -72,7 +79,7 @@ export function AccountPathSection({ isSignedIn }: AccountPathSectionProps) {
                   <span
                     aria-hidden="true"
                     className={cn(
-                      'text-[44px] leading-none font-extrabold tracking-[-0.04em] tabular-nums',
+                      'text-[44px] leading-none font-extrabold tracking-title tabular-nums',
                       isAccount ? 'text-cta/35' : 'text-number-ghost',
                     )}
                   >
@@ -81,18 +88,18 @@ export function AccountPathSection({ isSignedIn }: AccountPathSectionProps) {
                 </span>
                 <span
                   className={cn(
-                    'self-start rounded-full px-2.5 py-1 text-meta leading-[1.55] font-extrabold tracking-[0.08em] uppercase',
+                    'self-start rounded-full px-2.5 py-1 text-meta leading-copy font-extrabold tracking-[0.08em] uppercase',
                     isAccount ? 'bg-cta/16 text-cta' : 'bg-background text-muted-foreground',
                   )}
                 >
                   {t(`path.steps.${step.key}.tag`)}
                 </span>
-                <strong className="text-[21px] leading-[1.25] font-bold tracking-[-0.02em]">
+                <strong className="text-title-xs leading-[1.25] font-bold tracking-[-0.02em]">
                   {t(`path.steps.${step.key}.title`)}
                 </strong>
                 <span
                   className={cn(
-                    'text-[15px] leading-[1.55]',
+                    'text-body-sm leading-copy',
                     isAccount ? 'text-on-inverse-soft' : 'text-muted-foreground',
                   )}
                 >
@@ -103,7 +110,7 @@ export function AccountPathSection({ isSignedIn }: AccountPathSectionProps) {
             );
           })}
         </ol>
-        <p className="flex items-start gap-2 text-small leading-[1.55] text-muted-foreground">
+        <p className="flex items-start gap-2 text-small leading-copy text-muted-foreground">
           <ShieldCheckIcon aria-hidden className="mt-0.5 size-4.5 shrink-0" />
           {t('path.note')}
         </p>
@@ -113,49 +120,42 @@ export function AccountPathSection({ isSignedIn }: AccountPathSectionProps) {
 }
 
 const ACTION_CLASS =
-  'inline-flex min-h-11 items-center gap-2 rounded-md px-4 text-[15px] transition-colors duration-(--duration-fast) focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none [&_svg]:size-4.5';
+  'h-auto min-h-11 px-4 text-body-sm font-extrabold focus-visible:ring-focus-inverse focus-visible:ring-offset-primary [&_svg]:size-4.5';
 
-function AccountActions({ isSignedIn }: { isSignedIn: boolean }) {
+type AccountActionsProps = {
+  isSignedIn: boolean;
+};
+
+function AccountActions({ isSignedIn }: AccountActionsProps) {
   const { t } = useTranslation('publish');
 
   if (isSignedIn) {
     return (
       <div className="flex flex-wrap gap-2 pt-2">
-        <a
-          href={`#${PUBLISH_SECTION.steps}`}
-          className={cn(
-            ACTION_CLASS,
-            'bg-cta font-extrabold text-cta-foreground hover:bg-cta-hover',
-          )}
-        >
-          <UserCheckIcon aria-hidden />
-          {t('path.continue')}
-          <ArrowRightIcon aria-hidden />
-        </a>
+        <Button asChild variant="cta" className={ACTION_CLASS}>
+          <a href={`#${PUBLISH_SECTION.steps}`}>
+            <UserCheckIcon aria-hidden />
+            {t('path.continue')}
+            <ArrowRightIcon aria-hidden />
+          </a>
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="flex flex-wrap gap-2 pt-2">
-      <Link
-        to="/login"
-        search={{ redirect: PUBLISH_REDIRECT }}
-        className={cn(ACTION_CLASS, 'bg-cta font-extrabold text-cta-foreground hover:bg-cta-hover')}
-      >
-        <LogInIcon aria-hidden />
-        {t('path.signIn')}
-      </Link>
-      <Link
-        to="/sign-up"
-        search={{ redirect: PUBLISH_REDIRECT }}
-        className={cn(
-          ACTION_CLASS,
-          'border-[1.5px] border-on-inverse/50 font-bold text-on-inverse hover:bg-on-inverse/10',
-        )}
-      >
-        {t('path.signUp')}
-      </Link>
+      <Button asChild variant="cta" className={ACTION_CLASS}>
+        <Link to="/login" search={{ redirect: PUBLISH_REDIRECT }}>
+          <LogInIcon aria-hidden />
+          {t('path.signIn')}
+        </Link>
+      </Button>
+      <Button asChild variant="outlineInverse" className={cn(ACTION_CLASS, 'font-bold')}>
+        <Link to="/sign-up" search={{ redirect: PUBLISH_REDIRECT }}>
+          {t('path.signUp')}
+        </Link>
+      </Button>
     </div>
   );
 }

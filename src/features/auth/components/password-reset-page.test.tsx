@@ -1,43 +1,35 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import roAuth from '@/i18n/locales/ro/auth.json';
-import { renderWithProviders } from '@/test/render';
-import { NewPasswordPage } from './new-password-page';
+import { buildSession } from '@/test/factories/auth';
+import { renderAppRoute, renderWithProviders } from '@/test/render';
 import { PasswordResetPage } from './password-reset-page';
 
-describe('PasswordResetPage', () => {
-  it('asks for a valid email, then confirms the link was sent', async () => {
-    const { user } = await renderWithProviders(<PasswordResetPage />);
+describe('PasswordResetPage', { timeout: 20_000 }, () => {
+  it('says that password reset is not available yet and links back to sign-in', async () => {
+    await renderWithProviders(<PasswordResetPage />);
 
-    await user.click(screen.getByRole('button', { name: new RegExp(roAuth.passwordReset.submit) }));
-    expect(await screen.findByText(roAuth.fields.email.error)).toBeInTheDocument();
-
-    await user.type(screen.getByLabelText(roAuth.fields.email.label), 'ana.ro@example.test');
-    await user.click(screen.getByRole('button', { name: new RegExp(roAuth.passwordReset.submit) }));
-
-    expect(
-      await screen.findByRole('heading', { name: roAuth.passwordReset.sent.title }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(roAuth.passwordReset.sent.text.replace('{{email}}', 'ana.ro@example.test')),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(roAuth.passwordReset.unavailable.title);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: roAuth.passwordReset.backToLogin })).toHaveAttribute(
+      'href',
+      '/login',
+    );
   });
-});
 
-describe('NewPasswordPage', () => {
-  it('rejects passwords that do not match, then confirms the change', async () => {
-    const { user } = await renderWithProviders(<NewPasswordPage />);
+  it('shows the same notice on the new-password address', async () => {
+    await renderAppRoute('/password-reset/new');
 
-    await user.type(screen.getByLabelText(roAuth.newPassword.password), 'casa2026');
-    await user.type(screen.getByLabelText(roAuth.newPassword.repeat), 'casa2025');
-    await user.click(screen.getByRole('button', { name: roAuth.newPassword.submit }));
-    expect(await screen.findByText(roAuth.newPassword.mismatch)).toBeInTheDocument();
+    expect(await screen.findByText(roAuth.passwordReset.unavailable.title)).toBeInTheDocument();
+  });
 
-    await user.clear(screen.getByLabelText(roAuth.newPassword.repeat));
-    await user.type(screen.getByLabelText(roAuth.newPassword.repeat), 'casa2026');
-    await user.click(screen.getByRole('button', { name: roAuth.newPassword.submit }));
+  it('sends a signed-in visitor to the account page', async () => {
+    const session = buildSession();
+    const { router } = await renderAppRoute('/password-reset', {
+      auth: { session, user: session.user },
+    });
 
-    expect(
-      await screen.findByRole('heading', { name: roAuth.newPassword.done.title }),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/account');
+    });
   });
 });

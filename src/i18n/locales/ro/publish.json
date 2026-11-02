@@ -1,9 +1,17 @@
 {
   "pageTitle": "Publică un anunț gratuit",
+  "example": {
+    "title": "Apartament 3 camere, Complex",
+    "surface": "{{value}} m²",
+    "rooms_one": "{{count}} cameră",
+    "rooms_few": "{{count}} camere",
+    "rooms_other": "{{count}} de camere",
+    "floorShort": "et. {{floor}}/{{floors}}",
+    "floor": "{{floor}} din {{floors}}"
+  },
   "hero": {
     "eyebrow": "Pentru proprietari",
-    "titleLead": "Anunțul tău, publicat gratuit în",
-    "titleAccent": "10 minute",
+    "title": "Anunțul tău, publicat gratuit în <accent>10 minute</accent>",
     "lead": "Vânzare sau închiriere. Completezi 6 pași simpli, noi îl verificăm, iar cumpărătorii te contactează direct.",
     "seeSteps": "Vezi cum arată pașii",
     "startSignedOut": "Autentifică-te și începe anunțul",
@@ -18,12 +26,8 @@
       "summary": "Exemplu de anunț: apartament cu 3 camere în zona Complex, Timișoara, de vânzare.",
       "transaction": "De vânzare",
       "morePhotos": "+{{count}}",
-      "title": "Apartament 3 camere, Complex",
       "area": "Zona Complex, Timișoara",
       "pricePerSqm": "{{price}}/m²",
-      "surface": "{{value}} m²",
-      "rooms": "{{count}} camere",
-      "floor": "et. {{floor}}/{{floors}}",
       "ownerInitials": "IS",
       "ownerName": "Ioana Stan",
       "ownerRole": "Proprietar",
@@ -36,8 +40,7 @@
   },
   "path": {
     "eyebrow": "De ce îți trebuie cont",
-    "titleLead": "Pregătești liber,",
-    "titleAccent": "publici din cont.",
+    "title": "<lead>Pregătești liber,</lead> <accent>publici din cont.</accent>",
     "intro": "Contul e gratuit. Așa doar tu poți edita sau retrage anunțul, iar mesajele ajung la tine.",
     "steps": {
       "prepare": {
@@ -62,8 +65,7 @@
     "note": "Nu pierzi nimic din ce completezi: după ce intri în cont, te aducem direct la formular."
   },
   "steps": {
-    "titleLead": "Anunțul tău,",
-    "titleAccent": "în 6 pași.",
+    "title": "Anunțul tău, <accent>în 6 pași.</accent>",
     "intro": "Apasă pe un pas ca să vezi ce completezi și cum arată formularul.",
     "duration": { "title": "Cam 10 minute", "text": "de la început la trimitere" },
     "autosave": { "title": "Salvare automată", "text": "continui oricând de unde ai rămas" },
@@ -128,7 +130,6 @@
       "cover": "Copertă",
       "dragToSort": "Trage ca să ordonezi",
       "titleLabel": "Titlu",
-      "titleValue": "Apartament 3 camere, Complex",
       "descriptionLabel": "Descriere",
       "descriptionValue": "Apartament luminos, la etajul 2. Livingul are ferestre spre sud. Instalații refăcute în 2019.",
       "facts": {
@@ -137,8 +138,6 @@
         "floor": "Etaj",
         "year": "An construcție"
       },
-      "surfaceValue": "{{value}} m²",
-      "floorValue": "{{floor}} din {{floors}}",
       "mapLabel": "Exemplu · zona Complex, Timișoara",
       "mapNote": "Cercul e ce vede publicul. Pinul îl vezi doar tu.",
       "phoneLabel": "Telefon de contact",
@@ -173,13 +172,14 @@
     "titleAccent": "Altă încredere.",
     "intro": "Un anunț verificat răspunde la întrebări înainte să fie puse. Vezi cum apare al tău în căutare la fiecare nivel.",
     "listing": {
-      "meta": "{{count}} camere · {{area}} m²",
+      "meta_one": "{{count}} cameră · {{area}} m²",
+      "meta_few": "{{count}} camere · {{area}} m²",
+      "meta_other": "{{count}} de camere · {{area}} m²",
       "area": "Fabric, Timișoara"
     },
     "trust": "Încredere",
     "trustLevel": "Încredere: {{level}} din {{total}}",
     "plain": {
-      "chip": "Fără raport",
       "declared": "Date declarate de proprietar",
       "name": "Anunț simplu",
       "price": "Gratuit",
@@ -196,8 +196,7 @@
       "text": "Un inspector verifică locuința. Noi facem pozele, planul și turul 360°.",
       "more": "Ce include Property Fizic"
     },
-    "note": "Publici gratuit acum. Raportul îl comanzi oricând din Anunțurile mele, iar insigna apare automat când e gata.",
-    "illustrative": "Exemplu ilustrativ."
+    "note": "Publici gratuit acum. Raportul îl comanzi oricând din Anunțurile mele, iar insigna apare automat când e gata. <muted>Exemplu ilustrativ.</muted>"
   },
   "faq": {
     "title": "Ce ne întreabă proprietarii",

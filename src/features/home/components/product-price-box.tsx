@@ -1,21 +1,53 @@
-import { Link } from '@tanstack/react-router';
-import { ArrowRightIcon } from 'lucide-react';
+import { cva } from 'class-variance-authority';
 import type { ReactNode } from 'react';
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
+import type { HomeSectionId } from '@/components/layout/site-navigation';
+import { PillLink } from '@/components/navigation/pill-link';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
-import { cn } from '@/lib/utils';
+
+type Product = 'physical' | 'smartcheck';
+
+const boxVariants = cva('w-full overflow-hidden rounded-xl text-on-inverse', {
+  variants: { product: { physical: 'bg-primary', smartcheck: 'bg-info' } },
+});
+
+const kindVariants = cva('text-caption', {
+  variants: { product: { physical: 'text-on-inverse-faint', smartcheck: 'text-on-info-muted' } },
+});
+
+const amountVariants = cva('text-price-box', {
+  variants: { product: { physical: 'text-cta', smartcheck: '' } },
+});
+
+const footerVariants = cva(
+  'flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 border-t border-on-inverse/10 py-3 pr-3.5 pl-5',
+  { variants: { product: { physical: 'bg-primary-deep', smartcheck: 'bg-info-ink-muted' } } },
+);
+
+const footerTextVariants = cva('text-caption font-semibold', {
+  variants: { product: { physical: 'text-on-inverse-soft', smartcheck: 'text-on-info-muted' } },
+});
+
+const MARK_TONE = { physical: 'color', smartcheck: 'inverse' } as const satisfies Record<
+  Product,
+  'color' | 'inverse'
+>;
+const CTA_TONE = { physical: 'cta', smartcheck: 'inverse' } as const satisfies Record<
+  Product,
+  'cta' | 'inverse'
+>;
 
 type ProductPriceBoxProps = {
-  product: 'physical' | 'smartcheck';
+  product: Product;
   label: string;
   kind: string;
   amount: number;
   currency: Currency;
   footer: ReactNode;
   ctaLabel: string;
-  ctaHash: string;
+  ctaHash: HomeSectionId;
 };
 
 export function ProductPriceBox({
@@ -28,70 +60,26 @@ export function ProductPriceBox({
   ctaLabel,
   ctaHash,
 }: ProductPriceBoxProps) {
-  const isPhysical = product === 'physical';
-
   return (
-    <div
-      role="group"
-      aria-label={label}
-      className={cn(
-        'w-full overflow-hidden rounded-xl text-on-inverse',
-        isPhysical ? 'bg-primary' : 'bg-info',
-      )}
-    >
+    <div role="group" aria-label={label} className={boxVariants({ product })}>
       <div className="flex items-center gap-3 px-5 py-4.5">
-        <BrandMark product={product} tone={isPhysical ? 'color' : 'inverse'} size={40} />
+        <BrandMark product={product} tone={MARK_TONE[product]} size={40} />
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <Logo product={product} tone="inverse" size="md" hasMark={false} isDecorative />
-          <small
-            className={cn(
-              'text-caption',
-              isPhysical ? 'text-on-inverse-faint' : 'text-on-info-muted',
-            )}
-          >
-            {kind}
-          </small>
+          <small className={kindVariants({ product })}>{kind}</small>
         </span>
         <SplitPrice
           amount={amount}
           currency={currency}
-          className={cn('text-price-box', isPhysical && 'text-cta')}
+          className={amountVariants({ product })}
           currencyClassName="text-small font-bold tracking-normal text-on-inverse"
         />
       </div>
-      <div
-        className={cn(
-          'flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 border-t border-on-inverse/10 py-3 pr-3.5 pl-5',
-          isPhysical ? 'bg-primary-deep' : 'bg-info-ink-muted',
-        )}
-      >
-        <span
-          className={cn(
-            'text-caption font-semibold',
-            isPhysical ? 'text-on-inverse-soft' : 'text-on-info-muted',
-          )}
-        >
-          {footer}
-        </span>
-        <Link
-          to="/"
-          hash={ctaHash}
-          className={cn(
-            'inline-flex min-h-10 items-center gap-2 rounded-full py-0 pr-1.5 pl-3.5 text-small font-extrabold transition-colors duration-(--duration-fast) focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none',
-            isPhysical ? 'bg-cta text-brand' : 'bg-card text-info',
-          )}
-        >
+      <div className={footerVariants({ product })}>
+        <span className={footerTextVariants({ product })}>{footer}</span>
+        <PillLink to="/" hash={ctaHash} tone={CTA_TONE[product]} size="sm">
           {ctaLabel}
-          <span
-            aria-hidden="true"
-            className={cn(
-              'grid size-7 place-items-center rounded-full',
-              isPhysical ? 'bg-primary text-cta' : 'bg-info text-on-inverse',
-            )}
-          >
-            <ArrowRightIcon className="size-3.5" />
-          </span>
-        </Link>
+        </PillLink>
       </div>
     </div>
   );

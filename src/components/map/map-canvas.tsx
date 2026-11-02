@@ -1,6 +1,7 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {
   AttributionControl,
+  GeoJSONSource,
   Map as MapLibreMap,
   Marker,
   NavigationControl,
@@ -32,6 +33,11 @@ export type MapOverlay = {
   | { kind: 'circle'; colorToken: string; radius: number; opacity: number }
 );
 
+export type MapFocus = {
+  position: LngLat;
+  requestId: number;
+};
+
 export type MapMarkerItem = {
   id: string;
   position: LngLat;
@@ -44,15 +50,39 @@ type MapCanvasProps = {
   center: LngLat;
   zoom: number;
   bounds?: LngLatBounds | undefined;
-  focus?: LngLat | undefined;
+  focus?: MapFocus | undefined;
   markers: readonly MapMarkerItem[];
   overlays?: readonly MapOverlay[];
   onError: () => void;
   className?: string;
 };
 
+type MapLabels = {
+  zoomIn: string;
+  zoomOut: string;
+  title: string;
+  toggleAttribution: string;
+  mapFeedback: string;
+};
+
 function themeColor(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function labelElement(container: HTMLElement, selector: string, text: string) {
+  const element = container.querySelector(selector);
+  if (element) {
+    element.setAttribute('title', text);
+    element.setAttribute('aria-label', text);
+  }
+}
+
+function applyLabels(map: MapLibreMap, labels: MapLabels) {
+  const container = map.getContainer();
+  labelElement(container, '.maplibregl-ctrl-zoom-in', labels.zoomIn);
+  labelElement(container, '.maplibregl-ctrl-zoom-out', labels.zoomOut);
+  labelElement(container, '.maplibregl-ctrl-attrib-button', labels.toggleAttribution);
+  map.getCanvas().setAttribute('aria-label', labels.title);
 }
 
 export function MapCanvas({
@@ -70,18 +100,26 @@ export function MapCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<MapLibreMap>();
   const [isStyleReady, setIsStyleReady] = useState(false);
+  const appliedOverlays = useRef(new Map<string, string>());
+  const initialView = useRef({ center, zoom });
+  const labels: MapLabels = {
+    zoomIn: t('map.zoomIn'),
+    zoomOut: t('map.zoomOut'),
+    title: t('map.title'),
+    toggleAttribution: t('map.toggleAttribution'),
+    mapFeedback: t('map.mapFeedback'),
+  };
   const reportError = useEffectEvent(() => {
     onError();
   });
-  const initialView = useRef({ center, zoom });
-  const zoomInLabel = t('map.zoomIn');
-  const zoomOutLabel = t('map.zoomOut');
+  const readLabels = useEffectEvent(() => labels);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) {
       return;
     }
+    const initialLabels = readLabels();
     let instance: MapLibreMap;
     try {
       instance = new MapLibreMap({
@@ -92,14 +130,18 @@ export function MapCanvas({
         attributionControl: false,
         scrollZoom: false,
         locale: {
-          'NavigationControl.ZoomIn': zoomInLabel,
-          'NavigationControl.ZoomOut': zoomOutLabel,
+          'Map.Title': initialLabels.title,
+          'NavigationControl.ZoomIn': initialLabels.zoomIn,
+          'NavigationControl.ZoomOut': initialLabels.zoomOut,
+          'AttributionControl.ToggleAttribution': initialLabels.toggleAttribution,
+          'AttributionControl.MapFeedback': initialLabels.mapFeedback,
         },
       });
     } catch {
       reportError();
       return;
     }
+    const overlayRegistry = appliedOverlays.current;
     instance.addControl(new NavigationControl({ showCompass: false }), 'top-right');
     instance.addControl(new AttributionControl({ compact: true }), 'bottom-right');
     instance.on('style.load', () => {
@@ -109,6 +151,7 @@ export function MapCanvas({
       if (instance.getLayer('water')) {
         instance.setPaintProperty('water', 'fill-color', themeColor('--map-water'));
       }
+      overlayRegistry.clear();
       setIsStyleReady(true);
     });
     instance.on('error', () => {
@@ -124,18 +167,36 @@ export function MapCanvas({
     return () => {
       resizeObserver.disconnect();
       instance.remove();
+      overlayRegistry.clear();
       setMap(undefined);
       setIsStyleReady(false);
     };
-  }, [zoomInLabel, zoomOutLabel]);
+  }, []);
+
+  useEffect(() => {
+    if (map) {
+      applyLabels(map, {
+        zoomIn: labels.zoomIn,
+        zoomOut: labels.zoomOut,
+        title: labels.title,
+        toggleAttribution: labels.toggleAttribution,
+        mapFeedback: labels.mapFeedback,
+      });
+    }
+  }, [
+    map,
+    labels.zoomIn,
+    labels.zoomOut,
+    labels.title,
+    labels.toggleAttribution,
+    labels.mapFeedback,
+  ]);
 
   useEffect(() => {
     if (!map || !isStyleReady) {
       return;
     }
-    for (const overlay of overlays) {
-      applyOverlay(map, overlay);
-    }
+    syncOverlays(map, overlays, appliedOverlays.current);
   }, [map, isStyleReady, overlays]);
 
   const fitToBounds = useEffectEvent((target: MapLibreMap) => {
@@ -152,15 +213,15 @@ export function MapCanvas({
 
   const moveToFocus = useEffectEvent((target: MapLibreMap) => {
     if (focus) {
-      target.easeTo({ center: focus });
+      target.easeTo({ center: focus.position });
     }
   });
-  const focusKey = focus ? focus.join(',') : '';
+  const focusRequestId = focus?.requestId;
   useEffect(() => {
-    if (map) {
+    if (map && focusRequestId !== undefined) {
       moveToFocus(map);
     }
-  }, [map, focusKey]);
+  }, [map, focusRequestId]);
 
   return (
     <div
@@ -185,46 +246,83 @@ export function MapCanvas({
   );
 }
 
-function applyOverlay(map: MapLibreMap, overlay: MapOverlay) {
-  const visibility = overlay.isVisible ? 'visible' : 'none';
-  if (!map.getSource(overlay.id)) {
-    map.addSource(overlay.id, { type: 'geojson', data: overlay.data });
-    const color = themeColor(overlay.colorToken);
-    if (overlay.kind === 'line') {
-      if (overlay.hasCasing) {
-        map.addLayer({
-          id: `${overlay.id}-casing`,
-          type: 'line',
-          source: overlay.id,
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: { 'line-color': themeColor('--card'), 'line-width': overlay.width + 4 },
-        });
+function overlayLayerIds(id: string): string[] {
+  return [id, `${id}-casing`];
+}
+
+function removeOverlay(map: MapLibreMap, id: string) {
+  for (const layerId of overlayLayerIds(id)) {
+    if (map.getLayer(layerId)) {
+      map.removeLayer(layerId);
+    }
+  }
+  if (map.getSource(id)) {
+    map.removeSource(id);
+  }
+}
+
+function syncOverlays(
+  map: MapLibreMap,
+  overlays: readonly MapOverlay[],
+  registry: Map<string, string>,
+) {
+  const nextIds = new Set(overlays.map((overlay) => overlay.id));
+  for (const id of registry.keys()) {
+    if (!nextIds.has(id)) {
+      removeOverlay(map, id);
+      registry.delete(id);
+    }
+  }
+  for (const overlay of overlays) {
+    const data = JSON.stringify(overlay.data);
+    const source = map.getSource(overlay.id);
+    if (!source) {
+      addOverlay(map, overlay);
+    } else if (registry.get(overlay.id) !== data && source instanceof GeoJSONSource) {
+      void source.setData(overlay.data);
+    }
+    registry.set(overlay.id, data);
+    const visibility = overlay.isVisible ? 'visible' : 'none';
+    for (const layerId of overlayLayerIds(overlay.id)) {
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(layerId, 'visibility', visibility);
       }
+    }
+  }
+}
+
+function addOverlay(map: MapLibreMap, overlay: MapOverlay) {
+  map.addSource(overlay.id, { type: 'geojson', data: overlay.data });
+  const color = themeColor(overlay.colorToken);
+  if (overlay.kind === 'line') {
+    if (overlay.hasCasing) {
       map.addLayer({
-        id: overlay.id,
+        id: `${overlay.id}-casing`,
         type: 'line',
         source: overlay.id,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': color, 'line-width': overlay.width },
-      });
-    } else {
-      map.addLayer({
-        id: overlay.id,
-        type: 'circle',
-        source: overlay.id,
-        paint: {
-          'circle-color': color,
-          'circle-radius': overlay.radius,
-          'circle-opacity': overlay.opacity,
-        },
+        paint: { 'line-color': themeColor('--card'), 'line-width': overlay.width + 4 },
       });
     }
+    map.addLayer({
+      id: overlay.id,
+      type: 'line',
+      source: overlay.id,
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': color, 'line-width': overlay.width },
+    });
+    return;
   }
-  for (const layerId of [overlay.id, `${overlay.id}-casing`]) {
-    if (map.getLayer(layerId)) {
-      map.setLayoutProperty(layerId, 'visibility', visibility);
-    }
-  }
+  map.addLayer({
+    id: overlay.id,
+    type: 'circle',
+    source: overlay.id,
+    paint: {
+      'circle-color': color,
+      'circle-radius': overlay.radius,
+      'circle-opacity': overlay.opacity,
+    },
+  });
 }
 
 type MapMarkerProps = {

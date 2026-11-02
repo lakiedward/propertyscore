@@ -21,6 +21,10 @@ export class AppShellPage {
     return this.page.getByRole('heading', { name: this.text.account.title });
   }
 
+  get document(): Locator {
+    return this.page.locator('html');
+  }
+
   async switchLanguage(to: keyof typeof COMMON_TEXT) {
     await this.page.getByRole('button', { name: this.text.language.label }).click();
     await this.page.getByRole('menuitemradio', { name: COMMON_TEXT[to].language[to] }).click();

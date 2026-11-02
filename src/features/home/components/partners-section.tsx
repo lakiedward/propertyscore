@@ -1,13 +1,16 @@
-import { Link } from '@tanstack/react-router';
-import { ArrowRightIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { HOME_SECTION } from '@/components/layout/site-navigation';
+import { PillLink } from '@/components/navigation/pill-link';
+import { TextLink } from '@/components/navigation/text-link';
 import { SERVICE_PRICES } from '@/config/pricing';
-import { formatPrice } from '@/i18n/format';
+import { formatNumber, formatPrice } from '@/i18n/format';
+import { useBrandNames } from '../hooks/use-brand-names';
 import { PartnerEarningsCalculator } from './partner-earnings-calculator';
+import { SectionTitle } from './section-title';
 
 export function PartnersSection() {
   const { t } = useTranslation('home');
+  const brands = useBrandNames();
   const price = formatPrice(SERVICE_PRICES.physical.amount, SERVICE_PRICES.physical.currency);
   const commission = formatPrice(
     SERVICE_PRICES.partnerCommission.amount,
@@ -23,18 +26,20 @@ export function PartnersSection() {
     >
       <div className="page-wrap grid grid-cols-1 items-center gap-x-[clamp(40px,6vw,96px)] gap-y-10 w960:grid-cols-[1.15fr_0.85fr]">
         <div className="flex flex-col gap-5.5">
-          <p className="text-meta font-extrabold tracking-[0.06em] text-muted-foreground uppercase">
+          <p className="text-meta font-extrabold tracking-eyebrow text-muted-foreground uppercase">
             {t('partners.eyebrow')}
           </p>
-          <h2
+          <SectionTitle
             id="partners-title"
-            className="max-w-170 text-[clamp(36px,4vw,60px)] leading-[1.05] font-[740] tracking-[-0.035em] text-brand"
-          >
-            <span className="block">{t('partners.titleLead')}</span>
-            <span className="marker-cta">{t('partners.titleAccent', { price: commission })}</span>
-          </h2>
+            size="partners"
+            className="max-w-170 text-brand"
+            lead={t('partners.titleLead')}
+            accent={
+              <span className="marker-cta">{t('partners.titleAccent', { price: commission })}</span>
+            }
+          />
           <p className="max-w-140 text-lead-sm text-ink-soft">
-            {t('partners.text', { price, commission })}
+            {t('partners.text', { price, commission, ...brands })}
           </p>
           <ol className="grid grid-cols-1 gap-3 w560:grid-cols-3">
             {steps.map((step, index) => (
@@ -43,7 +48,7 @@ export function PartnersSection() {
                 className="flex flex-col gap-0.75 rounded-lg border border-border-subtle bg-background p-3.5"
               >
                 <span className="mb-1.5 grid size-7 place-items-center rounded-full bg-primary text-small font-extrabold text-on-inverse">
-                  {index + 1}
+                  {formatNumber(index + 1)}
                 </span>
                 <strong className="text-label font-extrabold text-brand">{step.title}</strong>
                 <span className="text-meta text-muted-foreground">{step.text}</span>
@@ -51,26 +56,8 @@ export function PartnersSection() {
             ))}
           </ol>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3.5">
-            <Link
-              to="/"
-              hash={HOME_SECTION.partners}
-              className="inline-flex min-h-12.5 items-center gap-3 rounded-full bg-primary py-0 pr-2 pl-5 text-label font-extrabold text-on-inverse transition-colors hover:bg-primary-hover focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              {t('partners.cta')}
-              <span
-                aria-hidden="true"
-                className="grid size-9 place-items-center rounded-full bg-cta text-brand"
-              >
-                <ArrowRightIcon className="size-4" />
-              </span>
-            </Link>
-            <Link
-              to="/"
-              hash={HOME_SECTION.partners}
-              className="text-small font-bold text-brand underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              {t('partners.existing')}
-            </Link>
+            <PillLink to="/sign-up">{t('partners.cta')}</PillLink>
+            <TextLink to="/login">{t('partners.existing')}</TextLink>
           </div>
         </div>
         <PartnerEarningsCalculator />

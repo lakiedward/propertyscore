@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router';
+import { ArrowLeftIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Logo } from '@/components/brand/logo';
 import heroImage from '@/assets/home/hero-living.webp';
@@ -16,6 +17,7 @@ export function AuthPhotoPanel() {
         alt=""
         width={1672}
         height={941}
+        fetchPriority="high"
         className="absolute inset-0 -z-10 size-full object-cover"
       />
       <div
@@ -32,14 +34,14 @@ export function AuthPhotoPanel() {
         </Link>
         <Link
           to="/"
-          className="rounded-full bg-foreground/72 px-3 py-1.5 text-caption leading-[1.55] font-[670] text-on-inverse transition-colors duration-(--duration-fast) hover:bg-foreground/85 focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
+          className="inline-flex items-center gap-1 rounded-full bg-foreground/72 px-3 py-1.5 text-caption leading-copy font-nav text-on-inverse transition-colors duration-(--duration-fast) hover:bg-foreground/85 focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
         >
-          <span aria-hidden="true">← </span>
+          <ArrowLeftIcon aria-hidden className="size-3.5" />
           {t('auth:layout.backToSite')}
         </Link>
       </div>
       <div className="flex max-w-130 flex-col items-start gap-5">
-        <h1 className="text-[clamp(36px,4vw,56px)] leading-[1.06] font-[740] tracking-[-0.045em]">
+        <h1 className="text-[clamp(36px,4vw,56px)] leading-[1.06] font-title tracking-[-0.045em]">
           <span className="block">{t('auth:layout.title.line1')}</span>
           <span className="block">{t('auth:layout.title.line2')}</span>
           <span className="block text-cta">{t('auth:layout.title.line3')}</span>
@@ -48,7 +50,7 @@ export function AuthPhotoPanel() {
           {t('auth:layout.text')}
         </p>
       </div>
-      <span className="absolute right-4 bottom-3 text-[11px] leading-[1.55] text-on-photo-faint">
+      <span className="absolute right-4 bottom-3 text-[11px] leading-copy text-on-photo-faint">
         {t('auth:layout.illustrative')}
       </span>
     </section>

@@ -9,12 +9,12 @@ const finding = roHome.physical.finding;
 describe('PhysicalSection', () => {
   it('shows the seller steps when the role changes', async () => {
     const { user } = await renderWithProviders(<PhysicalSection />);
-    expect(screen.getByText(journey.buyer[0]?.title ?? '')).toBeInTheDocument();
+    expect(screen.getByText(journey.steps.buyer.start.title)).toBeInTheDocument();
 
     await user.click(screen.getByRole('radio', { name: journey.roles.seller }));
 
-    expect(screen.getByText(journey.seller[1]?.title ?? '')).toBeInTheDocument();
-    expect(screen.queryByText(journey.buyer[0]?.title ?? '')).not.toBeInTheDocument();
+    expect(screen.getByText(journey.steps.seller.visit.title)).toBeInTheDocument();
+    expect(screen.queryByText(journey.steps.buyer.start.title)).not.toBeInTheDocument();
   });
 
   it('opens the finding example and switches between findings', async () => {

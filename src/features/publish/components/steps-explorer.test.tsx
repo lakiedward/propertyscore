@@ -3,9 +3,7 @@ import roPublish from '@/i18n/locales/ro/publish.json';
 import { renderWithProviders } from '@/test/render';
 import { StepsExplorer } from './steps-explorer';
 
-vi.mock('@/components/map/map-canvas', () => ({
-  MapCanvas: ({ label }: { label: string }) => <div role="region" aria-label={label} />,
-}));
+vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 
 const items = roPublish.steps.items;
 
@@ -15,48 +13,65 @@ function stepTab(title: string) {
 
 describe('StepsExplorer', () => {
   it('opens on the first step with previous disabled', async () => {
-    await renderWithProviders(<StepsExplorer />);
+    await renderWithProviders(<StepsExplorer activeKey="type" onStepChange={vi.fn()} />);
 
     expect(screen.getByRole('heading', { name: items.type.title })).toBeInTheDocument();
     expect(stepTab(items.type.title)).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('button', { name: roPublish.steps.previous })).toBeDisabled();
   });
 
-  it('switches step from the rail', async () => {
-    const { user } = await renderWithProviders(<StepsExplorer />);
+  it('shows the step it is given', async () => {
+    await renderWithProviders(<StepsExplorer activeKey="details" onStepChange={vi.fn()} />);
 
-    await user.click(stepTab(items.details.title));
-
+    expect(stepTab(items.details.title)).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('heading', { name: items.details.title })).toBeInTheDocument();
     expect(screen.getByText(items.details.tip)).toBeInTheDocument();
   });
 
-  it('moves with the arrow keys', async () => {
-    const { user } = await renderWithProviders(<StepsExplorer />);
+  it('asks for the step chosen on the rail', async () => {
+    const handleStepChange = vi.fn();
+    const { user } = await renderWithProviders(
+      <StepsExplorer activeKey="type" onStepChange={handleStepChange} />,
+    );
+
+    await user.click(stepTab(items.details.title));
+
+    expect(handleStepChange).toHaveBeenCalledWith('details');
+  });
+
+  it('asks for the next step with the arrow keys', async () => {
+    const handleStepChange = vi.fn();
+    const { user } = await renderWithProviders(
+      <StepsExplorer activeKey="type" onStepChange={handleStepChange} />,
+    );
 
     await user.click(stepTab(items.type.title));
     await user.keyboard('{ArrowRight}');
 
-    expect(stepTab(items.photos.title)).toHaveAttribute('aria-selected', 'true');
+    expect(handleStepChange).toHaveBeenCalledWith('photos');
   });
 
-  it('walks forward with the next button and stops on the last step', async () => {
-    const { user } = await renderWithProviders(<StepsExplorer />);
+  it('asks for the neighbouring steps with the previous and next buttons', async () => {
+    const handleStepChange = vi.fn();
+    const { user } = await renderWithProviders(
+      <StepsExplorer activeKey="location" onStepChange={handleStepChange} />,
+    );
 
     await user.click(screen.getByRole('button', { name: roPublish.steps.next }));
-    expect(screen.getByRole('heading', { name: items.photos.title })).toBeInTheDocument();
-
-    await user.click(stepTab(items.contact.title));
-    expect(screen.getByRole('button', { name: roPublish.steps.next })).toBeDisabled();
+    expect(handleStepChange).toHaveBeenLastCalledWith('contact');
 
     await user.click(screen.getByRole('button', { name: roPublish.steps.previous }));
-    expect(screen.getByRole('heading', { name: items.location.title })).toBeInTheDocument();
+    expect(handleStepChange).toHaveBeenLastCalledWith('details');
+  });
+
+  it('disables next on the last step', async () => {
+    await renderWithProviders(<StepsExplorer activeKey="contact" onStepChange={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: roPublish.steps.next })).toBeDisabled();
   });
 
   it('shows the example map on the address step', async () => {
-    const { user } = await renderWithProviders(<StepsExplorer />);
-
-    await user.click(stepTab(items.location.title));
+    await renderWithProviders(<StepsExplorer activeKey="location" onStepChange={vi.fn()} />);
 
     expect(await screen.findByText(roPublish.steps.preview.mapNote)).toBeInTheDocument();
     expect(screen.getAllByText(roPublish.steps.preview.mapLabel)).not.toHaveLength(0);

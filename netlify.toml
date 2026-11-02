@@ -4,7 +4,15 @@
 
 [build.environment]
   NODE_VERSION = "24"
+
+[context.production.environment]
   VITE_APP_ENV = "production"
+
+[context.deploy-preview]
+  command = "echo 'Deploy previews are disabled: they have no Supabase project and must never reach the production database' && exit 1"
+
+[context.branch-deploy]
+  command = "echo 'Branch deploys are disabled: they have no Supabase project and must never reach the production database' && exit 1"
 
 [[redirects]]
   from = "/*"

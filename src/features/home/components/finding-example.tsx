@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import windowImage from '@/assets/home/inspection-window.webp';
+import { useBrandNames } from '../hooks/use-brand-names';
 
 const EXAMPLES = ['windows', 'damp', 'systems'] as const;
 const EXAMPLE_TONE = { windows: 'warning', damp: 'warning', systems: 'success' } as const;
@@ -18,6 +19,7 @@ const DEFAULT_EXAMPLE = EXAMPLES[0];
 
 export function FindingExample() {
   const { t } = useTranslation('home');
+  const brands = useBrandNames();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -25,10 +27,10 @@ export function FindingExample() {
       <div className="flex flex-col gap-5 rounded-photo bg-primary px-6 py-5.5 text-on-inverse shadow-service sm:flex-row sm:items-center sm:justify-between">
         <BrandMark product="physical" size={44} className="hidden sm:block" />
         <div className="flex flex-1 flex-col gap-1">
-          <p className="text-meta font-extrabold tracking-[0.06em] text-cta uppercase">
-            {t('physical.finding.kicker')}
+          <p className="text-meta font-extrabold tracking-eyebrow text-cta uppercase">
+            {t('physical.finding.kicker', brands)}
           </p>
-          <p className="text-[19px] leading-[1.55] font-extrabold tracking-[-0.02em] w520:text-h3">
+          <p className="text-[19px] leading-copy font-extrabold tracking-[-0.02em] w520:text-h3">
             {t('physical.finding.title')}
           </p>
           <p className="text-label font-[750] text-on-inverse">{t('physical.finding.text')}</p>

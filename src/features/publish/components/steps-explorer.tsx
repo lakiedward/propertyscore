@@ -6,34 +6,36 @@ import {
   LightbulbIcon,
   SaveIcon,
 } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import type { ReactNode } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
-import { PUBLISH_STEPS, type PublishStepKey } from '../publish.steps';
+import { cn, oneOf } from '@/lib/utils';
+import { PUBLISH_STEP_KEYS, PUBLISH_STEPS, type PublishStepKey } from '../publish.steps';
 import { StepPreview } from './step-preview';
 
-const FIRST_STEP: PublishStepKey = 'type';
+type StepsExplorerProps = {
+  activeKey: PublishStepKey;
+  onStepChange: (step: PublishStepKey) => void;
+};
 
-export function StepsExplorer() {
+export function StepsExplorer({ activeKey, onStepChange }: StepsExplorerProps) {
   const { t } = useTranslation('publish');
-  const [activeKey, setActiveKey] = useState<PublishStepKey>(FIRST_STEP);
   const activeIndex = PUBLISH_STEPS.findIndex((step) => step.key === activeKey);
   const lastIndex = PUBLISH_STEPS.length - 1;
 
   const handleValueChange = (value: string) => {
-    const step = PUBLISH_STEPS.find((item) => item.key === value);
+    const step = oneOf(PUBLISH_STEP_KEYS, value);
     if (step) {
-      setActiveKey(step.key);
+      onStepChange(step);
     }
   };
 
   const goTo = (index: number) => {
     const step = PUBLISH_STEPS[index];
     if (step) {
-      setActiveKey(step.key);
+      onStepChange(step.key);
     }
   };
 
@@ -46,13 +48,16 @@ export function StepsExplorer() {
       <div className="page-wrap flex flex-col gap-8">
         <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-5">
           <div className="flex flex-col gap-3">
-            <h2 id="publish-steps-title" className="text-h2 leading-[1.12] text-foreground">
-              {t('steps.titleLead')}{' '}
-              <span className="text-brand underline decoration-cta decoration-[0.18em] underline-offset-[0.12em] [text-decoration-skip-ink:none]">
-                {t('steps.titleAccent')}
-              </span>
+            <h2 id="publish-steps-title" className="text-h2 leading-heading text-foreground">
+              <Trans
+                t={t}
+                i18nKey="steps.title"
+                components={{
+                  accent: <span className="marker-underline" />,
+                }}
+              />
             </h2>
-            <p className="text-lead-sm leading-[1.55] text-muted-foreground">{t('steps.intro')}</p>
+            <p className="text-lead-sm leading-copy text-muted-foreground">{t('steps.intro')}</p>
           </div>
           <div className="flex flex-wrap gap-2.5">
             <InfoChip
@@ -106,15 +111,15 @@ export function StepsExplorer() {
                     <span className="flex flex-col items-center gap-0.5 text-center">
                       <span
                         className={cn(
-                          'text-meta leading-[1.55] font-extrabold tracking-[0.04em] uppercase tabular-nums',
-                          isActive ? step.hue.label : 'text-muted-foreground',
+                          'text-meta leading-copy font-extrabold tracking-[0.04em] uppercase tabular-nums',
+                          isActive ? step.hue.ink : 'text-muted-foreground',
                         )}
                       >
                         {t('steps.stepNumber', { number: index + 1 })}
                       </span>{' '}
                       <strong
                         className={cn(
-                          'text-[15px] leading-tight',
+                          'text-body-sm leading-tight',
                           isActive ? 'font-extrabold' : 'font-[650]',
                         )}
                       >
@@ -145,13 +150,13 @@ export function StepsExplorer() {
               <div className="flex flex-col justify-center gap-3.5">
                 <p
                   className={cn(
-                    'text-caption leading-[1.55] font-extrabold tracking-[0.06em] tabular-nums',
+                    'text-caption leading-copy font-extrabold tracking-eyebrow tabular-nums',
                     step.hue.ink,
                   )}
                 >
                   {t('steps.stepOf', { number: index + 1, total: PUBLISH_STEPS.length })}
                 </p>
-                <h3 className="text-[28px] leading-[1.15] font-extrabold tracking-[-0.03em] text-foreground">
+                <h3 className="text-title-sm leading-[1.15] font-extrabold tracking-[-0.03em] text-foreground">
                   {t(`steps.items.${step.key}.title`)}
                 </h3>
                 <p className="text-body text-muted-foreground">
@@ -161,7 +166,7 @@ export function StepsExplorer() {
                   {t(`steps.items.${step.key}.points`, { returnObjects: true }).map((point) => (
                     <li
                       key={point}
-                      className="flex items-start gap-2.5 text-[15px] leading-[1.45] text-foreground"
+                      className="flex items-start gap-2.5 text-body-sm leading-compact text-foreground"
                     >
                       <CheckIcon
                         aria-hidden
@@ -171,7 +176,7 @@ export function StepsExplorer() {
                     </li>
                   ))}
                 </ul>
-                <p className="flex items-start gap-2.5 rounded-lg bg-card px-3.5 py-3 text-small leading-[1.45] text-foreground">
+                <p className="flex items-start gap-2.5 rounded-lg bg-card px-3.5 py-3 text-small leading-compact text-foreground">
                   <LightbulbIcon aria-hidden className={cn('size-4.5 shrink-0', step.hue.ink)} />
                   {t(`steps.items.${step.key}.tip`)}
                 </p>
@@ -219,7 +224,7 @@ type InfoChipProps = {
 
 function InfoChip({ icon, title, text }: InfoChipProps) {
   return (
-    <span className="flex items-center gap-3 rounded-[14px] border border-border-hairline bg-card px-4 py-3">
+    <span className="flex items-center gap-3 rounded-tile border border-border-hairline bg-card px-4 py-3">
       <span
         aria-hidden="true"
         className="grid size-10 shrink-0 place-items-center rounded-lg bg-step-coral-surface text-step-coral-ink [&_svg]:size-5"
@@ -227,8 +232,8 @@ function InfoChip({ icon, title, text }: InfoChipProps) {
         {icon}
       </span>
       <span className="flex flex-col gap-px">
-        <strong className="text-[15px] leading-[1.55] font-bold text-brand">{title}</strong>
-        <span className="text-caption leading-[1.55] text-muted-foreground">{text}</span>
+        <strong className="text-body-sm leading-copy font-bold text-brand">{title}</strong>
+        <span className="text-caption leading-copy text-muted-foreground">{text}</span>
       </span>
     </span>
   );

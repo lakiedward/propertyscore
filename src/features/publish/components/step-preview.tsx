@@ -3,20 +3,17 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/i18n/format';
 import { cn } from '@/lib/utils';
-import heroImage from '@/assets/home/hero-living.webp';
-import inspectionImage from '@/assets/home/inspection-window.webp';
-import bedroomImage from '@/assets/home/room-bedroom.webp';
-import { HERO_LISTING } from '../publish.example';
+import { HERO_LISTING, PHOTO_TILES } from '../publish.example';
 import { PUBLISH_STEPS, type PublishStepKey } from '../publish.steps';
 import { ExampleLocationMap } from './example-location-map';
 
 const PHOTO_GRID = [
-  { key: 'cover', src: heroImage },
-  { key: 'bedroom', src: bedroomImage },
-  { key: 'inspection', src: inspectionImage },
-  { key: 'bedroom-2', src: bedroomImage },
-  { key: 'living-2', src: heroImage },
-  { key: 'inspection-2', src: inspectionImage },
+  { key: 'cover', photo: PHOTO_TILES.living },
+  { key: 'bedroom', photo: PHOTO_TILES.bedroom },
+  { key: 'inspection', photo: PHOTO_TILES.window },
+  { key: 'bedroom-2', photo: PHOTO_TILES.bedroom },
+  { key: 'living-2', photo: PHOTO_TILES.living },
+  { key: 'inspection-2', photo: PHOTO_TILES.window },
 ] as const;
 
 type StepPreviewProps = {
@@ -33,7 +30,7 @@ export function StepPreview({ stepKey, stepIndex }: StepPreviewProps) {
         {t('steps.preview.summary', { step: t(`steps.items.${stepKey}.title`) })}
       </p>
       <div aria-hidden="true" className="contents">
-        <span className="flex items-center justify-between text-meta leading-[1.55] font-extrabold">
+        <span className="flex items-center justify-between text-meta leading-copy font-extrabold">
           <span className="text-muted-foreground">{t('steps.preview.newListing')}</span>
           <span className="flex items-center gap-1 text-step-aqua-solid">
             <CloudCheckIcon className="size-3.5" />
@@ -57,7 +54,11 @@ export function StepPreview({ stepKey, stepIndex }: StepPreviewProps) {
   );
 }
 
-function PreviewBody({ stepKey }: { stepKey: PublishStepKey }) {
+type PreviewBodyProps = {
+  stepKey: PublishStepKey;
+};
+
+function PreviewBody({ stepKey }: PreviewBodyProps) {
   const { t } = useTranslation('publish');
 
   switch (stepKey) {
@@ -96,9 +97,17 @@ function PreviewBody({ stepKey }: { stepKey: PublishStepKey }) {
                   photo.key === 'cover' && 'outline-2 outline-cta',
                 )}
               >
-                <img src={photo.src} alt="" className="size-full object-cover" />
+                <img
+                  src={photo.photo.src}
+                  alt=""
+                  width={photo.photo.width}
+                  height={photo.photo.height}
+                  loading="lazy"
+                  decoding="async"
+                  className="size-full object-cover"
+                />
                 {photo.key === 'cover' ? (
-                  <span className="absolute top-1 left-1 rounded-sm bg-cta px-1.5 py-0.5 text-[10px] leading-[1.55] font-extrabold text-brand">
+                  <span className="absolute top-1 left-1 rounded-sm bg-cta px-1.5 py-0.5 text-micro leading-copy font-extrabold text-brand">
                     {t('steps.preview.cover')}
                   </span>
                 ) : null}
@@ -112,7 +121,7 @@ function PreviewBody({ stepKey }: { stepKey: PublishStepKey }) {
       return (
         <>
           <PreviewField label={t('steps.preview.titleLabel')} isFocused>
-            {t('steps.preview.titleValue')}
+            {t('example.title')}
           </PreviewField>
           <PreviewField label={t('steps.preview.descriptionLabel')} isMuted>
             {t('steps.preview.descriptionValue')}
@@ -123,13 +132,13 @@ function PreviewBody({ stepKey }: { stepKey: PublishStepKey }) {
       return (
         <span className="grid grid-cols-2 gap-2">
           <PreviewFact label={t('steps.preview.facts.surface')}>
-            {t('steps.preview.surfaceValue', { value: HERO_LISTING.surface })}
+            {t('example.surface', { value: HERO_LISTING.surface })}
           </PreviewFact>
           <PreviewFact label={t('steps.preview.facts.rooms')}>
             {String(HERO_LISTING.rooms)}
           </PreviewFact>
           <PreviewFact label={t('steps.preview.facts.floor')}>
-            {t('steps.preview.floorValue', {
+            {t('example.floor', {
               floor: HERO_LISTING.floor,
               floors: HERO_LISTING.floors,
             })}
@@ -164,17 +173,14 @@ function PreviewBody({ stepKey }: { stepKey: PublishStepKey }) {
   }
 }
 
-function PreviewField({
-  label,
-  isFocused = false,
-  isMuted = false,
-  children,
-}: {
+type PreviewFieldProps = {
   label: string;
   isFocused?: boolean;
   isMuted?: boolean;
   children: ReactNode;
-}) {
+};
+
+function PreviewField({ label, isFocused = false, isMuted = false, children }: PreviewFieldProps) {
   return (
     <span className="flex flex-col gap-1">
       <span className="text-meta leading-[1.4] text-muted-foreground">{label}</span>
@@ -193,7 +199,12 @@ function PreviewField({
   );
 }
 
-function PreviewFact({ label, children }: { label: string; children: ReactNode }) {
+type PreviewFactProps = {
+  label: string;
+  children: ReactNode;
+};
+
+function PreviewFact({ label, children }: PreviewFactProps) {
   return (
     <span className="flex flex-col gap-0.5 rounded-md border-[1.5px] border-border px-3 py-2.5">
       <span className="text-meta leading-[1.4] text-muted-foreground">{label}</span>
@@ -202,7 +213,12 @@ function PreviewFact({ label, children }: { label: string; children: ReactNode }
   );
 }
 
-function PreviewNote({ icon, children }: { icon?: ReactNode; children: ReactNode }) {
+type PreviewNoteProps = {
+  icon?: ReactNode;
+  children: ReactNode;
+};
+
+function PreviewNote({ icon, children }: PreviewNoteProps) {
   return (
     <span className="flex items-center gap-1.5 text-small leading-normal text-muted-foreground [&_svg]:size-3.5">
       {icon}

@@ -1,9 +1,26 @@
+import { cva } from 'class-variance-authority';
 import { CircleAlertIcon, SearchXIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
+const emptyStateIconVariants = cva('size-8', {
+  variants: {
+    kind: {
+      empty: 'text-muted-foreground',
+      error: 'text-destructive',
+    },
+  },
+});
+
+type EmptyStateKind = 'empty' | 'error';
+
+const EMPTY_STATE_KIND = {
+  empty: { icon: SearchXIcon, role: 'status' },
+  error: { icon: CircleAlertIcon, role: 'alert' },
+} as const satisfies Record<EmptyStateKind, { icon: typeof SearchXIcon; role: string }>;
+
 type EmptyStateProps = {
-  kind: 'empty' | 'error';
+  kind: EmptyStateKind;
   title: string;
   description?: string;
   action?: ReactNode;
@@ -11,20 +28,17 @@ type EmptyStateProps = {
 };
 
 export function EmptyState({ kind, title, description, action, className }: EmptyStateProps) {
-  const Icon = kind === 'error' ? CircleAlertIcon : SearchXIcon;
+  const { icon: Icon, role } = EMPTY_STATE_KIND[kind];
 
   return (
     <div
-      role={kind === 'error' ? 'alert' : 'status'}
+      role={role}
       className={cn(
         'flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-surface-subtle px-6 py-10 text-center',
         className,
       )}
     >
-      <Icon
-        aria-hidden
-        className={cn('size-8', kind === 'error' ? 'text-destructive' : 'text-muted-foreground')}
-      />
+      <Icon aria-hidden className={emptyStateIconVariants({ kind })} />
       <p className="text-h4">{title}</p>
       {description ? (
         <p className="max-w-sm text-small text-muted-foreground">{description}</p>

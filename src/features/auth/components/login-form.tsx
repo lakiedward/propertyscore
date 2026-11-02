@@ -1,28 +1,24 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MailIcon } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { FieldLabel } from '@/components/ui/field';
+import { FieldGroup } from '@/components/ui/field';
 import { useErrorMessage } from '@/i18n/error-message';
 import { isAppError } from '@/lib/errors';
 import { useSignIn } from '../api/auth.queries';
 import { credentialsSchema, type Credentials } from '../auth.schemas';
 import type { SocialProvider } from '../auth.types';
-import { AuthFieldError } from './auth-field-error';
-import { AuthInput } from './auth-input';
 import { AuthNotice } from './auth-notice';
-import { PasswordInput } from './password-input';
+import { AuthTextField } from './auth-text-field';
 import { SocialSignIn } from './social-sign-in';
+import { SocialUnavailableNotice } from './social-unavailable-notice';
 
 export function LoginForm() {
   const { t } = useTranslation('auth');
   const errorMessage = useErrorMessage();
   const signIn = useSignIn();
   const [oauthProvider, setOauthProvider] = useState<SocialProvider>();
-  const emailId = useId();
-  const passwordId = useId();
   const form = useForm<Credentials>({
     resolver: zodResolver(credentialsSchema),
     defaultValues: { email: '', password: '' },
@@ -43,95 +39,51 @@ export function LoginForm() {
 
   return (
     <>
-      {oauthProvider ? (
-        <AuthNotice
-          tone="error"
-          title={t('social.errorTitle', { provider: t(`social.providers.${oauthProvider}`) })}
-        >
-          {t('social.errorText')}
+      {oauthProvider ? <SocialUnavailableNotice provider={oauthProvider} /> : null}
+      {signIn.error && isUnconfirmed ? (
+        <AuthNotice tone="warning" title={t('login.unconfirmedTitle')}>
+          {t('login.unconfirmedText', { email: signIn.variables.email })}
         </AuthNotice>
       ) : null}
-      {signIn.error ? (
-        <AuthNotice
-          tone={isUnconfirmed ? 'warning' : 'error'}
-          title={t(isUnconfirmed ? 'login.unconfirmedTitle' : 'login.failedTitle')}
-        >
-          {isUnconfirmed
-            ? t('login.unconfirmedText', { email: signIn.variables.email })
-            : reason === 'invalid_credentials'
-              ? t('login.failedText')
-              : errorMessage(signIn.error)}
+      {signIn.error && !isUnconfirmed ? (
+        <AuthNotice tone="error" title={t('login.failedTitle')}>
+          {reason === 'invalid_credentials' ? t('login.failedText') : errorMessage(signIn.error)}
         </AuthNotice>
-      ) : null}
-      {isUnconfirmed ? (
-        <Button
-          type="button"
-          variant="outline"
-          className="h-11 w-full gap-2.5 border-[1.5px] text-body font-bold"
-        >
-          <MailIcon aria-hidden />
-          {t('login.resendConfirmation')}
-        </Button>
       ) : null}
       <SocialSignIn onSelect={handleSocialSelect} />
-      <form
-        onSubmit={(event) => void handleSubmit(event)}
-        noValidate
-        className="flex flex-col gap-3"
-      >
-        <Controller
-          name="email"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <>
-              <FieldLabel htmlFor={emailId} className="sr-only">
-                {t('fields.email.label')}
-              </FieldLabel>
-              <AuthInput
+      <form onSubmit={(event) => void handleSubmit(event)} noValidate>
+        <FieldGroup className="gap-3">
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <AuthTextField
                 {...field}
-                id={emailId}
+                label={t('fields.email.label')}
+                error={fieldState.error?.message}
                 type="email"
                 autoComplete="email"
                 inputMode="email"
-                placeholder={t('fields.email.label')}
-                aria-invalid={fieldState.invalid}
-                aria-describedby={fieldState.invalid ? `${emailId}-error` : undefined}
               />
-              <AuthFieldError id={`${emailId}-error`}>
-                {fieldState.invalid ? t('fields.email.error') : null}
-              </AuthFieldError>
-            </>
-          )}
-        />
-        <Controller
-          name="password"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <>
-              <FieldLabel htmlFor={passwordId} className="sr-only">
-                {t('fields.password.label')}
-              </FieldLabel>
-              <PasswordInput
+            )}
+          />
+          <Controller
+            name="password"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <AuthTextField
                 {...field}
-                id={passwordId}
+                label={t('fields.password.label')}
+                error={fieldState.error?.message}
+                type="password"
                 autoComplete="current-password"
-                placeholder={t('fields.password.label')}
-                aria-invalid={fieldState.invalid}
-                aria-describedby={fieldState.invalid ? `${passwordId}-error` : undefined}
               />
-              <AuthFieldError id={`${passwordId}-error`}>
-                {fieldState.invalid ? t('fields.password.required') : null}
-              </AuthFieldError>
-            </>
-          )}
-        />
-        <Button
-          type="submit"
-          disabled={signIn.isPending}
-          className="mt-1 h-13.5 w-full rounded-md text-[15px] font-[730] short:h-11.5"
-        >
-          {signIn.isPending ? t('login.pending') : t('login.submit')}
-        </Button>
+            )}
+          />
+          <Button type="submit" size="xl" disabled={signIn.isPending} className="mt-1 w-full">
+            {signIn.isPending ? t('login.pending') : t('login.submit')}
+          </Button>
+        </FieldGroup>
       </form>
     </>
   );

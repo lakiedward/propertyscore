@@ -12,6 +12,7 @@ export async function listListings({ transaction, limit }: ListingFilters) {
     .eq('status', 'published')
     .eq('transaction', transaction)
     .order('published_at', { ascending: false })
+    .order('id', { ascending: false })
     .range(0, limit - 1);
   if (error) throw toAppError(error);
   return { items: data, total: count ?? data.length };

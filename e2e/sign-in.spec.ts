@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import roAuth from '../src/i18n/locales/ro/auth.json' with { type: 'json' };
 import { AppShellPage } from './pages/app-shell.page';
 import { LoginPage } from './pages/login.page';
 import { testUsers } from './test-users';
@@ -18,7 +17,7 @@ test.describe('Sign in', () => {
     await loginPage.goto();
     await loginPage.signIn(testUsers.ro.email, 'not-the-password');
 
-    await expect(page.getByText(roAuth.login.failedText)).toBeVisible();
+    await expect(loginPage.failedMessage).toBeVisible();
   });
 
   test('sends a signed-out visitor to the login page and back after signing in', async ({

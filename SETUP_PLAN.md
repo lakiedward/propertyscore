@@ -42,7 +42,7 @@ Pin exact versions when the project is created (`pnpm add -E`). Upgrade on purpo
 
 ## 2. Project structure
 
-Code is organised **by feature**. Technical folders (`components/`, `lib/`) hold only code that more than one feature uses.
+Code is organised **by feature**. Technical folders (`components/`, `lib/`) hold only code that more than one feature uses. Design-system catalogue components are the exception: each lives at the path the catalogue in `.claude/rules/design-system.md` §4 gives it from its first use, because the catalogue is built to be shared and moving a component between a feature and `components/` on its second use only adds churn.
 
 ```
 property_score/
@@ -166,7 +166,7 @@ Pure domain logic (scoring rules, formatting, calculations) goes in `*.utils.ts`
 - **Smart edges, dumb leaves.** Route components and feature "screen" components call hooks and own state. Leaf components receive props and render. Leaves are then easy to test and reuse.
 - **Colocate.** State lives in the lowest component that needs it, and files live next to the code that uses them. Lift state only when two siblings need it.
 - **Composition over configuration.** Prefer `children` and small composable components to a single component with 15 boolean props.
-- **Suspense for loading where it fits.** Route loaders call `queryClient.ensureQueryData(...)`, and components use `useSuspenseQuery`. The route's `pendingComponent` and `errorComponent` handle loading and error states, so components contain no `if (isLoading)` branches.
+- **Suspense for loading where it fits.** Route loaders call `queryClient.query({ ...options, staleTime: 'static' })` (TanStack Query 5's replacement for the deprecated `ensureQueryData`), and components use `useSuspenseQuery`. The route's `pendingComponent` and `errorComponent` handle loading and error states, so components contain no `if (isLoading)` branches.
 - **Keys are stable IDs**, never array indexes, for lists that change.
 - **Accessibility is not optional.** Use semantic HTML, and give every input a label (the shadcn `Field` components do this). Dialogs and menus come from Radix, which handles focus management. `eslint-plugin-jsx-a11y` is on.
 - **Use React 19 APIs where they simplify code**: `ref` as a prop (no `forwardRef` in new code) and `use()` for context. Don't use React 19 form Actions for data mutations; TanStack Query mutations are the single mutation path.
@@ -282,7 +282,7 @@ export function useCreateProperty() {
 
 Rules:
 - **One `queryOptions` factory per feature.** Components, loaders and tests all use it, so a key is never typed by hand twice.
-- Route loaders prefetch with `queryClient.ensureQueryData(propertyQueries.detail(id))`.
+- Route loaders prefetch with `queryClient.query({ ...propertyQueries.detail(id), staleTime: 'static' })`. `ensureQueryData`, `fetchQuery` and `prefetchQuery` are deprecated in TanStack Query 5.10x in favour of `query`, and the strict ESLint config rejects deprecated calls.
 - **Invalidate rather than hand-edit the cache** after mutations. Use optimistic updates only where the UX clearly benefits (toggles, reordering), and always roll back in `onError`.
 - **`QueryClient` defaults** (`app/query-client.ts`): `staleTime: 30_000`, `retry` disabled for 4xx-class `AppError`s (permission, not found, validation) and at most 2 retries otherwise. `refetchOnWindowFocus` stays on.
 - **Clear the whole cache on sign-out** (`queryClient.clear()`) so one user's data never shows for the next.
@@ -294,6 +294,7 @@ Rules:
 
 - **React Hook Form + Zod**: each form has one schema in `*.schemas.ts`, and the schema gives us the form type with `z.infer`.
 - Use React Hook Form's `Controller` with the shadcn `Field` components (`Field`, `FieldLabel`, `FieldError`, `FieldGroup`, `FieldSet`) for consistent labels, errors and ARIA. This is the pattern shadcn's current form guide uses; the older `Form` wrapper (`FormField`, `FormItem`, `FormMessage`) hides the wiring behind context and was not installed, so every form shows its label, `aria-invalid` and error explicitly.
+- **Labels stay in the DOM.** Every field has a `FieldLabel`. When the design export shows a field without a visible label (the login and sign-up screens use placeholders only), the label is `sr-only` and the placeholder repeats it, so screen readers and voice control still get a name while the screen matches the design.
 - Submitting calls a mutation hook: `mutateAsync` when server errors map back to fields (`useCreateProperty().mutateAsync`), `mutate` when the only server error is form-level (sign-in). The form's submit button reads `isPending` from the mutation (or `formState.isSubmitting`).
 - **Server errors are mapped back to fields** when they can be. A unique-violation `AppError` becomes `setError('title', …)`; anything else shows in a form-level alert.
 - **Client validation is for UX only.** The database enforces the real constraints (`not null`, `check`, `unique`, foreign keys, RLS `with check`). Keep both in sync. When they disagree, the database wins.
@@ -327,7 +328,7 @@ Messages that need values (such as "at least 3 characters") read them from the Z
   - `_authenticated/` holds everything behind login. Its `route.tsx` holds the guard and the app shell.
 - **Router context** carries `queryClient` and `auth`, so loaders and guards can use them without imports.
 - **Search params are validated** with a Zod schema in each route's `validateSearch`. Components read them through `Route.useSearch()`, which is fully typed.
-- **Every route that fetches data** defines a `loader` (prefetch), a `pendingComponent`, and either an `errorComponent` or the root default.
+- **Every route that fetches data** defines a `loader` (prefetch), a `pendingComponent`, and either an `errorComponent` or the root default. A public page whose optional widget must not hold back the first paint (the listings board on the home page) prefetches without awaiting (`void queryClient.query(…).catch(() => undefined)`, the replacement for the deprecated `prefetchQuery`), and the widget reads with `useQuery` and its own inline skeleton and error state; blocking the home page on a list query would put the whole page behind the slowest request.
 - Code splitting is automatic (`autoCodeSplitting: true` in the plugin config).
 - `notFoundComponent` lives on the root route. Loaders throw `notFound()` when a record does not exist or is not visible under RLS.
 - **URLs carry no language prefix** (`/properties`, not `/ro/properties`). Pages behind login are not indexed by search engines, so a prefix would only add routing complexity. If public, indexable pages are added later, they get `/ro/…` and `/en/…` prefixes and `hreflang` links (section 18). URL path segments stay in English for both languages.
@@ -603,7 +604,7 @@ What this gives us:
 - **`cn()`** merges classes. It comes from shadcn's `cn` package (a drop-in for `clsx` + `tailwind-merge`) and is re-exported from `lib/utils.ts`, which `components.json` points to. **`class-variance-authority`** handles component variants, as shadcn does.
 - **Icons**: `lucide-react` only. Exception: the official Google and Facebook marks on the sign-in buttons live as inline SVG in `components/brand/`, because brand rules require the original marks and lucide has none.
 - **Responsive**: mobile-first with Tailwind's default breakpoints (`sm` 640, `md` 768, `lg` 1024, `xl` 1280). No custom breakpoint ladder.
-- **Dark mode**: tokens are defined for both themes from day one (shadcn does this), and the `dark` class goes on `<html>`. Whether we ship a theme toggle is a product decision.
+- **Dark mode**: light-only until a dark design is approved. The first build kept shadcn's neutral `.dark` block, but none of the PropertyScore tokens had dark values, so a `dark` class produced a half-themed, unreadable UI; the block was removed. When a dark design exists, every semantic token gets its dark value in one change and the `dark` class on `<html>` switches them. Whether we ship a theme toggle is a product decision.
 - **Self-host fonts** with `@fontsource/*`, including the `latin-ext` subset for Romanian ș/ț/ă/â/î; no Google Fonts requests at runtime. The fonts follow the Claude Design home export: Manrope for body text and every heading (`--font-sans`, `--font-heading`), because the export sets all titles in its body font, and Sora for brand wordmarks only (`--font-brand`), both variable `@fontsource-variable/*` packages. Bricolage Grotesque, used for headings in the first build, was removed when the page was copied one to one. They replaced Geist, which was a placeholder until the design settled decision D15; Segoe UI, the design system's original stack, cannot be self-hosted.
 - **Charts** (score visualisations): add `recharts`, through shadcn's chart wrapper, only when the first chart is built.
 - `prettier-plugin-tailwindcss` sorts class names. Long class lists are fine. When the same set of classes repeats, extract a component, not an `@apply` class.
@@ -793,6 +794,7 @@ Rules:
   - unit tests for `i18n/format.ts` (dates, numbers, currency, `parseLocaleNumber`) in both locales, and for Romanian plural forms (1, 2, 19, 20, 101, 102);
   - one component test that switches language and checks that text, validation errors and `<html lang>` all update;
   - an E2E smoke test per language: sign in as the `ro` test user and as the `en` test user, and check that each sees their language and that the choice survives a reload.
+- **Maps in jsdom**: jsdom has no WebGL, so components that render a map are tested with one shared `MapCanvas` stub (`src/test/mocks/map-canvas.tsx`) that renders a labelled region and can trigger `onError`; `map-canvas.tsx` itself is tested against a mocked `maplibre-gl` `Map`. Mocking a component is otherwise avoided; this is the one module whose real implementation cannot run in the test environment.
 - **MSW handlers** mock the PostgREST endpoints (`*/rest/v1/properties*`) in `src/test/msw/handlers/<feature>.ts`, with data from `src/test/factories`. `onUnhandledRequest: 'error'` catches unmocked calls.
 - **Unit tests are required** for every Postgres function and RLS policy (pgTAP) and every pure util.
 - **Component tests are required** for forms (validation plus server-error mapping) and for screens with conditional logic. Simple presentational components don't need them.

@@ -19,6 +19,8 @@ type PhotoProps = VariantProps<typeof photoVariants> & {
   caption?: string;
   label?: string;
   isEager?: boolean;
+  width?: number;
+  height?: number;
   className?: string;
   imageClassName?: string;
 };
@@ -30,6 +32,8 @@ export function Photo({
   label,
   ratio,
   isEager = false,
+  width,
+  height,
   className,
   imageClassName,
 }: PhotoProps) {
@@ -39,6 +43,8 @@ export function Photo({
         <img
           src={src}
           alt={alt}
+          width={width}
+          height={height}
           loading={isEager ? 'eager' : 'lazy'}
           decoding="async"
           className={cn(photoVariants({ ratio }), imageClassName)}

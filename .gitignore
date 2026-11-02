@@ -29,3 +29,4 @@ e2e/.auth/
 !.vscode/extensions.json
 .DS_Store
 *.log
+.tanstack/

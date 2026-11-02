@@ -2,6 +2,10 @@ import type { Locator, Page } from '@playwright/test';
 import enAuth from '../../src/i18n/locales/en/auth.json' with { type: 'json' };
 import roAuth from '../../src/i18n/locales/ro/auth.json' with { type: 'json' };
 
+function withoutTags(text: string): string {
+  return text.replace(/<\/?[a-z]+>/g, '');
+}
+
 const AUTH_TEXT = { ro: roAuth, en: enAuth } as const;
 
 export class LoginPage {
@@ -14,9 +18,11 @@ export class LoginPage {
   }
 
   get heading(): Locator {
-    return this.page.getByRole('heading', {
-      name: `${this.text.login.headBold} ${this.text.login.headRest}`,
-    });
+    return this.page.getByRole('heading', { name: withoutTags(this.text.login.heading) });
+  }
+
+  get failedMessage(): Locator {
+    return this.page.getByText(this.text.login.failedText);
   }
 
   async goto() {

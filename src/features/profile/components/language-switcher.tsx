@@ -1,7 +1,7 @@
+import { cva } from 'class-variance-authority';
 import { LanguagesIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,9 +9,29 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { changeLocale, isLocale, SUPPORTED_LOCALES } from '@/i18n/i18n';
 import { useLocale } from '@/i18n/use-locale';
 import { useUpdateProfileLocale } from '../api/profile.queries';
+
+const segmentedGroupVariants = cva('', {
+  variants: {
+    tone: {
+      light: 'inline-flex gap-0.5 rounded-md border border-border bg-card p-0.75',
+      dark: 'flex w-full gap-2',
+    },
+  },
+});
+
+const segmentedItemVariants = cva('', {
+  variants: {
+    tone: {
+      light:
+        'touch-target h-7.5 min-w-0 rounded-[6px] px-2.5 text-caption font-semibold text-muted-foreground hover:bg-secondary hover:text-brand data-[state=on]:bg-primary data-[state=on]:text-primary-foreground',
+      dark: 'h-11 flex-1 rounded-full border border-on-inverse/30 bg-transparent text-label text-on-inverse hover:bg-on-inverse/10 hover:text-on-inverse focus-visible:ring-focus-inverse data-[state=on]:border-cta data-[state=on]:bg-cta data-[state=on]:text-cta-foreground',
+    },
+  },
+});
 
 type LanguageSwitcherProps = {
   userId?: string | undefined;
@@ -32,53 +52,39 @@ export function LanguageSwitcher({
     if (!isLocale(value) || value === locale) {
       return;
     }
+    const previous = locale;
     void changeLocale(value);
     if (userId) {
-      updateProfileLocale.mutate({ userId, locale: value });
+      updateProfileLocale.mutate(
+        { userId, locale: value },
+        {
+          onError: () => {
+            void changeLocale(previous);
+          },
+        },
+      );
     }
   };
 
-  if (variant === 'segmented' && tone === 'light') {
-    return (
-      <ToggleGroup
-        type="single"
-        value={locale}
-        onValueChange={handleChange}
-        aria-label={t('language.label')}
-        className="inline-flex gap-0.5 rounded-md border border-border bg-card p-0.75"
-      >
-        {SUPPORTED_LOCALES.map((option) => (
-          <ToggleGroupItem
-            key={option}
-            value={option}
-            lang={option}
-            aria-label={t(`language.${option}`)}
-            className="h-7.5 min-w-0 rounded-[6px] px-2.5 text-caption font-semibold text-muted-foreground hover:bg-secondary hover:text-brand data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-          >
-            {t(`language.short.${option}`)}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
-    );
-  }
-
   if (variant === 'segmented') {
+    const isCompact = tone === 'light';
     return (
       <ToggleGroup
         type="single"
         value={locale}
         onValueChange={handleChange}
         aria-label={t('language.label')}
-        className="flex w-full gap-2"
+        className={segmentedGroupVariants({ tone })}
       >
         {SUPPORTED_LOCALES.map((option) => (
           <ToggleGroupItem
             key={option}
             value={option}
             lang={option}
-            className="h-11 flex-1 rounded-full border border-on-inverse/30 bg-transparent text-label text-on-inverse hover:bg-on-inverse/10 hover:text-on-inverse focus-visible:ring-focus-inverse data-[state=on]:border-cta data-[state=on]:bg-cta data-[state=on]:text-cta-foreground"
+            aria-label={isCompact ? t(`language.${option}`) : undefined}
+            className={segmentedItemVariants({ tone })}
           >
-            {t(`language.${option}`)}
+            {isCompact ? t(`language.short.${option}`) : t(`language.${option}`)}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
@@ -88,8 +94,9 @@ export function LanguageSwitcher({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" aria-label={t('language.label')}>
+        <Button variant="ghost" size="sm">
           <LanguagesIcon aria-hidden />
+          <span className="sr-only">{t('language.label')}</span>
           <span lang={locale} className="2xl:hidden">
             {t(`language.short.${locale}`)}
           </span>

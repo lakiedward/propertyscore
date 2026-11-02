@@ -1,48 +1,51 @@
 import type { LngLat } from '@/components/map/map.config';
-import transitData from './zone-map-transit.json';
+import type { HomeCategory } from '../home.categories';
 
-const ZONE_CATEGORIES = [
-  'education',
-  'transport',
-  'green',
-  'health',
-  'shopping',
-  'safety',
-] as const;
-export type ZoneCategory = (typeof ZONE_CATEGORIES)[number];
+export { ZONE_TRANSIT_LINES } from './zone-map-transit';
 
-function isZoneCategory(value: string): value is ZoneCategory {
-  return ZONE_CATEGORIES.some((category) => category === value);
-}
+type ZonePlace = 'stop' | 'park' | 'pharmacy';
 
 export type ZoneRoute = {
   id: string;
   name: string;
-  category: ZoneCategory;
+  place?: ZonePlace;
+  category: Exclude<HomeCategory, 'city' | 'safety'>;
   minutes: number;
   meters: number;
   position: LngLat;
   path: LngLat[];
 };
 
-type SafetyFactorId =
-  | 'lighting'
-  | 'police'
-  | 'embassy'
-  | 'eveningShops'
-  | 'mixedArea'
-  | 'nightBars'
-  | 'abandoned'
-  | 'unlit';
+const SAFETY_FACTORS = [
+  { id: 'lighting', effect: 'up' },
+  { id: 'police', effect: 'up' },
+  { id: 'embassy', effect: 'up' },
+  { id: 'eveningShops', effect: 'up' },
+  { id: 'mixedArea', effect: 'up' },
+  { id: 'nightBars', effect: 'down' },
+  { id: 'abandoned', effect: 'down' },
+  { id: 'unlit', effect: 'down' },
+  { id: 'vacant', effect: 'down' },
+] as const satisfies readonly { id: string; effect: 'up' | 'down' }[];
 
-export type SafetyPoint = { id: SafetyFactorId; effect: 'up' | 'down'; position: LngLat };
+type SafetyFactor = (typeof SAFETY_FACTORS)[number];
+export type SafetyFactorId = SafetyFactor['id'];
+export type SafetyEffect = SafetyFactor['effect'];
+
+export function safetyFactorsWith(effect: SafetyEffect): SafetyFactorId[] {
+  return SAFETY_FACTORS.filter((factor) => factor.effect === effect).map((factor) => factor.id);
+}
+
+export function safetyEffectOf(id: SafetyFactorId): SafetyEffect {
+  return SAFETY_FACTORS.find((factor) => factor.id === id)?.effect ?? 'up';
+}
+
+export type SafetyPoint = { factor: SafetyFactorId; position: LngLat };
 export type TransitStop = { name: string; position: LngLat; lines: string };
-export type TransitLine = { line: string; category: ZoneCategory; path: LngLat[] };
 
 export const ZONE_HOME: LngLat = [21.23034, 45.75458];
-export const ZONE_SAFETY_SCORE = 78;
 
-export const ZONE_ROUTES: ZoneRoute[] = [
+export const ZONE_ROUTES = [
   {
     id: 'school',
     name: 'Colegiul Național C. D. Loga',
@@ -90,7 +93,8 @@ export const ZONE_ROUTES: ZoneRoute[] = [
   },
   {
     id: 'stop',
-    name: 'Stația Hotel Continental',
+    name: 'Hotel Continental',
+    place: 'stop',
     category: 'transport',
     minutes: 5,
     meters: 428,
@@ -142,7 +146,8 @@ export const ZONE_ROUTES: ZoneRoute[] = [
   },
   {
     id: 'park',
-    name: 'Parcul C. D. Loga',
+    name: 'C. D. Loga',
+    place: 'park',
     category: 'green',
     minutes: 6,
     meters: 456,
@@ -189,7 +194,8 @@ export const ZONE_ROUTES: ZoneRoute[] = [
   },
   {
     id: 'pharmacy',
-    name: 'Farmacia Medimfarm',
+    name: 'Medimfarm',
+    place: 'pharmacy',
     category: 'health',
     minutes: 3,
     meters: 222,
@@ -328,33 +334,21 @@ export const ZONE_ROUTES: ZoneRoute[] = [
       [21.226157, 45.751772],
     ],
   },
-];
+] satisfies readonly ZoneRoute[];
 
-export const ZONE_SAFETY_POINTS: SafetyPoint[] = [
-  { id: 'lighting', effect: 'up', position: [21.229181, 45.755838] },
-  { id: 'police', effect: 'up', position: [21.233687, 45.752694] },
-  { id: 'embassy', effect: 'up', position: [21.232657, 45.756916] },
-  { id: 'eveningShops', effect: 'up', position: [21.226993, 45.754041] },
-  { id: 'mixedArea', effect: 'up', position: [21.227765, 45.757455] },
-  { id: 'nightBars', effect: 'down', position: [21.228795, 45.751885] },
-  { id: 'abandoned', effect: 'down', position: [21.235232, 45.757994] },
-  { id: 'unlit', effect: 'down', position: [21.234202, 45.751346] },
-];
+export const ZONE_SAFETY_POINTS = [
+  { factor: 'lighting', position: [21.229181, 45.755838] },
+  { factor: 'police', position: [21.233687, 45.752694] },
+  { factor: 'embassy', position: [21.232657, 45.756916] },
+  { factor: 'eveningShops', position: [21.226993, 45.754041] },
+  { factor: 'mixedArea', position: [21.227765, 45.757455] },
+  { factor: 'nightBars', position: [21.228795, 45.751885] },
+  { factor: 'abandoned', position: [21.235232, 45.757994] },
+  { factor: 'unlit', position: [21.234202, 45.751346] },
+] satisfies readonly SafetyPoint[];
 
-export const ZONE_TRANSIT_STOPS: TransitStop[] = [
+export const ZONE_TRANSIT_STOPS = [
   { name: 'Piața Libertății', position: [21.2289, 45.7557], lines: '1 · 2 · 8' },
   { name: 'Hotel Continental', position: [21.234103, 45.755616], lines: '4 · 7' },
   { name: 'Bd. Revoluției', position: [21.2262, 45.7574], lines: '33 · E4' },
-];
-
-export const ZONE_TRANSIT_LINES: TransitLine[] = transitData.transit.flatMap((line) =>
-  isZoneCategory(line.category)
-    ? [
-        {
-          line: line.line,
-          category: line.category,
-          path: line.path.map(([longitude = 0, latitude = 0]): LngLat => [longitude, latitude]),
-        },
-      ]
-    : [],
-);
+] satisfies readonly TransitStop[];

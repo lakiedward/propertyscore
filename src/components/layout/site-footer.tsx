@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
+import { Button } from '@/components/ui/button';
 import { SERVICE_PRICES } from '@/config/pricing';
 import { formatPrice } from '@/i18n/format';
 import { HOME_SECTION, type HomeSectionId } from './site-navigation';
@@ -95,27 +96,33 @@ export function SiteFooter() {
             {t('site.footer.tagline')}
           </p>
           <div className="flex flex-wrap gap-2.5">
-            <Link
-              to="/"
-              hash={HOME_SECTION.physical}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-cta py-0 pr-4 pl-2.5 text-small font-extrabold text-brand transition-colors hover:bg-cta-hover focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
+            <Button
+              asChild
+              variant="cta"
+              shape="pill"
+              className="gap-2 pr-4 pl-2.5 text-small font-extrabold focus-visible:ring-focus-inverse focus-visible:ring-offset-surface-inverse"
             >
-              <BrandMark product="physical" size={22} />
-              {t('site.footer.physicalCta')}
-            </Link>
-            <Link
-              to="/"
-              hash={HOME_SECTION.smartCheck}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-info py-0 pr-4 pl-2.5 text-small font-extrabold text-on-inverse transition-colors hover:bg-info-hover focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
+              <Link to="/" hash={HOME_SECTION.physical}>
+                <BrandMark product="physical" size={22} />
+                {t('site.footer.physicalCta')}
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="info"
+              shape="pill"
+              className="gap-2 pr-4 pl-2.5 text-small font-extrabold focus-visible:ring-focus-inverse focus-visible:ring-offset-surface-inverse"
             >
-              <BrandMark product="smartcheck" tone="inverse" size={22} />
-              {t('site.footer.smartCheckCta')}
-            </Link>
+              <Link to="/" hash={HOME_SECTION.smartCheck}>
+                <BrandMark product="smartcheck" tone="inverse" size={22} />
+                {t('site.footer.smartCheckCta')}
+              </Link>
+            </Button>
           </div>
         </div>
         {columns.map((column) => (
           <nav key={column.title} aria-label={column.title} className="flex flex-col gap-1">
-            <h2 className="mb-3.5 text-caption font-extrabold tracking-[0.06em] text-cta uppercase">
+            <h2 className="mb-3.5 text-caption font-extrabold tracking-eyebrow text-cta uppercase">
               {column.title}
             </h2>
             <ul className="flex flex-col gap-2.5">
@@ -144,17 +151,19 @@ export function SiteFooter() {
       <div className="page-wrap mt-12 border-t border-on-inverse/14 pb-8">
         <div className="flex flex-col flex-wrap gap-x-6 gap-y-3 pt-6 text-caption text-on-inverse-faint sm:flex-row sm:justify-between">
           <p>{t('site.footer.copyright', { year: new Date().getFullYear() })}</p>
-          <nav aria-label={t('site.footer.legalLabel')} className="flex flex-wrap gap-x-5 gap-y-2">
+          <ul className="flex flex-wrap gap-x-5 gap-y-2">
             {LEGAL_KEYS.map((key) => (
-              <span key={key}>{t(`site.footer.legal.${key}`)}</span>
+              <li key={key}>{t(`site.footer.legal.${key}`)}</li>
             ))}
-            <a
-              href={`mailto:${t('site.footer.email')}`}
-              className="hover:text-on-inverse focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
-            >
-              {t('site.footer.email')}
-            </a>
-          </nav>
+            <li>
+              <a
+                href={`mailto:${t('site.footer.email')}`}
+                className="hover:text-on-inverse focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
+              >
+                {t('site.footer.email')}
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </footer>

@@ -2,191 +2,158 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useId, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { useValidationMessage } from '@/i18n/validation';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FieldLabel } from '@/components/ui/field';
+import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { useErrorMessage } from '@/i18n/error-message';
 import { currentLocale } from '@/i18n/i18n';
+import { useValidationMessage } from '@/i18n/validation';
 import { isAppError } from '@/lib/errors';
+import { applyServerErrors } from '@/lib/forms';
 import { useSignUp } from '../api/auth.queries';
-import { PASSWORD_MIN_LENGTH, signUpSchema, type SignUpValues } from '../auth.schemas';
+import {
+  PASSWORD_MIN_LENGTH,
+  signUpSchema,
+  toSignUpPayload,
+  type SignUpValues,
+} from '../auth.schemas';
 import type { SocialProvider } from '../auth.types';
-import { AuthFieldError } from './auth-field-error';
-import { AuthInput } from './auth-input';
 import { AuthNotice } from './auth-notice';
-import { PasswordInput } from './password-input';
+import { AuthTextField } from './auth-text-field';
 import { SocialSignIn } from './social-sign-in';
+import { SocialUnavailableNotice } from './social-unavailable-notice';
 
 type SignUpFormProps = {
+  redirect?: string | undefined;
   onEmailSent: (email: string) => void;
 };
 
-export function SignUpForm({ onEmailSent }: SignUpFormProps) {
+function hasSpecificMessage(error: unknown): boolean {
+  return isAppError(error) && (error.code !== 'unknown' || error.reason !== undefined);
+}
+
+export function SignUpForm({ redirect, onEmailSent }: SignUpFormProps) {
   const { t } = useTranslation('auth');
   const errorMessage = useErrorMessage();
   const validationMessage = useValidationMessage();
   const signUp = useSignUp();
   const [oauthProvider, setOauthProvider] = useState<SocialProvider>();
-  const nameId = useId();
-  const emailId = useId();
-  const passwordId = useId();
+  const [formError, setFormError] = useState<unknown>();
   const termsId = useId();
+  const termsErrorId = `${termsId}-error`;
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: { fullName: '', email: '', password: '', acceptsTerms: false },
   });
 
-  const handleSubmit = form.handleSubmit((values) => {
+  const handleSubmit = form.handleSubmit(async (values) => {
     setOauthProvider(undefined);
-    signUp.mutate(
-      {
-        email: values.email,
-        password: values.password,
-        fullName: values.fullName,
-        locale: currentLocale(),
-      },
-      {
-        onSuccess: (result) => {
-          if (result.needsEmailConfirmation) {
-            onEmailSent(values.email);
-          }
-        },
-      },
-    );
+    setFormError(undefined);
+    try {
+      const result = await signUp.mutateAsync(toSignUpPayload(values, currentLocale(), redirect));
+      if (result.needsEmailConfirmation) {
+        onEmailSent(values.email);
+      }
+    } catch (error) {
+      if (!applyServerErrors(form, error)) {
+        setFormError(error);
+      }
+    }
   });
 
   const handleSocialSelect = (provider: SocialProvider) => {
     signUp.reset();
+    setFormError(undefined);
     setOauthProvider(provider);
   };
 
   return (
     <>
-      {oauthProvider ? (
-        <AuthNotice
-          tone="error"
-          title={t('social.errorTitle', { provider: t(`social.providers.${oauthProvider}`) })}
-        >
-          {t('social.errorText')}
-        </AuthNotice>
-      ) : null}
-      {signUp.error ? (
+      {oauthProvider ? <SocialUnavailableNotice provider={oauthProvider} /> : null}
+      {formError ? (
         <AuthNotice tone="error" title={t('signUp.failedTitle')}>
-          {isAppError(signUp.error) && signUp.error.reason
-            ? errorMessage(signUp.error)
-            : t('signUp.failedText')}
+          {hasSpecificMessage(formError) ? errorMessage(formError) : t('signUp.failedText')}
         </AuthNotice>
       ) : null}
       <SocialSignIn onSelect={handleSocialSelect} />
-      <form
-        onSubmit={(event) => void handleSubmit(event)}
-        noValidate
-        className="flex flex-col gap-3"
-      >
-        <Controller
-          name="fullName"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <>
-              <FieldLabel htmlFor={nameId} className="sr-only">
-                {t('fields.name.label')}
-              </FieldLabel>
-              <AuthInput
+      <form onSubmit={(event) => void handleSubmit(event)} noValidate>
+        <FieldGroup className="gap-3">
+          <Controller
+            name="fullName"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <AuthTextField
                 {...field}
-                id={nameId}
+                label={t('fields.name.label')}
+                error={fieldState.error?.message}
                 autoComplete="name"
-                placeholder={t('fields.name.label')}
-                aria-invalid={fieldState.invalid}
-                aria-describedby={fieldState.invalid ? `${nameId}-error` : undefined}
               />
-              <AuthFieldError id={`${nameId}-error`}>
-                {fieldState.invalid ? t('fields.name.error') : null}
-              </AuthFieldError>
-            </>
-          )}
-        />
-        <Controller
-          name="email"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <>
-              <FieldLabel htmlFor={emailId} className="sr-only">
-                {t('fields.email.label')}
-              </FieldLabel>
-              <AuthInput
+            )}
+          />
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <AuthTextField
                 {...field}
-                id={emailId}
+                label={t('fields.email.label')}
+                error={fieldState.error?.message}
                 type="email"
                 autoComplete="email"
                 inputMode="email"
-                placeholder={t('fields.email.label')}
-                aria-invalid={fieldState.invalid}
-                aria-describedby={fieldState.invalid ? `${emailId}-error` : undefined}
               />
-              <AuthFieldError id={`${emailId}-error`}>
-                {fieldState.invalid ? t('fields.email.error') : null}
-              </AuthFieldError>
-            </>
-          )}
-        />
-        <Controller
-          name="password"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <>
-              <FieldLabel htmlFor={passwordId} className="sr-only">
-                {t('fields.password.label')}
-              </FieldLabel>
-              <PasswordInput
+            )}
+          />
+          <Controller
+            name="password"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <AuthTextField
                 {...field}
-                id={passwordId}
+                label={t('fields.password.label')}
+                error={fieldState.error?.message}
+                type="password"
                 autoComplete="new-password"
                 minLength={PASSWORD_MIN_LENGTH}
-                placeholder={t('fields.password.newPlaceholder')}
-                aria-invalid={fieldState.invalid}
-                aria-describedby={fieldState.invalid ? `${passwordId}-error` : undefined}
+                placeholder={t('fields.password.newPlaceholder', { count: PASSWORD_MIN_LENGTH })}
               />
-              <AuthFieldError id={`${passwordId}-error`}>
-                {fieldState.error?.type === 'too_big'
-                  ? validationMessage(fieldState.error.message)
-                  : fieldState.invalid
-                    ? t('fields.password.tooShort')
-                    : null}
-              </AuthFieldError>
-            </>
-          )}
-        />
-        <Controller
-          name="acceptsTerms"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <label
-              htmlFor={termsId}
-              className="flex cursor-pointer items-start gap-3 py-2.5 text-body leading-[1.45] text-foreground"
-            >
-              <Checkbox
-                id={termsId}
-                name={field.name}
-                checked={field.value}
-                onCheckedChange={(checked) => {
-                  field.onChange(checked === true);
-                }}
-                onBlur={field.onBlur}
-                aria-invalid={fieldState.invalid}
-                className="mt-px"
-              />
-              <span>{t('fields.terms.label')}</span>
-            </label>
-          )}
-        />
-        <Button
-          type="submit"
-          disabled={signUp.isPending}
-          className="mt-1 h-13.5 w-full rounded-md text-[15px] font-[730] short:h-11.5"
-        >
-          {signUp.isPending ? t('login.pending') : t('signUp.submit')}
-        </Button>
+            )}
+          />
+          <Controller
+            name="acceptsTerms"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field orientation="horizontal" data-invalid={fieldState.invalid} className="py-2.5">
+                <Checkbox
+                  id={termsId}
+                  name={field.name}
+                  checked={field.value}
+                  onCheckedChange={(checked) => {
+                    field.onChange(checked === true);
+                  }}
+                  onBlur={field.onBlur}
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.invalid ? termsErrorId : undefined}
+                  className="mt-px"
+                />
+                <FieldContent className="gap-1">
+                  <FieldLabel
+                    htmlFor={termsId}
+                    className="cursor-pointer text-body leading-compact font-normal text-foreground"
+                  >
+                    {t('fields.terms.label')}
+                  </FieldLabel>
+                  <FieldError id={termsErrorId} className="text-caption leading-copy">
+                    {validationMessage(fieldState.error?.message)}
+                  </FieldError>
+                </FieldContent>
+              </Field>
+            )}
+          />
+          <Button type="submit" size="xl" disabled={signUp.isPending} className="mt-1 w-full">
+            {signUp.isPending ? t('signUp.pending') : t('signUp.submit')}
+          </Button>
+        </FieldGroup>
       </form>
     </>
   );

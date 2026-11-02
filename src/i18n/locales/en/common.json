@@ -164,7 +164,6 @@
       "copyright": "© {{year}} PropertyScore · Timișoara, Romania",
       "contactLabel": "Contact",
       "email": "contact@propertyscore.ro",
-      "legalLabel": "Legal links",
       "legal": {
         "terms": "Terms",
         "privacy": "Privacy",
@@ -175,14 +174,20 @@
   "trust": {
     "physical": "Physically checked by PropertyScore",
     "smartcheck": "Smart Check score {{score}} out of 100",
+    "smartcheckNoScore": "Smart Check, score unavailable",
     "smartcheckShort": "Smart Check",
     "none": "No PropertyScore report",
     "physicalShort": "Physically checked",
     "noneShort": "No report"
   },
   "map": {
-    "attribution": "© OpenFreeMap © OpenMapTiles © OpenStreetMap",
     "zoomIn": "Zoom in",
-    "zoomOut": "Zoom out"
+    "zoomOut": "Zoom out",
+    "title": "Map",
+    "toggleAttribution": "Show or hide map sources",
+    "mapFeedback": "Send map feedback"
+  },
+  "price": {
+    "perMonth": "{{price}} / month"
   }
 }

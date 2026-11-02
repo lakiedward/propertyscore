@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowRightIcon, CirclePlayIcon, KeyRoundIcon, LockIcon, LogInIcon } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/i18n/format';
 import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
@@ -36,12 +36,15 @@ export function PublishHero({ isSignedIn }: PublishHeroProps) {
           </span>
           <h1
             id="publish-title"
-            className="text-[38px] leading-[1.14] font-extrabold tracking-[-0.04em] text-foreground w767:text-[60px]"
+            className="text-[38px] leading-[1.14] font-extrabold tracking-title text-foreground w767:text-[60px]"
           >
-            {t('hero.titleLead')}{' '}
-            <span className="inline-block rounded-[10px] bg-cta px-[0.14em] leading-[1.02]">
-              {t('hero.titleAccent')}
-            </span>
+            <Trans
+              t={t}
+              i18nKey="hero.title"
+              components={{
+                accent: <span className="marker-pill" />,
+              }}
+            />
           </h1>
           <p className="max-w-130 text-lead-sm font-medium text-foreground w767:text-xl w767:leading-[1.6]">
             {t('hero.lead')}
@@ -79,7 +82,7 @@ export function PublishHero({ isSignedIn }: PublishHeroProps) {
             </Button>
           </div>
           {isSignedIn ? null : (
-            <p className="-mt-2 flex items-start gap-2 text-small leading-[1.55] text-muted-foreground">
+            <p className="-mt-2 flex items-start gap-2 text-small leading-copy text-muted-foreground">
               <LockIcon aria-hidden className="mt-0.75 size-4 shrink-0" />
               {t('hero.accountHint')}
             </p>
@@ -87,8 +90,8 @@ export function PublishHero({ isSignedIn }: PublishHeroProps) {
           <dl className="flex flex-wrap gap-x-8 gap-y-3">
             {stats.map((stat) => (
               <div key={stat.key} className="flex flex-col-reverse gap-0.5">
-                <dt className="text-caption leading-[1.55] text-muted-foreground">{stat.label}</dt>
-                <dd className="text-[26px] leading-[1.55] font-extrabold tracking-[-0.03em] text-foreground tabular-nums">
+                <dt className="text-caption leading-copy text-muted-foreground">{stat.label}</dt>
+                <dd className="text-[26px] leading-copy font-extrabold tracking-[-0.03em] text-foreground tabular-nums">
                   {stat.value}
                 </dd>
               </div>

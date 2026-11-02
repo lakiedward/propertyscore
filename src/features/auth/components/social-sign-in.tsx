@@ -41,13 +41,11 @@ export function SocialSignIn({ onSelect }: SocialSignInProps) {
           <Button
             key={provider.id}
             type="button"
+            size="xl"
             onClick={() => {
               onSelect(provider.id);
             }}
-            className={cn(
-              'h-13.5 w-full gap-3 rounded-md border px-4 text-[15px] font-bold short:h-11.5',
-              provider.className,
-            )}
+            className={cn('w-full gap-3 border font-bold', provider.className)}
           >
             {provider.mark}
             {t(`social.${provider.id}`)}

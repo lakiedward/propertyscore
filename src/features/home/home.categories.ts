@@ -10,42 +10,113 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-export type CategoryHue =
-  'safety' | 'city' | 'transport' | 'green' | 'education' | 'health' | 'shopping';
+export const HOME_CATEGORIES = [
+  'safety',
+  'city',
+  'transport',
+  'green',
+  'education',
+  'health',
+  'shopping',
+] as const;
 
-export const CATEGORY_TILE_CLASS: Readonly<Record<CategoryHue, string>> = {
-  safety: 'bg-category-safety-surface text-category-safety',
-  city: 'bg-category-city-surface text-category-city',
-  transport: 'bg-category-transport-surface text-category-transport',
-  green: 'bg-category-green-surface text-category-green',
-  education: 'bg-category-education-surface text-category-education',
-  health: 'bg-category-health-surface text-category-health',
-  shopping: 'bg-category-shopping-surface text-category-shopping',
+export type HomeCategory = (typeof HOME_CATEGORIES)[number];
+
+type CategoryStyle = {
+  tile: string;
+  dot: string;
+  stroke: string;
+  fill: string;
+  token: `--category-${HomeCategory}`;
 };
 
-export const CATEGORY_DOT_CLASS: Readonly<Record<CategoryHue, string>> = {
-  safety: 'bg-category-safety',
-  city: 'bg-category-city',
-  transport: 'bg-category-transport',
-  green: 'bg-category-green',
-  education: 'bg-category-education',
-  health: 'bg-category-health',
-  shopping: 'bg-category-shopping',
-};
+export const CATEGORY_STYLE = {
+  safety: {
+    tile: 'bg-category-safety-surface text-category-safety',
+    dot: 'bg-category-safety',
+    stroke: 'stroke-category-safety',
+    fill: 'fill-category-safety',
+    token: '--category-safety',
+  },
+  city: {
+    tile: 'bg-category-city-surface text-category-city',
+    dot: 'bg-category-city',
+    stroke: 'stroke-category-city',
+    fill: 'fill-category-city',
+    token: '--category-city',
+  },
+  transport: {
+    tile: 'bg-category-transport-surface text-category-transport',
+    dot: 'bg-category-transport',
+    stroke: 'stroke-category-transport',
+    fill: 'fill-category-transport',
+    token: '--category-transport',
+  },
+  green: {
+    tile: 'bg-category-green-surface text-category-green',
+    dot: 'bg-category-green',
+    stroke: 'stroke-category-green',
+    fill: 'fill-category-green',
+    token: '--category-green',
+  },
+  education: {
+    tile: 'bg-category-education-surface text-category-education',
+    dot: 'bg-category-education',
+    stroke: 'stroke-category-education',
+    fill: 'fill-category-education',
+    token: '--category-education',
+  },
+  health: {
+    tile: 'bg-category-health-surface text-category-health',
+    dot: 'bg-category-health',
+    stroke: 'stroke-category-health',
+    fill: 'fill-category-health',
+    token: '--category-health',
+  },
+  shopping: {
+    tile: 'bg-category-shopping-surface text-category-shopping',
+    dot: 'bg-category-shopping',
+    stroke: 'stroke-category-shopping',
+    fill: 'fill-category-shopping',
+    token: '--category-shopping',
+  },
+} as const satisfies Record<HomeCategory, CategoryStyle>;
 
-export type ZoneScoreKey =
-  'safety' | 'city' | 'transport' | 'green' | 'education' | 'health' | 'shopping';
+const HUE_CATEGORY = {
+  sun: 'transport',
+  sky: 'education',
+  coral: 'health',
+  berry: 'shopping',
+  leaf: 'green',
+  aqua: 'safety',
+  slate: 'city',
+} as const satisfies Record<string, HomeCategory>;
 
-export const ZONE_SCORES: readonly { key: ZoneScoreKey; score: number; icon: LucideIcon }[] = [
-  { key: 'safety', score: 78, icon: ShieldCheckIcon },
-  { key: 'city', score: 86, icon: FootprintsIcon },
-  { key: 'transport', score: 92, icon: BusIcon },
-  { key: 'green', score: 71, icon: TreesIcon },
-  { key: 'education', score: 84, icon: GraduationCapIcon },
-  { key: 'health', score: 68, icon: StethoscopeIcon },
-  { key: 'shopping', score: 90, icon: ShoppingBagIcon },
-];
+export type HomeHue = keyof typeof HUE_CATEGORY;
 
-export const ZONE_OVERALL_SCORE = 82;
-export const ZONE_PRICE_PER_M2 = 2000;
+export function hueStyle(hue: HomeHue): CategoryStyle {
+  return CATEGORY_STYLE[HUE_CATEGORY[hue]];
+}
+
+export const CATEGORY_ICON = {
+  safety: ShieldCheckIcon,
+  city: FootprintsIcon,
+  transport: BusIcon,
+  green: TreesIcon,
+  education: GraduationCapIcon,
+  health: StethoscopeIcon,
+  shopping: ShoppingBagIcon,
+} as const satisfies Record<HomeCategory, LucideIcon>;
+
+export const ZONE_CHAPTERS = [
+  'education',
+  'health',
+  'transport',
+  'shopping',
+  'green',
+  'safety',
+] as const satisfies readonly HomeCategory[];
+
+export const PRICES_CATEGORY = 'prices' as const;
 export const PRICES_ICON = EuroIcon;
+export const PRICES_HUE: HomeCategory = 'city';

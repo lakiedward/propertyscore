@@ -1,4 +1,4 @@
-import { boundsOf } from './map.config';
+import { boundsOf } from './map.utils';
 
 describe('boundsOf', () => {
   it('returns nothing for no points', () => {

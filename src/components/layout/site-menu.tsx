@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { SERVICE_PRICES } from '@/config/pricing';
 import { formatPrice } from '@/i18n/format';
+import { useSectionNav } from '@/hooks/use-section-nav';
 import { HOME_SECTION, type HomeSectionId, type PublishSectionId } from './site-navigation';
-import { useSectionNav } from './use-section-nav';
 
 type SiteMenuProps = {
   isSignedIn: boolean;
@@ -135,6 +135,7 @@ export function SiteMenu({ isSignedIn, languageSwitcher }: SiteMenuProps) {
             hash={HOME_SECTION.main}
             onClick={handleNavigate}
             aria-label={t('site.header.brandHome')}
+            className="rounded-md focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
           >
             <Logo size="sm" tone="inverse" isDecorative />
           </Link>

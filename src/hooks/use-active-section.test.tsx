@@ -64,4 +64,19 @@ describe('useActiveSection', () => {
 
     expect(result.current).toBeUndefined();
   });
+
+  it('marks the last section once the page is scrolled to its end', async () => {
+    vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(2000);
+    window.innerHeight = 800;
+    placeSection('first', 40);
+    placeSection('last', 500);
+    const { result } = renderHook(() => useActiveSection(['first', 'last']));
+    expect(result.current).toBe('first');
+
+    window.scrollY = 1200;
+    await scroll();
+
+    expect(result.current).toBe('last');
+    window.scrollY = 0;
+  });
 });

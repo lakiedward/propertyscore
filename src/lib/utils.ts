@@ -1,6 +1,6 @@
 import { createCn } from 'cn/config';
 
-const FONT_SIZES = [
+export const FONT_SIZES = [
   'display',
   'section',
   'section-sm',
@@ -39,14 +39,40 @@ const FONT_SIZES = [
   'logo-inline',
   'logo-lg',
   'logo-xl',
+  'micro',
+  'body-sm',
+  'title-xs',
+  'title-sm',
+  'title-md',
+  'title-lg',
 ];
 
 export const cn = createCn({
   extend: {
     classGroups: {
       'font-size': [{ text: FONT_SIZES }],
-      tracking: [{ tracking: ['brand'] }],
-      rounded: [{ rounded: ['wordmark'] }],
+      'font-weight': [{ font: ['nav', 'action', 'control', 'title', 'display'] }],
+      leading: [{ leading: ['copy', 'compact'] }],
+      tracking: [{ tracking: ['brand', 'title', 'section', 'eyebrow'] }],
+      rounded: [
+        {
+          rounded: [
+            'wordmark',
+            'note',
+            'icon',
+            'float',
+            'photo',
+            'status',
+            'thumb',
+            'tile',
+            'panel',
+          ],
+        },
+      ],
     },
   },
 });
+
+export function oneOf<T extends string>(options: readonly T[], value: string): T | undefined {
+  return options.find((option) => option === value);
+}

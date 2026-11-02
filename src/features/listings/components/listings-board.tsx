@@ -1,8 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { lazy, Suspense, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
-import { boundsOf, type LngLat } from '@/components/map/map.config';
+import { LazyMapCanvas } from '@/components/map/lazy-map-canvas';
+import type { MapFocus } from '@/components/map/map-canvas';
+import type { LngLat } from '@/components/map/map.config';
+import { boundsOf } from '@/components/map/map.utils';
 import { MapPin } from '@/components/map/map-pin';
 import { ListingCard } from '@/components/property/listing-card';
 import { Price } from '@/components/property/price';
@@ -11,17 +14,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useTrustLabel } from '@/hooks/use-trust-label';
 import { formatNumber, formatPrice } from '@/i18n/format';
-import { listingQueries } from '../api/listings.queries';
-import { getListingPhotoUrl } from '../api/listings.storage';
+import { oneOf } from '@/lib/utils';
+import { LISTINGS_PREVIEW_LIMIT, listingQueries } from '../api/listings.queries';
+import { getListingThumbUrl } from '../api/listings.storage';
 import type { Listing, ListingTransaction } from '../listing.types';
 import { toCurrency, toTrustKind } from '../listing.utils';
 
-const MapCanvas = lazy(() =>
-  import('@/components/map/map-canvas').then((module) => ({ default: module.MapCanvas })),
-);
-
-export const LISTINGS_PREVIEW_LIMIT = 6;
 const TIMISOARA_CENTER: LngLat = [21.2303, 45.7546];
 const TRANSACTIONS: readonly ListingTransaction[] = ['sale', 'rent'];
 
@@ -32,19 +32,20 @@ type ListingsBoardProps = {
 
 export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoardProps) {
   const { t } = useTranslation(['listings', 'common']);
+  const trustLabel = useTrustLabel();
   const query = useQuery(listingQueries.list({ transaction, limit: LISTINGS_PREVIEW_LIMIT }));
   const [selectedId, setSelectedId] = useState<string>();
   const [hoveredId, setHoveredId] = useState<string>();
-  const [focus, setFocus] = useState<LngLat>();
-  const [hasMapError, setHasMapError] = useState(false);
+  const [focus, setFocus] = useState<MapFocus>();
   const cardRefs = useRef(new Map<string, HTMLButtonElement>());
 
   const items = query.data?.items ?? [];
   const activeId = items.some((item) => item.id === selectedId) ? selectedId : items[0]?.id;
-  const city = items[0]?.city ?? '';
+  const firstItem = items[0];
+  const hasError = query.isError && !query.data;
 
   const handleTransactionChange = (value: string) => {
-    const next = TRANSACTIONS.find((option) => option === value);
+    const next = oneOf(TRANSACTIONS, value);
     if (next && next !== transaction) {
       setSelectedId(undefined);
       setFocus(undefined);
@@ -54,7 +55,10 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
 
   const handleCardSelect = (listing: Listing) => {
     setSelectedId(listing.id);
-    setFocus([listing.longitude, listing.latitude]);
+    setFocus((previous) => ({
+      position: [listing.longitude, listing.latitude],
+      requestId: (previous?.requestId ?? 0) + 1,
+    }));
   };
 
   const handlePinSelect = (listing: Listing) => {
@@ -65,16 +69,13 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
   const describe = (listing: Listing) => {
     const currency = toCurrency(listing.currency);
     const price = formatPrice(listing.price, currency);
-    const badge =
-      listing.verification === 'smartcheck'
-        ? t('common:trust.smartcheck', { score: listing.smartcheck_score ?? 0 })
-        : t(`verification.${listing.verification}`);
+    const badge = trustLabel(toTrustKind(listing.verification), listing.smartcheck_score);
     return {
       currency,
       price,
       label: t('card.label', {
         title: listing.title,
-        price: listing.transaction === 'rent' ? t('price.perMonth', { price }) : price,
+        price: listing.transaction === 'rent' ? t('common:price.perMonth', { price }) : price,
         badge,
       }),
     };
@@ -101,11 +102,13 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
           ))}
         </ToggleGroup>
         <p className="text-small text-muted-foreground" aria-live="polite">
-          {query.data ? t(`board.count.${transaction}`, { count: query.data.total, city }) : null}
+          {query.data && firstItem
+            ? t(`board.count.${transaction}`, { count: query.data.total, city: firstItem.city })
+            : null}
         </p>
       </div>
 
-      {query.isError ? (
+      {hasError ? (
         <EmptyState
           kind="error"
           title={t('board.error.title')}
@@ -125,44 +128,39 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
       ) : (
         <div className="grid grid-cols-1 gap-3.5 lg:h-140 lg:grid-cols-[1.45fr_1fr]">
           <div className="relative h-95 overflow-hidden rounded-xl lg:h-full">
-            {hasMapError ? (
-              <Alert className="h-full">
-                <AlertDescription>{t('board.mapError')}</AlertDescription>
-              </Alert>
-            ) : (
-              <Suspense fallback={<Skeleton className="size-full rounded-xl" />}>
-                <MapCanvas
-                  label={t('board.mapLabel')}
-                  center={TIMISOARA_CENTER}
-                  zoom={14}
-                  bounds={boundsOf(items.map((item) => [item.longitude, item.latitude]))}
-                  focus={focus}
-                  onError={() => {
-                    setHasMapError(true);
-                  }}
-                  className="size-full"
-                  markers={items.map((listing) => {
-                    const { currency, label } = describe(listing);
-                    return {
-                      id: listing.id,
-                      position: [listing.longitude, listing.latitude],
-                      node: (
-                        <MapPin
-                          kind={toTrustKind(listing.verification)}
-                          label={formatPrice(listing.price, currency)}
-                          accessibleName={label}
-                          isSelected={listing.id === activeId}
-                          isActive={listing.id === activeId || listing.id === hoveredId}
-                          onSelect={() => {
-                            handlePinSelect(listing);
-                          }}
-                        />
-                      ),
-                    };
-                  })}
-                />
-              </Suspense>
-            )}
+            <LazyMapCanvas
+              label={t('board.mapLabel')}
+              center={TIMISOARA_CENTER}
+              zoom={14}
+              bounds={boundsOf(items.map((item) => [item.longitude, item.latitude]))}
+              focus={focus}
+              fallbackClassName="size-full rounded-xl"
+              errorFallback={
+                <Alert className="h-full">
+                  <AlertDescription>{t('board.mapError')}</AlertDescription>
+                </Alert>
+              }
+              className="size-full"
+              markers={items.map((listing) => {
+                const { currency, label } = describe(listing);
+                return {
+                  id: listing.id,
+                  position: [listing.longitude, listing.latitude],
+                  node: (
+                    <MapPin
+                      kind={toTrustKind(listing.verification)}
+                      label={formatPrice(listing.price, currency)}
+                      accessibleName={label}
+                      isSelected={listing.id === activeId}
+                      isActive={listing.id === activeId || listing.id === hoveredId}
+                      onSelect={() => {
+                        handlePinSelect(listing);
+                      }}
+                    />
+                  ),
+                };
+              })}
+            />
           </div>
           <ul
             aria-label={t('board.listLabel')}
@@ -188,7 +186,7 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
                           }
                         }}
                         photoUrl={
-                          listing.photo_path ? getListingPhotoUrl(listing.photo_path) : undefined
+                          listing.photo_path ? getListingThumbUrl(listing.photo_path) : undefined
                         }
                         title={listing.title}
                         accessibleName={label}
@@ -201,11 +199,11 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
                             className="text-lg tracking-[-0.02em] text-brand"
                           />
                         }
-                        meta={[
-                          listing.street_label,
-                          t('card.rooms', { count: listing.rooms }),
-                          t('card.area', { area: formatNumber(listing.area_m2) }),
-                        ].join(' · ')}
+                        meta={t('card.meta', {
+                          street: listing.street_label,
+                          count: listing.rooms,
+                          area: formatNumber(listing.area_m2),
+                        })}
                         badge={
                           <TrustBadge
                             kind={toTrustKind(listing.verification)}

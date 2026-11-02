@@ -39,6 +39,20 @@ describe('toAppError', () => {
     expect(toAppError(new AuthApiError('auth failed', 400, code)).reason).toBe(reason);
   });
 
+  it.each([
+    ['user_already_exists', 'email'],
+    ['email_exists', 'email'],
+    ['weak_password', 'password'],
+  ])('ties the sign-up auth code %s to the %s field', (code, field) => {
+    expect(toAppError(new AuthApiError('auth failed', 422, code)).field).toBe(field);
+  });
+
+  it('leaves sign-in failures without a field', () => {
+    expect(toAppError(new AuthApiError('auth failed', 400, 'invalid_credentials')).field).toBe(
+      undefined,
+    );
+  });
+
   it('maps an expired auth session to unauthenticated', () => {
     expect(toAppError(new AuthApiError('expired', 403, 'session_not_found')).code).toBe(
       'unauthenticated',

@@ -14,6 +14,10 @@ const buttonVariants = cva(
         info: 'bg-info text-info-foreground hover:bg-info-hover',
         inverse:
           'bg-card text-brand hover:bg-surface-alt focus-visible:ring-focus-inverse focus-visible:ring-offset-surface-inverse',
+        inverseInfo:
+          'bg-card text-info hover:bg-info-surface focus-visible:ring-focus-inverse focus-visible:ring-offset-info',
+        outlineInverse:
+          'border-[1.5px] border-on-inverse/50 bg-transparent text-on-inverse hover:bg-on-inverse/10 focus-visible:ring-focus-inverse focus-visible:ring-offset-surface-inverse',
         outline:
           'border-brand bg-card text-brand hover:bg-surface-alt aria-expanded:bg-surface-alt',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-surface-alt',
@@ -26,6 +30,8 @@ const buttonVariants = cva(
         xs: "h-7 gap-1 px-2 text-meta [&_svg:not([class*='size-'])]:size-3.5",
         sm: "h-9 gap-1.5 px-3.5 text-small [&_svg:not([class*='size-'])]:size-4",
         lg: 'h-13 px-6 text-body',
+        xl: 'h-13.5 px-4 text-body-sm font-control short:h-11.5',
+        nav: "touch-target h-9 gap-1.25 px-3 text-logo-2xs leading-tight font-bold [&_svg:not([class*='size-'])]:size-4",
         icon: 'size-11',
         'icon-xs': "size-7 [&_svg:not([class*='size-'])]:size-3.5",
         'icon-sm': "size-9 [&_svg:not([class*='size-'])]:size-4",
