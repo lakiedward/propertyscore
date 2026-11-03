@@ -296,4 +296,45 @@ describe('MapCanvas', () => {
     expect(map.layers.size).toBe(0);
     expect(map.sources.size).toBe(0);
   });
+
+  it('draws filled areas with an outline', async () => {
+    const area: MapOverlay = {
+      id: 'green-areas',
+      kind: 'fill',
+      colorToken: '--category-green-fill',
+      opacity: 0.4,
+      outlineWidth: 1,
+      isVisible: true,
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: { id: 'park' },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[CENTER, [21.24, 45.75], [21.24, 45.76], CENTER]],
+            },
+          },
+        ],
+      },
+    };
+    await renderWithProviders(
+      <MapCanvas
+        label={LABEL}
+        center={CENTER}
+        zoom={14}
+        markers={[]}
+        overlays={[area]}
+        onError={vi.fn()}
+      />,
+    );
+    const map = lastMap();
+
+    act(() => {
+      map.emit('style.load');
+    });
+
+    expect(map.layers).toEqual(new Set(['green-areas', 'green-areas-casing']));
+  });
 });

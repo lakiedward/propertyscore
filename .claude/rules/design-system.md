@@ -262,7 +262,7 @@ Build each component the first time a step needs it, at the location below, with
 | SplitPrice | `components/property/split-price.tsx` | price with the amount and the currency in separate elements (currency in `<small>`, order from the locale), for price boxes and service cards; `className` and `currencyClassName` style each part |
 | Price | `components/property/price.tsx` | currency from data, period ("/ lună"), previous price struck through, €/m², sizes sm/md/lg, "Preț la cerere" |
 | PropertyFacts | `components/property/property-facts.tsx` | `grid` (hairline cells) and `inline` (icons + values); missing values italic |
-| FilterChip | `components/property/filter-chip.tsx` | selected forest, count, removable |
+| FilterChip | `components/property/filter-chip.tsx` | built: a toggle, selected forest with a check, optional count; removable not built yet |
 | ServiceCard | `components/property/service-card.tsx` | tones `white`, `forest` (lime icon tile), `online` (filled blue, approved with the home design), `mist`; eyebrow, price, features with check icons, actions, badge |
 | PricingComparison | `components/property/pricing-comparison.tsx` | highlighted column (green 50), yes/no cells with icons, stacks into labelled rows on mobile |
 | **report** | | |

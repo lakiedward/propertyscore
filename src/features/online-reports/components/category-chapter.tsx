@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatNumber, formatPercent } from '@/i18n/format';
 import { cn } from '@/lib/utils';
@@ -15,6 +16,7 @@ type CategoryChapterProps = {
   categories: Readonly<Record<CategoryKey, CategorySummary>>;
   cityName: string;
   totalWeight: number;
+  details?: ReactNode;
 };
 
 export function CategoryChapter({
@@ -22,6 +24,7 @@ export function CategoryChapter({
   categories,
   cityName,
   totalWeight,
+  details,
 }: CategoryChapterProps) {
   const { t } = useTranslation('onlineReports');
   const [main, ...others] = CHAPTER_CATEGORIES[chapter];
@@ -37,6 +40,7 @@ export function CategoryChapter({
           headingLevel="h2"
         />
       )}
+      {details}
       {others.length > 0 ? (
         <section className="flex flex-col gap-4">
           <h3 className="text-eyebrow font-extrabold text-muted-foreground uppercase">

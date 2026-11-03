@@ -50,7 +50,7 @@ type GreenParams = z.infer<typeof greenParamsSchema>;
 
 const BATCH_SIZE = 500;
 
-function parseParams(value: unknown): GreenParams {
+export function parseGreenParams(value: unknown): GreenParams {
   const parsed = greenParamsSchema.safeParse(value);
   if (!parsed.success) {
     throw new WorkerError('invalid_green_params', 'params.green does not match the schema');
@@ -159,7 +159,7 @@ async function importCity(
 export const greenModule: ScoreModule = {
   key: 'green',
   run: async (context) => {
-    const params = parseParams(context.params);
+    const params = parseGreenParams(context.params);
     const extractPath = await downloadOsmExtract(
       context.osmExtractUrl,
       context.sourcesDir,

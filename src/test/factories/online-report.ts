@@ -113,3 +113,78 @@ export function buildOnlineReport(overrides: Partial<OnlineReportRow> = {}): Onl
     ...overrides,
   };
 }
+
+function square(west: number, south: number, size: number): [number, number][][] {
+  return [
+    [
+      [west, south],
+      [west + size, south],
+      [west + size, south + size],
+      [west, south + size],
+      [west, south],
+    ],
+  ];
+}
+
+export function buildGreenSection() {
+  return {
+    schema_version: 1,
+    status: 'scored',
+    radii_m: [300, 500, 1000],
+    near_radius_m: 500,
+    wide_radius_m: 1000,
+    share_cap: 0.3,
+    thresholds: { small_min_ha: 0.5, small_full_m: 300, large_min_ha: 5, large_full_m: 1000 },
+    share: { '300': 0.121, '500': 0.184, '1000': 0.241 },
+    city_avg_share_near: 0.137,
+    distance_method: 'straight_line',
+    nearest_small_id: 'park-unnamed',
+    nearest_large_id: 'park-central',
+    components: [
+      { key: 'c1', value: 0.184, points: 0.61, weight: 35 },
+      { key: 'c2', value: 0.241, points: 0.8, weight: 15 },
+      { key: 'c3', value: 720, points: 0.53, weight: 25 },
+      { key: 'c4', value: 720, points: 1, weight: 15 },
+      { key: 'c5', value: null, points: null, weight: 10 },
+    ],
+    parks: [
+      {
+        id: 'park-unnamed',
+        name: null,
+        kind: 'other',
+        area_ha: 0.6,
+        amenities: [],
+        walk_m: 300,
+        center: [21.232, 45.755],
+      },
+      {
+        id: 'park-central',
+        name: 'Parcul Central',
+        kind: 'park',
+        area_ha: 8.2,
+        amenities: ['playground'],
+        walk_m: 720,
+        center: [21.222, 45.753],
+      },
+      {
+        id: 'park-rozelor',
+        name: 'Parcul Rozelor',
+        kind: 'park',
+        area_ha: 6,
+        amenities: ['dog_park'],
+        walk_m: 1100,
+        center: [21.236, 45.749],
+      },
+    ],
+    areas: {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: { id: 'park-central' },
+          geometry: { type: 'Polygon', coordinates: square(21.22, 45.751, 0.004) },
+        },
+      ],
+    },
+  };
+}
