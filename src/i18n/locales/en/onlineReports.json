@@ -148,5 +148,84 @@
     "failedTitle": "The report could not be generated",
     "failedBody": "We have logged the problem and are fixing it. If the report is not ready within 24 hours, we refund you.",
     "backHome": "Back to the home page"
+  },
+  "green": {
+    "radius": {
+      "label": "Radius we measure green space on",
+      "meters": "{{value}} m",
+      "km": "{{value}} km"
+    },
+    "map": {
+      "park": "Show in the list: {{name}}",
+      "note": "Green circle: {{radius}}. The green patches are public parks and green areas; tap a number to find the park in the list."
+    },
+    "share": {
+      "title": {
+        "above": "{{share}} green within {{radius}}, above the city average",
+        "below": "{{share}} green within {{radius}}, below the city average",
+        "same": "{{share}} green within {{radius}}, about the city average"
+      },
+      "titleNoCity": "{{share}} green within {{radius}}",
+      "lead": "How much of the area around the address is park, square or public woodland. Change the radius to see how it shifts.",
+      "cityAverage": "City average ({{radius}})",
+      "waffleLabel_one": "{{count}} of 100 squares is green space within {{radius}}",
+      "waffleLabel_other": "{{count}} of 100 squares are green space within {{radius}}",
+      "waffleCaption": "1 square = 1% of the circle, about {{area}} m²",
+      "scale": "The bars go up to {{cap}}, the share that earns full points."
+    },
+    "parks": {
+      "title": "Parks and green spaces nearby",
+      "lead": "The nearest public green spaces, with the walking time.",
+      "leadApproximate": "The nearest public green spaces. Distances are estimated from a straight line until street routes are in.",
+      "none": "We found no public green space within 1.5 km.",
+      "filtersLabel": "Filter the parks",
+      "filter": {
+        "playground": "With a playground",
+        "dog_park": "For dogs",
+        "large": "Over {{area}} ha"
+      },
+      "noneFiltered": "No nearby park matches all the chosen filters.",
+      "clearFilters": "Clear filters",
+      "unnamed": "Unnamed green space",
+      "walk_one": "{{count}} minute walk",
+      "walk_other": "{{count}} minute walk",
+      "walkApproximate_one": "~{{count}} minute walk",
+      "walkApproximate_other": "~{{count}} minute walk",
+      "area": "{{area}} ha",
+      "distance": "{{distance}} m",
+      "amenity": {
+        "playground": "Playground",
+        "dog_park": "Dog area",
+        "sports": "Sports pitch"
+      },
+      "nearestSmall": "Nearest green space that counts",
+      "nearestLarge": "Nearest large park"
+    },
+    "breakdown": {
+      "title": "Where the points come from",
+      "lead": "The score adds up four measurements. Each bar shows how many points the address got out of those possible.",
+      "component": {
+        "c1": "Green within {{radius}}",
+        "c2": "Green within {{radius}}",
+        "c3": "Green space of at least {{area}} ha nearby",
+        "c4": "Park of at least {{area}} ha",
+        "c5": "Street trees"
+      },
+      "noData": "no data",
+      "noneInReach": "none in reach",
+      "inside": "right next to the address",
+      "walk": "~{{distance}} m walk",
+      "points_one": "{{earned}} of {{count}} point",
+      "points_other": "{{earned}} of {{count}} points",
+      "excluded": "left out of the score",
+      "gain": {
+        "share_one": "More green within {{radius}} could add up to {{count}} point.",
+        "share_other": "More green within {{radius}} could add up to {{count}} points.",
+        "park_one": "A green space of at least {{area}} ha within {{distance}} would add {{count}} point.",
+        "park_other": "A green space of at least {{area}} ha within {{distance}} would add {{count}} points.",
+        "trees_one": "More street trees could add {{count}} point.",
+        "trees_other": "More street trees could add {{count}} points."
+      }
+    }
   }
 }
