@@ -3,6 +3,8 @@ alter table private.poi_features
 
 comment on column private.poi_features.area is 'Outline of a point of interest that is an area (a park); walking targets use its point closest to the origin.';
 
+create index grid_cells_center_idx on private.grid_cells using gist (center);
+
 create index poi_features_reach_idx on private.poi_features
   using gist ((coalesce(area, location)));
 

@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(19);
+select plan(20);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -187,6 +187,13 @@ select throws_ok(
   '42501',
   null,
   'A visitor cannot read walking access'
+);
+
+select throws_ok(
+  $$ select count(*) from private.city_category_stats $$,
+  '42501',
+  null,
+  'A visitor cannot read the city statistics'
 );
 
 set local role authenticated;

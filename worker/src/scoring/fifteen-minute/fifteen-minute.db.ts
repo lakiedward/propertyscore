@@ -48,7 +48,7 @@ export async function insertPoiRows(
         r.tags,
         r.opening_hours,
         r.is_24h
-      from jsonb_to_recordset(${JSON.stringify(batch)}::jsonb) as r (
+      from jsonb_to_recordset(${sql.json(batch)}::jsonb) as r (
         source_ref text,
         category text,
         name text,

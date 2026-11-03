@@ -1,11 +1,14 @@
+import type { JsonObject } from '../../db/sql.ts';
 import type { OsmFeature } from '../../sources/osm.ts';
 import { type FifteenMinuteCategory, poiCategoryOf } from './fifteen-minute.params.ts';
+
+type JsonValue = JsonObject[string];
 
 export type PoiRow = {
   source_ref: string;
   category: string;
   name: string | null;
-  geometry: { type: string; coordinates: unknown };
+  geometry: { type: string; coordinates: JsonValue };
   tags: Record<string, string>;
   opening_hours: string | null;
   is_24h: boolean | null;
@@ -90,7 +93,10 @@ export function poiRowsFromFeature(
     source_ref: sourceRef,
     category,
     name: bounded(feature.properties.name, 300),
-    geometry: feature.geometry,
+    geometry: {
+      type: feature.geometry.type,
+      coordinates: feature.geometry.coordinates as JsonValue,
+    },
     tags,
     opening_hours: openingHours,
     is_24h: openingHours === null ? null : openingHours === '24/7',
