@@ -125,7 +125,7 @@ select results_eq(
     select kind::text, distance_m between 90 and 110, buildings_crossed
     from private.noise_samples(%L, %L, array[extensions.st_point(24.15, 45.79, 4326)::extensions.geography], 1500)
     where measure = 'proxy'
-    order by kind
+    order by distance_m
   $$, :'snapshot_id', :'sibiu_id'),
   $$ values ('road', true, 1), ('rail', false, 1) $$,
   'Without a map the road is estimated too, and the building in each line of sight is counted'

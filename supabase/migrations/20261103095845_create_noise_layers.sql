@@ -54,10 +54,12 @@ create trigger noise_contours_set_updated_at
   for each row execute function private.set_updated_at();
 
 create table private.noise_snapshot_datasets (
+  id uuid primary key default gen_random_uuid(),
   snapshot_id uuid not null references public.score_snapshots (id) on delete cascade,
   dataset_id uuid not null references private.noise_datasets (id) on delete restrict,
   created_at timestamptz not null default now(),
-  primary key (snapshot_id, dataset_id)
+  updated_at timestamptz not null default now(),
+  constraint noise_snapshot_datasets_snapshot_dataset_key unique (snapshot_id, dataset_id)
 );
 
 comment on table private.noise_snapshot_datasets is 'The noise datasets a snapshot was scored with, so a report reads the same contours later.';
@@ -65,6 +67,10 @@ comment on table private.noise_snapshot_datasets is 'The noise datasets a snapsh
 create index noise_snapshot_datasets_dataset_id_idx on private.noise_snapshot_datasets (dataset_id);
 
 alter table private.noise_snapshot_datasets enable row level security;
+
+create trigger noise_snapshot_datasets_set_updated_at
+  before update on private.noise_snapshot_datasets
+  for each row execute function private.set_updated_at();
 
 create table private.noise_sources (
   id uuid primary key default gen_random_uuid(),
@@ -97,7 +103,8 @@ create table private.noise_buildings (
   snapshot_id uuid not null references public.score_snapshots (id) on delete cascade,
   city_id uuid not null references public.cities (id) on delete cascade,
   geometry extensions.geography(MultiPolygon, 4326) not null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 comment on table private.noise_buildings is 'OSM building footprints of the ready or building snapshot, used to screen the proxy estimate; pruned once a snapshot is superseded.';
@@ -107,6 +114,10 @@ create index noise_buildings_city_id_idx on private.noise_buildings (city_id);
 create index noise_buildings_geometry_idx on private.noise_buildings using gist (geometry);
 
 alter table private.noise_buildings enable row level security;
+
+create trigger noise_buildings_set_updated_at
+  before update on private.noise_buildings
+  for each row execute function private.set_updated_at();
 
 create function private.prune_noise_buildings()
 returns integer
@@ -203,7 +214,7 @@ as $$
         and s.kind = pc.kind
         and s.source_class = pc.source_class
         and extensions.st_dwithin(s.geometry, pt.location, p_radius_m)
-      order by distance_m
+      order by s.geometry operator(extensions.<->) pt.location
       limit 1
     ) as near
   )

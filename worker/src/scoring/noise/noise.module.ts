@@ -192,7 +192,7 @@ export const noiseModule: ScoreModule = {
 
     await writeNoiseStats(sql, snapshotId, stats);
     const sourceDates: Record<string, string> = { osm: osmDate };
-    if (rounds.size > 0) sourceDates.noise_maps = String(Math.max(...rounds));
+    if (rounds.size > 0) sourceDates.noise = String(Math.max(...rounds));
     return { sourceDates };
   },
 };

@@ -59,24 +59,24 @@ describe.skipIf(!databaseUrl)('noise scoring against the local database', () => 
   let snapshotId = '';
   let cityId = '';
   let datasetId = '';
-  let hadSibiuCells = false;
-  const center = { lon: 24.15192, lat: 45.79705 };
+  let hadCityCells = false;
+  const center = { lon: 21.22571, lat: 45.75372 };
 
   beforeAll(async () => {
     sql = createSql(databaseUrl ?? '');
     const [city] = await sql<{ id: string; has_cells: boolean }[]>`
       select c.id, exists (select 1 from private.grid_cells g where g.city_id = c.id) as has_cells
       from public.cities c
-      where c.slug = 'sibiu'
+      where c.slug = 'timisoara'
     `;
     cityId = city?.id ?? '';
-    hadSibiuCells = city?.has_cells ?? false;
-    await sql`
-      update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
-      where status = 'building'
-    `;
+    hadCityCells = city?.has_cells ?? false;
     const [snapshot] = await sql<{ id: string }[]>`
-      select private.start_score_snapshot('2026-11-01') as id
+      insert into public.score_snapshots (scoring_version_id, period, status, finished_at, error_code)
+      select id, '2026-11-01', 'failed', now(), 'noise_test'
+      from public.scoring_versions
+      where kind = 'online' and is_active
+      returning id
     `;
     snapshotId = snapshot?.id ?? '';
     await sql`select private.build_grid_cells(${cityId}, 175)`;
@@ -103,7 +103,7 @@ describe.skipIf(!databaseUrl)('noise scoring against the local database', () => 
   afterAll(async () => {
     await sql`delete from public.score_snapshots where id = ${snapshotId}`;
     await sql`delete from private.noise_datasets where id = ${datasetId}`;
-    if (!hadSibiuCells) {
+    if (!hadCityCells) {
       await sql`delete from private.grid_cells where city_id = ${cityId}`;
     }
     await sql.end({ timeout: 5 });
