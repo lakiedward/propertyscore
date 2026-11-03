@@ -16,7 +16,10 @@ describe('readEnv', () => {
 
   it('names the invalid fields without echoing their values', () => {
     expect(() => readEnv({ DATABASE_URL: 'https://secret.example.test' })).toThrow(
-      'Invalid worker environment: DATABASE_URL',
+      expect.objectContaining({
+        code: 'invalid_environment',
+        message: 'Invalid worker environment: DATABASE_URL',
+      }),
     );
   });
 });

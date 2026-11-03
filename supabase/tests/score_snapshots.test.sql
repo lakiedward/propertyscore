@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(18);
+select plan(19);
 
 select results_eq(
   $$ select label, (select sum(value::numeric) from jsonb_each_text(weights)), params ->> 'cell_size_m' from public.scoring_versions where kind = 'online' and is_active $$,
@@ -130,6 +130,13 @@ select throws_ok(
   '42501',
   null,
   'A signed-in user cannot read snapshots'
+);
+
+select throws_ok(
+  $$ select id from public.scoring_versions $$,
+  '42501',
+  null,
+  'A signed-in user cannot read formula versions'
 );
 
 select throws_ok(

@@ -45,6 +45,7 @@ create trigger grid_cells_set_updated_at
   for each row execute function private.set_updated_at();
 
 create table private.cell_scores (
+  id uuid primary key default gen_random_uuid(),
   snapshot_id uuid not null references public.score_snapshots (id) on delete cascade,
   cell_id uuid not null references private.grid_cells (id) on delete cascade,
   is_residential boolean,
@@ -54,7 +55,7 @@ create table private.cell_scores (
   inputs jsonb not null default '{}' check (jsonb_typeof(inputs) = 'object'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  primary key (snapshot_id, cell_id)
+  constraint cell_scores_snapshot_cell_key unique (snapshot_id, cell_id)
 );
 
 comment on table private.cell_scores is 'One row per cell and snapshot: the 9 category scores (null = no data), the zone score and the audit inputs.';

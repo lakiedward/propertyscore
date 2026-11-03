@@ -1,4 +1,5 @@
 import type { Sql } from '../db/sql.ts';
+import { WorkerError } from '../lib/errors.ts';
 
 export type CoveredCity = {
   id: string;
@@ -33,7 +34,8 @@ export async function startSnapshot(sql: Sql, period: string): Promise<SnapshotV
   const [started] = await sql<{ id: string }[]>`
     select private.start_score_snapshot(${period}::date) as id
   `;
-  if (!started) throw new Error('start_score_snapshot returned no snapshot');
+  if (!started)
+    throw new WorkerError('snapshot_not_started', 'start_score_snapshot returned no snapshot');
   try {
     const [row] = await sql<{ period: string; params: Record<string, unknown> }[]>`
       select to_char(s.period, 'YYYY-MM-DD') as period, v.params
@@ -41,7 +43,8 @@ export async function startSnapshot(sql: Sql, period: string): Promise<SnapshotV
       join public.scoring_versions v on v.id = s.scoring_version_id
       where s.id = ${started.id}
     `;
-    if (!row) throw new Error('started snapshot is not readable');
+    if (!row)
+      throw new WorkerError('snapshot_not_readable', 'The started snapshot is not readable');
     return { snapshotId: started.id, period: row.period, params: row.params };
   } catch (error) {
     await failSnapshot(sql, started.id, 'start_failed');

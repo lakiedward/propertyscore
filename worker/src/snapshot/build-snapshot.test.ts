@@ -51,6 +51,7 @@ const databaseUrl = process.env.DATABASE_URL;
 describe.skipIf(!databaseUrl)('buildSnapshot against the local database', () => {
   let sql: Sql;
   let previousReady: string | undefined;
+  let hadSibiuCells = false;
   const created: string[] = [];
 
   beforeAll(async () => {
@@ -59,11 +60,25 @@ describe.skipIf(!databaseUrl)('buildSnapshot against the local database', () => 
       select id from public.score_snapshots where status = 'ready'
     `;
     previousReady = ready?.id;
+    const [cells] = await sql<{ has_cells: boolean }[]>`
+      select exists (
+        select 1 from private.grid_cells g
+        join public.cities c on c.id = g.city_id
+        where c.slug = 'sibiu'
+      ) as has_cells
+    `;
+    hadSibiuCells = cells?.has_cells ?? false;
   });
 
   afterAll(async () => {
     if (created.length > 0) {
       await sql`delete from public.score_snapshots where id in ${sql(created)}`;
+    }
+    if (!hadSibiuCells) {
+      await sql`
+        delete from private.grid_cells
+        where city_id = (select id from public.cities where slug = 'sibiu')
+      `;
     }
     if (previousReady) {
       await sql`

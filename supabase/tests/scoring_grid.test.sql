@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(17);
+select plan(20);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -150,8 +150,29 @@ select throws_ok(
   'A visitor cannot read the grid'
 );
 
+select throws_ok(
+  $$ select count(*) from private.poi_features $$,
+  '42501',
+  null,
+  'A visitor cannot read points of interest'
+);
+
 set local role authenticated;
 set local request.jwt.claims = '{"role": "authenticated", "sub": "11111111-1111-1111-1111-111111111111"}';
+
+select throws_ok(
+  $$ select count(*) from private.cell_scores $$,
+  '42501',
+  null,
+  'A signed-in user cannot read cell scores'
+);
+
+select throws_ok(
+  $$ select count(*) from private.grid_cells $$,
+  '42501',
+  null,
+  'A signed-in user cannot read the grid'
+);
 
 select throws_ok(
   $$ select count(*) from private.poi_features $$,

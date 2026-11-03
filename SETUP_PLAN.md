@@ -495,7 +495,7 @@ export type PropertyStatus = Enums<'property_status'>;
 
 Rules that apply to every table:
 
-1. **Enable RLS when the table is created**, in the same migration. CI runs the Supabase database advisors (`supabase db lint`) and fails on any table without RLS.
+1. **Enable RLS when the table is created**, in the same migration. CI runs the Supabase database advisors (`supabase db lint`) and fails on any table without RLS. Server-only tables (the SmartCheck engine, read and written only by the worker) get RLS with no client policy and revoked `anon` / `authenticated` grants, so the advisors' `info` finding `rls_enabled_no_policy` is expected for them; a pgTAP test proves both roles get `42501`. Adding a `using (false)` policy only to silence the finding was rejected: it says the same thing with more code.
 2. **One policy per operation** (`select`, `insert`, `update`, `delete`), named in plain English. Use `to authenticated` (or `anon`) explicitly; never leave the role open.
 3. `insert` and `update` policies have a **`with check`** clause, so users can't write rows they could not read.
 4. **Wrap auth functions in a sub-select** (`(select auth.uid())`) so Postgres evaluates them once per query, not once per row.
