@@ -11,6 +11,7 @@ import {
   osmExtractDate,
   readOsmFeatures,
 } from '../../sources/osm.ts';
+import { createLazyGeocoder, loadCityGeocoder } from '../../geocoding/city-geocoder.ts';
 import type { CoveredCity } from '../../snapshot/snapshot.db.ts';
 import type { ScoreContext, ScoreModule } from '../score-module.ts';
 import { listNeighbourPairs, smoothScores } from '../smoothing.ts';
@@ -30,7 +31,7 @@ import {
   type LevelAccess,
   type ReachableUnit,
 } from './education.formula.ts';
-import { matchInstitutions, matchSummary } from './education.match.ts';
+import { matchInstitutions, matchSummary, placeUnmatched } from './education.match.ts';
 import { EDUCATION_OSM_FILTERS, toEducationUnit, type OsmEducationUnit } from './education.osm.ts';
 import {
   educationParamsSchema,
@@ -195,13 +196,18 @@ async function scoreCity(
   city: CoveredCity,
   cityRegister: readonly RegisterRow[],
   units: readonly OsmEducationUnit[],
+  extractPath: string,
 ): Promise<JsonObject> {
   const { sql, snapshotId } = context;
   const seenOn = context.period;
-  const rows = matchInstitutions(cityRegister, units, params.match);
+  const geocoder = createLazyGeocoder(() => loadCityGeocoder(context, city, extractPath));
+  const rows = await placeUnmatched(
+    matchInstitutions(cityRegister, units, params.match),
+    geocoder.geocode,
+  );
   await upsertInstitutions(sql, city.id, seenOn, rows);
   const pois = await copyEducationPois(sql, snapshotId, city.id, seenOn);
-  const summary = matchSummary(rows);
+  const summary = { ...matchSummary(rows), geocoding: geocoder.tally };
   const cellIds = await listCityCells(sql, snapshotId, city.id);
 
   const reason = noDataReason(params, cityRegister, pois);
@@ -292,7 +298,7 @@ export const educationModule: ScoreModule = {
     for (const city of context.cities) {
       const units = await readCityUnits(context, city, extractPath);
       const cityRegister = register.filter((row) => row.city_slug === city.slug);
-      stats[city.slug] = await scoreCity(context, params, city, cityRegister, units);
+      stats[city.slug] = await scoreCity(context, params, city, cityRegister, units, extractPath);
       context.logger.info('education city scored', { city: city.slug, ...stats[city.slug] });
     }
     await writeEducationStats(context.sql, context.snapshotId, stats);

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   classifyHealthTags,
   distanceMeters,
+  geocodeProviders,
   isAlwaysOpen,
   mergeCnasProviders,
   namesMatch,
@@ -145,6 +146,7 @@ describe('mergeCnasProviders', () => {
           id: 'p1',
           kind: 'pharmacy',
           name: 'SC Catena Hygeia SRL',
+          address: null,
           location: { lng: 21.2297, lat: 45.7539 },
         },
       ],
@@ -167,9 +169,10 @@ describe('mergeCnasProviders', () => {
           id: 'p2',
           kind: 'pharmacy',
           name: 'Farmacia Catena',
+          address: null,
           location: { lng: 21.24, lat: 45.76 },
         },
-        { id: 'p3', kind: 'family_doctor', name: 'Dr. Ionescu', location: null },
+        { id: 'p3', kind: 'family_doctor', name: 'Dr. Ionescu', address: null, location: null },
       ],
       50,
     );
@@ -186,12 +189,61 @@ describe('mergeCnasProviders', () => {
     const result = mergeCnasProviders(
       osm,
       [
-        { id: 'p4', kind: 'dentist', name: 'Catena', location: { lng: 21.2296, lat: 45.7539 } },
-        { id: 'p5', kind: 'pharmacy', name: 'Catena', location: { lng: 21.2296, lat: 45.7539 } },
-        { id: 'p6', kind: 'pharmacy', name: 'Catena', location: { lng: 21.2296, lat: 45.7539 } },
+        {
+          id: 'p4',
+          kind: 'dentist',
+          name: 'Catena',
+          address: null,
+          location: { lng: 21.2296, lat: 45.7539 },
+        },
+        {
+          id: 'p5',
+          kind: 'pharmacy',
+          name: 'Catena',
+          address: null,
+          location: { lng: 21.2296, lat: 45.7539 },
+        },
+        {
+          id: 'p6',
+          kind: 'pharmacy',
+          name: 'Catena',
+          address: null,
+          location: { lng: 21.2296, lat: 45.7539 },
+        },
       ],
       50,
     );
     expect(result).toMatchObject({ cnasMatched: 1, cnasAdded: 2 });
+  });
+});
+
+describe('geocodeProviders', () => {
+  it('geocodes only the providers that have an address but no location', async () => {
+    const asked: string[] = [];
+    const providers = await geocodeProviders(
+      [
+        {
+          id: 'a',
+          kind: 'pharmacy',
+          name: 'Placed',
+          address: 'Str. A 1',
+          location: { lng: 1, lat: 2 },
+        },
+        { id: 'b', kind: 'pharmacy', name: 'Found', address: 'Str. B 2', location: null },
+        { id: 'c', kind: 'pharmacy', name: 'Missing', address: 'Str. C 3', location: null },
+        { id: 'd', kind: 'pharmacy', name: 'No address', address: null, location: null },
+      ],
+      (address) => {
+        asked.push(address);
+        return Promise.resolve(address === 'Str. B 2' ? { lng: 21.2, lat: 45.7 } : null);
+      },
+    );
+    expect(asked).toEqual(['Str. B 2', 'Str. C 3']);
+    expect(providers.map((provider) => provider.location)).toEqual([
+      { lng: 1, lat: 2 },
+      { lng: 21.2, lat: 45.7 },
+      null,
+      null,
+    ]);
   });
 });

@@ -172,6 +172,23 @@ export function matchInstitutions(
   return rows;
 }
 
+export async function placeUnmatched(
+  rows: readonly InstitutionRow[],
+  geocode: (address: string) => Promise<Point | null>,
+): Promise<InstitutionRow[]> {
+  const placed: InstitutionRow[] = [];
+  for (const row of rows) {
+    const isUnplaced = row.match_status === 'siiir_only' && row.lng === null;
+    const location = isUnplaced && row.address_text ? await geocode(row.address_text) : null;
+    placed.push(
+      location
+        ? { ...row, lng: location.lng, lat: location.lat, location_precision: 'geocoded' }
+        : row,
+    );
+  }
+  return placed;
+}
+
 export function matchSummary(rows: readonly InstitutionRow[]): Record<string, number> {
   return {
     institutions: rows.length,
@@ -179,6 +196,7 @@ export function matchSummary(rows: readonly InstitutionRow[]): Record<string, nu
     siiir_only: rows.filter((row) => row.match_status === 'siiir_only').length,
     osm_only: rows.filter((row) => row.match_status === 'osm_only').length,
     excluded: rows.filter((row) => row.match_status === 'excluded').length,
+    geocoded: rows.filter((row) => row.location_precision === 'geocoded').length,
     unplaced: rows.filter((row) => row.match_status === 'siiir_only' && row.lng === null).length,
   };
 }
