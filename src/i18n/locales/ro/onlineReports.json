@@ -377,5 +377,130 @@
       "smell": "Nu măsurăm mirosul, zgomotul sau traficul de camioane de la ele.",
       "year": "Datele de emisii sunt din {{year}}."
     }
+  },
+  "fifteenMinute": {
+    "noData": "Nu avem destule date despre serviciile din jurul adresei. Scorul nu intră în scorul zonei.",
+    "walk_one": "{{count}} minut",
+    "walk_few": "{{count}} minute",
+    "walk_other": "{{count}} de minute",
+    "walkApproximate_one": "~{{count}} minut",
+    "walkApproximate_few": "~{{count}} minute",
+    "walkApproximate_other": "~{{count}} de minute",
+    "notInReach": "peste 15 minute",
+    "facts": {
+      "coveredValue": "{{covered}} din {{total}}",
+      "covered": "Servicii zilnice la 15 minute pe jos",
+      "places": "Locuri la 15 minute pe jos",
+      "missing": "Servicii mai departe de 15 minute"
+    },
+    "groups": {
+      "title": "{{covered}} din {{total}} servicii zilnice la 15 minute pe jos",
+      "lead": "Timpul de mers pe jos până la cel mai apropiat loc din fiecare categorie."
+    },
+    "group": {
+      "shops": "Cumpărături",
+      "food_drink": "Mâncare și cafea",
+      "services": "Servicii",
+      "pharmacies": "Farmacii",
+      "medical": "Medici",
+      "schools": "Școli",
+      "parks": "Parcuri",
+      "sport": "Sport",
+      "culture": "Cultură",
+      "other": "Altele"
+    },
+    "category": {
+      "supermarket": "Supermarket",
+      "convenience": "Magazin de cartier",
+      "bakery": "Brutărie",
+      "greengrocer_market": "Piață sau aprozar",
+      "butcher": "Măcelărie",
+      "drugstore": "Drogerie",
+      "restaurant": "Restaurant",
+      "cafe": "Cafenea",
+      "bank_atm": "Bancă sau bancomat",
+      "post": "Poștă sau easybox",
+      "hairdresser": "Frizerie sau coafor",
+      "laundry": "Curățătorie",
+      "car_service": "Service auto",
+      "public_office": "Instituție publică",
+      "pharmacy": "Farmacie",
+      "doctor": "Medic de familie",
+      "dentist": "Stomatolog",
+      "clinic": "Clinică",
+      "veterinary": "Cabinet veterinar",
+      "kindergarten": "Grădiniță",
+      "school": "Școală",
+      "high_school": "Liceu",
+      "park": "Parc",
+      "playground": "Loc de joacă",
+      "fitness": "Sală de fitness",
+      "sports_ground": "Teren de sport",
+      "swimming_pool": "Piscină",
+      "library": "Bibliotecă",
+      "cinema_theatre": "Cinema sau teatru",
+      "place_of_worship": "Lăcaș de cult",
+      "other": "Alt serviciu"
+    },
+    "nearest": {
+      "title": "Cel mai aproape, pe categorii",
+      "lead": "Cel mai apropiat loc din fiecare grup; apasă pe unul ca să-l vezi pe hartă."
+    },
+    "map": {
+      "place": "Arată pe listă: {{name}}",
+      "note": "Zonele colorate arată unde ajungi pe jos în 5, 10 și 15 minute; numerele sunt locurile din listă."
+    },
+    "limits": {
+      "osm": "Locurile vin din OpenStreetMap: un magazin nou sau unul închis de curând poate lipsi.",
+      "hours": "Nu verificăm programul fiecărui loc.",
+      "approximate": "Timpii sunt aproximați din linia dreaptă până avem traseele pe străzi."
+    }
+  },
+  "education": {
+    "noData": "Nu avem destule date despre școlile din jurul adresei.",
+    "levels": {
+      "label": "Cel mai apropiat, pe niveluri"
+    },
+    "level": {
+      "kindergarten": "Grădiniță",
+      "school": "Școală",
+      "high_school": "Liceu"
+    },
+    "notInReach": "Nicio unitate aproape",
+    "walk_one": "{{count}} minut pe jos",
+    "walk_few": "{{count}} minute pe jos",
+    "walk_other": "{{count}} de minute pe jos",
+    "institutions": {
+      "label": "Cele mai apropiate unități de învățământ",
+      "unnamed": "Unitate fără nume",
+      "distance": "~{{distance}} pe jos"
+    },
+    "ownership": {
+      "public": "De stat",
+      "private": "Particulară",
+      "unknown": "Tip necunoscut"
+    },
+    "note": "Nu notăm calitatea școlilor, doar cât de aproape sunt. Circumscripția școlară se verifică la școală."
+  },
+  "health": {
+    "noData": "Nu avem destule date despre serviciile medicale din jurul adresei.",
+    "layers": {
+      "label": "Serviciile medicale cele mai apropiate"
+    },
+    "layer": {
+      "h1": "Farmacie",
+      "h2": "Medic de familie",
+      "h3": "Clinică sau policlinică",
+      "h4": "Spital cu urgențe",
+      "h5": "Farmacie non-stop"
+    },
+    "noLayerData": "Fără date în acest oraș",
+    "notInReach": "Departe",
+    "walk_one": "{{count}} minut pe jos",
+    "walk_few": "{{count}} minute pe jos",
+    "walk_other": "{{count}} de minute pe jos",
+    "drive_one": "{{count}} minut cu mașina",
+    "drive_few": "{{count}} minute cu mașina",
+    "drive_other": "{{count}} de minute cu mașina"
   }
 }

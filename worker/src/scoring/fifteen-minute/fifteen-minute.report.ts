@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-import type { Sql } from '../../db/sql.ts';
+import type { JsonObject, Sql } from '../../db/sql.ts';
+import { sectionParams } from '../../report/cell-category.ts';
+import type { ReportSection } from '../../report/report-section.ts';
 import { WorkerError } from '../../lib/errors.ts';
 import type { Leg, LngLat, ValhallaClient } from '../../routing/valhalla.ts';
 import { type DistanceMethod, legsFromOrigin } from '../../routing/walk-access.ts';
@@ -9,6 +11,7 @@ import {
   poiCategoriesFor,
   poiCategoryOf,
 } from './fifteen-minute.params.ts';
+import { parseFifteenMinuteParams } from './fifteen-minute.module.ts';
 
 const geometrySchema = z.object({ type: z.string(), coordinates: z.unknown() });
 
@@ -374,3 +377,27 @@ export async function buildFifteenMinuteReport(options: {
 
   return fifteenMinuteReportSchema.parse({ ...assembled, isochrones, routes });
 }
+
+export const fifteenMinuteReportSection: ReportSection = {
+  key: 'fifteen_minute',
+  build: async ({ sql, router, snapshotId, latitude, longitude, params }) => {
+    const report = await buildFifteenMinuteReport({
+      sql,
+      router: router ?? null,
+      snapshotId,
+      origin: { lng: longitude, lat: latitude },
+      params: parseFifteenMinuteParams(sectionParams(params, 'fifteen_minute')),
+    });
+    const { isochrones, ...rest } = report;
+    const section: JsonObject = {
+      schema_version: 1,
+      status: report.score === null ? 'no_data' : 'scored',
+      ...rest,
+      isochrones: isochrones.map((isochrone) => ({
+        minutes: isochrone.minutes,
+        geometry: isochrone.geometry as JsonObject,
+      })),
+    };
+    return section;
+  },
+};

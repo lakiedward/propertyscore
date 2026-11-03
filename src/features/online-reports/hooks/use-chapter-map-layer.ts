@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { LngLat } from '@/components/map/map.config';
-import { noiseOverlays } from '../chapter-layers';
+import { isochroneOverlays, noiseOverlays } from '../chapter-layers';
+import { nearestPerGroup } from '../fifteen-minute-section.utils';
 import type { ReportMapLayer } from '../components/report-map';
 import type { ReportResult } from '../online-report.types';
 import type { ChapterId } from '../online-report.utils';
@@ -33,6 +34,24 @@ export function useChapterMapLayer({
       places: [],
       radiusM: result.noise.map_radius_m,
       note: t('noise.map.note'),
+    };
+  }
+  if (chapter === 'fifteen_minute' && result.fifteen_minute?.status === 'scored') {
+    const section = result.fifteen_minute;
+    const largest = Math.max(15, ...section.isochrones.map((isochrone) => isochrone.minutes));
+    return {
+      ...common,
+      hueKey: 'fifteen_minute',
+      overlays: isochroneOverlays(section),
+      places: nearestPerGroup(section).map((place) => ({
+        id: place.id,
+        position: [place.lng, place.lat],
+        label: t('fifteenMinute.map.place', {
+          name: place.name ?? t(`fifteenMinute.category.${place.category}`),
+        }),
+      })),
+      radiusM: Math.round((section.walk_speed_kmh * 1000 * largest) / 60),
+      note: t('fifteenMinute.map.note'),
     };
   }
   if (chapter === 'industry' && result.industry?.status === 'scored') {

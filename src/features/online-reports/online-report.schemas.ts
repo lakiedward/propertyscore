@@ -251,6 +251,157 @@ export const industrySectionSchema = z.object({
   }),
 });
 
+const FIFTEEN_MINUTE_GROUPS = [
+  'shops',
+  'food_drink',
+  'services',
+  'pharmacies',
+  'medical',
+  'schools',
+  'parks',
+  'sport',
+  'culture',
+  'other',
+] as const;
+
+const FIFTEEN_MINUTE_CATEGORIES = [
+  'supermarket',
+  'convenience',
+  'bakery',
+  'greengrocer_market',
+  'butcher',
+  'drugstore',
+  'restaurant',
+  'cafe',
+  'bank_atm',
+  'post',
+  'hairdresser',
+  'laundry',
+  'car_service',
+  'public_office',
+  'pharmacy',
+  'doctor',
+  'dentist',
+  'clinic',
+  'veterinary',
+  'kindergarten',
+  'school',
+  'high_school',
+  'park',
+  'playground',
+  'fitness',
+  'sports_ground',
+  'swimming_pool',
+  'library',
+  'cinema_theatre',
+  'place_of_worship',
+  'other',
+] as const;
+
+const walkCountsSchema = {
+  n5: z.number().int().min(0),
+  n10: z.number().int().min(0),
+  n15: z.number().int().min(0),
+};
+
+export const fifteenMinuteSectionSchema = z.object({
+  schema_version: z.literal(1),
+  status: z.enum(['scored', 'no_data']),
+  score: scoreSchema.nullable(),
+  covered: z.number().int().min(0),
+  total: z.number().int().min(0),
+  walk_speed_kmh: z.number().positive(),
+  distance_method: z.enum(['pedestrian_routing', 'straight_line']),
+  groups: z.array(
+    z.object({
+      key: z.enum(FIFTEEN_MINUTE_GROUPS).catch('other'),
+      categories: z.array(z.string()),
+      ...walkCountsSchema,
+    }),
+  ),
+  categories: z.array(
+    z.object({
+      key: z.enum(FIFTEEN_MINUTE_CATEGORIES).catch('other'),
+      group: z.enum(FIFTEEN_MINUTE_GROUPS).catch('other'),
+      t1_min: z.number().int().min(0).nullable(),
+      distance_m: z.number().int().min(0).nullable(),
+      ...walkCountsSchema,
+      status: z.enum(['ok', 'missing', 'no_data']),
+    }),
+  ),
+  places: z.array(
+    z.object({
+      id: z.string(),
+      category: z.enum(FIFTEEN_MINUTE_CATEGORIES).catch('other'),
+      name: z.string().nullable(),
+      lat: z.number(),
+      lng: z.number(),
+      distance_m: z.number().int().min(0),
+      minutes: z.number().int().min(0),
+    }),
+  ),
+  isochrones: z.array(z.object({ minutes: z.number(), geometry: anyGeometrySchema })),
+});
+
+const EDUCATION_LEVELS = ['kindergarten', 'school', 'high_school'] as const;
+
+export const educationSectionSchema = z.discriminatedUnion('status', [
+  z.object({ schema_version: z.literal(1), status: z.literal('no_data') }),
+  z.object({
+    schema_version: z.literal(1),
+    status: z.literal('scored'),
+    distance_method: z.string(),
+    levels: z.array(
+      z.object({
+        key: z.enum(EDUCATION_LEVELS),
+        nearest_min: z.number().min(0).nullable(),
+        second_min: z.number().min(0).nullable(),
+        points: z.number().min(0).max(1),
+        weight: z.number().min(0),
+        full_min: z.number().positive(),
+        zero_min: z.number().positive(),
+      }),
+    ),
+    counts: z.record(z.string(), z.number().int().min(0)),
+    institutions: z.array(
+      z.object({
+        id: z.string(),
+        name: z.string().nullable(),
+        levels: z.array(z.string()),
+        ownership: z.enum(['public', 'private', 'unknown']),
+        location: position,
+        walk_m: z.number().min(0),
+      }),
+    ),
+  }),
+]);
+
+const HEALTH_LAYERS = ['h1', 'h2', 'h3', 'h4', 'h5'] as const;
+
+export const healthSectionSchema = z.discriminatedUnion('status', [
+  z.object({ schema_version: z.literal(1), status: z.literal('no_data') }),
+  z.object({
+    schema_version: z.literal(1),
+    status: z.literal('scored'),
+    distance_method: z.string(),
+    car_distance_method: z.string(),
+    missing: z.array(z.string()),
+    layers: z.array(
+      z.object({
+        key: z.enum(HEALTH_LAYERS),
+        points: z.number().min(0).max(1).nullable(),
+        minutes: z.number().min(0).nullable(),
+        count: z.number().int().min(0).nullable(),
+        mode: z.enum(['walk', 'car']).nullable(),
+        weight: z.number().min(0),
+        place: z
+          .object({ id: z.string(), name: z.string().nullable(), location: position })
+          .nullable(),
+      }),
+    ),
+  }),
+]);
+
 export const reportResultSchema = z.looseObject({
   schema_version: z.literal(1),
   city: z.object({ slug: z.string(), name: z.string() }),
@@ -270,6 +421,9 @@ export const reportResultSchema = z.looseObject({
   noise: noiseSectionSchema.optional(),
   air: airSectionSchema.optional(),
   industry: industrySectionSchema.optional(),
+  fifteen_minute: fifteenMinuteSectionSchema.optional(),
+  education: educationSectionSchema.optional(),
+  health: healthSectionSchema.optional(),
 });
 
 export const onlineReportSearchSchema = z.object({

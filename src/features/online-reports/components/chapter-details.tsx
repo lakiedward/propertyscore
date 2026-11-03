@@ -1,6 +1,7 @@
 import type { ReportResult } from '../online-report.types';
 import type { ScoreChapterId } from '../online-report.utils';
 import { AirChapter } from './air-chapter';
+import { FifteenMinuteChapter } from './fifteen-minute-chapter';
 import { IndustryChapter } from './industry-chapter';
 import { NoiseChapter, type NoiseMoment } from './noise-chapter';
 
@@ -33,6 +34,14 @@ export function ChapterDetails({
     case 'air':
       return result.air ? (
         <AirChapter section={'data_status' in result.air ? result.air : undefined} />
+      ) : null;
+    case 'fifteen_minute':
+      return result.fifteen_minute ? (
+        <FifteenMinuteChapter
+          section={result.fifteen_minute}
+          selectedId={selectedId}
+          onSelect={onSelect}
+        />
       ) : null;
     case 'industry':
       return result.industry ? (

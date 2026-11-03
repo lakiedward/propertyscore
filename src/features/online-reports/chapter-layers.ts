@@ -1,7 +1,7 @@
 import type { MapFeatureCollection, MapOverlay } from '@/components/map/map-canvas';
 import type { LngLat } from '@/components/map/map.config';
 import { circleRing } from './online-report.utils';
-import type { NoiseSection } from './online-report.types';
+import type { FifteenMinuteSection, NoiseSection } from './online-report.types';
 
 type MapFeature = MapFeatureCollection['features'][number];
 
@@ -106,4 +106,22 @@ export function noiseOverlays(
       data: ringOverlay('noise-ring', position, 500),
     },
   ];
+}
+
+const ISOCHRONE_OPACITY = [0.28, 0.18, 0.1, 0.06] as const;
+
+export function isochroneOverlays(section: FifteenMinuteSection): MapOverlay[] {
+  const ordered = [...section.isochrones].sort((left, right) => left.minutes - right.minutes);
+  return ordered.map((isochrone, index) => ({
+    id: `isochrone-${String(isochrone.minutes)}`,
+    kind: 'fill',
+    colorToken: '--category-shopping',
+    opacity: ISOCHRONE_OPACITY[index] ?? 0.06,
+    outlineWidth: 1,
+    isVisible: true,
+    data: {
+      type: 'FeatureCollection',
+      features: areaFeatures(isochrone.geometry, { minutes: String(isochrone.minutes) }),
+    },
+  }));
 }

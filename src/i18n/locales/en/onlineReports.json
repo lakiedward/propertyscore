@@ -366,5 +366,125 @@
       "smell": "We do not measure their smell, noise or lorry traffic.",
       "year": "The emission data is from {{year}}."
     }
+  },
+  "fifteenMinute": {
+    "noData": "We do not have enough data about the services around the address. The score does not count in the zone score.",
+    "walk_one": "{{count}} minute",
+    "walk_other": "{{count}} minutes",
+    "walkApproximate_one": "~{{count}} minute",
+    "walkApproximate_other": "~{{count}} minutes",
+    "notInReach": "over 15 minutes",
+    "facts": {
+      "coveredValue": "{{covered}} of {{total}}",
+      "covered": "Daily services within a 15-minute walk",
+      "places": "Places within a 15-minute walk",
+      "missing": "Services more than 15 minutes away"
+    },
+    "groups": {
+      "title": "{{covered}} of {{total}} daily services within a 15-minute walk",
+      "lead": "Walking time to the nearest place in each category."
+    },
+    "group": {
+      "shops": "Shopping",
+      "food_drink": "Food and coffee",
+      "services": "Services",
+      "pharmacies": "Pharmacies",
+      "medical": "Doctors",
+      "schools": "Schools",
+      "parks": "Parks",
+      "sport": "Sport",
+      "culture": "Culture",
+      "other": "Other"
+    },
+    "category": {
+      "supermarket": "Supermarket",
+      "convenience": "Corner shop",
+      "bakery": "Bakery",
+      "greengrocer_market": "Market or greengrocer",
+      "butcher": "Butcher",
+      "drugstore": "Drugstore",
+      "restaurant": "Restaurant",
+      "cafe": "Café",
+      "bank_atm": "Bank or cash machine",
+      "post": "Post office or parcel locker",
+      "hairdresser": "Hairdresser",
+      "laundry": "Dry cleaner",
+      "car_service": "Car repair",
+      "public_office": "Public office",
+      "pharmacy": "Pharmacy",
+      "doctor": "Family doctor",
+      "dentist": "Dentist",
+      "clinic": "Clinic",
+      "veterinary": "Vet",
+      "kindergarten": "Kindergarten",
+      "school": "School",
+      "high_school": "High school",
+      "park": "Park",
+      "playground": "Playground",
+      "fitness": "Gym",
+      "sports_ground": "Sports ground",
+      "swimming_pool": "Swimming pool",
+      "library": "Library",
+      "cinema_theatre": "Cinema or theatre",
+      "place_of_worship": "Place of worship",
+      "other": "Other service"
+    },
+    "nearest": {
+      "title": "Nearest, by group",
+      "lead": "The nearest place in each group; tap one to see it on the map."
+    },
+    "map": {
+      "place": "Show in the list: {{name}}",
+      "note": "The coloured areas show where you can walk in 5, 10 and 15 minutes; the numbers are the places in the list."
+    },
+    "limits": {
+      "osm": "Places come from OpenStreetMap: a new shop or one that closed recently may be missing.",
+      "hours": "We do not check each place's opening hours.",
+      "approximate": "Times are estimated from the straight line until we have street routes."
+    }
+  },
+  "education": {
+    "noData": "We do not have enough data about the schools around the address.",
+    "levels": {
+      "label": "Nearest, by level"
+    },
+    "level": {
+      "kindergarten": "Kindergarten",
+      "school": "School",
+      "high_school": "High school"
+    },
+    "notInReach": "None nearby",
+    "walk_one": "{{count}} minute walk",
+    "walk_other": "{{count}} minute walk",
+    "institutions": {
+      "label": "Nearest schools",
+      "unnamed": "Unnamed school",
+      "distance": "~{{distance}} walk"
+    },
+    "ownership": {
+      "public": "State",
+      "private": "Private",
+      "unknown": "Unknown type"
+    },
+    "note": "We do not rate school quality, only how close they are. Check the school catchment with the school."
+  },
+  "health": {
+    "noData": "We do not have enough data about the medical services around the address.",
+    "layers": {
+      "label": "Nearest medical services"
+    },
+    "layer": {
+      "h1": "Pharmacy",
+      "h2": "Family doctor",
+      "h3": "Clinic",
+      "h4": "Hospital with A&E",
+      "h5": "24-hour pharmacy"
+    },
+    "noLayerData": "No data in this city",
+    "notInReach": "Far",
+    "walk_one": "{{count}} minute walk",
+    "walk_other": "{{count}} minute walk",
+    "drive_one": "{{count}} minute drive",
+    "drive_other": "{{count}} minute drive"
   }
 }

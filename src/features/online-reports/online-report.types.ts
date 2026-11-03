@@ -2,6 +2,9 @@ import type { z } from 'zod';
 import type { getOnlineReport } from './api/online-reports.api';
 import type {
   airSectionSchema,
+  educationSectionSchema,
+  fifteenMinuteSectionSchema,
+  healthSectionSchema,
   greenSectionSchema,
   industrySectionSchema,
   noiseSectionSchema,
@@ -27,3 +30,17 @@ export type ScoredAirSection = Extract<z.infer<typeof airSectionSchema>, { data_
 export type IndustrySection = z.infer<typeof industrySectionSchema>;
 
 export type IndustrySite = IndustrySection['sites'][number];
+
+export type FifteenMinuteSection = z.infer<typeof fifteenMinuteSectionSchema>;
+
+export type FifteenMinutePlace = FifteenMinuteSection['places'][number];
+
+export type ScoredEducationSection = Extract<
+  z.infer<typeof educationSectionSchema>,
+  { status: 'scored' }
+>;
+
+export type ScoredHealthSection = Extract<
+  z.infer<typeof healthSectionSchema>,
+  { status: 'scored' }
+>;

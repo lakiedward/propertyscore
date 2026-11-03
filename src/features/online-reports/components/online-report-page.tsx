@@ -18,6 +18,8 @@ import { oneOf } from '@/lib/utils';
 import { useChapterMapLayer } from '../hooks/use-chapter-map-layer';
 import { CategoryChapter } from './category-chapter';
 import { ChapterDetails } from './chapter-details';
+import { EducationDetails } from './education-details';
+import { HealthDetails } from './health-details';
 import { ChapterTabs } from './chapter-tabs';
 import { GreenChapter } from './green-chapter';
 import { NextChapterButton } from './next-chapter-button';
@@ -143,6 +145,28 @@ function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportPr
                     categories={categories}
                     cityName={result.city.name}
                     totalWeight={totalWeight}
+                    otherDetails={
+                      id === 'fifteen_minute'
+                        ? {
+                            education: result.education ? (
+                              <EducationDetails
+                                section={
+                                  result.education.status === 'scored'
+                                    ? result.education
+                                    : undefined
+                                }
+                              />
+                            ) : null,
+                            health: result.health ? (
+                              <HealthDetails
+                                section={
+                                  result.health.status === 'scored' ? result.health : undefined
+                                }
+                              />
+                            ) : null,
+                          }
+                        : undefined
+                    }
                     details={
                       id === 'green' && green ? (
                         <GreenChapter
