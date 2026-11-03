@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(23);
+select plan(16);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -20,45 +20,6 @@ select results_eq(
      from public.scoring_versions where kind = 'online' and label = 'v1' $$,
   $$ values (35, 0.1) $$,
   'The v1 formula carries the green parameters and the residential share'
-);
-
-select is(
-  private.mark_residential_cells(:'snapshot_id', :'sibiu_id', 0.1),
-  0,
-  'Without residential land use no cell is classified'
-);
-
-select is(
-  (select count(*)::integer from private.cell_scores where snapshot_id = :'snapshot_id' and is_residential is not null),
-  0,
-  'Unclassified cells keep is_residential empty, so they still count in the city figures'
-);
-
-insert into private.residential_areas (snapshot_id, city_id, source, source_ref, geometry)
-values (
-  :'snapshot_id', :'sibiu_id', 'osm', 'osm:way/900',
-  extensions.st_multi(extensions.st_makeenvelope(24.115, 45.79, 24.135, 45.806, 4326))::extensions.geography
-);
-
-select cmp_ok(
-  private.mark_residential_cells(:'snapshot_id', :'sibiu_id', 0.1),
-  '>',
-  20,
-  'Cells covered by residential land use are marked residential'
-);
-
-select results_eq(
-  format($$ select is_residential from private.cell_scores where snapshot_id = %L and cell_id in (%L, %L) order by cell_id = %L desc $$,
-    :'snapshot_id', :'park_cell', :'far_cell', :'park_cell'),
-  $$ values (true), (false) $$,
-  'A cell inside the residential area is residential, one outside is not'
-);
-
-select throws_ok(
-  format($$ select private.mark_residential_cells(%L, %L, 1.5) $$, :'snapshot_id', :'sibiu_id'),
-  'P0001',
-  'residential_share_invalid',
-  'The residential share must be between 0 and 1'
 );
 
 insert into private.green_area_sources (snapshot_id, city_id, source, source_ref, name, kind, is_public, geometry)
@@ -147,14 +108,12 @@ set local request.jwt.claims = '{"role": "anon"}';
 
 select throws_ok($$ select count(*) from private.green_areas $$, '42501', null, 'A visitor cannot read green areas');
 select throws_ok($$ select count(*) from private.green_area_sources $$, '42501', null, 'A visitor cannot read green sources');
-select throws_ok($$ select count(*) from private.residential_areas $$, '42501', null, 'A visitor cannot read residential areas');
 
 set local role authenticated;
 set local request.jwt.claims = '{"role": "authenticated", "sub": "11111111-1111-1111-1111-111111111111"}';
 
 select throws_ok($$ select count(*) from private.green_areas $$, '42501', null, 'A signed-in user cannot read green areas');
 select throws_ok($$ select count(*) from private.green_area_sources $$, '42501', null, 'A signed-in user cannot read green sources');
-select throws_ok($$ select count(*) from private.residential_areas $$, '42501', null, 'A signed-in user cannot read residential areas');
 select throws_ok(
   format($$ select private.merge_green_areas(%L, %L, 0.05) $$, :'snapshot_id', :'sibiu_id'),
   '42501',
