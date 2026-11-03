@@ -28,7 +28,7 @@ paths:
 | `src/lib/concurrency.ts` | `mapWithConcurrency`, the bounded parallel map for calls to outside services |
 | `src/scoring/accessibility/` | the transit score: GTFS and OpenStreetMap transit import, the reference weekday, the r5py job wrapper (`routing.ts`) and the formula |
 | `src/report/` | `generateReport` (the report job), `report.db.ts`, `report-section.ts` (the section contract) and `sections.ts` (the registry) |
-| `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `osmExtractDate`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`), GDAL rasters (`readRaster`, `sampleBilinear`, `sampleRasterAtPoints`) |
+| `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `osmExtractDate`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`), GDAL rasters (`readRaster`, `sampleBilinear`, `sampleRasterAtPoints`), CSV (`readCsvObjects`), ZIP members (`readZipMember`, through `unzip`) and XLSX sheets (`readXlsxRows`, first sheet as rows of strings; `streamXlsxRows`, the same rows streamed for large sheets) |
 
 ## Walking routing
 
@@ -84,6 +84,8 @@ Modules are idempotent: running a snapshot twice overwrites, never duplicates. B
 - `begin_online_report` does not check payment: it accepts `pending_payment` rows so `create-report` works before the order flow exists. The order flow must move a report out of `pending_payment` only after the payment is confirmed and only then queue `generate-report`.
 
 - A score that shows more than its number in the report adds a `ReportSection` (`key`, `build(context)`) in `src/scoring/<key>/<key>.report.ts`, returning a JSON object built from its own tables for the report's cell and snapshot (or `null` when there is nothing to show), and registers it with one line in `src/report/sections.ts`. The object lands in `result.<key>` and the frontend reads it from there.
+- Every section starts with `schema_version: 1` and `status: 'scored' | 'no_data'`. `readCellCategory` (`src/report/cell-category.ts`) returns the cell's score, `inputs.<key>` and city; `sectionParams(params, key)` picks `params.<key>` from the frozen formula. The context also carries `router` (the Valhalla client, `null` without `VALHALLA_URL`), so a section can route from the exact address.
+- Sections registered today: `safety` (day and night of the cell, the waterfall at the address from `scoreAtPoint`, the nearest police, fire station, non-stop, embassy and station), `accessibility` (components, the cell's stops with their lines, the busiest lines at peak and the trips to `key_destinations` from `cell_transit`), `fifteen_minute` (`buildFifteenMinuteReport`: categories, groups, places, isochrones), `green`, `noise` (`assessNoiseAtAddress` plus the display bands and map radius), `air` (the 12 monthly means, limits, verdict and city average from `cell_air`), `industry` (`buildIndustryReport`), `education` (levels and the nearest institutions with walking distance from the address) and `health` (the five layers with their nearest place).
 - Section output is frozen with the report: the frontend never queries the engine tables. Keep it small (the nearest features, a few measured values), never source geometries.
 - `create-report --email <user> --lat <lat> --lon <lon> --address <text> [--locale ro|en]` inserts a pending report for a local user; it stands in for the order flow and is for local testing only.
 
@@ -91,7 +93,7 @@ Modules are idempotent: running a snapshot twice overwrites, never duplicates. B
 
 | Score | Tables (`private`) | Sources | Notes |
 | --- | --- | --- | --- |
-| `green` | `green_area_sources` (each OSM polygon), `green_areas` (merged public green, `shape` in EPSG:3844 for metric work) | OSM `leisure=park/garden/nature_reserve`, `landuse=forest/grass/recreation_ground/village_green`, `natural=wood`; playgrounds, dog parks and pitches go to `poi_features` as amenities | `merge_green_areas` dissolves the public sources and drops pieces under `min_polygon_ha`; `measure_green_cells` gives the green share per radius and the distance to the nearest area of at least `small_min_ha` and `large_min_ha`. Urban Atlas and the canopy component (`c5`) are not imported yet. |
+| `green` | `green_area_sources` (each OSM polygon), `green_areas` (merged public green, `shape` in EPSG:3844 for metric work) | OSM `leisure=park/garden/nature_reserve`, `landuse=forest/grass/recreation_ground/village_green`, `natural=wood`; playgrounds, dog parks and pitches go to `poi_features` as amenities | `merge_green_areas` dissolves the public sources and drops pieces under `min_polygon_ha`; `measure_green_cells` gives the green share per radius and the distance to the nearest area of at least `small_min_ha` and `large_min_ha`. Urban Atlas and the canopy component (`c5`) are not imported yet. Report section `green.report.ts`: the cell's shares and components plus `private.describe_green_surroundings` (the nearest parks, named or at least `small_min_ha`, and the polygons clipped to `wide_radius_m`) in `result.green`. |
 
 ## Working on several scores in parallel
 

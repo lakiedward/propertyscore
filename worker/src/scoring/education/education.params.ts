@@ -33,6 +33,15 @@ export const educationParamsSchema = z.object({
   max_candidates: z.number().int().min(2).max(50),
   count_bands_min: z.array(z.number().positive()).min(1).max(5),
   require_official_register: z.boolean(),
+  register: z.object({
+    school_year: z.string().regex(/^\d{4}-\d{4}$/),
+    url: z.url(),
+    plan_url: z.url().nullable(),
+    cities: z.record(
+      z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/),
+      z.array(z.number().int().positive()).min(1),
+    ),
+  }),
   match: z.object({
     radius_m: z.number().positive().max(2000),
     min_similarity: z.number().min(0).max(1),

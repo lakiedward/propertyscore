@@ -1,5 +1,6 @@
 import type { JsonObject, Sql } from '../db/sql.ts';
 import type { Logger } from '../lib/logger.ts';
+import type { ValhallaClient } from '../routing/valhalla.ts';
 import type { CategoryKey } from '../scoring/categories.ts';
 
 type ReportSectionContext = {
@@ -11,6 +12,7 @@ type ReportSectionContext = {
   longitude: number;
   params: unknown;
   logger: Logger;
+  router?: ValhallaClient | null;
 };
 
 export type ReportSection = {

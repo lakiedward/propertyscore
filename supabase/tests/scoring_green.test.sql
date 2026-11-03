@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(20);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -103,6 +103,41 @@ select ok(
   'Every share is between 0 and 1'
 );
 
+create temporary table surroundings on commit drop as
+select private.describe_green_surroundings(
+  :'snapshot_id', extensions.st_point(24.1290, 45.7990, 4326)::extensions.geography, 1500, 5, 1000, 0.5
+) as described;
+
+select results_eq(
+  $$ select
+       jsonb_array_length(described -> 'parks'),
+       described #>> '{parks,0,name}',
+       (described #>> '{parks,0,distance_m}')::integer between 50 and 120,
+       described #> '{parks,0,amenities}',
+       described #>> '{parks,1,name}'
+     from surroundings $$,
+  $$ values (2, 'Parcul Sub Arini'::text, true, '["playground"]'::jsonb, 'Scuarul Cetății'::text) $$,
+  'The parks around an address come nearest first with their distance and amenities'
+);
+
+select results_eq(
+  $$ select
+       described #>> '{areas,type}',
+       jsonb_array_length(described #> '{areas,features}'),
+       bool_and(feature #>> '{geometry,type}' in ('Polygon', 'MultiPolygon'))
+     from surroundings, jsonb_array_elements(described #> '{areas,features}') as feature
+     group by described $$,
+  $$ values ('FeatureCollection'::text, 2, true) $$,
+  'The green polygons inside the map radius come back as GeoJSON for the map'
+);
+
+select throws_ok(
+  format($$ select private.describe_green_surroundings(%L, extensions.st_point(24.129, 45.799, 4326)::extensions.geography, 1500, 0, 1000, 0.5) $$, :'snapshot_id'),
+  'P0001',
+  'green_surroundings_invalid',
+  'The surroundings need a park limit between 1 and 20'
+);
+
 set local role anon;
 set local request.jwt.claims = '{"role": "anon"}';
 
@@ -119,6 +154,12 @@ select throws_ok(
   '42501',
   null,
   'A signed-in user cannot call the green functions'
+);
+select throws_ok(
+  format($$ select private.describe_green_surroundings(%L, extensions.st_point(24.129, 45.799, 4326)::extensions.geography, 1500, 5, 1000, 0.5) $$, :'snapshot_id'),
+  '42501',
+  null,
+  'A signed-in user cannot read the green surroundings of an address'
 );
 
 select * from finish();

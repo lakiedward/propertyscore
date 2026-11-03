@@ -39,12 +39,8 @@ import {
   type EducationParams,
   type ScoredLevel,
 } from './education.params.ts';
-import {
-  latestSourceDate,
-  readRegister,
-  registerPath,
-  type RegisterRow,
-} from './education.register.ts';
+import { loadRegister } from './education.register.ts';
+import type { RegisterRow } from './education.siiir.ts';
 
 type LevelCandidate = EducationCandidate & { level: ScoredLevel };
 
@@ -277,7 +273,20 @@ export const educationModule: ScoreModule = {
       context.sourcesDir,
       context.period,
     );
-    const register = (await readRegister(registerPath(context.sourcesDir))) ?? [];
+    const {
+      rows: register,
+      sourceDate,
+      skipped,
+      levelSources,
+    } = await loadRegister(context.sourcesDir, params.register);
+    context.logger.info('education register read', {
+      school_year: params.register.school_year,
+      source_date: sourceDate,
+      rows: register.length,
+      levels_from_plan: levelSources.plan,
+      levels_from_name: levelSources.name,
+      ...skipped,
+    });
 
     const stats: Record<string, JsonObject> = {};
     for (const city of context.cities) {
@@ -288,11 +297,11 @@ export const educationModule: ScoreModule = {
     }
     await writeEducationStats(context.sql, context.snapshotId, stats);
 
-    const sourceDates: Record<string, string> = {
-      osm: await osmExtractDate(extractPath, context.period),
+    return {
+      sourceDates: {
+        osm: await osmExtractDate(extractPath, context.period),
+        siiir: sourceDate,
+      },
     };
-    const siiirDate = latestSourceDate(register);
-    if (siiirDate) sourceDates.siiir = siiirDate;
-    return { sourceDates };
   },
 };

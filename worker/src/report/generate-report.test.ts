@@ -6,6 +6,7 @@ import { createLogger } from '../lib/logger.ts';
 import { generateReport } from './generate-report.ts';
 import { insertReport } from './report.db.ts';
 import type { ReportSection } from './report-section.ts';
+import { REPORT_SECTIONS } from './sections.ts';
 
 const silentLogger = createLogger('error', () => undefined);
 
@@ -114,6 +115,33 @@ describe.skipIf(!databaseUrl)('generateReport against the local database', () =>
       categories: { green: { score: 70, city_avg: 70, weight: 10 }, safety: { score: null } },
       green: { city: 'sibiu', latitude: PIATA_MARE.latitude },
     });
+  });
+
+  it('runs every registered section on cells without engine data', async () => {
+    const reportId = await insertReport(sql, {
+      ownerEmail: OWNER_EMAIL,
+      ...PIATA_MARE,
+      addressText: 'Piața Mare 3, Sibiu',
+      locale: 'ro',
+    });
+    await generateReport({ sql, reportId, sections: REPORT_SECTIONS, logger: silentLogger });
+
+    const [report] = await sql<{ status: string; result: Record<string, unknown> }[]>`
+      select status, result from public.online_reports where id = ${reportId}
+    `;
+    expect(report?.status).toBe('ready');
+    for (const key of [
+      'safety',
+      'accessibility',
+      'fifteen_minute',
+      'noise',
+      'air',
+      'industry',
+      'education',
+      'health',
+    ]) {
+      expect(report?.result[key]).toMatchObject({ schema_version: 1, status: 'no_data' });
+    }
   });
 
   it('marks the report failed with the code of the section that broke', async () => {

@@ -7,6 +7,7 @@ import { createLogger } from '../../lib/logger.ts';
 import { buildSnapshot } from '../../snapshot/build-snapshot.ts';
 import { hasOsmium, prepareSourcesDir } from '../../test/osm-fixture.ts';
 import { greenModule, scoreGreenCell } from './green.module.ts';
+import { greenReportSection } from './green.report.ts';
 
 const params = {
   radii_m: [300, 500, 1000],
@@ -148,6 +149,43 @@ describe.skipIf(!databaseUrl || !hasOsmium())('greenModule against the local dat
     expect(near?.share).toBeGreaterThan(0.1);
     expect(near?.score).toBeGreaterThan(60);
     expect(far?.score).toBe(0);
+  });
+
+  it('describes the parks and the green around an exact address for the report', async () => {
+    const address = { latitude: 45.799, longitude: 24.129 };
+    const [cell] = await sql<{ cell_id: string; params: unknown }[]>`
+      select cs.cell_id, v.params
+      from private.cell_scores cs
+      join private.grid_cells g on g.id = cs.cell_id
+      join public.score_snapshots s on s.id = cs.snapshot_id
+      join public.scoring_versions v on v.id = s.scoring_version_id
+      where cs.snapshot_id = ${snapshotId}
+      order by g.center operator(extensions.<->) extensions.st_point(${address.longitude}, ${address.latitude}, 4326)::extensions.geography
+      limit 1
+    `;
+
+    const section = await greenReportSection.build({
+      sql,
+      snapshotId,
+      cellId: cell?.cell_id ?? '',
+      citySlug: 'sibiu',
+      ...address,
+      params: cell?.params,
+      logger: createLogger('error', () => undefined),
+    });
+
+    expect(section).toMatchObject({
+      schema_version: 1,
+      status: 'scored',
+      near_radius_m: 500,
+      distance_method: 'straight_line',
+      parks: [{ name: 'Parcul Sub Arini', amenities: ['playground'] }, { name: 'Scuarul Cetății' }],
+      areas: { type: 'FeatureCollection' },
+    });
+    expect(section?.components).toHaveLength(5);
+    const [nearest] = (section?.parks ?? []) as { walk_m: number }[];
+    expect(nearest?.walk_m).toBeGreaterThan(50);
+    expect(nearest?.walk_m).toBeLessThan(200);
   });
 
   it('writes the city green figures and the OSM date', async () => {

@@ -6,9 +6,13 @@ import { createLogger, type Logger } from './lib/logger.ts';
 import { generateReport } from './report/generate-report.ts';
 import { insertReport } from './report/report.db.ts';
 import { REPORT_SECTIONS } from './report/sections.ts';
-import { createValhallaClient } from './routing/valhalla.ts';
+import { createValhallaClient, type ValhallaClient } from './routing/valhalla.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
 import { buildSnapshot } from './snapshot/build-snapshot.ts';
+
+function reportRouter(env: Env): ValhallaClient | null {
+  return env.VALHALLA_URL ? createValhallaClient(env.VALHALLA_URL) : null;
+}
 
 async function runCommand(
   command: WorkerCommand,
@@ -26,7 +30,7 @@ async function runCommand(
         scoreKeys: command.scoreKeys,
         sourcesDir: env.SOURCES_DIR,
         osmExtractUrl: env.OSM_EXTRACT_URL,
-        router: env.VALHALLA_URL ? createValhallaClient(env.VALHALLA_URL) : null,
+        router: reportRouter(env),
         logger,
       });
       logger.info('build-snapshot done', {
@@ -38,12 +42,24 @@ async function runCommand(
       return;
     }
     case 'generate-report':
-      await generateReport({ sql, reportId: command.reportId, sections: REPORT_SECTIONS, logger });
+      await generateReport({
+        sql,
+        reportId: command.reportId,
+        sections: REPORT_SECTIONS,
+        router: reportRouter(env),
+        logger,
+      });
       return;
     case 'create-report': {
       const reportId = await insertReport(sql, command);
       logger.info('report created', { report_id: reportId });
-      await generateReport({ sql, reportId, sections: REPORT_SECTIONS, logger });
+      await generateReport({
+        sql,
+        reportId,
+        sections: REPORT_SECTIONS,
+        router: reportRouter(env),
+        logger,
+      });
       return;
     }
   }

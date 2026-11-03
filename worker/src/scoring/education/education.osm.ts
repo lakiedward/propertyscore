@@ -2,7 +2,7 @@ import type { OsmFeature } from '../../sources/osm.ts';
 import { osmSourceRef } from '../../sources/osm.ts';
 import { normalizeName } from './education.names.ts';
 
-export const EDUCATION_LEVELS = [
+const EDUCATION_LEVELS = [
   'nursery',
   'kindergarten',
   'primary',

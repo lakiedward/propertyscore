@@ -39,6 +39,10 @@ export const CHAPTER_CATEGORIES: Readonly<Record<ScoreChapterId, readonly Catego
   industry: ['industry'],
 };
 
+export const DAY_MOMENTS = ['day', 'night'] as const;
+
+export type DayMoment = (typeof DAY_MOMENTS)[number];
+
 export type CategoryGroupId = 'mostImportant' | 'environment' | 'services';
 
 export const CATEGORY_GROUPS: readonly {
@@ -192,4 +196,15 @@ export function circleRing(center: LngLat, radiusM: number, steps = 72): LngLat[
     points.push([(pointLongitude * 180) / Math.PI, (pointLatitude * 180) / Math.PI]);
   }
   return points;
+}
+
+export function isDarkColour(hex: string): boolean {
+  const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  if (!match) return false;
+  const [red, green, blue] = match.slice(1).map((part) => {
+    const channel = Number.parseInt(part, 16) / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  const luminance = 0.2126 * (red ?? 0) + 0.7152 * (green ?? 0) + 0.0722 * (blue ?? 0);
+  return luminance < 0.179;
 }
