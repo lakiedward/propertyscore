@@ -238,7 +238,8 @@
     },
     "brandHome": "PropertyScore, site-ul public",
     "userMenu": {
-      "open": "Meniul contului",
+      "openAccount": "Contul meu",
+      "openAdmin": "Panou admin",
       "profile": "Profil",
       "settings": "Setări",
       "signOut": "Ieși din cont",

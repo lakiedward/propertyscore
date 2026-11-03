@@ -12,18 +12,22 @@ import { cn } from '@/lib/utils';
 import { SiteMenu } from './site-menu';
 import { HOME_SECTION } from './site-navigation';
 
+export type SiteHeaderAccount = {
+  path: '/account' | '/admin';
+  menu: ReactNode;
+};
+
 type SiteHeaderProps = {
-  isSignedIn: boolean;
+  account?: SiteHeaderAccount | undefined;
   menuLanguageSwitcher: ReactNode;
 };
 
-export function SiteHeader({ isSignedIn, menuLanguageSwitcher }: SiteHeaderProps) {
+export function SiteHeader({ account, menuLanguageSwitcher }: SiteHeaderProps) {
   const { t } = useTranslation();
   const headerRef = useRef<HTMLElement>(null);
   const sectionNav = useSectionNav();
   const activeSection = useActiveSection(sectionNav.links.map((link) => link.id));
   useScrollProgress(headerRef);
-  const accountLabel = t(isSignedIn ? 'site.header.account' : 'site.header.signIn');
 
   return (
     <header
@@ -35,7 +39,7 @@ export function SiteHeader({ isSignedIn, menuLanguageSwitcher }: SiteHeaderProps
         className="pointer-events-none absolute inset-x-0 -bottom-px h-0.5 origin-left scale-x-[var(--page-progress,0)] bg-primary"
       />
       <div className="flex min-h-header flex-wrap items-center gap-x-6.5 gap-y-3 px-5 py-2 w820:py-0">
-        <SiteMenu isSignedIn={isSignedIn} languageSwitcher={menuLanguageSwitcher} />
+        <SiteMenu accountPath={account?.path} languageSwitcher={menuLanguageSwitcher} />
         <Link
           to="/"
           hash={HOME_SECTION.main}
@@ -66,14 +70,18 @@ export function SiteHeader({ isSignedIn, menuLanguageSwitcher }: SiteHeaderProps
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-1.5">
-          <Link
-            to={isSignedIn ? '/account' : '/login'}
-            aria-label={accountLabel}
-            className="touch-target inline-flex min-h-10 items-center gap-1.5 rounded-md px-2 text-small font-action whitespace-nowrap text-brand transition-colors duration-(--duration-fast) hover:bg-surface-alt focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none w1180:px-3"
-          >
-            <UserRoundIcon aria-hidden className="size-5.5 w1180:size-4" />
-            <span className="sr-only w1180:not-sr-only">{accountLabel}</span>
-          </Link>
+          {account ? (
+            account.menu
+          ) : (
+            <Link
+              to="/login"
+              aria-label={t('site.header.signIn')}
+              className="touch-target inline-flex min-h-10 items-center gap-1.5 rounded-md px-2 text-small font-action whitespace-nowrap text-brand transition-colors duration-(--duration-fast) hover:bg-surface-alt focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none w1180:px-3"
+            >
+              <UserRoundIcon aria-hidden className="size-5.5 w1180:size-4" />
+              <span className="sr-only w1180:not-sr-only">{t('site.header.signIn')}</span>
+            </Link>
+          )}
           <Button
             asChild
             variant="outline"

@@ -33,6 +33,26 @@ describe('UserMenu', { timeout: 20_000 }, () => {
     );
   });
 
+  it('opens the panel for the role from the public site', async () => {
+    const { user } = await renderWithProviders(
+      auth.user ? <UserMenu user={auth.user} tone="light" panelPath="/admin" isNameHidden /> : null,
+      { auth },
+    );
+
+    await user.click(await screen.findByRole('button', { name: /Ana Mărginean/u }));
+
+    expect(screen.getByRole('menuitem', { name: MENU.openAdmin })).toHaveAttribute(
+      'href',
+      '/admin',
+    );
+  });
+
+  it('has no panel link inside the panels', async () => {
+    await openMenu();
+
+    expect(screen.queryByRole('menuitem', { name: MENU.openAccount })).not.toBeInTheDocument();
+  });
+
   it('falls back to the email while the profile has no name', async () => {
     server.use(
       http.get(supabaseUrl('/rest/v1/profiles'), () =>

@@ -236,7 +236,8 @@
     },
     "brandHome": "PropertyScore, public site",
     "userMenu": {
-      "open": "Account menu",
+      "openAccount": "My account",
+      "openAdmin": "Admin panel",
       "profile": "Profile",
       "settings": "Settings",
       "signOut": "Sign out",

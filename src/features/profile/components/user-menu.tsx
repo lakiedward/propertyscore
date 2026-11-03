@@ -2,8 +2,16 @@ import type { User } from '@supabase/supabase-js';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { cva } from 'class-variance-authority';
-import { ChevronDownIcon, LanguagesIcon, LogOutIcon, SettingsIcon, UserIcon } from 'lucide-react';
+import {
+  ChevronDownIcon,
+  LanguagesIcon,
+  LayoutDashboardIcon,
+  LogOutIcon,
+  SettingsIcon,
+  UserIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,9 +56,11 @@ type UserMenuProps = {
   user: User;
   tone: 'light' | 'inverse';
   appRole?: AppRole;
+  panelPath?: '/account' | '/admin';
+  isNameHidden?: boolean;
 };
 
-export function UserMenu({ user, tone, appRole }: UserMenuProps) {
+export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false }: UserMenuProps) {
   const { t } = useTranslation();
   const { data: profile } = useQuery(profileQueries.detail(user.id));
   const signOut = useSignOut();
@@ -67,7 +77,12 @@ export function UserMenu({ user, tone, appRole }: UserMenuProps) {
           <span aria-hidden="true" className={avatarVariants({ tone })}>
             {initialsOf(name)}
           </span>
-          <span className="flex flex-col items-start leading-tight max-md:sr-only">
+          <span
+            className={cn(
+              'flex flex-col items-start leading-tight',
+              isNameHidden ? 'sr-only' : 'max-md:sr-only',
+            )}
+          >
             <span>{name}</span>
             {appRole ? (
               <span className="text-nav-sm font-extrabold tracking-[0.08em] text-brand uppercase">
@@ -83,6 +98,16 @@ export function UserMenu({ user, tone, appRole }: UserMenuProps) {
           <strong className="text-body-sm font-bold text-foreground">{name}</strong>
           <span className="text-meta text-muted-foreground">{email}</span>
         </DropdownMenuLabel>
+        {panelPath ? (
+          <DropdownMenuItem asChild className={ITEM_CLASS}>
+            <Link to={panelPath}>
+              <LayoutDashboardIcon aria-hidden />
+              {panelPath === '/admin'
+                ? t('panel.userMenu.openAdmin')
+                : t('panel.userMenu.openAccount')}
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem asChild className={ITEM_CLASS}>
           <Link to="/account/settings">
             <UserIcon aria-hidden />
