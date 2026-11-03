@@ -100,6 +100,7 @@ describe.skipIf(!databaseUrl)('air module against the local database', () => {
       scoreKeys: [],
       sourcesDir: '/tmp/propertyscore-sources',
       osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      router: null,
       logger: silentLogger,
     });
     snapshotId = result.snapshotId;
