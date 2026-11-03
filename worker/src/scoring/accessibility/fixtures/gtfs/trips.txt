@@ -1,0 +1,9 @@
+route_id,service_id,trip_id,trip_headsign,direction_id,shape_id
+T1,WK,t1-0700,Calea Aradului,0,S1
+T1,WK,t1-0740,Calea Aradului,0,S1
+T1,WK,t1-0800,Calea Aradului,0,S1
+T1,WK,t1-0820,Calea Aradului,0,S1
+T1,WK,t1-back,Gara de Nord,1,
+T1,WE,t1-weekend,Calea Aradului,0,S1
+TB15,WK,tb15-freq,Calea Aradului,0,
+R1,WK,r1,Arad,0,

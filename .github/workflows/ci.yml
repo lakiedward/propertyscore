@@ -50,7 +50,9 @@ jobs:
       - run: pnpm db:lint
       - run: pnpm db:test
       - name: Install osmium and GDAL for the worker tests
-        run: sudo apt-get update && sudo apt-get install --yes osmium-tool gdal-bin
+        run: sudo apt-get update && sudo apt-get install --yes osmium-tool unzip gdal-bin
+      - name: Transit routing helpers
+        run: python3 -m unittest discover --start-directory worker/transit
       - name: Worker tests against the local database
         run: pnpm test:worker
         env:
