@@ -1,4 +1,6 @@
+import { airModule } from './air/air.module.ts';
 import { accessibilityModule } from './accessibility/accessibility.module.ts';
+import { educationModule } from './education/education.module.ts';
 import { fifteenMinuteModule } from './fifteen-minute/fifteen-minute.module.ts';
 import { healthModule } from './health/health.module.ts';
 import { industryModule } from './industry/industry.module.ts';
@@ -11,6 +13,8 @@ export const SCORE_MODULES: readonly ScoreModule[] = [
   accessibilityModule,
   fifteenMinuteModule,
   noiseModule,
+  airModule,
   industryModule,
+  educationModule,
   healthModule,
 ];
