@@ -1,7 +1,7 @@
 FROM node:24-bookworm-slim
 
 RUN apt-get update \
-  && apt-get install --yes --no-install-recommends ca-certificates osmium-tool \
+  && apt-get install --yes --no-install-recommends ca-certificates osmium-tool unzip \
   && rm -rf /var/lib/apt/lists/* \
   && npm install --global pnpm@12.10.1
 
