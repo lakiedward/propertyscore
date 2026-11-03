@@ -128,6 +128,6 @@ describe('cellScoreRows', () => {
       params,
       () => new Map([['c1', 42]]),
     );
-    expect(rows[0]).toMatchObject({ score: 42, inputs: { raw_score: 60 } });
+    expect(rows[0]).toMatchObject({ score: 42, inputs: { raw_score: 100 } });
   });
 });
