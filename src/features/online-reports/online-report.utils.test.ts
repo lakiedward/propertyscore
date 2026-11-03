@@ -5,6 +5,7 @@ import {
   chapterOfCategory,
   circleRing,
   histogramBin,
+  isDarkColour,
   nextChapter,
   reportCode,
   reportHighlights,
@@ -150,5 +151,13 @@ describe('reportShareUrl', () => {
 describe('shareExpiryDays', () => {
   it('gives no expiry for a permanent link and the number of days otherwise', () => {
     expect(SHARE_EXPIRIES.map(shareExpiryDays)).toEqual([null, 30, 7]);
+  });
+});
+
+describe('isDarkColour', () => {
+  it('tells dark route colours from light ones', () => {
+    expect(isDarkColour('#C0392B')).toBe(true);
+    expect(isDarkColour('#F6C93E')).toBe(false);
+    expect(isDarkColour('red')).toBe(false);
   });
 });

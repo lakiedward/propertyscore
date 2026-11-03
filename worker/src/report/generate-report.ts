@@ -1,6 +1,7 @@
 import type { JsonObject, Sql } from '../db/sql.ts';
 import { errorCode } from '../lib/errors.ts';
 import type { Logger } from '../lib/logger.ts';
+import type { ValhallaClient } from '../routing/valhalla.ts';
 import { beginReport, completeReport, failReport } from './report.db.ts';
 import type { ReportSection } from './report-section.ts';
 
@@ -11,6 +12,7 @@ export type GenerateReportOptions = {
   reportId: string;
   sections: readonly ReportSection[];
   logger: Logger;
+  router?: ValhallaClient | null;
 };
 
 export async function generateReport(options: GenerateReportOptions): Promise<void> {
@@ -19,7 +21,12 @@ export async function generateReport(options: GenerateReportOptions): Promise<vo
     const started = await beginReport(sql, reportId);
     const built: JsonObject = {};
     for (const section of options.sections) {
-      const payload = await section.build({ ...started, sql, logger });
+      const payload = await section.build({
+        ...started,
+        sql,
+        logger,
+        router: options.router ?? null,
+      });
       if (payload !== null) built[section.key] = payload;
     }
     await completeReport(sql, reportId, started, built);

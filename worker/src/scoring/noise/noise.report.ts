@@ -8,7 +8,9 @@ import {
   type NearestNoiseSource,
 } from './noise.db.ts';
 import { assessPoint, type NoisePrecision, type PointNoise } from './noise.formula.ts';
-import type { NoiseParams } from './noise.params.ts';
+import { parseNoiseParams, type NoiseParams } from './noise.params.ts';
+import { readCellCategory, sectionParams } from '../../report/cell-category.ts';
+import type { ReportSection } from '../../report/report-section.ts';
 
 type NoiseReportMethod = 'strategic_map' | 'osm_proxy' | 'mixed';
 
@@ -128,3 +130,25 @@ export async function assessNoiseAtAddress(
   const map = await noiseMapLayers(sql, snapshotId, cityId, location, params.map_clip_m);
   return buildNoiseReportBlock(point, coverage, sources, map, params);
 }
+
+export const noiseReportSection: ReportSection = {
+  key: 'noise',
+  build: async ({ sql, snapshotId, cellId, latitude, longitude, params }) => {
+    const noiseParams = parseNoiseParams(sectionParams(params, 'noise'));
+    const cell = await readCellCategory(sql, snapshotId, cellId, 'noise');
+    if (!cell) return null;
+    const block = await assessNoiseAtAddress(
+      sql,
+      { snapshotId, cityId: cell.cityId, location: { lon: longitude, lat: latitude } },
+      noiseParams,
+    );
+    const section: JsonObject = {
+      schema_version: 1,
+      status: block.score === null ? 'no_data' : 'scored',
+      ...block,
+      bands_db: noiseParams.display_bands_db,
+      map_radius_m: noiseParams.map_clip_m,
+    };
+    return section;
+  },
+};

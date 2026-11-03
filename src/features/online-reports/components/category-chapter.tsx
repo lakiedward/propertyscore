@@ -17,6 +17,7 @@ type CategoryChapterProps = {
   cityName: string;
   totalWeight: number;
   details?: ReactNode;
+  otherDetails?: Partial<Record<CategoryKey, ReactNode>>;
 };
 
 export function CategoryChapter({
@@ -25,6 +26,7 @@ export function CategoryChapter({
   cityName,
   totalWeight,
   details,
+  otherDetails,
 }: CategoryChapterProps) {
   const { t } = useTranslation('onlineReports');
   const [main, ...others] = CHAPTER_CATEGORIES[chapter];
@@ -55,6 +57,7 @@ export function CategoryChapter({
                 totalWeight={totalWeight}
                 headingLevel="h4"
               />
+              {otherDetails?.[key] ? <div className="pt-4">{otherDetails[key]}</div> : null}
             </div>
           ))}
         </section>

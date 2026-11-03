@@ -256,5 +256,375 @@
   "pdf": {
     "download": "Download PDF",
     "hint": "In the print window choose \"Save as PDF\"."
+  },
+  "chapterLimits": {
+    "title": "What the report cannot know"
+  },
+  "noise": {
+    "decibels": "{{value}} dB",
+    "noData": "The city has no digital noise maps yet and no sources to estimate them from here. The noise score does not count in the zone score.",
+    "facts": {
+      "lden": "24-hour average at the address (Lden)",
+      "lnight": "At night at the address (Lnight)",
+      "nearest": "To the nearest source: {{source}}",
+      "nearestNone": "No major noise source nearby"
+    },
+    "level": {
+      "title": "About {{level}} at the address",
+      "leadStreet": "The value comes from the city's strategic noise maps, at the address point.",
+      "leadEstimate": "The value is an estimate from OpenStreetMap, calibrated on the official maps of other cities."
+    },
+    "scale": {
+      "label": "Level at the address, {{level}}, against the WHO guideline for traffic, {{guideline}}",
+      "guideline": "WHO: {{value}}"
+    },
+    "sources": {
+      "title": "Noise sources nearby",
+      "lead": "The major roads, tram, railway and airport closest to the address.",
+      "none": "We found no major noise sources nearby.",
+      "band": "{{low}}–{{high}} dB"
+    },
+    "kind": {
+      "road": "Road",
+      "tram": "Tram",
+      "rail": "Railway",
+      "air": "Airport",
+      "industry": "Industry",
+      "aggregate": "Several sources"
+    },
+    "map": {
+      "note": "The coloured areas are the noise bands (darker means louder); the lines are the sources. The day / night switch changes the bands."
+    },
+    "limits": {
+      "windows": "The level inside the flat depends on the windows, the floor and which way the rooms face.",
+      "maps": "Noise maps are redone every five years: a building site or a new road may be missing.",
+      "estimate": "Part of the value is estimated from the type of road, not measured."
+    }
+  },
+  "air": {
+    "micrograms": "{{value}} µg/m³",
+    "noData": "We have no air quality data for this area over the last 12 months. The air score does not count in the zone score.",
+    "facts": {
+      "annual": "PM2.5, 12-month average",
+      "highest": "Worst month: {{month}}",
+      "highestNone": "Worst month",
+      "lowest": "Cleanest month: {{month}}",
+      "lowestNone": "Cleanest month"
+    },
+    "verdict": {
+      "clean_all_year": "Clean air all year",
+      "winter_peaks": "Good air in summer, worse in winter",
+      "above_limit_most_year": "Above the 2030 EU limit for most of the year",
+      "moderate": "Moderate air, with a few worse months"
+    },
+    "months": {
+      "title": "Fine particles (PM2.5) month by month",
+      "lead_one": "{{count}} month out of 12 above the 2030 EU limit ({{limit}}).",
+      "lead_other": "{{count}} months out of 12 above the 2030 EU limit ({{limit}}).",
+      "chartLabel": "PM2.5 in each month",
+      "bar": "{{month}}: {{value}}",
+      "noValue": "no data",
+      "limitLegend": "Dashed line: 2030 EU limit, {{limit}}"
+    },
+    "compare": {
+      "title": "The address against the city",
+      "address": "PM2.5 at the address",
+      "city": "PM2.5, city average",
+      "no2": "NO₂ at the address",
+      "noNo2": "no data",
+      "precision": "Precision"
+    },
+    "precision": {
+      "eea_1km": "~1 km",
+      "cams_10km": "~10 km"
+    },
+    "limits": {
+      "indoor": "We do not measure the air inside the flat, smoke from stoves or smells.",
+      "notMeasured": "The values come from European models corrected with the city's stations, not from a measurement at the address.",
+      "uncalibrated": "The city had no valid stations for this period, so the values come from the model, uncorrected."
+    }
+  },
+  "industry": {
+    "noData": "We do not have the register of industrial sites for this period yet. The score does not count in the zone score.",
+    "facts": {
+      "nearest": "Nearest reported site",
+      "inRadius": "Sites within {{radius}}",
+      "near": "Sites within {{radius}}"
+    },
+    "verdict": {
+      "noneInRadius": "No reported industrial site within {{radius}}",
+      "noneNear": "No industrial site within {{near}}",
+      "oneNear": "One industrial site at {{distance}}",
+      "manyNear": "Several industrial sites within {{near}}"
+    },
+    "sites": {
+      "lead": "The sites that report emissions to the European register, nearest first.",
+      "none": "No reported site within {{radius}}.",
+      "pointsLost_one": "−{{count}} point from the score",
+      "pointsLost_other": "−{{count}} points from the score",
+      "noPoints": "Does not lower the score"
+    },
+    "sector": {
+      "energy": "Energy",
+      "metals": "Metals",
+      "minerals": "Building materials",
+      "chemicals": "Chemicals",
+      "waste_water": "Waste and waste water",
+      "paper_wood": "Paper and wood",
+      "livestock": "Livestock farms",
+      "food": "Food industry",
+      "other": "Other activity"
+    },
+    "impact": {
+      "air": "Air emissions",
+      "water": "Water emissions",
+      "odour": "May cause smells",
+      "seasonal_winter": "More active in winter"
+    },
+    "map": {
+      "site": "Show in the list: {{name}}",
+      "note": "The numbers on the map are the sites in the list; tap one to find it in the list."
+    },
+    "limits": {
+      "register": "The register covers only large sites reported to the EU, not small workshops or warehouses.",
+      "smell": "We do not measure their smell, noise or lorry traffic.",
+      "year": "The emission data is from {{year}}."
+    }
+  },
+  "fifteenMinute": {
+    "noData": "We do not have enough data about the services around the address. The score does not count in the zone score.",
+    "walk_one": "{{count}} minute",
+    "walk_other": "{{count}} minutes",
+    "walkApproximate_one": "~{{count}} minute",
+    "walkApproximate_other": "~{{count}} minutes",
+    "notInReach": "over 15 minutes",
+    "facts": {
+      "coveredValue": "{{covered}} of {{total}}",
+      "covered": "Daily services within a 15-minute walk",
+      "places": "Places within a 15-minute walk",
+      "missing": "Services more than 15 minutes away"
+    },
+    "groups": {
+      "title": "{{covered}} of {{total}} daily services within a 15-minute walk",
+      "lead": "Walking time to the nearest place in each category."
+    },
+    "group": {
+      "shops": "Shopping",
+      "food_drink": "Food and coffee",
+      "services": "Services",
+      "pharmacies": "Pharmacies",
+      "medical": "Doctors",
+      "schools": "Schools",
+      "parks": "Parks",
+      "sport": "Sport",
+      "culture": "Culture",
+      "other": "Other"
+    },
+    "category": {
+      "supermarket": "Supermarket",
+      "convenience": "Corner shop",
+      "bakery": "Bakery",
+      "greengrocer_market": "Market or greengrocer",
+      "butcher": "Butcher",
+      "drugstore": "Drugstore",
+      "restaurant": "Restaurant",
+      "cafe": "Café",
+      "bank_atm": "Bank or cash machine",
+      "post": "Post office or parcel locker",
+      "hairdresser": "Hairdresser",
+      "laundry": "Dry cleaner",
+      "car_service": "Car repair",
+      "public_office": "Public office",
+      "pharmacy": "Pharmacy",
+      "doctor": "Family doctor",
+      "dentist": "Dentist",
+      "clinic": "Clinic",
+      "veterinary": "Vet",
+      "kindergarten": "Kindergarten",
+      "school": "School",
+      "high_school": "High school",
+      "park": "Park",
+      "playground": "Playground",
+      "fitness": "Gym",
+      "sports_ground": "Sports ground",
+      "swimming_pool": "Swimming pool",
+      "library": "Library",
+      "cinema_theatre": "Cinema or theatre",
+      "place_of_worship": "Place of worship",
+      "other": "Other service"
+    },
+    "nearest": {
+      "title": "Nearest, by group",
+      "lead": "The nearest place in each group; tap one to see it on the map."
+    },
+    "map": {
+      "place": "Show in the list: {{name}}",
+      "note": "The coloured areas show where you can walk in 5, 10 and 15 minutes; the numbers are the places in the list."
+    },
+    "limits": {
+      "osm": "Places come from OpenStreetMap: a new shop or one that closed recently may be missing.",
+      "hours": "We do not check each place's opening hours.",
+      "approximate": "Times are estimated from the straight line until we have street routes."
+    }
+  },
+  "education": {
+    "noData": "We do not have enough data about the schools around the address.",
+    "levels": {
+      "label": "Nearest, by level"
+    },
+    "level": {
+      "kindergarten": "Kindergarten",
+      "school": "School",
+      "high_school": "High school"
+    },
+    "notInReach": "None nearby",
+    "walk_one": "{{count}} minute walk",
+    "walk_other": "{{count}} minute walk",
+    "institutions": {
+      "label": "Nearest schools",
+      "unnamed": "Unnamed school",
+      "distance": "~{{distance}} walk"
+    },
+    "ownership": {
+      "public": "State",
+      "private": "Private",
+      "unknown": "Unknown type"
+    },
+    "note": "We do not rate school quality, only how close they are. Check the school catchment with the school."
+  },
+  "health": {
+    "noData": "We do not have enough data about the medical services around the address.",
+    "layers": {
+      "label": "Nearest medical services"
+    },
+    "layer": {
+      "h1": "Pharmacy",
+      "h2": "Family doctor",
+      "h3": "Clinic",
+      "h4": "Hospital with A&E",
+      "h5": "24-hour pharmacy"
+    },
+    "noLayerData": "No data in this city",
+    "notInReach": "Far",
+    "walk_one": "{{count}} minute walk",
+    "walk_other": "{{count}} minute walk",
+    "drive_one": "{{count}} minute drive",
+    "drive_other": "{{count}} minute drive"
+  },
+  "moment": {
+    "label": "Day or night",
+    "day": "Day",
+    "night": "Night"
+  },
+  "safety": {
+    "noData": "We do not have enough data for the safety score in this area. The score does not count in the zone score.",
+    "facts": {
+      "day": "Zone score by day",
+      "night": "Zone score at night",
+      "police": "To the nearest police station"
+    },
+    "moment": {
+      "day": "Day · {{score}}",
+      "night": "Night · {{score}}"
+    },
+    "why": {
+      "title": "Why the address scores {{score}}",
+      "lead": "We start from {{start}} points and add what is around the address. Pick the time of day to see the difference.",
+      "raising": "What raises the score",
+      "lowering": "What lowers the score",
+      "none": "Nothing notable."
+    },
+    "row": {
+      "lighting": "Street lighting",
+      "shop": "Shops",
+      "nonstop": "24-hour shops",
+      "mixed_use": "Buildings with shops",
+      "police": "Police",
+      "fire_station": "Fire station",
+      "diplomatic": "Embassies and consulates",
+      "bar": "Bars and clubs",
+      "park": "Parks",
+      "park_lit": "Lit parks",
+      "isolated_passage": "Underpasses and isolated spots",
+      "train_station": "Railway station",
+      "train_halt": "Railway halt",
+      "transit_stop": "Transit stops",
+      "start": "Starting point",
+      "night_offset": "At night, in general",
+      "far_types": "Other elements, too far to matter much",
+      "limit": "The 0–100 scale limit"
+    },
+    "landmarks": {
+      "title": "Landmarks nearby",
+      "lead": "The nearest landmark of each kind; tap one to see it on the map."
+    },
+    "map": {
+      "landmark": "Show in the list: {{name}}",
+      "note": "The numbers on the map are the landmarks in the list."
+    },
+    "limits": {
+      "proxy": "This is an indicator of proximity and perception, not crime statistics: there is no reliable public street-level data.",
+      "osm": "Street lamps and opening hours come from OpenStreetMap and may be incomplete."
+    }
+  },
+  "accessibility": {
+    "noData": "We have no public transport data for this area. The score does not count in the zone score.",
+    "minutes_one": "{{count}} minute",
+    "minutes_other": "{{count}} minutes",
+    "facts": {
+      "stops": "Stops a few minutes' walk away",
+      "routes": "Lines through them",
+      "average": "On average to the key places"
+    },
+    "destinations": {
+      "title": "How you get to the city's key places",
+      "lead": "Total door-to-door time on a weekday morning.",
+      "unreachable": "No direct link",
+      "walking": "Walking is faster",
+      "route": "{{mode}} {{ref}}",
+      "noRoute": "No direct line",
+      "transfers_one": "{{count}} change",
+      "transfers_other": "{{count}} changes",
+      "note": "Total time = walk + average wait + ride + walk."
+    },
+    "stops": {
+      "title": "Stops nearby",
+      "lead": "The lines that stop there and how long the walk to each stop is.",
+      "none": "No stop within walking distance.",
+      "unnamed": "Unnamed stop"
+    },
+    "routes": {
+      "title": "Lines that pass here",
+      "peak_one": "{{count}} time an hour at peak",
+      "peak_other": "{{count}} times an hour at peak"
+    },
+    "mode": {
+      "bus": "Bus",
+      "trolleybus": "Trolleybus",
+      "tram": "Tram",
+      "subway": "Metro"
+    },
+    "map": {
+      "destination": "Show in the list: {{name}}",
+      "note": "The numbers on the map are the key places in the list."
+    },
+    "limits": {
+      "schedule": "We use the official timetables; delays and roadworks do not show.",
+      "peak": "Times are for a weekday morning; evenings and weekends can be longer.",
+      "partial": "The city publishes no official timetable, so we use only the stops and lines from OpenStreetMap (partial data)."
+    }
+  },
+  "context": {
+    "title": "Context, not scored",
+    "lead": "Two things we show as information, not in the zone score.",
+    "seismic": {
+      "title": "Seismic risk",
+      "text": "Coming soon: the building's risk class and the city's seismic zone."
+    },
+    "investment": {
+      "title": "Investment",
+      "text": "Coming soon: prices in the area and how they changed."
+    },
+    "soon": "Coming soon"
   }
 }

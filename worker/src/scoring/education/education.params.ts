@@ -36,6 +36,7 @@ export const educationParamsSchema = z.object({
   register: z.object({
     school_year: z.string().regex(/^\d{4}-\d{4}$/),
     url: z.url(),
+    plan_url: z.url().nullable(),
     cities: z.record(
       z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/),
       z.array(z.number().int().positive()).min(1),

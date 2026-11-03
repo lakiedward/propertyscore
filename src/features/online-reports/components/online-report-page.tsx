@@ -11,11 +11,17 @@ import {
   reportCode,
   scoredCategories,
   type ChapterId,
+  type DayMoment,
 } from '../online-report.utils';
 import type { OnlineReport, ReportResult } from '../online-report.types';
 import { usePrintMode } from '@/hooks/use-print-mode';
+import type { LngLat } from '@/components/map/map.config';
 import { oneOf } from '@/lib/utils';
+import { useChapterMapLayer } from '../hooks/use-chapter-map-layer';
 import { CategoryChapter } from './category-chapter';
+import { ChapterDetails } from './chapter-details';
+import { EducationDetails } from './education-details';
+import { HealthDetails } from './health-details';
 import { ChapterTabs } from './chapter-tabs';
 import { GreenChapter } from './green-chapter';
 import { NextChapterButton } from './next-chapter-button';
@@ -86,6 +92,26 @@ function ReadyReport({ report, result, isShared, chapter, onChapterChange }: Rea
   const selectPark = (parkId: string) => {
     setSelectedParkId((current) => (current === parkId ? null : parkId));
   };
+  const [selection, setSelection] = useState<{ chapter: ChapterId; id: string } | null>(null);
+  const selectedId = selection?.chapter === chapter ? selection.id : null;
+  const selectPlace = (id: string) => {
+    setSelection((current) =>
+      current?.chapter === chapter && current.id === id ? null : { chapter, id },
+    );
+  };
+  const [moment, setMoment] = useState<DayMoment>('day');
+  const position: LngLat | null =
+    report.longitude !== null && report.latitude !== null
+      ? [report.longitude, report.latitude]
+      : null;
+  const chapterLayer = useChapterMapLayer({
+    chapter,
+    result,
+    position,
+    selectedId,
+    onSelect: selectPlace,
+    isNight: moment === 'night',
+  });
   const following = nextChapter(chapter);
   const totalWeight = CATEGORY_KEYS.reduce(
     (sum, key) => sum + (result.formula.weights[key] ?? 0),
@@ -104,6 +130,22 @@ function ReadyReport({ report, result, isShared, chapter, onChapterChange }: Rea
         categories={categories}
         cityName={result.city.name}
         totalWeight={totalWeight}
+        otherDetails={
+          id === 'fifteen_minute'
+            ? {
+                education: result.education ? (
+                  <EducationDetails
+                    section={result.education.status === 'scored' ? result.education : undefined}
+                  />
+                ) : null,
+                health: result.health ? (
+                  <HealthDetails
+                    section={result.health.status === 'scored' ? result.health : undefined}
+                  />
+                ) : null,
+              }
+            : undefined
+        }
         details={
           id === 'green' && green ? (
             <GreenChapter
@@ -113,7 +155,16 @@ function ReadyReport({ report, result, isShared, chapter, onChapterChange }: Rea
               selectedParkId={selectedParkId}
               onSelectPark={selectPark}
             />
-          ) : undefined
+          ) : (
+            <ChapterDetails
+              chapter={id}
+              result={result}
+              selectedId={id === chapter ? selectedId : null}
+              onSelect={selectPlace}
+              moment={moment}
+              onMomentChange={setMoment}
+            />
+          )
         }
       />
     ) : (
@@ -175,10 +226,11 @@ function ReadyReport({ report, result, isShared, chapter, onChapterChange }: Rea
                   </TabsContent>
                 ))}
           </div>
-          {report.longitude !== null && report.latitude !== null ? (
+          {position ? (
             <div className="order-1 lg:sticky lg:top-32 lg:order-2">
               <ReportMap
-                position={[report.longitude, report.latitude]}
+                position={position}
+                layer={chapterLayer}
                 green={
                   isGreenChapter
                     ? {
