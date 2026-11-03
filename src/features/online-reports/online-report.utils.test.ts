@@ -5,6 +5,7 @@ import {
   chapterOfCategory,
   circleRing,
   histogramBin,
+  isCityUniform,
   isDarkColour,
   nextChapter,
   reportCode,
@@ -159,5 +160,17 @@ describe('isDarkColour', () => {
     expect(isDarkColour('#C0392B')).toBe(true);
     expect(isDarkColour('#F6C93E')).toBe(false);
     expect(isDarkColour('red')).toBe(false);
+  });
+});
+
+describe('isCityUniform', () => {
+  it('treats a city whose scores differ by less than 5 points as uniform', () => {
+    expect(isCityUniform({ city_min: 70, city_max: 74 })).toBe(true);
+    expect(isCityUniform({ city_min: 70, city_max: 75 })).toBe(false);
+  });
+
+  it('keeps the percentile when the frozen report has no city range', () => {
+    expect(isCityUniform({})).toBe(false);
+    expect(isCityUniform({ city_min: null, city_max: 74 })).toBe(false);
   });
 });

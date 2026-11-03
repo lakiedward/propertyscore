@@ -4,6 +4,7 @@ import { formatNumber, formatPercent } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import {
   CHAPTER_CATEGORIES,
+  isCityUniform,
   type CategoryKey,
   type CategorySummary,
   type ScoreChapterId,
@@ -98,10 +99,12 @@ function CategoryDetail({
         <Heading className={cn('text-balance', Heading === 'h2' ? 'text-h2' : 'text-h4')}>
           {score === null || percentile === null
             ? t('categoryChapter.titleMissing')
-            : t('categoryChapter.title', {
-                percent: formatPercent(percentile / 100),
-                city: cityName,
-              })}
+            : isCityUniform(summary)
+              ? t('categoryChapter.titleUniform', { city: cityName })
+              : t('categoryChapter.title', {
+                  percent: formatPercent(percentile / 100),
+                  city: cityName,
+                })}
         </Heading>
         <p className="text-lead-sm text-muted-foreground">
           {score === null ? t('categoryChapter.leadMissing') : t(`method.${categoryKey}`)}
