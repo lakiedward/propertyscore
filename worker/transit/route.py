@@ -1,3 +1,4 @@
+import array
 import csv
 import datetime
 import json
@@ -71,7 +72,7 @@ def encode_minutes(value):
 def encode_matrix(order, times):
     position = {identifier: index for index, identifier in enumerate(order)}
     size = len(order)
-    cells = [UNREACHABLE] * (size * size)
+    cells = array.array("H", [UNREACHABLE]) * (size * size)
     for origin, destination, minutes in times:
         row = position.get(origin)
         column = position.get(destination)
@@ -80,7 +81,9 @@ def encode_matrix(order, times):
         cells[row * size + column] = encode_minutes(minutes)
     for index in range(size):
         cells[index * size + index] = 0
-    return b"".join(value.to_bytes(2, "big") for value in cells)
+    if sys.byteorder == "little":
+        cells.byteswap()
+    return cells.tobytes()
 
 
 def prepare_gtfs(paths, output_dir):
