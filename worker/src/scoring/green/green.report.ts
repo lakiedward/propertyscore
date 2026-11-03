@@ -66,6 +66,7 @@ async function readSurroundings(
   snapshotId: string,
   position: { latitude: number; longitude: number },
   mapRadiusM: number,
+  unnamedMinHa: number,
 ): Promise<z.infer<typeof surroundingsSchema>> {
   const [row] = await sql<{ described: unknown }[]>`
     select private.describe_green_surroundings(
@@ -73,7 +74,8 @@ async function readSurroundings(
       extensions.st_point(${position.longitude}, ${position.latitude}, 4326)::extensions.geography,
       ${PARKS_RADIUS_M},
       ${PARK_LIMIT},
-      ${mapRadiusM}
+      ${mapRadiusM},
+      ${unnamedMinHa}
     ) as described
   `;
   const parsed = surroundingsSchema.safeParse(row?.described);
@@ -117,6 +119,7 @@ export const greenReportSection: ReportSection = {
       snapshotId,
       { latitude, longitude },
       radii.wide,
+      greenParams.small_min_ha,
     );
 
     const section: JsonObject = {

@@ -105,7 +105,7 @@ select ok(
 
 create temporary table surroundings on commit drop as
 select private.describe_green_surroundings(
-  :'snapshot_id', extensions.st_point(24.1290, 45.7990, 4326)::extensions.geography, 1500, 5, 1000
+  :'snapshot_id', extensions.st_point(24.1290, 45.7990, 4326)::extensions.geography, 1500, 5, 1000, 0.5
 ) as described;
 
 select results_eq(
@@ -132,7 +132,7 @@ select results_eq(
 );
 
 select throws_ok(
-  format($$ select private.describe_green_surroundings(%L, extensions.st_point(24.129, 45.799, 4326)::extensions.geography, 1500, 0, 1000) $$, :'snapshot_id'),
+  format($$ select private.describe_green_surroundings(%L, extensions.st_point(24.129, 45.799, 4326)::extensions.geography, 1500, 0, 1000, 0.5) $$, :'snapshot_id'),
   'P0001',
   'green_surroundings_invalid',
   'The surroundings need a park limit between 1 and 20'
@@ -156,7 +156,7 @@ select throws_ok(
   'A signed-in user cannot call the green functions'
 );
 select throws_ok(
-  format($$ select private.describe_green_surroundings(%L, extensions.st_point(24.129, 45.799, 4326)::extensions.geography, 1500, 5, 1000) $$, :'snapshot_id'),
+  format($$ select private.describe_green_surroundings(%L, extensions.st_point(24.129, 45.799, 4326)::extensions.geography, 1500, 5, 1000, 0.5) $$, :'snapshot_id'),
   '42501',
   null,
   'A signed-in user cannot read the green surroundings of an address'

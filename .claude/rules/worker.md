@@ -91,7 +91,7 @@ Modules are idempotent: running a snapshot twice overwrites, never duplicates. B
 
 | Score | Tables (`private`) | Sources | Notes |
 | --- | --- | --- | --- |
-| `green` | `green_area_sources` (each OSM polygon), `green_areas` (merged public green, `shape` in EPSG:3844 for metric work) | OSM `leisure=park/garden/nature_reserve`, `landuse=forest/grass/recreation_ground/village_green`, `natural=wood`; playgrounds, dog parks and pitches go to `poi_features` as amenities | `merge_green_areas` dissolves the public sources and drops pieces under `min_polygon_ha`; `measure_green_cells` gives the green share per radius and the distance to the nearest area of at least `small_min_ha` and `large_min_ha`. Urban Atlas and the canopy component (`c5`) are not imported yet. |
+| `green` | `green_area_sources` (each OSM polygon), `green_areas` (merged public green, `shape` in EPSG:3844 for metric work) | OSM `leisure=park/garden/nature_reserve`, `landuse=forest/grass/recreation_ground/village_green`, `natural=wood`; playgrounds, dog parks and pitches go to `poi_features` as amenities | `merge_green_areas` dissolves the public sources and drops pieces under `min_polygon_ha`; `measure_green_cells` gives the green share per radius and the distance to the nearest area of at least `small_min_ha` and `large_min_ha`. Urban Atlas and the canopy component (`c5`) are not imported yet. Report section `green.report.ts`: the cell's shares and components plus `private.describe_green_surroundings` (the nearest parks, named or at least `small_min_ha`, and the polygons clipped to `wide_radius_m`) in `result.green`. |
 
 ## Working on several scores in parallel
 

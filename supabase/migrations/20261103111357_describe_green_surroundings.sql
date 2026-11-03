@@ -3,7 +3,8 @@ create function private.describe_green_surroundings(
   p_location extensions.geography,
   p_parks_radius_m integer,
   p_park_limit integer,
-  p_map_radius_m integer
+  p_map_radius_m integer,
+  p_unnamed_min_ha numeric
 )
 returns jsonb
 language plpgsql
@@ -17,7 +18,8 @@ declare
 begin
   if p_parks_radius_m is null or p_parks_radius_m not between 100 and 5000
     or p_map_radius_m is null or p_map_radius_m not between 100 and 3000
-    or p_park_limit is null or p_park_limit not between 1 and 20 then
+    or p_park_limit is null or p_park_limit not between 1 and 20
+    or p_unnamed_min_ha is null or p_unnamed_min_ha < 0 then
     raise exception using errcode = 'P0001', message = 'green_surroundings_invalid';
   end if;
 
@@ -41,6 +43,7 @@ begin
     from private.green_areas ga
     where ga.snapshot_id = p_snapshot_id
       and extensions.st_dwithin(ga.shape, v_point, p_parks_radius_m)
+      and (ga.name is not null or ga.area_ha >= p_unnamed_min_ha)
     order by ga.shape operator(extensions.<->) v_point, ga.id
     limit p_park_limit
   ) as nearest;
@@ -80,6 +83,6 @@ begin
 end;
 $$;
 
-comment on function private.describe_green_surroundings(uuid, extensions.geography, integer, integer, integer) is
-  'Green areas around an exact address for the online report: the nearest parks with straight-line distance and the polygons clipped to the map radius.';
+comment on function private.describe_green_surroundings(uuid, extensions.geography, integer, integer, integer, numeric) is
+  'Green areas around an exact address for the online report: the nearest named or sizeable parks with straight-line distance and the polygons clipped to the map radius.';
 

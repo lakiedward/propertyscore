@@ -2,7 +2,7 @@ import { HouseIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LazyMapCanvas } from '@/components/map/lazy-map-canvas';
 import type { MapFeatureCollection, MapMarkerItem, MapOverlay } from '@/components/map/map-canvas';
-import type { LngLat } from '@/components/map/map.config';
+import type { LngLat, LngLatBounds } from '@/components/map/map.config';
 import { cn } from '@/lib/utils';
 import { useRadiusLabel } from '../hooks/use-radius-label';
 import { circleRing } from '../online-report.utils';
@@ -36,6 +36,16 @@ function ringOverlay(id: string, position: LngLat, radiusM: number): MapFeatureC
   };
 }
 
+function ringBounds(position: LngLat, radiusM: number): LngLatBounds {
+  const ring = circleRing(position, radiusM, 36);
+  const longitudes = ring.map(([longitude]) => longitude);
+  const latitudes = ring.map(([, latitude]) => latitude);
+  return [
+    [Math.min(...longitudes), Math.min(...latitudes)],
+    [Math.max(...longitudes), Math.max(...latitudes)],
+  ];
+}
+
 function greenOverlays(position: LngLat, green: ReportMapGreenLayer): MapOverlay[] {
   const selected = green.areas.features.filter(
     (feature) => feature.properties.id === green.selectedParkId,
@@ -44,9 +54,9 @@ function greenOverlays(position: LngLat, green: ReportMapGreenLayer): MapOverlay
     {
       id: 'green-areas',
       kind: 'fill',
-      colorToken: '--category-green-fill',
-      opacity: 0.45,
-      outlineWidth: 1,
+      colorToken: '--category-green',
+      opacity: 0.3,
+      outlineWidth: 1.25,
       isVisible: true,
       data: green.areas,
     },
@@ -54,8 +64,8 @@ function greenOverlays(position: LngLat, green: ReportMapGreenLayer): MapOverlay
       id: 'green-selected',
       kind: 'fill',
       colorToken: '--category-green',
-      opacity: 0.5,
-      outlineWidth: 2.5,
+      opacity: 0.6,
+      outlineWidth: 3,
       isVisible: selected.length > 0,
       data: { type: 'FeatureCollection', features: selected },
     },
@@ -138,6 +148,7 @@ export function ReportMap({ position, green }: ReportMapProps) {
           label={t('map.label')}
           center={position}
           zoom={green ? 14.5 : 14}
+          bounds={green ? ringBounds(position, green.radiusM) : undefined}
           markers={[...parkMarkers, addressMarker]}
           overlays={green ? greenOverlays(position, green) : zoneOverlays(position)}
           focus={
