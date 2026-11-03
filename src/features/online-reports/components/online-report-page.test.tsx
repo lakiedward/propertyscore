@@ -1,5 +1,6 @@
 import { act, screen, within } from '@testing-library/react';
 import { http } from 'msw';
+import { toast } from 'sonner';
 import { formatPercent } from '@/i18n/format';
 import roOnlineReports from '@/i18n/locales/ro/onlineReports.json';
 import { buildOnlineReport, buildReportResult } from '@/test/factories/online-report';
@@ -243,12 +244,14 @@ describe('OnlineReportPage when printed', () => {
     expect(screen.queryByRole('heading', { name: greenTitle })).not.toBeInTheDocument();
   });
 
-  it('opens the print window from the PDF button', async () => {
+  it('opens the print window from the PDF button and says how to save the PDF', async () => {
     const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
+    const info = vi.spyOn(toast, 'info');
     const { user } = await renderReport(SEEDED_ONLINE_REPORT.id);
 
     await user.click(await screen.findByRole('button', { name: text.pdf.download }));
 
     expect(print).toHaveBeenCalledOnce();
+    expect(info).toHaveBeenCalledWith(text.pdf.hint);
   });
 });
