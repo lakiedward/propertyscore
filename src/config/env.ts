@@ -8,9 +8,16 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((value) => (value === '' ? undefined : value)),
+  VITE_SITE_URL: z
+    .literal('')
+    .transform(() => undefined)
+    .or(z.url().optional()),
 });
 
+const parsedEnv = envSchema.parse(import.meta.env);
+
 export const env = {
-  ...envSchema.parse(import.meta.env),
+  ...parsedEnv,
+  siteUrl: (parsedEnv.VITE_SITE_URL ?? window.location.origin).replace(/\/+$/, ''),
   isDevBuild: import.meta.env.DEV,
 };

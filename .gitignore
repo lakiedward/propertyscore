@@ -27,3 +27,4 @@ e2e/.auth/
 !.vscode/extensions.json
 .DS_Store
 *.log
+__pycache__/

@@ -35,6 +35,7 @@ This document sets the stack, structure and rules for the Property Score fronten
 | Lint / format | ESLint 9 flat config + typescript-eslint + Prettier 3 | TSLint, Biome (good, but its React/a11y rule coverage is smaller) |
 | Monitoring | Sentry (`@sentry/react`) | Console logs only |
 | CI | GitHub Actions: typecheck, lint, unit, DB, E2E, build | — |
+| Scoring and document jobs | `worker/` in this repository: a pnpm workspace package run by Node 24 directly, connecting to the same Supabase Postgres with `postgres.js`, deployed to Railway (decided 2026-11-03; rules in `.claude/rules/worker.md`). SmartCheck scores are precomputed per monthly snapshot on an EPSG:3844 hexagon grid in PostGIS (`private` schema); reports only read the ready snapshot | Edge Functions (time and memory limits, no Chromium, no `osmium`), a scheduled GitHub Action (no long-running job runner for reports and PDFs later), a second Supabase project (two auth systems, no RLS across databases), a separate repository (the schema, generated types and translations would drift), H3 in JavaScript (an extra dependency for what `ST_HexagonGrid` already does) |
 
 Pin exact versions when the project is created (`pnpm add -E`). Upgrade on purpose, through Renovate or Dependabot PRs.
 
@@ -464,7 +465,7 @@ export type PropertyStatus = Enums<'property_status'>;
 ```
 
 - **Keep DB field names (`snake_case`) in TypeScript.** No camelCase mapping layer: it doubles the type surface and adds bugs for little gain. Write a mapping only when the UI needs a genuinely different *shape* (e.g. nesting joined rows), and keep it in the feature's `api/` folder.
-- For JSON columns, override the type in a small `database.overrides.ts` with the `MergeDeep` pattern from the Supabase docs. Never hand-edit the generated file.
+- For JSON columns, override the type in a small `database.overrides.ts` with the `MergeDeep` pattern from the Supabase docs. Never hand-edit the generated file. A large versioned payload the backend freezes (the online report's `result`) is parsed with a Zod schema in the feature's `api/` function instead: an override is only a cast, while the parse checks old report versions at runtime and gives the same type through `z.infer`.
 
 ---
 
@@ -492,7 +493,7 @@ export type PropertyStatus = Enums<'property_status'>;
 
 Rules that apply to every table:
 
-1. **Enable RLS when the table is created**, in the same migration. CI runs the Supabase database advisors (`supabase db lint`) and fails on any table without RLS.
+1. **Enable RLS when the table is created**, in the same migration. CI runs the Supabase database advisors (`supabase db lint`) and fails on any table without RLS. Server-only tables (the SmartCheck engine, read and written only by the worker) get RLS with no client policy and revoked `anon` / `authenticated` grants, so the advisors' `info` finding `rls_enabled_no_policy` is expected for them; a pgTAP test proves both roles get `42501`. Adding a `using (false)` policy only to silence the finding was rejected: it says the same thing with more code.
 2. **One policy per operation** (`select`, `insert`, `update`, `delete`), named in plain English. Use `to authenticated` (or `anon`) explicitly; never leave the role open.
 3. `insert` and `update` policies have a **`with check`** clause, so users can't write rows they could not read.
 4. **Wrap auth functions in a sub-select** (`(select auth.uid())`) so Postgres evaluates them once per query, not once per row.
@@ -921,5 +922,5 @@ These are product or business choices that change parts of this plan. Decide the
 | Which sign-in methods: email only, or also Google, Microsoft, etc.? | Auth configuration, redirect URLs |
 | Is Romanian the right default for visitors whose browser is in neither language? Is the English audience mainly British/European (`en-GB` formats) or American (`en-US`)? | Language detection and date/number formats (section 18) |
 | Which currencies are prices in: RON, EUR or both? | Money columns, `formatCurrency`, score inputs |
-| Where does the score come from: client formula, Postgres function, or an external data API? | Whether scoring lives in `*.utils.ts`, an RPC, or an Edge Function |
+| ~~Where does the score come from?~~ Decided 2026-11-03 for SmartCheck: the `worker/` builds monthly snapshots in PostGIS, reports read them (section 1); the inspection score (0–10) is still open | Whether scoring lives in `*.utils.ts`, an RPC, or an Edge Function |
 | Hosting provider and domain | Env management, deploy workflow, CSP |

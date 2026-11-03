@@ -838,7 +838,7 @@ RLS: owner reads; parties of the linked inspection read; admin all. No client wr
 
 **`online_report_versions`** — `online_report_id`, `version`, `result`, `pdf_path`, `change_summary`, `feedback_id`. History for corrections.
 
-**`report_share_links`** — `online_report_id` or `inspection_id` (exactly one), `token_hash`, `expires_at`, `created_by`, `revoked_at`. Validated by RPC.
+**`report_share_links`** — `online_report_id`, `owner_id`, `token_hash` (SHA-256 of the token, never readable), `expires_at`, `revoked_at`; one active link per report. Inspection books add `inspection_id` (exactly one of the two) when they land. Created, revoked and resolved only by RPC.
 
 **`scoring_versions`** — `kind ('online','inspection')`, `label` ("v3"), `weights jsonb`, `params jsonb` (radii, thresholds, POI points, distance limits, cell size, safety p1–p4), `is_active`, `activated_at`, `created_by`. Immutable once referenced (trigger). Admin only.
 
@@ -1065,7 +1065,7 @@ Helper functions in `private` (security definer, `search_path = ''`): `has_role(
 | `get_public_listing(id)`, `record_listing_view(id)`, `reveal_listing_phone(id)`                                                                   | listing page             | public read, stats, leads                                                         |
 | `register_partner(...)`, `approve_partner(id)`, `review_agency_agent(id, decision)`, `set_payout_target(target)`, `validate_partner_code(code)`   | partner pages            | programme                                                                         |
 | `submit_report_feedback(...)`, `rate_inspector(...)`, `respond_to_feedback(...)`                                                                  | reports, admin           | feedback                                                                          |
-| `create_share_link(...)`, `resolve_share_link(token)`                                                                                             | reports                  | sharing                                                                           |
+| `create_report_share_link(report_id, expires_in_days)`, `revoke_report_share_link(report_id)`, `resolve_report_share_link(report_id, token)`      | reports                  | sharing                                                                           |
 
 Errors are raised as codes (`slot_taken`, `outside_coverage`, `invitation_expired`, `consent_missing`, `media_missing`, …) and translated in the frontend.
 

@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
+import { Route as ReportRouteRouteImport } from './routes/_report/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
+import { Route as ReportCheckResultReportIdRouteImport } from './routes/_report/check/result.$reportId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -21,6 +23,10 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 } as any)
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportRouteRoute = ReportRouteRouteImport.update({
+  id: '/_report',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -38,42 +44,55 @@ const PublicSignUpRoute = PublicSignUpRouteImport.update({
   path: '/sign-up',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const ReportCheckResultReportIdRoute =
+  ReportCheckResultReportIdRouteImport.update({
+    id: '/check/result/$reportId',
+    path: '/check/result/$reportId',
+    getParentRoute: () => ReportRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
+  '/_report': typeof ReportRouteRouteWithChildren
   '/_public/login': typeof PublicLoginRoute
   '/_public/sign-up': typeof PublicSignUpRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_report/check/result/$reportId': typeof ReportCheckResultReportIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/sign-up'
+  fullPaths: '/' | '/login' | '/sign-up' | '/check/result/$reportId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/sign-up'
+  to: '/' | '/login' | '/sign-up' | '/check/result/$reportId'
   id:
     | '__root__'
     | '/_authenticated'
     | '/_public'
+    | '/_report'
     | '/_public/login'
     | '/_public/sign-up'
     | '/_authenticated/'
+    | '/_report/check/result/$reportId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
+  ReportRouteRoute: typeof ReportRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -90,6 +109,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof PublicRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_report': {
+      id: '/_report'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ReportRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -112,6 +138,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sign-up'
       preLoaderRoute: typeof PublicSignUpRouteImport
       parentRoute: typeof PublicRouteRoute
+    }
+    '/_report/check/result/$reportId': {
+      id: '/_report/check/result/$reportId'
+      path: '/check/result/$reportId'
+      fullPath: '/check/result/$reportId'
+      preLoaderRoute: typeof ReportCheckResultReportIdRouteImport
+      parentRoute: typeof ReportRouteRoute
     }
   }
 }
@@ -141,9 +174,22 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
   PublicRouteRouteChildren,
 )
 
+interface ReportRouteRouteChildren {
+  ReportCheckResultReportIdRoute: typeof ReportCheckResultReportIdRoute
+}
+
+const ReportRouteRouteChildren: ReportRouteRouteChildren = {
+  ReportCheckResultReportIdRoute: ReportCheckResultReportIdRoute,
+}
+
+const ReportRouteRouteWithChildren = ReportRouteRoute._addFileChildren(
+  ReportRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
+  ReportRouteRoute: ReportRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

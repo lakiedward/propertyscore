@@ -23,7 +23,53 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "profiles": {
+            "cities": {
+                  Row: {
+                    "boundary": unknown,"center": unknown,"county": string,"created_at": string,"has_field_team": boolean,"has_online_coverage": boolean,"id": string,"name": string,"position": number,"slug": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "boundary": unknown,"center": unknown,"county": string,"created_at"?: string,"has_field_team"?: boolean,"has_online_coverage"?: boolean,"id"?: string,"name": string,"position"?: number,"slug": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "boundary"?: unknown,"center"?: unknown,"county"?: string,"created_at"?: string,"has_field_team"?: boolean,"has_online_coverage"?: boolean,"id"?: string,"name"?: string,"position"?: number,"slug"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"online_reports": {
+                  Row: {
+                    "address_text": string,"category_scores": NonNullable<Json>,"city_id": string,"created_at": string,"declared_area_m2": number | null,"declared_building_floors": number | null,"declared_construction_year": number | null,"declared_floor": number | null,"declared_has_elevator": boolean | null,"declared_rooms": number | null,"error_code": string | null,"generated_at": string | null,"id": string,"latitude": number | null,"locale": string,"location": unknown,"longitude": number | null,"number": number,"overall_score": number | null,"owner_id": string,"pdf_path": string | null,"result": NonNullable<Json>,"scoring_version_id": string | null,"snapshot_id": string | null,"source_listing_url": string | null,"status": Database["public"]['Enums']["online_report_status"],"updated_at": string,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address_text": string,"category_scores"?: NonNullable<Json>,"city_id": string,"created_at"?: string,"declared_area_m2"?: number | null,"declared_building_floors"?: number | null,"declared_construction_year"?: number | null,"declared_floor"?: number | null,"declared_has_elevator"?: boolean | null,"declared_rooms"?: number | null,"error_code"?: string | null,"generated_at"?: string | null,"id"?: string,"latitude"?: never,"locale"?: string,"location": unknown,"longitude"?: never,"number"?: never,"overall_score"?: number | null,"owner_id"?: string,"pdf_path"?: string | null,"result"?: NonNullable<Json>,"scoring_version_id"?: string | null,"snapshot_id"?: string | null,"source_listing_url"?: string | null,"status"?: Database["public"]['Enums']["online_report_status"],"updated_at"?: string,"version"?: number
+                  }
+                  Update: {
+                    "address_text"?: string,"category_scores"?: NonNullable<Json>,"city_id"?: string,"created_at"?: string,"declared_area_m2"?: number | null,"declared_building_floors"?: number | null,"declared_construction_year"?: number | null,"declared_floor"?: number | null,"declared_has_elevator"?: boolean | null,"declared_rooms"?: number | null,"error_code"?: string | null,"generated_at"?: string | null,"id"?: string,"latitude"?: never,"locale"?: string,"location"?: unknown,"longitude"?: never,"number"?: never,"overall_score"?: number | null,"owner_id"?: string,"pdf_path"?: string | null,"result"?: NonNullable<Json>,"scoring_version_id"?: string | null,"snapshot_id"?: string | null,"source_listing_url"?: string | null,"status"?: Database["public"]['Enums']["online_report_status"],"updated_at"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "online_reports_city_id_fkey"
+      columns: ["city_id"]
+isOneToOne: false
+      referencedRelation: "cities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "online_reports_scoring_version_id_fkey"
+      columns: ["scoring_version_id"]
+isOneToOne: false
+      referencedRelation: "scoring_versions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "online_reports_snapshot_id_fkey"
+      columns: ["snapshot_id"]
+isOneToOne: false
+      referencedRelation: "score_snapshots"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"profiles": {
                   Row: {
                     "created_at": string,"id": string,"locale": string,"updated_at": string
                   }
@@ -37,16 +83,80 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"report_share_links": {
+                  Row: {
+                    "created_at": string,"expires_at": string | null,"id": string,"online_report_id": string,"owner_id": string,"revoked_at": string | null,"token_hash": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"expires_at"?: string | null,"id"?: string,"online_report_id": string,"owner_id"?: string,"revoked_at"?: string | null,"token_hash": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"expires_at"?: string | null,"id"?: string,"online_report_id"?: string,"owner_id"?: string,"revoked_at"?: string | null,"token_hash"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "report_share_links_online_report_id_fkey"
+      columns: ["online_report_id"]
+isOneToOne: false
+      referencedRelation: "online_reports"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"score_snapshots": {
+                  Row: {
+                    "created_at": string,"error_code": string | null,"finished_at": string | null,"id": string,"period": string,"scoring_version_id": string,"source_dates": NonNullable<Json>,"started_at": string,"stats": NonNullable<Json>,"status": Database["public"]['Enums']["snapshot_status"],"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"error_code"?: string | null,"finished_at"?: string | null,"id"?: string,"period": string,"scoring_version_id": string,"source_dates"?: NonNullable<Json>,"started_at"?: string,"stats"?: NonNullable<Json>,"status"?: Database["public"]['Enums']["snapshot_status"],"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"error_code"?: string | null,"finished_at"?: string | null,"id"?: string,"period"?: string,"scoring_version_id"?: string,"source_dates"?: NonNullable<Json>,"started_at"?: string,"stats"?: NonNullable<Json>,"status"?: Database["public"]['Enums']["snapshot_status"],"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "score_snapshots_scoring_version_id_fkey"
+      columns: ["scoring_version_id"]
+isOneToOne: false
+      referencedRelation: "scoring_versions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"scoring_versions": {
+                  Row: {
+                    "activated_at": string | null,"created_at": string,"created_by": string | null,"id": string,"is_active": boolean,"kind": Database["public"]['Enums']["scoring_kind"],"label": string,"params": NonNullable<Json>,"updated_at": string,"weights": NonNullable<Json>
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activated_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_active"?: boolean,"kind": Database["public"]['Enums']["scoring_kind"],"label": string,"params"?: NonNullable<Json>,"updated_at"?: string,"weights"?: NonNullable<Json>
+                  }
+                  Update: {
+                    "activated_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_active"?: boolean,"kind"?: Database["public"]['Enums']["scoring_kind"],"label"?: string,"params"?: NonNullable<Json>,"updated_at"?: string,"weights"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "create_report_share_link":
+{ Args: { "p_expires_in_days"?: number,"p_report_id": string }; Returns: string
+                           },
+"resolve_report_share_link":
+{ Args: { "p_report_id": string,"p_token": string }; Returns: {
+              "address_text": string,"created_at": string,"declared_area_m2": number,"declared_building_floors": number,"declared_construction_year": number,"declared_floor": number,"declared_rooms": number,"generated_at": string,"id": string,"latitude": number,"longitude": number,"number": number,"overall_score": number,"result": Json,"status": Database["public"]['Enums']["online_report_status"]
+            }[]
+                           },
+"revoke_report_share_link":
+{ Args: { "p_report_id": string }; Returns: undefined
+                           }
           }
           Enums: {
-            [_ in never]: never
+            "online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -166,7 +276,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            
+            "online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
           }
         }
 } as const

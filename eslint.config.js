@@ -19,6 +19,7 @@ export default defineConfig([
     'playwright-report',
     'test-results',
     'supabase',
+    '.claude',
     'src/routeTree.gen.ts',
     'src/lib/supabase/database.types.ts',
   ]),
@@ -136,7 +137,12 @@ export default defineConfig([
       'react-refresh/only-export-components': 'off',
       '@typescript-eslint/only-throw-error': [
         'error',
-        { allow: [{ from: 'package', package: '@tanstack/router-core', name: 'Redirect' }] },
+        {
+          allow: [
+            { from: 'package', package: '@tanstack/router-core', name: 'Redirect' },
+            { from: 'package', package: '@tanstack/router-core', name: 'NotFoundError' },
+          ],
+        },
       ],
     },
   },
@@ -145,7 +151,25 @@ export default defineConfig([
     ignores: ['src/**/*.test.tsx', 'src/components/ui/**'],
     plugins: { i18next },
     rules: {
-      'i18next/no-literal-string': ['error', { mode: 'jsx-only' }],
+      'i18next/no-literal-string': [
+        'error',
+        {
+          mode: 'jsx-only',
+          'jsx-attributes': {
+            exclude: [
+              'className',
+              '.+ClassName',
+              'styleName',
+              'style',
+              'type',
+              'key',
+              'id',
+              'width',
+              'height',
+            ],
+          },
+        },
+      ],
     },
   },
   {
@@ -154,6 +178,19 @@ export default defineConfig([
     languageOptions: { globals: globals.vitest },
     rules: {
       'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: ['worker/**/*.ts'],
+    languageOptions: { globals: globals.node },
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TSEnumDeclaration',
+          message: 'Use a string-literal union or an as-const object.',
+        },
+      ],
     },
   },
   {
