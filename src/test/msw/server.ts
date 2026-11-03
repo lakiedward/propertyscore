@@ -1,6 +1,12 @@
 import { setupServer } from 'msw/node';
 import { authHandlers } from './handlers/auth';
 import { listingHandlers } from './handlers/listings';
+import { onlineReportHandlers } from './handlers/online-reports';
 import { profileHandlers } from './handlers/profile';
 
-export const server = setupServer(...authHandlers, ...profileHandlers, ...listingHandlers);
+export const server = setupServer(
+  ...authHandlers,
+  ...profileHandlers,
+  ...listingHandlers,
+  ...onlineReportHandlers,
+);

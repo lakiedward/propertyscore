@@ -1,13 +1,25 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "entry": ["src/routes/**/*.tsx", "src/i18n/i18next.d.ts", "scripts/*.ts", "e2e/**/*.setup.ts"],
-  "project": ["src/**/*.{ts,tsx}", "scripts/**/*.ts", "e2e/**/*.ts"],
-  "ignore": ["src/lib/supabase/database.types.ts", "src/components/ui/**"],
-  "ignoreDependencies": [
-    "shadcn",
-    "tw-animate-css",
-    "tailwindcss",
-    "@fontsource-variable/manrope",
-    "@fontsource-variable/sora"
-  ]
+  "workspaces": {
+    ".": {
+      "entry": [
+        "src/routes/**/*.tsx",
+        "src/i18n/i18next.d.ts",
+        "scripts/*.ts",
+        "e2e/**/*.setup.ts"
+      ],
+      "project": ["src/**/*.{ts,tsx}", "scripts/**/*.ts", "e2e/**/*.ts"],
+      "ignore": ["src/lib/supabase/database.types.ts", "src/components/ui/**"],
+      "ignoreDependencies": [
+        "shadcn",
+        "tw-animate-css",
+        "@fontsource-variable/manrope",
+        "@fontsource-variable/sora",
+        "tailwindcss"
+      ]
+    },
+    "worker": {
+      "ignoreBinaries": ["osmium", "gdalinfo", "gdal_translate", "gdallocationinfo"]
+    }
+  }
 }

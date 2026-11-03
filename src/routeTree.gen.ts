@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
+import { Route as ReportRouteRouteImport } from './routes/_report/route'
 import { Route as SiteRouteRouteImport } from './routes/_site/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
@@ -19,6 +20,7 @@ import { Route as SiteIndexRouteImport } from './routes/_site/index'
 import { Route as SitePublishRouteImport } from './routes/_site/publish'
 import { Route as PublicPasswordResetIndexRouteImport } from './routes/_public/password-reset/index'
 import { Route as PublicPasswordResetNewRouteImport } from './routes/_public/password-reset/new'
+import { Route as ReportCheckResultReportIdRouteImport } from './routes/_report/check/result.$reportId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -26,6 +28,10 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 } as any)
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportRouteRoute = ReportRouteRouteImport.update({
+  id: '/_report',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SiteRouteRoute = SiteRouteRouteImport.update({
@@ -68,6 +74,12 @@ const PublicPasswordResetNewRoute = PublicPasswordResetNewRouteImport.update({
   path: '/password-reset/new',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const ReportCheckResultReportIdRoute =
+  ReportCheckResultReportIdRouteImport.update({
+    id: '/check/result/$reportId',
+    path: '/check/result/$reportId',
+    getParentRoute: () => ReportRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
@@ -77,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/publish': typeof SitePublishRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
   '/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
@@ -86,11 +99,13 @@ export interface FileRoutesByTo {
   '/publish': typeof SitePublishRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
   '/password-reset': typeof PublicPasswordResetIndexRoute
+  '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
+  '/_report': typeof ReportRouteRouteWithChildren
   '/_site': typeof SiteRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_public/login': typeof PublicLoginRoute
@@ -99,6 +114,7 @@ export interface FileRoutesById {
   '/_site/': typeof SiteIndexRoute
   '/_public/password-reset/new': typeof PublicPasswordResetNewRoute
   '/_public/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/_report/check/result/$reportId': typeof ReportCheckResultReportIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -110,6 +126,7 @@ export interface FileRouteTypes {
     | '/publish'
     | '/password-reset/new'
     | '/password-reset/'
+    | '/check/result/$reportId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -119,10 +136,12 @@ export interface FileRouteTypes {
     | '/publish'
     | '/password-reset/new'
     | '/password-reset'
+    | '/check/result/$reportId'
   id:
     | '__root__'
     | '/_authenticated'
     | '/_public'
+    | '/_report'
     | '/_site'
     | '/_authenticated/account'
     | '/_public/login'
@@ -131,11 +150,13 @@ export interface FileRouteTypes {
     | '/_site/'
     | '/_public/password-reset/new'
     | '/_public/password-reset/'
+    | '/_report/check/result/$reportId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
+  ReportRouteRoute: typeof ReportRouteRouteWithChildren
   SiteRouteRoute: typeof SiteRouteRouteWithChildren
 }
 
@@ -153,6 +174,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof PublicRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_report': {
+      id: '/_report'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ReportRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_site': {
@@ -211,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicPasswordResetNewRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_report/check/result/$reportId': {
+      id: '/_report/check/result/$reportId'
+      path: '/check/result/$reportId'
+      fullPath: '/check/result/$reportId'
+      preLoaderRoute: typeof ReportCheckResultReportIdRouteImport
+      parentRoute: typeof ReportRouteRoute
+    }
   }
 }
 
@@ -243,6 +278,18 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
   PublicRouteRouteChildren,
 )
 
+interface ReportRouteRouteChildren {
+  ReportCheckResultReportIdRoute: typeof ReportCheckResultReportIdRoute
+}
+
+const ReportRouteRouteChildren: ReportRouteRouteChildren = {
+  ReportCheckResultReportIdRoute: ReportCheckResultReportIdRoute,
+}
+
+const ReportRouteRouteWithChildren = ReportRouteRoute._addFileChildren(
+  ReportRouteRouteChildren,
+)
+
 interface SiteRouteRouteChildren {
   SitePublishRoute: typeof SitePublishRoute
   SiteIndexRoute: typeof SiteIndexRoute
@@ -260,6 +307,7 @@ const SiteRouteRouteWithChildren = SiteRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
+  ReportRouteRoute: ReportRouteRouteWithChildren,
   SiteRouteRoute: SiteRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport

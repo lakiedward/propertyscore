@@ -17,7 +17,10 @@ import { MAP_STYLE_URL, type LngLat, type LngLatBounds } from './map.config';
 setWorkerUrl(mapWorkerUrl);
 
 type MapGeometry =
-  { type: 'LineString'; coordinates: LngLat[] } | { type: 'Point'; coordinates: LngLat };
+  | { type: 'LineString'; coordinates: LngLat[] }
+  | { type: 'Point'; coordinates: LngLat }
+  | { type: 'Polygon'; coordinates: LngLat[][] }
+  | { type: 'MultiPolygon'; coordinates: LngLat[][][] };
 
 export type MapFeatureCollection = {
   type: 'FeatureCollection';
@@ -31,6 +34,7 @@ export type MapOverlay = {
 } & (
   | { kind: 'line'; colorToken: string; width: number; hasCasing?: boolean }
   | { kind: 'circle'; colorToken: string; radius: number; opacity: number }
+  | { kind: 'fill'; colorToken: string; opacity: number; outlineWidth?: number }
 );
 
 export type MapFocus = {
@@ -54,6 +58,7 @@ type MapCanvasProps = {
   markers: readonly MapMarkerItem[];
   overlays?: readonly MapOverlay[];
   onError: () => void;
+  isPrintable?: boolean;
   className?: string;
 };
 
@@ -94,6 +99,7 @@ export function MapCanvas({
   markers,
   overlays = [],
   onError,
+  isPrintable = false,
   className,
 }: MapCanvasProps) {
   const { t } = useTranslation();
@@ -101,7 +107,7 @@ export function MapCanvas({
   const [map, setMap] = useState<MapLibreMap>();
   const [isStyleReady, setIsStyleReady] = useState(false);
   const appliedOverlays = useRef(new Map<string, string>());
-  const initialView = useRef({ center, zoom });
+  const initialView = useRef({ center, zoom, isPrintable });
   const labels: MapLabels = {
     zoomIn: t('map.zoomIn'),
     zoomOut: t('map.zoomOut'),
@@ -129,6 +135,7 @@ export function MapCanvas({
         zoom: initialView.current.zoom,
         attributionControl: false,
         scrollZoom: false,
+        canvasContextAttributes: { preserveDrawingBuffer: initialView.current.isPrintable },
         locale: {
           'Map.Title': initialLabels.title,
           'NavigationControl.ZoomIn': initialLabels.zoomIn,
@@ -311,6 +318,23 @@ function addOverlay(map: MapLibreMap, overlay: MapOverlay) {
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: { 'line-color': color, 'line-width': overlay.width },
     });
+    return;
+  }
+  if (overlay.kind === 'fill') {
+    map.addLayer({
+      id: overlay.id,
+      type: 'fill',
+      source: overlay.id,
+      paint: { 'fill-color': color, 'fill-opacity': overlay.opacity },
+    });
+    if (overlay.outlineWidth) {
+      map.addLayer({
+        id: `${overlay.id}-casing`,
+        type: 'line',
+        source: overlay.id,
+        paint: { 'line-color': color, 'line-width': overlay.outlineWidth },
+      });
+    }
     return;
   }
   map.addLayer({

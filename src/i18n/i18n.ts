@@ -24,7 +24,7 @@ export const resources = {
 } as const;
 
 const BUNDLED_NAMESPACES = ['common', 'auth'] as const;
-export const FEATURE_NAMESPACES = ['home', 'listings', 'publish'] as const;
+export const FEATURE_NAMESPACES = ['home', 'listings', 'publish', 'onlineReports'] as const;
 export type FeatureNamespace = (typeof FEATURE_NAMESPACES)[number];
 
 const featureBundles = import.meta.glob<ResourceKey>(
