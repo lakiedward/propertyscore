@@ -58,6 +58,7 @@ type MapCanvasProps = {
   markers: readonly MapMarkerItem[];
   overlays?: readonly MapOverlay[];
   onError: () => void;
+  isPrintable?: boolean;
   className?: string;
 };
 
@@ -98,6 +99,7 @@ export function MapCanvas({
   markers,
   overlays = [],
   onError,
+  isPrintable = false,
   className,
 }: MapCanvasProps) {
   const { t } = useTranslation();
@@ -105,7 +107,7 @@ export function MapCanvas({
   const [map, setMap] = useState<MapLibreMap>();
   const [isStyleReady, setIsStyleReady] = useState(false);
   const appliedOverlays = useRef(new Map<string, string>());
-  const initialView = useRef({ center, zoom });
+  const initialView = useRef({ center, zoom, isPrintable });
   const labels: MapLabels = {
     zoomIn: t('map.zoomIn'),
     zoomOut: t('map.zoomOut'),
@@ -133,6 +135,7 @@ export function MapCanvas({
         zoom: initialView.current.zoom,
         attributionControl: false,
         scrollZoom: false,
+        canvasContextAttributes: { preserveDrawingBuffer: initialView.current.isPrintable },
         locale: {
           'Map.Title': initialLabels.title,
           'NavigationControl.ZoomIn': initialLabels.zoomIn,

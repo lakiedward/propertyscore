@@ -11,8 +11,8 @@ export function AppShell({ actions, children }: AppShellProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="flex min-h-svh flex-col bg-background">
-      <header className="border-b">
+    <div className="flex min-h-svh flex-col bg-background print:bg-card">
+      <header className="border-b print:hidden">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
           <Link to="/" className="font-semibold">
             {t('app.name')}

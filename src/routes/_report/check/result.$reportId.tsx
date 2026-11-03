@@ -9,18 +9,21 @@ import { i18n, loadFeatureNamespaces } from '@/i18n/i18n';
 import { pageTitle } from '@/i18n/page-title';
 import { isAppError } from '@/lib/errors';
 
-export const Route = createFileRoute('/_authenticated/check/result/$reportId')({
+export const Route = createFileRoute('/_report/check/result/$reportId')({
   validateSearch: onlineReportSearchSchema,
-  beforeLoad: async ({ context, location }) => {
-    if (!context.auth.user) {
+  loaderDeps: ({ search }) => ({ share: search.share }),
+  beforeLoad: async ({ context, location, search }) => {
+    if (!context.auth.user && search.share === undefined) {
       throw redirect({ to: '/login', search: { redirect: location.href } });
     }
     await loadFeatureNamespaces(['onlineReports']);
   },
-  loader: async ({ context, params }) => {
+  loader: async ({ context, params, deps }) => {
     try {
       await context.queryClient.query({
-        ...onlineReportQueries.detail(params.reportId),
+        ...(deps.share === undefined
+          ? onlineReportQueries.detail(params.reportId)
+          : onlineReportQueries.shared(params.reportId, deps.share)),
         staleTime: 'static',
       });
     } catch (error) {
@@ -35,15 +38,20 @@ export const Route = createFileRoute('/_authenticated/check/result/$reportId')({
 
 function OnlineReportRoute() {
   const { reportId } = Route.useParams();
-  const { tab = 'summary' } = Route.useSearch();
+  const { tab = 'summary', share } = Route.useSearch();
   const navigate = Route.useNavigate();
 
   return (
     <OnlineReportPage
       reportId={reportId}
+      shareToken={share}
       chapter={tab}
       onChapterChange={(next) => {
-        void navigate({ search: { tab: next }, resetScroll: false, replace: true });
+        void navigate({
+          search: (previous) => ({ ...previous, tab: next }),
+          resetScroll: false,
+          replace: true,
+        });
       }}
     />
   );

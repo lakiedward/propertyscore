@@ -1,11 +1,17 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import { http } from 'msw';
+import { toast } from 'sonner';
+import { formatPercent } from '@/i18n/format';
 import roOnlineReports from '@/i18n/locales/ro/onlineReports.json';
 import { buildOnlineReport, buildReportResult } from '@/test/factories/online-report';
-import { onlineReportResponse, SEEDED_ONLINE_REPORT } from '@/test/msw/handlers/online-reports';
+import {
+  onlineReportResponse,
+  SEEDED_ONLINE_REPORT,
+  SEEDED_SHARE_TOKEN,
+} from '@/test/msw/handlers/online-reports';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
-import { renderWithProviders } from '@/test/render';
+import { renderAppRoute, renderWithProviders } from '@/test/render';
 import type { ChapterId } from '../online-report.utils';
 import { OnlineReportPage } from './online-report-page';
 
@@ -179,5 +185,73 @@ describe('OnlineReportPage', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: title })).toBeInTheDocument();
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+  });
+});
+
+describe('OnlineReportPage opened through a share link', () => {
+  it('shows the report read-only, without the share button', async () => {
+    await renderWithProviders(
+      <OnlineReportPage
+        reportId={SEEDED_ONLINE_REPORT.id}
+        shareToken={SEEDED_SHARE_TOKEN}
+        chapter="summary"
+        onChapterChange={vi.fn()}
+      />,
+    );
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: SEEDED_ONLINE_REPORT.address_text }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(text.header.shared)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: text.share.open })).not.toBeInTheDocument();
+  });
+});
+
+describe('the report route', () => {
+  it('opens a shared report for a signed-out visitor', async () => {
+    await renderAppRoute(`/check/result/${SEEDED_ONLINE_REPORT.id}?share=${SEEDED_SHARE_TOKEN}`);
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: SEEDED_ONLINE_REPORT.address_text }),
+    ).toBeInTheDocument();
+  });
+
+  it('sends a signed-out visitor without a share link to the login page', async () => {
+    const { router } = await renderAppRoute(`/check/result/${SEEDED_ONLINE_REPORT.id}`);
+
+    expect(router.state.location.pathname).toBe('/login');
+  });
+});
+
+describe('OnlineReportPage when printed', () => {
+  it('lays out every chapter one after another for the PDF and goes back after printing', async () => {
+    await renderReport(SEEDED_ONLINE_REPORT.id);
+    await screen.findByRole('heading', { level: 1, name: SEEDED_ONLINE_REPORT.address_text });
+    const greenTitle = fill(text.categoryChapter.title, {
+      percent: formatPercent(0.95),
+      city: 'Timișoara',
+    });
+    expect(screen.queryByRole('heading', { name: greenTitle })).not.toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event('beforeprint'));
+    });
+    expect(screen.getByRole('heading', { name: greenTitle })).toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event('afterprint'));
+    });
+    expect(screen.queryByRole('heading', { name: greenTitle })).not.toBeInTheDocument();
+  });
+
+  it('opens the print window from the PDF button and says how to save the PDF', async () => {
+    const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
+    const info = vi.spyOn(toast, 'info');
+    const { user } = await renderReport(SEEDED_ONLINE_REPORT.id);
+
+    await user.click(await screen.findByRole('button', { name: text.pdf.download }));
+
+    expect(print).toHaveBeenCalledOnce();
+    expect(info).toHaveBeenCalledWith(text.pdf.hint);
   });
 });

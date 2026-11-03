@@ -14,6 +14,7 @@ import {
   type DayMoment,
 } from '../online-report.utils';
 import type { OnlineReport, ReportResult } from '../online-report.types';
+import { usePrintMode } from '@/hooks/use-print-mode';
 import type { LngLat } from '@/components/map/map.config';
 import { oneOf } from '@/lib/utils';
 import { useChapterMapLayer } from '../hooks/use-chapter-map-layer';
@@ -27,18 +28,30 @@ import { NextChapterButton } from './next-chapter-button';
 import { ReportHeader } from './report-header';
 import { ReportMap } from './report-map';
 import { ReportMethod } from './report-method';
+import { ReportPdfButton } from './report-pdf-button';
+import { ReportShareDialog } from './report-share-dialog';
 import { ReportStatus } from './report-status';
 import { SummaryChapter } from './summary-chapter';
 import { ZoneScoreCard } from './zone-score-card';
 
 type OnlineReportPageProps = {
   reportId: string;
+  shareToken?: string;
   chapter: ChapterId;
   onChapterChange: (chapter: ChapterId) => void;
 };
 
-export function OnlineReportPage({ reportId, chapter, onChapterChange }: OnlineReportPageProps) {
-  const { data: report } = useSuspenseQuery(onlineReportQueries.detail(reportId));
+export function OnlineReportPage({
+  reportId,
+  shareToken,
+  chapter,
+  onChapterChange,
+}: OnlineReportPageProps) {
+  const { data: report } = useSuspenseQuery(
+    shareToken === undefined
+      ? onlineReportQueries.detail(reportId)
+      : onlineReportQueries.shared(reportId, shareToken),
+  );
 
   if (report.result === null || report.status !== 'ready') {
     return (
@@ -53,6 +66,7 @@ export function OnlineReportPage({ reportId, chapter, onChapterChange }: OnlineR
     <ReadyReport
       report={report}
       result={report.result}
+      isShared={shareToken !== undefined}
       chapter={chapter}
       onChapterChange={onChapterChange}
     />
@@ -62,12 +76,14 @@ export function OnlineReportPage({ reportId, chapter, onChapterChange }: OnlineR
 type ReadyReportProps = {
   report: OnlineReport;
   result: ReportResult;
+  isShared: boolean;
   chapter: ChapterId;
   onChapterChange: (chapter: ChapterId) => void;
 };
 
-function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportProps) {
+function ReadyReport({ report, result, isShared, chapter, onChapterChange }: ReadyReportProps) {
   const tabsRef = useRef<HTMLDivElement>(null);
+  const isPrinting = usePrintMode();
   const { categories, zone } = result;
   const green = result.green?.status === 'scored' ? result.green : undefined;
   const [greenRadiusM, setGreenRadiusM] = useState(green?.near_radius_m ?? 500);
@@ -107,6 +123,54 @@ function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportPr
     tabsRef.current?.scrollIntoView({ block: 'start' });
   };
 
+  const renderChapter = (id: ChapterId) =>
+    isScoreChapter(id) ? (
+      <CategoryChapter
+        chapter={id}
+        categories={categories}
+        cityName={result.city.name}
+        totalWeight={totalWeight}
+        otherDetails={
+          id === 'fifteen_minute'
+            ? {
+                education: result.education ? (
+                  <EducationDetails
+                    section={result.education.status === 'scored' ? result.education : undefined}
+                  />
+                ) : null,
+                health: result.health ? (
+                  <HealthDetails
+                    section={result.health.status === 'scored' ? result.health : undefined}
+                  />
+                ) : null,
+              }
+            : undefined
+        }
+        details={
+          id === 'green' && green ? (
+            <GreenChapter
+              section={green}
+              radiusM={greenRadiusM}
+              onRadiusChange={setGreenRadiusM}
+              selectedParkId={selectedParkId}
+              onSelectPark={selectPark}
+            />
+          ) : (
+            <ChapterDetails
+              chapter={id}
+              result={result}
+              selectedId={id === chapter ? selectedId : null}
+              onSelect={selectPlace}
+              moment={moment}
+              onMomentChange={setMoment}
+            />
+          )
+        }
+      />
+    ) : (
+      <SummaryChapter categories={categories} onOpenChapter={openChapter} />
+    );
+
   return (
     <>
       <ReportHeader
@@ -116,6 +180,13 @@ function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportPr
         period={result.snapshot.period}
         formulaLabel={result.formula.label}
         declared={report}
+        isShared={isShared}
+        actions={
+          <>
+            <ReportPdfButton />
+            {isShared ? null : <ReportShareDialog reportId={report.id} />}
+          </>
+        }
         scoreCard={
           <ZoneScoreCard
             score={zone.score}
@@ -137,63 +208,23 @@ function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportPr
         <ChapterTabs scoreOf={(id) => chapterScore(id, zone.score, categories)} />
         <div className="mx-auto grid w-full max-w-wide items-start gap-7 px-gutter py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:py-12">
           <div className="order-2 min-w-0 lg:order-1">
-            {CHAPTER_IDS.map((id) => (
-              <TabsContent key={id} value={id} className="flex flex-col gap-5 text-base">
-                {isScoreChapter(id) ? (
-                  <CategoryChapter
-                    chapter={id}
-                    categories={categories}
-                    cityName={result.city.name}
-                    totalWeight={totalWeight}
-                    otherDetails={
-                      id === 'fifteen_minute'
-                        ? {
-                            education: result.education ? (
-                              <EducationDetails
-                                section={
-                                  result.education.status === 'scored'
-                                    ? result.education
-                                    : undefined
-                                }
-                              />
-                            ) : null,
-                            health: result.health ? (
-                              <HealthDetails
-                                section={
-                                  result.health.status === 'scored' ? result.health : undefined
-                                }
-                              />
-                            ) : null,
-                          }
-                        : undefined
-                    }
-                    details={
-                      id === 'green' && green ? (
-                        <GreenChapter
-                          section={green}
-                          radiusM={greenRadiusM}
-                          onRadiusChange={setGreenRadiusM}
-                          selectedParkId={selectedParkId}
-                          onSelectPark={selectPark}
-                        />
-                      ) : (
-                        <ChapterDetails
-                          chapter={id}
-                          result={result}
-                          selectedId={id === chapter ? selectedId : null}
-                          onSelect={selectPlace}
-                          moment={moment}
-                          onMomentChange={setMoment}
-                        />
-                      )
-                    }
-                  />
-                ) : (
-                  <SummaryChapter categories={categories} onOpenChapter={openChapter} />
-                )}
-                {following ? <NextChapterButton chapter={following} onOpen={openChapter} /> : null}
-              </TabsContent>
-            ))}
+            {isPrinting
+              ? CHAPTER_IDS.map((id) => (
+                  <div
+                    key={id}
+                    className="flex flex-col gap-5 border-border pb-10 text-base not-first:border-t not-first:pt-10"
+                  >
+                    {renderChapter(id)}
+                  </div>
+                ))
+              : CHAPTER_IDS.map((id) => (
+                  <TabsContent key={id} value={id} className="flex flex-col gap-5 text-base">
+                    {renderChapter(id)}
+                    {following ? (
+                      <NextChapterButton chapter={following} onOpen={openChapter} />
+                    ) : null}
+                  </TabsContent>
+                ))}
           </div>
           {position ? (
             <div className="order-1 lg:sticky lg:top-32 lg:order-2">

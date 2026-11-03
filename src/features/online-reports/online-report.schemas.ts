@@ -564,6 +564,9 @@ export const reportResultSchema = z.looseObject({
   accessibility: accessibilitySectionSchema.optional(),
 });
 
+export const shareTokenSchema = z.string().regex(/^[0-9a-f]{48}$/);
+
 export const onlineReportSearchSchema = z.object({
   tab: z.enum(CHAPTER_IDS).optional(),
+  share: shareTokenSchema.optional().catch(undefined),
 });
