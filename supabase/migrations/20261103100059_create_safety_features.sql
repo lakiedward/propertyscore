@@ -81,8 +81,8 @@ $$;
 update public.scoring_versions
 set params = params || jsonb_build_object('safety', '{
   "start": 50,
-  "k": 4,
-  "night_offset": -8,
+  "k": 7,
+  "night_offset": 0,
   "moment_weights": { "day": 0.5, "night": 0.5 },
   "smoothing": { "self": 0.6, "neighbours": 0.4 },
   "reach_factor": 3,
@@ -99,10 +99,10 @@ set params = params || jsonb_build_object('safety', '{
     "police": { "radius_m": 600, "weight_day": 2.2, "weight_night": 2.6, "cap": 1.5, "walking": true },
     "fire_station": { "radius_m": 800, "weight_day": 1, "weight_night": 1, "cap": 1, "walking": true },
     "diplomatic": { "radius_m": 220, "weight_day": 2, "weight_night": 2, "cap": 1 },
-    "bar": { "radius_m": 120, "weight_day": 0.3, "weight_night": -1.1, "cap": 3 },
-    "park": { "radius_m": 200, "weight_day": -0.3, "weight_night": -2.5, "cap": 1 },
+    "bar": { "radius_m": 120, "weight_day": 0.3, "weight_night": -0.55, "cap": 3 },
+    "park": { "radius_m": 200, "weight_day": -0.3, "weight_night": -1.25, "cap": 1 },
     "park_lit": { "radius_m": 200, "weight_day": 0, "weight_night": -0.8, "cap": 1 },
-    "isolated_passage": { "radius_m": 160, "weight_day": -1.4, "weight_night": -3, "cap": 1.5 },
+    "isolated_passage": { "radius_m": 160, "weight_day": -1.4, "weight_night": -1.5, "cap": 1.5 },
     "train_station": { "radius_m": 300, "weight_day": 0.8, "weight_night": -1.5, "cap": 1 },
     "train_halt": { "radius_m": 200, "weight_day": 0.2, "weight_night": -0.8, "cap": 1 },
     "transit_stop": { "radius_m": 80, "weight_day": 0.4, "weight_night": 0.6, "cap": 2, "night_activity": { "open": 1, "closed": 0.33, "unknown": 0.33 } }

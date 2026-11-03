@@ -10,7 +10,7 @@ import {
 } from './safety.cells.ts';
 import { v1Params } from './safety.test-params.ts';
 
-const params = v1Params();
+const params = v1Params({ k: 4, night_offset: -8 });
 
 describe('reachByType', () => {
   it('looks three radii away for every type', () => {

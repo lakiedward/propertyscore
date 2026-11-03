@@ -13,7 +13,7 @@ import {
 } from './safety.formula.ts';
 import { v1Params } from './safety.test-params.ts';
 
-const params = v1Params();
+const params = v1Params({ k: 4, night_offset: -8 });
 
 function sumRows(rows: readonly { points: number }[]): number {
   return rows.reduce((sum, row) => sum + row.points, 0);
