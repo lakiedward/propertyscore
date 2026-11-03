@@ -100,16 +100,43 @@ describe('LoginForm', () => {
     expect(
       screen.getByText(roAuth.login.unconfirmedText.replace('{{email}}', 'ana.ro@example.test')),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole('button')).toHaveLength(5);
+    expect(screen.getAllByRole('button')).toHaveLength(4);
   });
 
-  it('explains that social sign-in is not available yet', async () => {
+  it('explains that a social provider is not turned on yet', async () => {
     const { user } = await renderWithProviders(<LoginForm />);
 
     await user.click(screen.getByRole('button', { name: roAuth.social.google }));
 
-    expect(screen.getByRole('status')).toHaveTextContent(
+    expect(await screen.findByRole('status')).toHaveTextContent(
       roAuth.social.unavailable.replace('{{provider}}', roAuth.social.providers.google),
+    );
+  });
+
+  it('says when a social sign-in cannot start', async () => {
+    server.use(
+      http.get(supabaseUrl('/auth/v1/settings'), () =>
+        authErrorResponse('unexpected_failure', 500),
+      ),
+    );
+    const { user } = await renderWithProviders(<LoginForm />);
+
+    await user.click(screen.getByRole('button', { name: roAuth.social.facebook }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      roAuth.social.failed.replace('{{provider}}', roAuth.social.providers.facebook),
+    );
+  });
+
+  it('offers only Google and Facebook, and a way to reset the password', async () => {
+    await renderWithProviders(<LoginForm />);
+
+    expect(screen.getByRole('button', { name: roAuth.social.google })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: roAuth.social.facebook })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /apple/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: roAuth.login.forgotPassword })).toHaveAttribute(
+      'href',
+      '/password-reset',
     );
   });
 

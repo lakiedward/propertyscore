@@ -18,10 +18,11 @@ import {
   type SignUpValues,
 } from '../auth.schemas';
 import type { SocialProvider } from '../auth.types';
+import { useSocialSignIn } from '../hooks/use-social-sign-in';
 import { AuthNotice } from './auth-notice';
 import { AuthTextField } from './auth-text-field';
 import { SocialSignIn } from './social-sign-in';
-import { SocialUnavailableNotice } from './social-unavailable-notice';
+import { SocialSignInNotice } from './social-sign-in-notice';
 
 type SignUpFormProps = {
   redirect?: string | undefined;
@@ -37,7 +38,7 @@ export function SignUpForm({ redirect, onEmailSent }: SignUpFormProps) {
   const errorMessage = useErrorMessage();
   const validationMessage = useValidationMessage();
   const signUp = useSignUp();
-  const [oauthProvider, setOauthProvider] = useState<SocialProvider>();
+  const social = useSocialSignIn(redirect);
   const [formError, setFormError] = useState<unknown>();
   const termsId = useId();
   const termsErrorId = `${termsId}-error`;
@@ -47,7 +48,7 @@ export function SignUpForm({ redirect, onEmailSent }: SignUpFormProps) {
   });
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    setOauthProvider(undefined);
+    social.clearNotice();
     setFormError(undefined);
     try {
       const result = await signUp.mutateAsync(toSignUpPayload(values, currentLocale(), redirect));
@@ -64,18 +65,18 @@ export function SignUpForm({ redirect, onEmailSent }: SignUpFormProps) {
   const handleSocialSelect = (provider: SocialProvider) => {
     signUp.reset();
     setFormError(undefined);
-    setOauthProvider(provider);
+    void social.select(provider);
   };
 
   return (
     <>
-      {oauthProvider ? <SocialUnavailableNotice provider={oauthProvider} /> : null}
+      {social.notice ? <SocialSignInNotice notice={social.notice} /> : null}
       {formError ? (
         <AuthNotice tone="error" title={t('signUp.failedTitle')}>
           {hasSpecificMessage(formError) ? errorMessage(formError) : t('signUp.failedText')}
         </AuthNotice>
       ) : null}
-      <SocialSignIn onSelect={handleSocialSelect} />
+      <SocialSignIn pendingProvider={social.pendingProvider} onSelect={handleSocialSelect} />
       <form onSubmit={(event) => void handleSubmit(event)} noValidate>
         <FieldGroup className="gap-3">
           <Controller

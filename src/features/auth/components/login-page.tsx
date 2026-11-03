@@ -13,7 +13,7 @@ export function LoginPage() {
   return (
     <>
       <AuthHeading i18nKey="login.heading" />
-      <LoginForm />
+      <LoginForm redirect={redirect} />
       <p className="text-center text-body-sm leading-copy text-muted-foreground">
         <Trans
           t={t}

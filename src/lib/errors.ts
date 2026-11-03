@@ -6,6 +6,7 @@ export type AppErrorReason =
   | 'email_not_confirmed'
   | 'user_already_exists'
   | 'weak_password'
+  | 'same_password'
   | 'rate_limited';
 
 type AppErrorOptions = {

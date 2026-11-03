@@ -18,6 +18,7 @@ import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
 import { Route as SitePublishRouteImport } from './routes/_site/publish'
+import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth/callback'
 import { Route as PublicPasswordResetIndexRouteImport } from './routes/_public/password-reset/index'
 import { Route as PublicPasswordResetNewRouteImport } from './routes/_public/password-reset/new'
 import { Route as ReportCheckResultReportIdRouteImport } from './routes/_report/check/result.$reportId'
@@ -63,6 +64,11 @@ const SitePublishRoute = SitePublishRouteImport.update({
   path: '/publish',
   getParentRoute: () => SiteRouteRoute,
 } as any)
+const PublicAuthCallbackRoute = PublicAuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicPasswordResetIndexRoute =
   PublicPasswordResetIndexRouteImport.update({
     id: '/password-reset/',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
   '/publish': typeof SitePublishRoute
+  '/auth/callback': typeof PublicAuthCallbackRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
   '/password-reset/': typeof PublicPasswordResetIndexRoute
   '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
   '/publish': typeof SitePublishRoute
+  '/auth/callback': typeof PublicAuthCallbackRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
   '/password-reset': typeof PublicPasswordResetIndexRoute
   '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/_public/sign-up': typeof PublicSignUpRoute
   '/_site/publish': typeof SitePublishRoute
   '/_site/': typeof SiteIndexRoute
+  '/_public/auth/callback': typeof PublicAuthCallbackRoute
   '/_public/password-reset/new': typeof PublicPasswordResetNewRoute
   '/_public/password-reset/': typeof PublicPasswordResetIndexRoute
   '/_report/check/result/$reportId': typeof ReportCheckResultReportIdRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/sign-up'
     | '/publish'
+    | '/auth/callback'
     | '/password-reset/new'
     | '/password-reset/'
     | '/check/result/$reportId'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/sign-up'
     | '/publish'
+    | '/auth/callback'
     | '/password-reset/new'
     | '/password-reset'
     | '/check/result/$reportId'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '/_public/sign-up'
     | '/_site/publish'
     | '/_site/'
+    | '/_public/auth/callback'
     | '/_public/password-reset/new'
     | '/_public/password-reset/'
     | '/_report/check/result/$reportId'
@@ -225,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitePublishRouteImport
       parentRoute: typeof SiteRouteRoute
     }
+    '/_public/auth/callback': {
+      id: '/_public/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof PublicAuthCallbackRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/password-reset/': {
       id: '/_public/password-reset/'
       path: '/password-reset'
@@ -263,6 +282,7 @@ const AuthenticatedRouteRouteWithChildren =
 interface PublicRouteRouteChildren {
   PublicLoginRoute: typeof PublicLoginRoute
   PublicSignUpRoute: typeof PublicSignUpRoute
+  PublicAuthCallbackRoute: typeof PublicAuthCallbackRoute
   PublicPasswordResetNewRoute: typeof PublicPasswordResetNewRoute
   PublicPasswordResetIndexRoute: typeof PublicPasswordResetIndexRoute
 }
@@ -270,6 +290,7 @@ interface PublicRouteRouteChildren {
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicLoginRoute: PublicLoginRoute,
   PublicSignUpRoute: PublicSignUpRoute,
+  PublicAuthCallbackRoute: PublicAuthCallbackRoute,
   PublicPasswordResetNewRoute: PublicPasswordResetNewRoute,
   PublicPasswordResetIndexRoute: PublicPasswordResetIndexRoute,
 }

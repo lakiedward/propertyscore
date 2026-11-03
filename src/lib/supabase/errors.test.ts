@@ -34,6 +34,7 @@ describe('toAppError', () => {
     ['user_already_exists', 'user_already_exists'],
     ['email_exists', 'user_already_exists'],
     ['weak_password', 'weak_password'],
+    ['same_password', 'same_password'],
     ['over_request_rate_limit', 'rate_limited'],
   ])('maps the auth code %s to the reason %s', (code, reason) => {
     expect(toAppError(new AuthApiError('auth failed', 400, code)).reason).toBe(reason);
@@ -43,6 +44,7 @@ describe('toAppError', () => {
     ['user_already_exists', 'email'],
     ['email_exists', 'email'],
     ['weak_password', 'password'],
+    ['same_password', 'password'],
   ])('ties the sign-up auth code %s to the %s field', (code, field) => {
     expect(toAppError(new AuthApiError('auth failed', 422, code)).field).toBe(field);
   });

@@ -54,7 +54,7 @@ describe('SignUpForm', () => {
     expect(terms).toHaveAccessibleDescription(roAuth.fields.terms.error);
   });
 
-  it('sends the name, the language and the confirmation link back to the login page', async () => {
+  it('sends the name, the language and a confirmation link through the sign-in callback', async () => {
     const requests: { body: unknown; redirectTo: string | null }[] = [];
     server.use(
       http.post(SIGN_UP_URL, async ({ request }) => {
@@ -79,7 +79,7 @@ describe('SignUpForm', () => {
       expect.objectContaining({ data: { locale: 'en', full_name: 'Ana Pop' } }),
     );
     const redirectTo = new URL(requests[0]?.redirectTo ?? '');
-    expect(redirectTo.pathname).toBe('/login');
+    expect(redirectTo.pathname).toBe('/auth/callback');
     expect(redirectTo.searchParams.get('redirect')).toBe('/publish');
   });
 
@@ -175,12 +175,12 @@ describe('SignUpForm', () => {
     expect(screen.getByText(roAuth.signUp.failedText)).toBeInTheDocument();
   });
 
-  it('explains that social sign-up is not available yet', async () => {
+  it('explains that a social provider is not turned on yet', async () => {
     const { user } = await renderWithProviders(<SignUpForm onEmailSent={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: roAuth.social.facebook }));
 
-    expect(screen.getByRole('status')).toHaveTextContent(
+    expect(await screen.findByRole('status')).toHaveTextContent(
       roAuth.social.unavailable.replace('{{provider}}', roAuth.social.providers.facebook),
     );
   });

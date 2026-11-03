@@ -1,1 +1,7 @@
-export type SocialProvider = 'google' | 'apple' | 'facebook';
+import type { Enums } from '@/lib/supabase/database.types';
+
+export const SOCIAL_PROVIDERS = ['google', 'facebook'] as const;
+
+export type SocialProvider = (typeof SOCIAL_PROVIDERS)[number];
+
+export type AppRole = Enums<'app_role'>;

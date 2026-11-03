@@ -1,4 +1,3 @@
-import { AppleIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FacebookMark } from '@/components/brand/facebook-mark';
@@ -15,11 +14,6 @@ const PROVIDERS: readonly { id: SocialProvider; mark: ReactNode; className: stri
       'border-border bg-card text-foreground hover:border-border-control hover:bg-secondary',
   },
   {
-    id: 'apple',
-    mark: <AppleIcon aria-hidden className="size-5" />,
-    className: 'border-social-apple bg-social-apple text-on-inverse hover:bg-social-apple-hover',
-  },
-  {
     id: 'facebook',
     mark: <FacebookMark />,
     className:
@@ -28,10 +22,11 @@ const PROVIDERS: readonly { id: SocialProvider; mark: ReactNode; className: stri
 ];
 
 type SocialSignInProps = {
+  pendingProvider?: SocialProvider | undefined;
   onSelect: (provider: SocialProvider) => void;
 };
 
-export function SocialSignIn({ onSelect }: SocialSignInProps) {
+export function SocialSignIn({ pendingProvider, onSelect }: SocialSignInProps) {
   const { t } = useTranslation('auth');
 
   return (
@@ -42,6 +37,8 @@ export function SocialSignIn({ onSelect }: SocialSignInProps) {
             key={provider.id}
             type="button"
             size="xl"
+            aria-busy={pendingProvider === provider.id}
+            disabled={pendingProvider !== undefined}
             onClick={() => {
               onSelect(provider.id);
             }}

@@ -1,12 +1,12 @@
 import { screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import roAuth from '@/i18n/locales/ro/auth.json';
-import { buildSession, buildUser } from '@/test/factories/auth';
+import { buildUser, signedInAs } from '@/test/factories/auth';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
 
-const signedIn = { session: buildSession(), user: buildSession().user };
+const signedIn = signedInAs();
 
 describe('SignUpPage', { timeout: 20_000 }, () => {
   it('sends a signed-in visitor to the page named in redirect', async () => {

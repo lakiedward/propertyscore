@@ -148,7 +148,7 @@ template = "Your code is {{ .Code }}"
 max_frequency = "5s"
 
 [auth.external.google]
-enabled = true
+enabled = false
 client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 redirect_uri = ""
@@ -157,7 +157,7 @@ skip_nonce_check = false
 email_optional = false
 
 [auth.external.facebook]
-enabled = true
+enabled = false
 client_id = "env(SUPABASE_AUTH_EXTERNAL_FACEBOOK_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_FACEBOOK_SECRET)"
 redirect_uri = ""

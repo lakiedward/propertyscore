@@ -51,3 +51,23 @@ export function toSignUpPayload(values: SignUpValues, locale: Locale, redirect?:
   };
 }
 export type SignUpPayload = ReturnType<typeof toSignUpPayload>;
+
+export const passwordResetRequestSchema = z.object({
+  email: emailSchema,
+});
+export type PasswordResetRequestValues = z.infer<typeof passwordResetRequestSchema>;
+
+export const newPasswordFormSchema = z
+  .object({
+    password: newPasswordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    path: ['confirmPassword'],
+    error: messageKey('auth:newPassword.mismatch'),
+  });
+export type NewPasswordFormValues = z.infer<typeof newPasswordFormSchema>;
+
+export const authCallbackSearchSchema = authSearchSchema.extend({
+  error_code: z.string().optional().catch(undefined),
+});

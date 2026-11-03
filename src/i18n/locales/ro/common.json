@@ -65,7 +65,8 @@
       "email_not_confirmed": "Confirmă adresa de email înainte de autentificare.",
       "user_already_exists": "Există deja un cont cu acest email.",
       "weak_password": "Parola este prea slabă. Alege una mai lungă sau mai variată.",
-      "rate_limited": "Prea multe încercări. Așteaptă puțin și încearcă din nou."
+      "rate_limited": "Prea multe încercări. Așteaptă puțin și încearcă din nou.",
+      "same_password": "Parola nouă trebuie să fie diferită de cea veche."
     }
   },
   "validation": {

@@ -20,6 +20,7 @@ const AUTH_REASONS: Readonly<Record<string, AppErrorReason>> = {
   user_already_exists: 'user_already_exists',
   email_exists: 'user_already_exists',
   weak_password: 'weak_password',
+  same_password: 'same_password',
   over_request_rate_limit: 'rate_limited',
   over_email_send_rate_limit: 'rate_limited',
 };
@@ -27,6 +28,7 @@ const AUTH_REASONS: Readonly<Record<string, AppErrorReason>> = {
 const AUTH_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
   user_already_exists: 'email',
   weak_password: 'password',
+  same_password: 'password',
 };
 
 const AUTH_UNAUTHENTICATED = new Set([

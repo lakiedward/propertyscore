@@ -1,5 +1,5 @@
 import type { Session, User } from '@supabase/supabase-js';
-import type { AuthState } from '@/features/auth';
+import { createAuthState, type AuthState } from '@/features/auth';
 
 const TEST_USER_ID = 'a0000000-0000-4000-8000-000000000001';
 const SESSION_LIFETIME_SECONDS = 3600;
@@ -30,4 +30,8 @@ export function buildSession(overrides: Partial<Session> = {}): Session {
   };
 }
 
-export const signedOut: AuthState = { session: null, user: null };
+export const signedOut: AuthState = createAuthState(null);
+
+export function signedInAs(...roles: AuthState['roles']): AuthState {
+  return createAuthState(buildSession(), roles);
+}

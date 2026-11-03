@@ -211,8 +211,6 @@
   --color-on-cta-soft: var(--on-cta-soft);
   --color-zone-chip: var(--zone-chip);
   --color-border-declared: var(--border-declared);
-  --color-social-apple: var(--social-apple);
-  --color-social-apple-hover: var(--social-apple-hover);
   --color-social-facebook: var(--social-facebook);
   --color-social-facebook-hover: var(--social-facebook-hover);
   --color-google-red: var(--google-red);
@@ -490,8 +488,6 @@
   --ps-green-declared: #b9c9bd;
   --ps-slate-mist: #dce7ee;
   --ps-slate-chip: #e2eaf0;
-  --ps-black: #000000;
-  --ps-black-hover: #1f1f1f;
   --ps-facebook: #1877f2;
   --ps-facebook-hover: #166fe0;
   --ps-google-red: #ea4335;
@@ -744,8 +740,6 @@
   --on-cta-soft: var(--ps-green-on-lime);
   --zone-chip: var(--ps-slate-chip);
   --border-declared: var(--ps-green-declared);
-  --social-apple: var(--ps-black);
-  --social-apple-hover: var(--ps-black-hover);
   --social-facebook: var(--ps-facebook);
   --social-facebook-hover: var(--ps-facebook-hover);
   --google-red: var(--ps-google-red);
