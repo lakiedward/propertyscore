@@ -150,5 +150,91 @@
     "failedTitle": "Raportul nu a putut fi generat",
     "failedBody": "Am înregistrat problema și o rezolvăm. Dacă raportul nu e gata în 24 de ore, îți returnăm banii.",
     "backHome": "Înapoi la pagina principală"
+  },
+  "green": {
+    "radius": {
+      "label": "Raza pe care măsurăm verdele",
+      "meters": "{{value}} m",
+      "km": "{{value}} km"
+    },
+    "map": {
+      "park": "Arată pe listă: {{name}}",
+      "note": "Cercul verde: {{radius}}. Petele verzi sunt parcurile și zonele verzi publice; apasă pe un număr ca să găsești parcul în listă."
+    },
+    "share": {
+      "title": {
+        "above": "{{share}} verde în {{radius}}, peste media orașului",
+        "below": "{{share}} verde în {{radius}}, sub media orașului",
+        "same": "{{share}} verde în {{radius}}, cam cât media orașului"
+      },
+      "titleNoCity": "{{share}} verde în {{radius}}",
+      "lead": "Cât din suprafața din jurul adresei e parc, scuar sau pădure publică. Schimbă raza ca să vezi cum se schimbă.",
+      "cityAverage": "Media orașului ({{radius}})",
+      "waffleLabel_one": "{{count}} pătrat din 100 e spațiu verde, pe o rază de {{radius}}",
+      "waffleLabel_few": "{{count}} pătrate din 100 sunt spațiu verde, pe o rază de {{radius}}",
+      "waffleLabel_other": "{{count}} de pătrate din 100 sunt spațiu verde, pe o rază de {{radius}}",
+      "waffleCaption": "1 pătrat = 1% din cerc, cam {{area}} m²",
+      "scale": "Barele merg până la {{cap}}, pragul de la care verdele primește punctaj maxim."
+    },
+    "parks": {
+      "title": "Parcuri și spații verzi în apropiere",
+      "lead": "Cele mai apropiate spații verzi publice, cu timpul de mers pe jos.",
+      "leadApproximate": "Cele mai apropiate spații verzi publice. Distanțele sunt aproximate din linia dreaptă până avem traseele pe străzi.",
+      "none": "Nu am găsit spații verzi publice pe o rază de 1,5 km.",
+      "filtersLabel": "Filtrează parcurile",
+      "filter": {
+        "playground": "Cu loc de joacă",
+        "dog_park": "Pentru câini",
+        "large": "Peste 2 ha"
+      },
+      "noneFiltered": "Niciun parc din apropiere nu are toate filtrele alese.",
+      "clearFilters": "Șterge filtrele",
+      "unnamed": "Spațiu verde fără nume",
+      "walk_one": "{{count}} minut pe jos",
+      "walk_few": "{{count}} minute pe jos",
+      "walk_other": "{{count}} de minute pe jos",
+      "walkApproximate_one": "~{{count}} minut pe jos",
+      "walkApproximate_few": "~{{count}} minute pe jos",
+      "walkApproximate_other": "~{{count}} de minute pe jos",
+      "area": "{{area}} ha",
+      "distance": "{{distance}} m",
+      "amenity": {
+        "playground": "Loc de joacă",
+        "dog_park": "Loc pentru câini",
+        "sports": "Teren de sport"
+      },
+      "nearestSmall": "Cel mai apropiat spațiu verde cu punctaj",
+      "nearestLarge": "Cel mai apropiat parc mare"
+    },
+    "breakdown": {
+      "title": "De unde vin punctele",
+      "lead": "Scorul adună patru măsurători. Fiecare bară arată câte puncte a luat adresa din cât se putea.",
+      "component": {
+        "c1": "Verde pe {{radius}}",
+        "c2": "Verde pe {{radius}}",
+        "c3": "Spațiu verde de cel puțin {{area}} ha aproape",
+        "c4": "Parc de cel puțin {{area}} ha",
+        "c5": "Copaci pe stradă"
+      },
+      "noData": "fără date",
+      "noneInReach": "niciunul în rază",
+      "inside": "adresa e chiar lângă",
+      "walk": "~{{distance}} m pe jos",
+      "points_one": "{{earned}} din {{count}} punct",
+      "points_few": "{{earned}} din {{count}} puncte",
+      "points_other": "{{earned}} din {{count}} de puncte",
+      "excluded": "scos din calcul",
+      "gain": {
+        "share_one": "Mai mult verde pe {{radius}} ar putea aduce până la {{count}} punct.",
+        "share_few": "Mai mult verde pe {{radius}} ar putea aduce până la {{count}} puncte.",
+        "share_other": "Mai mult verde pe {{radius}} ar putea aduce până la {{count}} de puncte.",
+        "park_one": "Un spațiu verde de cel puțin {{area}} ha la {{distance}} ar aduce {{count}} punct în plus.",
+        "park_few": "Un spațiu verde de cel puțin {{area}} ha la {{distance}} ar aduce {{count}} puncte în plus.",
+        "park_other": "Un spațiu verde de cel puțin {{area}} ha la {{distance}} ar aduce {{count}} de puncte în plus.",
+        "trees_one": "Mai mulți copaci pe stradă ar putea aduce {{count}} punct.",
+        "trees_few": "Mai mulți copaci pe stradă ar putea aduce {{count}} puncte.",
+        "trees_other": "Mai mulți copaci pe stradă ar putea aduce {{count}} de puncte."
+      }
+    }
   }
 }
