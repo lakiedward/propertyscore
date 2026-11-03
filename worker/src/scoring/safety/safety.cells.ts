@@ -161,6 +161,7 @@ export function lightingExcludedCities(
 
 export type Calibration = {
   k: number;
+  lived_in_types: SafetyType[];
   cells: number;
   median_day: number | null;
   p90_day: number | null;
@@ -178,6 +179,7 @@ export function calibrate(cells: readonly CellSafety[], params: SafetyParams): C
     value !== null && value > 0 ? Math.round((100 * (target - params.start)) / value) / 100 : null;
   return {
     k: params.k,
+    lived_in_types: params.calibration.lived_in_types,
     cells: points.length,
     median_day: median === null ? null : round1(params.start + params.k * median),
     p90_day: p90 === null ? null : round1(params.start + params.k * p90),

@@ -153,6 +153,16 @@ describe.skipIf(!databaseUrl || !hasOsmium())('safetyModule against the local da
       lighting_coverage_compared_with: ['timisoara'],
     });
     expect(stats?.city.street_km).toBeCloseTo(0.2, 1);
-    expect(stats?.calibration).toMatchObject({ k: 7, cells: expect.any(Number) as number });
+    const livedIn = cells.filter(
+      (cell) =>
+        (cell.layers?.by_type.shop?.count ?? 0) + (cell.layers?.by_type.transit_stop?.count ?? 0) >
+        0,
+    ).length;
+    expect(livedIn).toBeGreaterThan(0);
+    expect(stats?.calibration).toMatchObject({
+      k: 7,
+      lived_in_types: ['shop', 'transit_stop'],
+      cells: livedIn,
+    });
   });
 });

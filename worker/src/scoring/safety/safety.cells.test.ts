@@ -119,7 +119,13 @@ describe('calibrate', () => {
       ],
       params,
     );
-    expect(result).toMatchObject({ k: 4, cells: 6, median_day: 58, k_for_median: 5 });
+    expect(result).toMatchObject({
+      k: 4,
+      lived_in_types: ['shop', 'transit_stop'],
+      cells: 6,
+      median_day: 58,
+      k_for_median: 5,
+    });
     expect(result.p90_day).toBeCloseTo(66);
     expect(result.k_for_p90).toBeCloseTo(8.75, 2);
   });
