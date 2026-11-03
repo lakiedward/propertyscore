@@ -23,7 +23,7 @@ paths:
 | `src/snapshot/` | `buildSnapshot` (the orchestrator) and `snapshot.db.ts` (one function per SQL call) |
 | `src/scoring/` | `categories.ts` (the 9 keys), `components.ts` (`linearPoints`, `weightedScore`), `score-module.ts`, `registry.ts`, `write-category-scores.ts` |
 | `src/scoring/<score>/` | one folder per score (`green`, `noise`, …): its module, its pure formula and their tests |
-| `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `osmExtractDate`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`) |
+| `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `osmExtractDate`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`), GDAL rasters (`readRaster`, `sampleBilinear`, `sampleRasterAtPoints`) |
 
 ## Database access
 
@@ -78,11 +78,11 @@ pnpm test:worker          # worker Vitest suite; the database tests run when DAT
 
 - Unit tests sit next to the source (`*.test.ts`) and import from `vitest` explicitly.
 - Tests that need the database use `describe.skipIf(!process.env.DATABASE_URL)`, run against the local stack only, and remove the rows they created (snapshots, and the grid cells of a city when it had none before). Test files run one at a time (`fileParallelism: false`) because only one snapshot can be building. CI runs them after `pnpm db:test` with the local stack's URL.
-- Tests that need `osmium` use `describe.skipIf` on its presence; CI installs `osmium-tool`.
+- Tests that need `osmium` or GDAL use `describe.skipIf` on their presence; CI installs `osmium-tool` and `gdal-bin`.
 
 ## Deploy (Railway)
 
 - One Railway service per long-running role, all from this folder's `Dockerfile`, built from the **repository root** (the lockfile lives there): Root Directory empty, `RAILWAY_DOCKERFILE_PATH=worker/Dockerfile`, Watch Paths `worker/**`, `supabase/migrations/**`, `pnpm-lock.yaml`.
 - The snapshot builder is a cron service whose start command is the image default (`node src/main.ts build-snapshot`), scheduled monthly. Later document jobs get their own command and service.
-- System tools the worker shells out to (`osmium-tool`, later `gdal-bin` and Chromium) are installed in the `Dockerfile`, pinned by the base image's Debian release.
+- System tools the worker shells out to (`osmium-tool`, `gdal-bin`, later Chromium) are installed in the `Dockerfile`, pinned by the base image's Debian release.
 - Migrations reach production only through `deploy-db.yml`; deploy the worker after the migrations it needs are live.

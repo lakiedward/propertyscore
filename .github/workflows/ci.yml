@@ -49,8 +49,8 @@ jobs:
       - run: pnpm exec supabase start
       - run: pnpm db:lint
       - run: pnpm db:test
-      - name: Install osmium for the worker tests
-        run: sudo apt-get update && sudo apt-get install --yes osmium-tool
+      - name: Install osmium and GDAL for the worker tests
+        run: sudo apt-get update && sudo apt-get install --yes osmium-tool gdal-bin
       - name: Worker tests against the local database
         run: pnpm test:worker
         env:

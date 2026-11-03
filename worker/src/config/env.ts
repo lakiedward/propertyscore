@@ -9,6 +9,14 @@ const envSchema = z.object({
     .url({ protocol: /^https$/ })
     .default('https://download.geofabrik.de/europe/romania-latest.osm.pbf'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  ADS_API_URL: z.url({ protocol: /^https$/ }).default('https://ads.atmosphere.copernicus.eu/api'),
+  ADS_API_KEY: z.string().min(1).optional(),
+  AIR_EEA_MAP_YEAR: z
+    .string()
+    .regex(/^\d{4}$/)
+    .optional(),
+  AIR_EEA_PM25_MAP_URL: z.url({ protocol: /^https$/ }).optional(),
+  AIR_EEA_NO2_MAP_URL: z.url({ protocol: /^https$/ }).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
