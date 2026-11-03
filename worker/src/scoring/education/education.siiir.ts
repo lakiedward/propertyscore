@@ -116,6 +116,7 @@ export function resolveUnit(unit: SiiirUnitKind, plan: UnitPlan | undefined): Re
       teachingLanguages: languages,
     };
   }
+  if (plan.otherLevels.length === 0 && !plan.hasPostSecondary) return withoutPlan(unit);
   const fallback =
     plan.otherLevels.length > 0 ? plan.otherLevels : unit.kind === 'scored' ? unit.levels : [];
   if (fallback.length === 0) return withoutPlan(unit);

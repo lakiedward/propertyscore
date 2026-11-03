@@ -198,6 +198,14 @@ describe('resolveUnit', () => {
     });
   });
 
+  it('keeps the name levels when the plan has no level it recognises', () => {
+    expect(resolveUnit({ kind: 'scored', levels: ['primary'] }, unitPlan({}))).toEqual({
+      unit: { kind: 'scored', levels: ['primary'] },
+      levelSource: 'name',
+      teachingLanguages: null,
+    });
+  });
+
   it('keeps name exclusions and units outside the plan as they are', () => {
     const special: SiiirUnitKind = {
       kind: 'excluded',
