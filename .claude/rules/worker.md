@@ -77,7 +77,7 @@ pnpm test:worker          # worker Vitest suite; the database tests run when DAT
 ```
 
 - Unit tests sit next to the source (`*.test.ts`) and import from `vitest` explicitly.
-- Tests that need the database use `describe.skipIf(!process.env.DATABASE_URL)`, run against the local stack only, and remove the rows they created. CI runs them after `pnpm db:test` with the local stack's URL.
+- Tests that need the database use `describe.skipIf(!process.env.DATABASE_URL)`, run against the local stack only, and remove the rows they created (snapshots, and the grid cells of a city when it had none before). Test files run one at a time (`fileParallelism: false`) because only one snapshot can be building. CI runs them after `pnpm db:test` with the local stack's URL.
 - Tests that need `osmium` use `describe.skipIf` on its presence; CI installs `osmium-tool`.
 
 ## Deploy (Railway)
