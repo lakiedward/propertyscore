@@ -8,6 +8,7 @@ const envSchema = z.object({
   OSM_EXTRACT_URL: z
     .url({ protocol: /^https$/ })
     .default('https://download.geofabrik.de/europe/romania-latest.osm.pbf'),
+  VALHALLA_URL: z.url({ protocol: /^https?$/ }).optional(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 });
 

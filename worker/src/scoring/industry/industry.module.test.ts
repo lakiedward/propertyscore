@@ -104,6 +104,7 @@ describe.skipIf(!databaseUrl)('industryModule against the local database', () =>
       params,
       sourcesDir: '/tmp/propertyscore-sources',
       osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      router: null,
       logger: silentLogger,
     });
     expect(result.sourceDates).toEqual({ eea_industrial: VERSION, eea_industrial_year: '2024' });
