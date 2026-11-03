@@ -7,7 +7,7 @@ paths:
 
 # Worker rules: SmartCheck scoring engine and document jobs
 
-`worker/` is the trusted backend that runs outside Supabase (decision D20): the monthly SmartCheck snapshot builder today, the report generation and PDF jobs later. It is a pnpm workspace package (`@propertyscore/worker`) deployed to Railway from `worker/Dockerfile`. Everything in `CLAUDE.md` still applies (no comments, no secrets in the frontend, migrations only, tests only on request); the React, i18n and styling rules do not.
+`worker/` is the trusted backend that runs outside Supabase (decision D20): the monthly SmartCheck snapshot builder and the online report generation today, the PDF job later. It is a pnpm workspace package (`@propertyscore/worker`) deployed to Railway from `worker/Dockerfile`. Everything in `CLAUDE.md` still applies (no comments, no secrets in the frontend, migrations only, tests only on request); the React, i18n and styling rules do not.
 
 ## Runtime and layout
 
@@ -24,6 +24,7 @@ paths:
 | `src/test/` | test helpers only: `hasOsmium`, `prepareSourcesDir` (turns an `.osm` fixture into a cached extract) |
 | `src/scoring/` | `categories.ts` (the 9 keys), `components.ts` (`linearPoints`, `weightedScore`), `score-module.ts`, `registry.ts`, `write-category-scores.ts` |
 | `src/scoring/<score>/` | one folder per score (`green`, `noise`, …): its module, its pure formula and their tests |
+| `src/report/` | `generateReport` (the report job), `report.db.ts`, `report-section.ts` (the section contract) and `sections.ts` (the registry) |
 | `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `osmExtractDate`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`) |
 
 ## Database access
@@ -57,6 +58,14 @@ The orchestrator computes `overall` (weighted mean of the categories that have d
 
 Modules are idempotent: running a snapshot twice overwrites, never duplicates. Big source files (OSM extracts, GeoPackages) are cached under `SOURCES_DIR`, never stored in the database; only the derived rows are.
 
+## Report sections
+
+`generate-report --report <id>` turns a `pending` or `failed` row of `public.online_reports` into a `ready` one: `private.begin_online_report` checks the ready snapshot and finds the address's cell (codes `report_not_found`, `report_already_ready`, `no_ready_snapshot`, `outside_coverage`), the sections run, and `private.complete_online_report` freezes `result` (the sections plus `summarize_report_zone`: zone and per-category score, percentile among residential cells, city average, histogram, weights, source dates) with the snapshot and formula version. Any failure goes to `fail_online_report` with the error code.
+
+- A score that shows more than its number in the report adds a `ReportSection` (`key`, `build(context)`) in `src/scoring/<key>/<key>.report.ts`, returning a JSON object built from its own tables for the report's cell and snapshot (or `null` when there is nothing to show), and registers it with one line in `src/report/sections.ts`. The object lands in `result.<key>` and the frontend reads it from there.
+- Section output is frozen with the report: the frontend never queries the engine tables. Keep it small (the nearest features, a few measured values), never source geometries.
+- `create-report --email <user> --lat <lat> --lon <lon> --address <text> [--locale ro|en]` inserts a pending report for a local user; it stands in for the order flow and is for local testing only.
+
 ## Scores built so far
 
 | Score | Tables (`private`) | Sources | Notes |
@@ -67,7 +76,7 @@ Modules are idempotent: running a snapshot twice overwrites, never duplicates. B
 
 Each score is built on its own branch on top of the foundation; these conventions keep the branches from colliding.
 
-- **Shared files you may touch:** one line in `src/scoring/registry.ts` (modules listed in the order of `CATEGORY_KEYS`), new `apt-get` packages appended to the single install line of `worker/Dockerfile`, new variables in `src/config/env.ts`. Changing `ScoreContext`, `ScoreModule`, `writeCategoryScores`, the orchestrator or the foundation tables goes through the foundation owner (the Green thread) in its own PR.
+- **Shared files you may touch:** one line in `src/scoring/registry.ts` (modules listed in the order of `CATEGORY_KEYS`), one line in `src/report/sections.ts` for the score's report section, new `apt-get` packages appended to the single install line of `worker/Dockerfile`, new variables in `src/config/env.ts`. Changing `ScoreContext`, `ScoreModule`, `writeCategoryScores`, the orchestrator or the foundation tables goes through the foundation owner (the Green thread) in its own PR.
 - **Migrations:** `supabase migration new <verb>_<object>` at the time you write it; the timestamp order between scores does not matter because no score migration depends on another. Add parameters only to your own key: `update public.scoring_versions set params = params || jsonb_build_object('<key>', …) where kind = 'online' and label = 'v1'`. That works only while `v1` is unused; once a snapshot used it, the freeze trigger refuses and the change becomes a new version.
 - **Schema:** score tables, enums and functions go in `private`, so `database.types.ts` does not change and the branches do not conflict on it. pgTAP files are named `supabase/tests/scoring_<key>.test.sql`.
 - **`is_residential`** belongs to the foundation: the orchestrator sets it from OSM land use (`src/snapshot/residential.ts`) before the modules run. Modules never write it.
@@ -81,6 +90,8 @@ Each score is built on its own branch on top of the foundation; these convention
 
 ```
 pnpm --filter @propertyscore/worker start build-snapshot [--period YYYY-MM] [--city <slug> …] [--score <key> …]
+pnpm --filter @propertyscore/worker start generate-report --report <uuid>
+pnpm --filter @propertyscore/worker start create-report --email <user> --lat <lat> --lon <lon> --address <text> [--locale ro|en]
 pnpm test:worker          # worker Vitest suite; the database tests run when DATABASE_URL is set
 ```
 
