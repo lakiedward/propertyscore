@@ -28,10 +28,12 @@ describe('validation messages', () => {
     );
     expect(parseValidationMessage(firstMessage(z.email(), 'nope')).key).toBe('email');
     expect(parseValidationMessage(firstMessage(z.string().min(3), 'ab'))).toEqual({
+      kind: 'validation',
       key: 'minLength',
       params: { count: 3 },
     });
     expect(parseValidationMessage(firstMessage(z.number().max(10), 11))).toEqual({
+      kind: 'validation',
       key: 'max',
       params: { max: 10 },
     });

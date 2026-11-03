@@ -14,6 +14,7 @@ import { ListingsBoard } from './listings-board';
 
 vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 
+const ANY_SPACE = /\s/g;
 const CITY = 'Timișoara';
 const count = roListings.board.count;
 
@@ -22,6 +23,10 @@ function fill(template: string, values: Record<string, string | number>) {
     (text, [name, value]) => text.replace(`{{${name}}}`, String(value)),
     template,
   );
+}
+
+function normalised(text: string) {
+  return text.replace(ANY_SPACE, ' ');
 }
 
 function countTail(template: string) {
@@ -74,7 +79,9 @@ describe('ListingsBoard', () => {
       await screen.findByText(fill(count.rent_one, { count: 1, city: CITY })),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(fill(roCommon.price.perMonth, { price: formatPrice(450, 'EUR') })),
+      screen.getByText(
+        normalised(fill(roCommon.price.perMonth, { price: formatPrice(450, 'EUR') })),
+      ),
     ).toBeInTheDocument();
   });
 

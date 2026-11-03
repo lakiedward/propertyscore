@@ -36,7 +36,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
-    css: false,
+    css: { include: [/\.css\?raw$/] },
     env: {
       VITE_APP_ENV: 'local',
       VITE_SUPABASE_URL: 'http://127.0.0.1:54321',
