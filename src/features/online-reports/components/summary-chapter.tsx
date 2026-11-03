@@ -14,6 +14,7 @@ import {
   type Highlight,
 } from '../online-report.utils';
 import { CategoryBars } from './category-bars';
+import { ContextPlaceholders } from './context-placeholders';
 import { CATEGORY_ICON, categoryClasses } from './category-style';
 
 type SummaryChapterProps = {
@@ -66,6 +67,7 @@ export function SummaryChapter({ categories, onOpenChapter }: SummaryChapterProp
         />
       </div>
       <CategoryBars categories={categories} onOpenChapter={onOpenChapter} />
+      <ContextPlaceholders />
     </div>
   );
 }

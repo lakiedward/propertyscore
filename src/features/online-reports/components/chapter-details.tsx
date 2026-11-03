@@ -1,17 +1,19 @@
 import type { ReportResult } from '../online-report.types';
-import type { ScoreChapterId } from '../online-report.utils';
+import type { DayMoment, ScoreChapterId } from '../online-report.utils';
+import { AccessibilityChapter } from './accessibility-chapter';
 import { AirChapter } from './air-chapter';
 import { FifteenMinuteChapter } from './fifteen-minute-chapter';
 import { IndustryChapter } from './industry-chapter';
-import { NoiseChapter, type NoiseMoment } from './noise-chapter';
+import { NoiseChapter } from './noise-chapter';
+import { SafetyChapter } from './safety-chapter';
 
 type ChapterDetailsProps = {
   chapter: ScoreChapterId;
   result: ReportResult;
   selectedId: string | null;
   onSelect: (id: string) => void;
-  noiseMoment: NoiseMoment;
-  onNoiseMomentChange: (moment: NoiseMoment) => void;
+  moment: DayMoment;
+  onMomentChange: (moment: DayMoment) => void;
 };
 
 export function ChapterDetails({
@@ -19,21 +21,35 @@ export function ChapterDetails({
   result,
   selectedId,
   onSelect,
-  noiseMoment,
-  onNoiseMomentChange,
+  moment,
+  onMomentChange,
 }: ChapterDetailsProps) {
   switch (chapter) {
     case 'noise':
       return result.noise ? (
-        <NoiseChapter
-          section={result.noise}
-          moment={noiseMoment}
-          onMomentChange={onNoiseMomentChange}
-        />
+        <NoiseChapter section={result.noise} moment={moment} onMomentChange={onMomentChange} />
       ) : null;
     case 'air':
       return result.air ? (
         <AirChapter section={'data_status' in result.air ? result.air : undefined} />
+      ) : null;
+    case 'safety':
+      return result.safety ? (
+        <SafetyChapter
+          section={result.safety.status === 'scored' ? result.safety : undefined}
+          moment={moment}
+          onMomentChange={onMomentChange}
+          selectedId={selectedId}
+          onSelect={onSelect}
+        />
+      ) : null;
+    case 'accessibility':
+      return result.accessibility ? (
+        <AccessibilityChapter
+          section={result.accessibility.status === 'scored' ? result.accessibility : undefined}
+          selectedId={selectedId}
+          onSelect={onSelect}
+        />
       ) : null;
     case 'fifteen_minute':
       return result.fifteen_minute ? (

@@ -254,11 +254,6 @@
       "leadStreet": "Valoarea vine din hărțile strategice de zgomot ale orașului, la punctul adresei.",
       "leadEstimate": "Valoarea e o estimare din OpenStreetMap, calibrată pe hărțile oficiale din alte orașe."
     },
-    "moment": {
-      "label": "Ziua sau noaptea",
-      "day": "Ziua",
-      "night": "Noaptea"
-    },
     "scale": {
       "label": "Nivelul la adresă, {{level}}, față de recomandarea OMS pentru trafic, {{guideline}}",
       "guideline": "OMS: {{value}}"
@@ -502,5 +497,124 @@
     "drive_one": "{{count}} minut cu mașina",
     "drive_few": "{{count}} minute cu mașina",
     "drive_other": "{{count}} de minute cu mașina"
+  },
+  "moment": {
+    "label": "Ziua sau noaptea",
+    "day": "Ziua",
+    "night": "Noaptea"
+  },
+  "safety": {
+    "noData": "Nu avem destule date pentru scorul de siguranță în această zonă. Scorul nu intră în scorul zonei.",
+    "facts": {
+      "day": "Scorul zonei ziua",
+      "night": "Scorul zonei noaptea",
+      "police": "Până la cea mai apropiată secție de poliție"
+    },
+    "moment": {
+      "day": "Ziua · {{score}}",
+      "night": "Noaptea · {{score}}"
+    },
+    "why": {
+      "title": "De ce are adresa {{score}}",
+      "lead": "Pornim de la {{start}} de puncte și adunăm ce se află în jurul adresei. Alege momentul zilei ca să vezi diferența.",
+      "raising": "Ce ridică scorul",
+      "lowering": "Ce coboară scorul",
+      "none": "Nimic notabil."
+    },
+    "row": {
+      "lighting": "Iluminat stradal",
+      "shop": "Magazine",
+      "nonstop": "Magazine non-stop",
+      "mixed_use": "Clădiri cu spații comerciale",
+      "police": "Poliție",
+      "fire_station": "Pompieri",
+      "diplomatic": "Ambasade și consulate",
+      "bar": "Baruri și cluburi",
+      "park": "Parcuri",
+      "park_lit": "Parcuri iluminate",
+      "isolated_passage": "Pasaje și locuri izolate",
+      "train_station": "Gară",
+      "train_halt": "Haltă",
+      "transit_stop": "Stații de transport",
+      "start": "Punct de pornire",
+      "night_offset": "Noaptea, în general",
+      "far_types": "Alte elemente, prea departe ca să conteze mult",
+      "limit": "Limita scalei 0–100"
+    },
+    "landmarks": {
+      "title": "Repere din apropiere",
+      "lead": "Cel mai apropiat reper din fiecare tip; apasă pe unul ca să-l vezi pe hartă."
+    },
+    "map": {
+      "landmark": "Arată pe listă: {{name}}",
+      "note": "Numerele de pe hartă sunt reperele din listă."
+    },
+    "limits": {
+      "proxy": "E un indicator de proximitate și percepție, nu o statistică a infracțiunilor: nu există date publice de încredere pe stradă.",
+      "osm": "Felinarele și programul localurilor vin din OpenStreetMap și pot fi incomplete."
+    }
+  },
+  "accessibility": {
+    "noData": "Nu avem date de transport public pentru această zonă. Scorul nu intră în scorul zonei.",
+    "minutes_one": "{{count}} minut",
+    "minutes_few": "{{count}} minute",
+    "minutes_other": "{{count}} de minute",
+    "facts": {
+      "stops": "Stații la câteva minute de mers",
+      "routes": "Linii care trec prin ele",
+      "average": "În medie până la punctele importante"
+    },
+    "destinations": {
+      "title": "Cum ajungi în punctele importante ale orașului",
+      "lead": "Timpul total într-o zi lucrătoare dimineața, de la ușă la ușă.",
+      "unreachable": "Fără legătură directă",
+      "walking": "Pe jos e mai rapid",
+      "route": "{{mode}} {{ref}}",
+      "noRoute": "Fără linie directă",
+      "transfers_one": "{{count}} schimbare",
+      "transfers_few": "{{count}} schimbări",
+      "transfers_other": "{{count}} de schimbări",
+      "note": "Timp total = mers pe jos + așteptare medie + drumul cu linia + mers pe jos."
+    },
+    "stops": {
+      "title": "Stațiile din jur",
+      "lead": "Liniile care opresc și cât faci pe jos până la fiecare stație.",
+      "none": "Nicio stație la distanță de mers pe jos.",
+      "unnamed": "Stație fără nume"
+    },
+    "routes": {
+      "title": "Liniile care trec pe aici",
+      "peak_one": "o dată pe oră la vârf",
+      "peak_few": "de {{count}} ori pe oră la vârf",
+      "peak_other": "de {{count}} de ori pe oră la vârf"
+    },
+    "mode": {
+      "bus": "Autobuz",
+      "trolleybus": "Troleibuz",
+      "tram": "Tramvai",
+      "subway": "Metrou"
+    },
+    "map": {
+      "destination": "Arată pe listă: {{name}}",
+      "note": "Numerele de pe hartă sunt punctele importante din listă."
+    },
+    "limits": {
+      "schedule": "Folosim mersul oficial al liniilor; întârzierile și lucrările nu apar.",
+      "peak": "Timpii sunt pentru o zi lucrătoare dimineața; seara și în weekend pot fi mai lungi.",
+      "partial": "Orașul nu are mers oficial publicat, așa că folosim doar stațiile și liniile din OpenStreetMap (date parțiale)."
+    }
+  },
+  "context": {
+    "title": "Context, fără scor",
+    "lead": "Două lucruri pe care le arătăm ca informație, nu în scorul zonei.",
+    "seismic": {
+      "title": "Risc seismic",
+      "text": "În curând: clasa de risc a clădirii și zona seismică a orașului."
+    },
+    "investment": {
+      "title": "Investiție",
+      "text": "În curând: prețurile din zonă și cum au evoluat."
+    },
+    "soon": "În curând"
   }
 }

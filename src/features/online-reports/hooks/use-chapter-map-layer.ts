@@ -23,7 +23,7 @@ export function useChapterMapLayer({
   onSelect,
   isNight,
 }: ChapterMapLayerInput): ReportMapLayer | undefined {
-  const { t } = useTranslation('onlineReports');
+  const { t, i18n } = useTranslation('onlineReports');
   const common = { selectedId, onSelect };
 
   if (chapter === 'noise' && result.noise?.status === 'scored') {
@@ -34,6 +34,40 @@ export function useChapterMapLayer({
       places: [],
       radiusM: result.noise.map_radius_m,
       note: t('noise.map.note'),
+    };
+  }
+  if (chapter === 'safety' && result.safety?.status === 'scored') {
+    const landmarks = result.safety.landmarks;
+    return {
+      ...common,
+      hueKey: 'safety',
+      overlays: [],
+      places: landmarks.map((landmark) => ({
+        id: landmark.id,
+        position: landmark.location,
+        label: t('safety.map.landmark', {
+          name: landmark.name ?? t(`safety.row.${landmark.type}`),
+        }),
+      })),
+      radiusM: Math.max(500, ...landmarks.map((landmark) => landmark.distance_m)),
+      note: t('safety.map.note'),
+    };
+  }
+  if (chapter === 'accessibility' && result.accessibility?.status === 'scored') {
+    const section = result.accessibility;
+    return {
+      ...common,
+      hueKey: 'accessibility',
+      overlays: [],
+      places: section.destinations.map((item) => ({
+        id: item.id,
+        position: item.location,
+        label: t('accessibility.map.destination', {
+          name: i18n.resolvedLanguage === 'en' ? item.label.en : item.label.ro,
+        }),
+      })),
+      radiusM: null,
+      note: t('accessibility.map.note'),
     };
   }
   if (chapter === 'fifteen_minute' && result.fifteen_minute?.status === 'scored') {

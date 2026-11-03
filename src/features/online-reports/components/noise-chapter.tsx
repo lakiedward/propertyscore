@@ -1,25 +1,22 @@
 import { useTranslation } from 'react-i18next';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatNumber } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import { useDistanceLabel } from '../hooks/use-distance-label';
 import type { NoiseSection } from '../online-report.types';
+import type { DayMoment } from '../online-report.utils';
 import { categoryClasses } from './category-style';
 import { ChapterFacts } from './chapter-facts';
 import { ChapterLimits } from './chapter-limits';
 import { ChapterPanel } from './chapter-panel';
+import { MomentToggle } from './moment-toggle';
 import { NoSectionData } from './no-section-data';
 
 const SCALE_MIN_DB = 35;
 const SCALE_MAX_DB = 80;
-const NOISE_MOMENTS = ['day', 'night'] as const;
-
-export type NoiseMoment = (typeof NOISE_MOMENTS)[number];
-
 type NoiseChapterProps = {
   section: NoiseSection;
-  moment: NoiseMoment;
-  onMomentChange: (moment: NoiseMoment) => void;
+  moment: DayMoment;
+  onMomentChange: (moment: DayMoment) => void;
 };
 
 function scalePosition(level: number): string {
@@ -70,27 +67,7 @@ export function NoiseChapter({ section, moment, onMomentChange }: NoiseChapterPr
             : t('noise.level.leadEstimate')
         }
       >
-        <ToggleGroup
-          type="single"
-          size="sm"
-          value={moment}
-          onValueChange={(value) => {
-            const next = NOISE_MOMENTS.find((item) => item === value);
-            if (next) onMomentChange(next);
-          }}
-          aria-label={t('noise.moment.label')}
-          className="w-fit gap-1 rounded-full border border-border bg-surface-sunken p-1"
-        >
-          {NOISE_MOMENTS.map((item) => (
-            <ToggleGroupItem
-              key={item}
-              value={item}
-              className="h-8 rounded-full px-3 text-caption font-bold data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-            >
-              {t(`noise.moment.${item}`)}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        <MomentToggle value={moment} onValueChange={onMomentChange} />
         <figure className="flex flex-col gap-2">
           <div
             role="img"

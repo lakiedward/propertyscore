@@ -245,11 +245,6 @@
       "leadStreet": "The value comes from the city's strategic noise maps, at the address point.",
       "leadEstimate": "The value is an estimate from OpenStreetMap, calibrated on the official maps of other cities."
     },
-    "moment": {
-      "label": "Day or night",
-      "day": "Day",
-      "night": "Night"
-    },
     "scale": {
       "label": "Level at the address, {{level}}, against the WHO guideline for traffic, {{guideline}}",
       "guideline": "WHO: {{value}}"
@@ -486,5 +481,121 @@
     "walk_other": "{{count}} minute walk",
     "drive_one": "{{count}} minute drive",
     "drive_other": "{{count}} minute drive"
+  },
+  "moment": {
+    "label": "Day or night",
+    "day": "Day",
+    "night": "Night"
+  },
+  "safety": {
+    "noData": "We do not have enough data for the safety score in this area. The score does not count in the zone score.",
+    "facts": {
+      "day": "Zone score by day",
+      "night": "Zone score at night",
+      "police": "To the nearest police station"
+    },
+    "moment": {
+      "day": "Day · {{score}}",
+      "night": "Night · {{score}}"
+    },
+    "why": {
+      "title": "Why the address scores {{score}}",
+      "lead": "We start from {{start}} points and add what is around the address. Pick the time of day to see the difference.",
+      "raising": "What raises the score",
+      "lowering": "What lowers the score",
+      "none": "Nothing notable."
+    },
+    "row": {
+      "lighting": "Street lighting",
+      "shop": "Shops",
+      "nonstop": "24-hour shops",
+      "mixed_use": "Buildings with shops",
+      "police": "Police",
+      "fire_station": "Fire station",
+      "diplomatic": "Embassies and consulates",
+      "bar": "Bars and clubs",
+      "park": "Parks",
+      "park_lit": "Lit parks",
+      "isolated_passage": "Underpasses and isolated spots",
+      "train_station": "Railway station",
+      "train_halt": "Railway halt",
+      "transit_stop": "Transit stops",
+      "start": "Starting point",
+      "night_offset": "At night, in general",
+      "far_types": "Other elements, too far to matter much",
+      "limit": "The 0–100 scale limit"
+    },
+    "landmarks": {
+      "title": "Landmarks nearby",
+      "lead": "The nearest landmark of each kind; tap one to see it on the map."
+    },
+    "map": {
+      "landmark": "Show in the list: {{name}}",
+      "note": "The numbers on the map are the landmarks in the list."
+    },
+    "limits": {
+      "proxy": "This is an indicator of proximity and perception, not crime statistics: there is no reliable public street-level data.",
+      "osm": "Street lamps and opening hours come from OpenStreetMap and may be incomplete."
+    }
+  },
+  "accessibility": {
+    "noData": "We have no public transport data for this area. The score does not count in the zone score.",
+    "minutes_one": "{{count}} minute",
+    "minutes_other": "{{count}} minutes",
+    "facts": {
+      "stops": "Stops a few minutes' walk away",
+      "routes": "Lines through them",
+      "average": "On average to the key places"
+    },
+    "destinations": {
+      "title": "How you get to the city's key places",
+      "lead": "Total door-to-door time on a weekday morning.",
+      "unreachable": "No direct link",
+      "walking": "Walking is faster",
+      "route": "{{mode}} {{ref}}",
+      "noRoute": "No direct line",
+      "transfers_one": "{{count}} change",
+      "transfers_other": "{{count}} changes",
+      "note": "Total time = walk + average wait + ride + walk."
+    },
+    "stops": {
+      "title": "Stops nearby",
+      "lead": "The lines that stop there and how long the walk to each stop is.",
+      "none": "No stop within walking distance.",
+      "unnamed": "Unnamed stop"
+    },
+    "routes": {
+      "title": "Lines that pass here",
+      "peak_one": "{{count}} time an hour at peak",
+      "peak_other": "{{count}} times an hour at peak"
+    },
+    "mode": {
+      "bus": "Bus",
+      "trolleybus": "Trolleybus",
+      "tram": "Tram",
+      "subway": "Metro"
+    },
+    "map": {
+      "destination": "Show in the list: {{name}}",
+      "note": "The numbers on the map are the key places in the list."
+    },
+    "limits": {
+      "schedule": "We use the official timetables; delays and roadworks do not show.",
+      "peak": "Times are for a weekday morning; evenings and weekends can be longer.",
+      "partial": "The city publishes no official timetable, so we use only the stops and lines from OpenStreetMap (partial data)."
+    }
+  },
+  "context": {
+    "title": "Context, not scored",
+    "lead": "Two things we show as information, not in the zone score.",
+    "seismic": {
+      "title": "Seismic risk",
+      "text": "Coming soon: the building's risk class and the city's seismic zone."
+    },
+    "investment": {
+      "title": "Investment",
+      "text": "Coming soon: prices in the area and how they changed."
+    },
+    "soon": "Coming soon"
   }
 }

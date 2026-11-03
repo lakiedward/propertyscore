@@ -43,14 +43,17 @@ type ReportMapProps = {
   layer?: ReportMapLayer | undefined;
 };
 
-function ringBounds(position: LngLat, radiusM: number): LngLatBounds {
-  const ring = circleRing(position, radiusM, 36);
-  const longitudes = ring.map(([longitude]) => longitude);
-  const latitudes = ring.map(([, latitude]) => latitude);
+function pointsBounds(points: readonly LngLat[]): LngLatBounds {
+  const longitudes = points.map(([longitude]) => longitude);
+  const latitudes = points.map(([, latitude]) => latitude);
   return [
     [Math.min(...longitudes), Math.min(...latitudes)],
     [Math.max(...longitudes), Math.max(...latitudes)],
   ];
+}
+
+function ringBounds(position: LngLat, radiusM: number): LngLatBounds {
+  return pointsBounds(circleRing(position, radiusM, 36));
 }
 
 function greenOverlays(position: LngLat, green: ReportMapGreenLayer): MapOverlay[] {
@@ -188,9 +191,11 @@ export function ReportMap({ position, green, layer }: ReportMapProps) {
           bounds={
             green
               ? ringBounds(position, green.radiusM)
-              : layerRadiusM === null
-                ? undefined
-                : ringBounds(position, layerRadiusM)
+              : layerRadiusM !== null
+                ? ringBounds(position, layerRadiusM)
+                : layer && layer.places.length > 0
+                  ? pointsBounds([position, ...layer.places.map((place) => place.position)])
+                  : undefined
           }
           markers={[...parkMarkers, ...layerMarkers, addressMarker]}
           overlays={

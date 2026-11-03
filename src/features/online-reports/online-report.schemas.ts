@@ -402,6 +402,142 @@ export const healthSectionSchema = z.discriminatedUnion('status', [
   }),
 ]);
 
+const SAFETY_TYPES = [
+  'lighting',
+  'shop',
+  'nonstop',
+  'mixed_use',
+  'police',
+  'fire_station',
+  'diplomatic',
+  'bar',
+  'park',
+  'park_lit',
+  'isolated_passage',
+  'train_station',
+  'train_halt',
+  'transit_stop',
+] as const;
+
+const safetyMomentSchema = z.object({
+  score: scoreSchema,
+  waterfall: z.array(
+    z.object({
+      key: z.enum([...SAFETY_TYPES, 'start', 'night_offset', 'far_types', 'limit']),
+      points: z.number(),
+    }),
+  ),
+  far_types: z.array(z.enum(SAFETY_TYPES)),
+  contributions: z.array(
+    z.object({
+      type: z.enum(SAFETY_TYPES),
+      points: z.number(),
+      count: z.number().int().min(0),
+      nearest_m: z.number().min(0).nullable(),
+    }),
+  ),
+});
+
+export const safetySectionSchema = z.discriminatedUnion('status', [
+  z.object({ schema_version: z.literal(1), status: z.literal('no_data') }),
+  z.object({
+    schema_version: z.literal(1),
+    status: z.literal('scored'),
+    day: scoreSchema,
+    night: scoreSchema,
+    moment_weights: z.object({ day: z.number().min(0), night: z.number().min(0) }),
+    excluded_types: z.array(z.enum(SAFETY_TYPES)),
+    distance_method: z.string(),
+    address: z.object({
+      score: scoreSchema,
+      start: z.number(),
+      day: safetyMomentSchema,
+      night: safetyMomentSchema,
+    }),
+    landmarks: z.array(
+      z.object({
+        id: z.string(),
+        type: z.enum(SAFETY_TYPES),
+        name: z.string().nullable(),
+        location: position,
+        distance_m: z.number().min(0),
+      }),
+    ),
+  }),
+]);
+
+const TRANSIT_MODES = ['bus', 'trolleybus', 'tram', 'subway'] as const;
+
+const DESTINATION_KINDS = [
+  'center',
+  'station',
+  'university',
+  'hospital',
+  'mall',
+  'airport',
+] as const;
+
+export const accessibilitySectionSchema = z.discriminatedUnion('status', [
+  z.object({ schema_version: z.literal(1), status: z.literal('no_data') }),
+  z.object({
+    schema_version: z.literal(1),
+    status: z.literal('scored'),
+    data_quality: z.enum(['gtfs', 'osm_only']),
+    reference_date: z.string().nullable(),
+    components: z.array(
+      z.object({
+        key: z.enum(['access', 'travel', 'coverage']),
+        points: z.number().min(0).max(1).nullable(),
+        weight: z.number().min(0),
+      }),
+    ),
+    directions: z.number().int().min(0).nullable(),
+    stops: z.array(
+      z.object({
+        id: z.string(),
+        name: z.string().nullable(),
+        modes: z.array(z.enum(TRANSIT_MODES)),
+        location: position,
+        walk_min: z.number().min(0),
+        walk_m: z.number().min(0),
+        routes: z.array(z.string()),
+      }),
+    ),
+    routes: z.array(
+      z.object({
+        key: z.string(),
+        ref: z.string().nullable(),
+        mode: z.enum(TRANSIT_MODES),
+        name: z.string().nullable(),
+        colour: z.string().nullable(),
+        text_colour: z.string().nullable(),
+        peak_per_hour: z.number().min(0).nullable(),
+      }),
+    ),
+    destinations: z.array(
+      z.object({
+        id: z.string(),
+        kind: z.enum(DESTINATION_KINDS),
+        label: z.object({ ro: z.string(), en: z.string() }),
+        location: position,
+        minutes: z.number().min(0).nullable(),
+        by_walking: z.boolean(),
+        walk: z.number().nullable(),
+        wait: z.number().nullable(),
+        ride: z.number().nullable(),
+        transfers: z.number().int().nullable(),
+        route: z
+          .object({
+            ref: z.string().nullable(),
+            mode: z.enum(TRANSIT_MODES),
+            colour: z.string().nullable(),
+          })
+          .nullable(),
+      }),
+    ),
+  }),
+]);
+
 export const reportResultSchema = z.looseObject({
   schema_version: z.literal(1),
   city: z.object({ slug: z.string(), name: z.string() }),
@@ -424,6 +560,8 @@ export const reportResultSchema = z.looseObject({
   fifteen_minute: fifteenMinuteSectionSchema.optional(),
   education: educationSectionSchema.optional(),
   health: healthSectionSchema.optional(),
+  safety: safetySectionSchema.optional(),
+  accessibility: accessibilitySectionSchema.optional(),
 });
 
 export const onlineReportSearchSchema = z.object({

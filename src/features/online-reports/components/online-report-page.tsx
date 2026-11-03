@@ -11,6 +11,7 @@ import {
   reportCode,
   scoredCategories,
   type ChapterId,
+  type DayMoment,
 } from '../online-report.utils';
 import type { OnlineReport, ReportResult } from '../online-report.types';
 import type { LngLat } from '@/components/map/map.config';
@@ -23,7 +24,6 @@ import { HealthDetails } from './health-details';
 import { ChapterTabs } from './chapter-tabs';
 import { GreenChapter } from './green-chapter';
 import { NextChapterButton } from './next-chapter-button';
-import type { NoiseMoment } from './noise-chapter';
 import { ReportHeader } from './report-header';
 import { ReportMap } from './report-map';
 import { ReportMethod } from './report-method';
@@ -83,7 +83,7 @@ function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportPr
       current?.chapter === chapter && current.id === id ? null : { chapter, id },
     );
   };
-  const [noiseMoment, setNoiseMoment] = useState<NoiseMoment>('day');
+  const [moment, setMoment] = useState<DayMoment>('day');
   const position: LngLat | null =
     report.longitude !== null && report.latitude !== null
       ? [report.longitude, report.latitude]
@@ -94,7 +94,7 @@ function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportPr
     position: position ?? [0, 0],
     selectedId,
     onSelect: selectPlace,
-    isNight: noiseMoment === 'night',
+    isNight: moment === 'night',
   });
   const following = nextChapter(chapter);
   const totalWeight = CATEGORY_KEYS.reduce(
@@ -182,8 +182,8 @@ function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportPr
                           result={result}
                           selectedId={id === chapter ? selectedId : null}
                           onSelect={selectPlace}
-                          noiseMoment={noiseMoment}
-                          onNoiseMomentChange={setNoiseMoment}
+                          moment={moment}
+                          onMomentChange={setMoment}
                         />
                       )
                     }

@@ -39,6 +39,10 @@ export const CHAPTER_CATEGORIES: Readonly<Record<ScoreChapterId, readonly Catego
   industry: ['industry'],
 };
 
+export const DAY_MOMENTS = ['day', 'night'] as const;
+
+export type DayMoment = (typeof DAY_MOMENTS)[number];
+
 export type CategoryGroupId = 'mostImportant' | 'environment' | 'services';
 
 export const CATEGORY_GROUPS: readonly {
