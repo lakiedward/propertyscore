@@ -51,6 +51,54 @@ describe('parseCommand', () => {
   });
 });
 
+describe('parseCommand for reports', () => {
+  it('reads the report to generate', () => {
+    expect(
+      parseCommand(['generate-report', '--report', 'd0000000-0000-4000-8000-000000000001'], NOW),
+    ).toEqual({ command: 'generate-report', reportId: 'd0000000-0000-4000-8000-000000000001' });
+    expect(() => parseCommand(['generate-report', '--report', '42'], NOW)).toThrow(
+      expect.objectContaining({ code: 'invalid_report_id' }),
+    );
+  });
+
+  it('reads a report request with Romanian as the default language', () => {
+    expect(
+      parseCommand(
+        [
+          'create-report',
+          '--email',
+          'buyer@example.test',
+          '--lat',
+          '45.7537',
+          '--lon',
+          '21.2257',
+          '--address',
+          'Piața Victoriei 1, Timișoara',
+        ],
+        NOW,
+      ),
+    ).toEqual({
+      command: 'create-report',
+      ownerEmail: 'buyer@example.test',
+      latitude: 45.7537,
+      longitude: 21.2257,
+      addressText: 'Piața Victoriei 1, Timișoara',
+      locale: 'ro',
+    });
+  });
+
+  it('names the invalid fields of a report request', () => {
+    expect(() =>
+      parseCommand(['create-report', '--email', 'nope', '--lat', '91', '--lon', '21'], NOW),
+    ).toThrow(
+      expect.objectContaining({
+        code: 'invalid_report_request',
+        message: 'create-report needs valid: email, lat, address',
+      }),
+    );
+  });
+});
+
 describe('currentPeriod', () => {
   it('uses the UTC month', () => {
     expect(currentPeriod(new Date('2026-01-31T23:30:00Z'))).toBe('2026-01');
