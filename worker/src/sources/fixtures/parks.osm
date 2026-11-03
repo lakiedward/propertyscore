@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="propertyscore-fixture">
+  <node id="1" version="1" lat="45.7500" lon="21.2300"/>
+  <node id="2" version="1" lat="45.7500" lon="21.2320"/>
+  <node id="3" version="1" lat="45.7515" lon="21.2320"/>
+  <node id="4" version="1" lat="45.7515" lon="21.2300"/>
+  <node id="5" version="1" lat="45.7540" lon="21.2260">
+    <tag k="shop" v="bakery"/>
+    <tag k="name" v="Brutăria Mărășești"/>
+  </node>
+  <node id="6" version="1" lat="45.9000" lon="21.5000">
+    <tag k="leisure" v="playground"/>
+  </node>
+  <way id="10" version="1">
+    <nd ref="1"/>
+    <nd ref="2"/>
+    <nd ref="3"/>
+    <nd ref="4"/>
+    <nd ref="1"/>
+    <tag k="leisure" v="park"/>
+    <tag k="name" v="Parcul Rozelor"/>
+  </way>
+</osm>
