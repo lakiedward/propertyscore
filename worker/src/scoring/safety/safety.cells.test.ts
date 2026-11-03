@@ -7,6 +7,8 @@ import {
   percentile,
   reachByType,
   scoreCells,
+  walkedCellDistances,
+  walkingTypes,
 } from './safety.cells.ts';
 import { v1Params } from './safety.test-params.ts';
 
@@ -35,6 +37,67 @@ describe('groupCellInputs', () => {
       { distanceM: 100, nightState: 'open' },
       { distanceM: 50, nightState: 'closed' },
     ]);
+  });
+});
+
+describe('walkedCellDistances', () => {
+  const station = (
+    key: 'police' | 'fire_station',
+    id: string,
+    meters: number | null,
+    nightState: 'open' | 'unknown',
+  ) => ({
+    key,
+    poi_id: id,
+    lng: 24.15,
+    lat: 45.79,
+    straight_m: 100,
+    night_state: nightState,
+    leg: meters === null ? null : { seconds: Math.round(meters / 1.25), meters },
+  });
+
+  it('walks to the police and fire stations only', () => {
+    expect(walkingTypes(params)).toEqual(['police', 'fire_station']);
+  });
+
+  it('groups the walked distances by type with their night state and drops unreachable ones', () => {
+    const rows = walkedCellDistances([
+      {
+        cellId: 'a',
+        routed: [
+          station('police', 'p1', 420, 'open'),
+          station('police', 'p2', null, 'unknown'),
+          station('police', 'p3', 900, 'unknown'),
+          station('fire_station', 'f1', 1500, 'unknown'),
+        ],
+      },
+      { cellId: 'b', routed: [station('police', 'p1', null, 'open')] },
+    ]);
+
+    expect(rows).toEqual([
+      {
+        cellId: 'a',
+        type: 'police',
+        distances: [420, 900],
+        nightStates: ['open', 'unknown'],
+        isWalked: true,
+      },
+      {
+        cellId: 'a',
+        type: 'fire_station',
+        distances: [1500],
+        nightStates: ['unknown'],
+        isWalked: true,
+      },
+    ]);
+  });
+
+  it('uses a walked distance as it is, without the straight-line detour', () => {
+    const inputs = groupCellInputs(
+      [{ cellId: 'a', type: 'police', distances: [420], nightStates: ['open'], isWalked: true }],
+      params,
+    );
+    expect(inputs.get('a')?.police).toEqual([{ distanceM: 420, nightState: 'open' }]);
   });
 });
 

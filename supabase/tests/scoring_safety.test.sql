@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(12);
+select plan(15);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -96,6 +96,42 @@ select ok(
   (select bool_and(d < 200) from private.safety_cell_inputs(:'snapshot_id', :'sibiu_id', '{"park": 600}') as i, unnest(i.distances) as d
    where i.cell_id = private.find_grid_cell(extensions.st_point(24.151, 45.7955, 4326)::extensions.geography, 175)),
   'The distance to an area is measured to its nearest edge, zero inside it'
+);
+
+select results_eq(
+  format(
+    $$ select c ->> 'key', abs((c ->> 'straight_m')::numeric - extensions.st_distance(g.center, f.geometry, false)::numeric) <= 1, c ->> 'night_state'
+       from private.safety_walk_candidates(%L, %L, '[{"key": "police", "search_radius_m": 1800, "max_candidates": 8}]') as w
+       join private.grid_cells g on g.id = w.cell_id
+       cross join lateral jsonb_array_elements(w.candidates) as c
+       join private.safety_features f on f.id = (c ->> 'poi_id')::uuid
+       where w.cell_id = %L $$,
+    :'snapshot_id', :'sibiu_id', :'centre_cell_id'
+  ),
+  $$ values ('police'::text, true, 'unknown'::text) $$,
+  'A cell walks only to the types asked, with each station''s night state'
+);
+
+select ok(
+  (select bool_and(
+     extensions.st_dwithin(
+       extensions.st_point((c ->> 'lng')::float8, (c ->> 'lat')::float8, 4326)::extensions.geography,
+       f.geometry, 1
+     ))
+   from private.safety_walk_candidates(:'snapshot_id', :'sibiu_id', '[{"key": "park", "search_radius_m": 600, "max_candidates": 8}]') as w
+   cross join lateral jsonb_array_elements(w.candidates) as c
+   join private.safety_features f on f.id = (c ->> 'poi_id')::uuid),
+  'The walk ends on the element itself, at its nearest edge for an area'
+);
+
+select ok(
+  not exists (
+    select 1
+    from private.safety_walk_candidates(:'snapshot_id', :'sibiu_id', '[{"key": "police", "search_radius_m": 300, "max_candidates": 8}]') as w
+    cross join lateral jsonb_array_elements(w.candidates) as c
+    where (c ->> 'straight_m')::numeric > 300
+  ),
+  'No station beyond the search radius is walked to'
 );
 
 select results_eq(

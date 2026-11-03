@@ -1,4 +1,7 @@
+import { z } from 'zod';
+
 import type { Sql } from '../../db/sql.ts';
+import { candidateSchema, type CellCandidates } from '../../routing/walk-access.ts';
 import type { GreenAmenity, GreenAreaKind } from './green.osm.ts';
 
 export type GreenSourceRow = {
@@ -24,6 +27,45 @@ export type GreenCellMeasure = {
   nearest_large_id: string | null;
   nearest_large_m: number | null;
 };
+
+export type ParkSize = 'small' | 'large';
+
+export type ParkWalkTarget = {
+  key: ParkSize;
+  minHa: number;
+  searchRadiusM: number;
+  maxCandidates: number;
+};
+
+const parkCandidateSchema = candidateSchema.extend({ key: z.enum(['small', 'large']) });
+
+export type ParkCandidate = z.infer<typeof parkCandidateSchema>;
+
+const parkCellSchema = z.object({
+  cell_id: z.string(),
+  lng: z.number(),
+  lat: z.number(),
+  candidates: z.array(parkCandidateSchema),
+});
+
+export async function listParkWalkCandidates(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+  targets: readonly ParkWalkTarget[],
+): Promise<CellCandidates<ParkCandidate>[]> {
+  const payload = targets.map((target) => ({
+    key: target.key,
+    min_ha: target.minHa,
+    search_radius_m: target.searchRadiusM,
+    max_candidates: target.maxCandidates,
+  }));
+  const rows = await sql`
+    select cell_id, lng, lat, candidates
+    from private.green_park_walk_candidates(${snapshotId}, ${cityId}, ${sql.json(payload)}::jsonb)
+  `;
+  return z.array(parkCellSchema).parse(rows);
+}
 
 export async function saveGreenSources(
   sql: Sql,
