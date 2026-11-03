@@ -1,11 +1,53 @@
-import { parseCommand } from './cli.ts';
-import { readEnv } from './config/env.ts';
-import { createSql } from './db/sql.ts';
+import { parseCommand, type WorkerCommand } from './cli.ts';
+import { type Env, readEnv } from './config/env.ts';
+import { createSql, type Sql } from './db/sql.ts';
 import { errorCode } from './lib/errors.ts';
-import { createLogger } from './lib/logger.ts';
+import { createLogger, type Logger } from './lib/logger.ts';
+import { generateReport } from './report/generate-report.ts';
+import { insertReport } from './report/report.db.ts';
+import { REPORT_SECTIONS } from './report/sections.ts';
 import { createValhallaClient } from './routing/valhalla.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
 import { buildSnapshot } from './snapshot/build-snapshot.ts';
+
+async function runCommand(
+  command: WorkerCommand,
+  sql: Sql,
+  env: Env,
+  logger: Logger,
+): Promise<void> {
+  switch (command.command) {
+    case 'build-snapshot': {
+      const result = await buildSnapshot({
+        sql,
+        modules: SCORE_MODULES,
+        period: command.period,
+        citySlugs: command.citySlugs,
+        scoreKeys: command.scoreKeys,
+        sourcesDir: env.SOURCES_DIR,
+        osmExtractUrl: env.OSM_EXTRACT_URL,
+        router: env.VALHALLA_URL ? createValhallaClient(env.VALHALLA_URL) : null,
+        logger,
+      });
+      logger.info('build-snapshot done', {
+        snapshot_id: result.snapshotId,
+        cities: result.cities,
+        cells: result.cells,
+        scores: result.scores.join(','),
+      });
+      return;
+    }
+    case 'generate-report':
+      await generateReport({ sql, reportId: command.reportId, sections: REPORT_SECTIONS, logger });
+      return;
+    case 'create-report': {
+      const reportId = await insertReport(sql, command);
+      logger.info('report created', { report_id: reportId });
+      await generateReport({ sql, reportId, sections: REPORT_SECTIONS, logger });
+      return;
+    }
+  }
+}
 
 async function main(): Promise<void> {
   const env = readEnv();
@@ -13,23 +55,7 @@ async function main(): Promise<void> {
   const command = parseCommand(process.argv.slice(2), new Date());
   const sql = createSql(env.DATABASE_URL);
   try {
-    const result = await buildSnapshot({
-      sql,
-      modules: SCORE_MODULES,
-      period: command.period,
-      citySlugs: command.citySlugs,
-      scoreKeys: command.scoreKeys,
-      sourcesDir: env.SOURCES_DIR,
-      osmExtractUrl: env.OSM_EXTRACT_URL,
-      router: env.VALHALLA_URL ? createValhallaClient(env.VALHALLA_URL) : null,
-      logger,
-    });
-    logger.info('build-snapshot done', {
-      snapshot_id: result.snapshotId,
-      cities: result.cities,
-      cells: result.cells,
-      scores: result.scores.join(','),
-    });
+    await runCommand(command, sql, env, logger);
   } finally {
     await sql.end({ timeout: 5 });
   }
