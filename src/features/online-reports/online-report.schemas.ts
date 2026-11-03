@@ -7,6 +7,8 @@ const categorySummarySchema = z.object({
   score: scoreSchema.nullable(),
   percentile: z.number().min(0).max(100).nullable(),
   city_avg: scoreSchema.nullable(),
+  city_min: scoreSchema.nullable().optional(),
+  city_max: scoreSchema.nullable().optional(),
   histogram: z.array(z.number().int().min(0)),
   weight: z.number().min(0),
 });
@@ -550,6 +552,8 @@ export const reportResultSchema = z.looseObject({
     score: scoreSchema.nullable(),
     percentile: z.number().min(0).max(100).nullable(),
     city_avg: scoreSchema.nullable(),
+    city_min: scoreSchema.nullable().optional(),
+    city_max: scoreSchema.nullable().optional(),
     histogram: z.array(z.number().int().min(0)),
   }),
   categories: categoriesSchema,
