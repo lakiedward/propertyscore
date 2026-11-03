@@ -83,6 +83,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('greenModule against the local dat
       scoreKeys: [],
       sourcesDir,
       osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      router: null,
       logger: createLogger('error', () => undefined),
     });
     snapshotId = result.snapshotId;

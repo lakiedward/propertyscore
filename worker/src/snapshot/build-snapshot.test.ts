@@ -103,6 +103,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       scoreKeys: [],
       sourcesDir,
       osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      router: null,
       logger: silentLogger,
     });
     created.push(result.snapshotId);
@@ -161,6 +162,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         scoreKeys: [],
         sourcesDir,
         osmExtractUrl: 'https://example.test/romania.osm.pbf',
+        router: null,
         logger: silentLogger,
       }),
     ).rejects.toThrow('source_missing');
