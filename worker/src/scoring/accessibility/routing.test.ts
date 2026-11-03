@@ -50,6 +50,7 @@ describe('runTransitRouting', () => {
         max_rides: 3,
         transport_modes: ['TRAM', 'SUBWAY', 'BUS'],
         matrix: true,
+        r5py_arguments: ['--max-memory', '60%'],
       });
       expect(await readFile(String(config.origins), 'utf8')).toBe(
         'id,lng,lat\ncell-a,24.15,45.79\ncell-b,24.16,45.8\n',

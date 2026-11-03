@@ -55,8 +55,7 @@ Pin exact versions when installing (`pnpm add -E`) and record them here.
 - **Unit and component tests:** Vitest, React Testing Library, `@testing-library/user-event`, `@testing-library/jest-dom`, MSW 2
 - **End-to-end:** Playwright
 - **Database tests:** pgTAP through `supabase test db`
-- **Worker transit routing:** Python 3 with `r5py` 1.1.7 (R5 on Java 21 from `eclipse-temurin:21-jre-noble`), only in `worker/transit/`; `unzip` and `osmium-tool` in the worker image
-- **Worker** (`worker/`, pnpm workspace package `@propertyscore/worker`, `.claude/rules/worker.md`): Node 24 running TypeScript directly, `postgres` 3.4.9 (postgres.js) as its only database client, Zod 4, Vitest; PostGIS (`extensions.postgis`) for the scoring grid; `osmium-tool` in its Docker image for OpenStreetMap extracts; deployed to Railway from `worker/Dockerfile`
+- **Worker** (`worker/`, pnpm workspace package `@propertyscore/worker`, `.claude/rules/worker.md`): Node 24 running TypeScript directly, `postgres` 3.4.9 (postgres.js) as its only database client, Zod 4, Vitest; PostGIS (`extensions.postgis`) for the scoring grid; `osmium-tool` and `unzip` in its Docker image for OpenStreetMap extracts and GTFS archives; transit routing in `worker/transit/` with Python 3 and `r5py` 1.1.7 (R5 jar fetched and checksum-verified by r5py at image build) on Java 21 from `eclipse-temurin:21.0.12_8-jre-noble`; deployed to Railway from `worker/Dockerfile`
 - **Quality:** ESLint 9 flat config (`typescript-eslint` strict type-checked, `react-hooks`, `react-refresh`, `jsx-a11y`, TanStack Query and Router plugins, `eslint-plugin-i18next`, `testing-library`, `playwright`), Prettier 3 + `prettier-plugin-tailwindcss`, EditorConfig, Knip, lefthook
 - **Delivery:** GitHub Actions (`ci.yml` on pull requests, `deploy-db.yml` for migrations), Netlify through its Git integration (`netlify.toml`: build, SPA fallback, security headers)
 

@@ -11,6 +11,8 @@ import type { LngLat } from './transit.types.ts';
 
 const run = promisify(execFile);
 
+const R5_MAX_MEMORY = '60%';
+
 export const ROUTE_SCRIPT = fileURLToPath(new URL('../../../transit/route.py', import.meta.url));
 
 type RoutingPoint = LngLat & { id: string };
@@ -147,6 +149,7 @@ export async function runTransitRouting(
       destinations: files.destinations,
       matrix: job.withMatrix,
       output_dir: outputDir,
+      r5py_arguments: ['--max-memory', R5_MAX_MEMORY],
     }),
     'utf8',
   );

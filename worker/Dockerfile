@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jre-noble AS java
+FROM eclipse-temurin:21.0.12_8-jre-noble AS java
 
 FROM node:24-bookworm-slim
 
