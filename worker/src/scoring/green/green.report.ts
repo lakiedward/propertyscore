@@ -102,23 +102,34 @@ function componentValue(
 
 export const greenReportSection: ReportSection = {
   key: 'green',
-  build: async ({ sql, snapshotId, cellId, citySlug, latitude, longitude, params }) => {
+  build: async ({ sql, snapshotId, cellId, citySlug, latitude, longitude, params, logger }) => {
     const greenParams = parseGreenParams(z.object({ green: z.unknown() }).parse(params).green);
     const cell = await readCell(sql, snapshotId, cellId, citySlug);
-    if (!cell) return null;
+    if (!cell) {
+      logger.warn('green section skipped: the cell has no green score', {
+        cell_id: cellId,
+        city: citySlug,
+      });
+      return null;
+    }
 
     const noData = noDataInputsSchema.safeParse(cell.inputs);
     if (noData.success) return { schema_version: 1, status: 'no_data', reason: noData.data.reason };
 
     const inputs = scoredInputsSchema.safeParse(cell.inputs);
-    if (!inputs.success) return null;
+    if (!inputs.success) {
+      logger.warn('green section skipped: the cell inputs do not match the schema', {
+        cell_id: cellId,
+      });
+      return null;
+    }
 
     const radii = { near: greenParams.near_radius_m, wide: greenParams.wide_radius_m };
     const surroundings = await readSurroundings(
       sql,
       snapshotId,
       { latitude, longitude },
-      radii.wide,
+      Math.max(radii.wide, PARKS_RADIUS_M),
       greenParams.small_min_ha,
     );
 
