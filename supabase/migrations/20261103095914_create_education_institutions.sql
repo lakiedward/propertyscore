@@ -53,6 +53,7 @@ declare
   v_existing private.education_institutions%rowtype;
   v_location extensions.geography;
   v_osm_ref text;
+  v_precision text;
   v_match_status text;
   v_count integer := 0;
 begin
@@ -94,6 +95,7 @@ begin
 
     v_osm_ref := v_row.osm_ref;
     v_match_status := v_row.match_status;
+    v_precision := v_row.location_precision;
 
     if v_osm_ref is not null then
       delete from private.education_institutions i
@@ -114,6 +116,8 @@ begin
         where i.osm_ref = v_osm_ref and i.id is distinct from v_existing.id
       ) then
         v_osm_ref := null;
+        v_location := null;
+        v_precision := null;
         if v_match_status = 'matched' then
           v_match_status := 'siiir_only';
         end if;
@@ -133,7 +137,7 @@ begin
       values (
         p_city_id, v_row.siiir_code, v_row.parent_siiir_code, v_osm_ref, v_row.name,
         v_row.levels, coalesce(v_row.ownership, 'unknown'), v_row.teaching_languages,
-        v_row.address_text, v_location, v_row.location_precision, v_match_status,
+        v_row.address_text, v_location, v_precision, v_match_status,
         v_row.source_date, p_seen_on
       );
     elsif v_existing.reviewed_at is not null then
@@ -162,7 +166,7 @@ begin
         teaching_languages = v_row.teaching_languages,
         address_text = v_row.address_text,
         location = v_location,
-        location_precision = v_row.location_precision,
+        location_precision = v_precision,
         match_status = v_match_status,
         source_date = v_row.source_date,
         last_seen_on = p_seen_on

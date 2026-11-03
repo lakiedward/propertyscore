@@ -106,11 +106,11 @@ select private.upsert_education_institutions(
 );
 
 select is(
-  (select coalesce(n.osm_ref, '-') || ':' || o.siiir_code
+  (select coalesce(n.osm_ref, '-') || ':' || o.siiir_code || ':' || coalesce(n.location_precision, '-')
    from private.education_institutions n, private.education_institutions o
    where n.siiir_code = '3261100005' and o.osm_ref = 'osm:node/20'),
-  '-:3261100003',
-  'A reviewed unit keeps its OSM unit and the newcomer stays register-only'
+  '-:3261100003:-',
+  'A reviewed unit keeps its OSM unit and the newcomer stays register-only, without its position'
 );
 
 insert into private.education_institutions (city_id, osm_ref, name, levels, location, location_precision, match_status, last_seen_on, reviewed_at)
@@ -176,7 +176,7 @@ select private.seed_cell_scores(:'snapshot_id', :'sibiu_id');
 
 select is(
   private.copy_education_pois(:'snapshot_id', :'sibiu_id', '2026-11-01'),
-  3,
+  2,
   'Placed, not excluded units seen in this import or reviewed reach the points of interest, once per category'
 );
 
