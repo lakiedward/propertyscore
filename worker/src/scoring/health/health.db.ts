@@ -68,12 +68,13 @@ export async function listCnasProviders(sql: Sql, cityId: string, on: string): P
       id: string;
       kind: CnasProviderKind;
       name: string;
+      address: string | null;
       list_date: string;
       longitude: number | null;
       latitude: number | null;
     }[]
   >`
-    select id, kind, name, to_char(list_date, 'YYYY-MM-DD') as list_date, longitude, latitude
+    select id, kind, name, address, to_char(list_date, 'YYYY-MM-DD') as list_date, longitude, latitude
     from private.list_cnas_providers(${cityId}, ${on}::date)
   `;
   return {
@@ -82,6 +83,7 @@ export async function listCnasProviders(sql: Sql, cityId: string, on: string): P
       id: row.id,
       kind: row.kind,
       name: row.name,
+      address: row.address,
       location:
         row.longitude === null || row.latitude === null
           ? null

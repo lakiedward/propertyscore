@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { haversineMeters, matchInstitutions, matchSummary } from './education.match.ts';
+import {
+  haversineMeters,
+  matchInstitutions,
+  matchSummary,
+  placeUnmatched,
+} from './education.match.ts';
 import type { OsmEducationUnit } from './education.osm.ts';
 import type { RegisterRow } from './education.siiir.ts';
 
@@ -109,6 +114,7 @@ describe('matchInstitutions', () => {
       siiir_only: 1,
       osm_only: 0,
       excluded: 0,
+      geocoded: 1,
       unplaced: 0,
     });
   });
@@ -166,5 +172,41 @@ describe('matchInstitutions', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ match_status: 'excluded', osm_ref: 'osm:way/1' });
     expect(matchSummary(rows)).toMatchObject({ excluded: 1, unplaced: 0 });
+  });
+});
+
+describe('placeUnmatched', () => {
+  it('geocodes only the register rows that stayed without a match and a position', async () => {
+    const rows = matchInstitutions(
+      [
+        registerRow({ siiir_code: 'matched' }),
+        registerRow({
+          siiir_code: 'found',
+          name: 'Liceul Teoretic Vlad',
+          address: 'Str. Găsită 4',
+        }),
+        registerRow({
+          siiir_code: 'missing',
+          name: 'Liceul Teoretic Mircea',
+          address: 'Str. Lipsă 9',
+        }),
+        registerRow({ siiir_code: 'excluded', name: 'Școala Specială', is_excluded: true }),
+      ],
+      [osmUnit({})],
+      MATCH,
+    );
+    const asked: string[] = [];
+    const placed = await placeUnmatched(rows, (address) => {
+      asked.push(address);
+      return Promise.resolve(address === 'Str. Găsită 4' ? { lng: 21.25, lat: 45.76 } : null);
+    });
+    expect(asked).toEqual(['Str. Găsită 4', 'Str. Lipsă 9']);
+    expect(placed.find((row) => row.siiir_code === 'found')).toMatchObject({
+      lng: 21.25,
+      lat: 45.76,
+      location_precision: 'geocoded',
+      match_status: 'siiir_only',
+    });
+    expect(matchSummary(placed)).toMatchObject({ geocoded: 1, unplaced: 1 });
   });
 });
