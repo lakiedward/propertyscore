@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(14);
+select plan(15);
 
 select results_eq(
   $$
@@ -149,6 +149,13 @@ select throws_ok(
   '42501',
   null,
   'A visitor cannot read the market listings'
+);
+
+select throws_ok(
+  $$ select count(*) from private.market_imports $$,
+  '42501',
+  null,
+  'A visitor cannot read the market imports'
 );
 
 set local role authenticated;

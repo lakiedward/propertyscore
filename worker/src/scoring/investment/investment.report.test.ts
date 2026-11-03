@@ -162,6 +162,29 @@ describe.skipIf(!databaseUrl)('market listings import and the Investment assessm
     ).rejects.toMatchObject({ code: 'market_import_exists' });
   });
 
+  it('leaves no open import behind when a file needs an exchange rate it was not given', async () => {
+    const ronPath = join(directory, 'ron.csv');
+    await writeFile(ronPath, listingsCsv().replaceAll(',EUR,', ',RON,'));
+
+    await expect(
+      importMarketListings({
+        sql,
+        source: SOURCE,
+        period: '2026-09-01',
+        filePath: ronPath,
+        eurRonRate: null,
+        params,
+        logger: silentLogger,
+      }),
+    ).rejects.toMatchObject({ code: 'market_rate_required' });
+    const [open] = await sql<{ count: number }[]>`
+      select count(*)::integer as count
+      from private.market_imports
+      where source = ${SOURCE} and completed_at is null
+    `;
+    expect(open?.count).toBe(0);
+  });
+
   it('gives the asking price, the estimate, the rent and the yield around the address', async () => {
     const report = await assessInvestmentAtAddress(
       sql,

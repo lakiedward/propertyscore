@@ -5,7 +5,12 @@ import { readCsvObjects } from '../../sources/csv.ts';
 import { WorkerError } from '../../lib/errors.ts';
 import type { Logger } from '../../lib/logger.ts';
 import type { Sql } from '../../db/sql.ts';
-import { beginMarketImport, completeMarketImport, insertMarketListings } from './investment.db.ts';
+import {
+  beginMarketImport,
+  completeMarketImport,
+  discardMarketImport,
+  insertMarketListings,
+} from './investment.db.ts';
 import type { InvestmentParams } from './investment.params.ts';
 
 export const MARKET_CSV_COLUMNS = [
@@ -200,26 +205,31 @@ export async function importMarketListings(
     batch = [];
   };
 
-  const rows = readCsvObjects(
-    createReadStream(options.filePath, { encoding: 'utf8' }),
-    MARKET_CSV_COLUMNS,
-    `market listings ${options.source}`,
-  );
-  for await (const raw of rows) {
-    const normalized = normalizeMarketRow(raw, params.plausible, options.eurRonRate);
-    if ('rejected' in normalized) {
-      reject(normalized.rejected);
-      continue;
+  try {
+    const rows = readCsvObjects(
+      createReadStream(options.filePath, { encoding: 'utf8' }),
+      MARKET_CSV_COLUMNS,
+      `market listings ${options.source}`,
+    );
+    for await (const raw of rows) {
+      const normalized = normalizeMarketRow(raw, params.plausible, options.eurRonRate);
+      if ('rejected' in normalized) {
+        reject(normalized.rejected);
+        continue;
+      }
+      if (seenIds.has(normalized.row.source_listing_id)) {
+        reject('duplicate_id');
+        continue;
+      }
+      seenIds.add(normalized.row.source_listing_id);
+      batch.push(normalized.row);
+      if (batch.length >= BATCH_SIZE) await flush();
     }
-    if (seenIds.has(normalized.row.source_listing_id)) {
-      reject('duplicate_id');
-      continue;
-    }
-    seenIds.add(normalized.row.source_listing_id);
-    batch.push(normalized.row);
-    if (batch.length >= BATCH_SIZE) await flush();
+    await flush();
+  } catch (error) {
+    await discardMarketImport(sql, importId);
+    throw error;
   }
-  await flush();
 
   await completeMarketImport(sql, importId, accepted, rejected);
   options.logger.info('market listings imported', {

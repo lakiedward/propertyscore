@@ -57,6 +57,10 @@ export async function insertMarketListings(
   return result?.inserted ?? 0;
 }
 
+export async function discardMarketImport(sql: Sql, importId: string): Promise<void> {
+  await sql`delete from private.market_imports where id = ${importId} and completed_at is null`;
+}
+
 export async function completeMarketImport(
   sql: Sql,
   importId: string,
