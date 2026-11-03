@@ -85,6 +85,9 @@ describe('classifySiiirUnit', () => {
     expect(classifySiiirUnit(SCHOOL, 'Școala Militară de Maiștri Militari')).toMatchObject({
       kind: 'excluded',
     });
+    expect(classifySiiirUnit(SCHOOL, 'COLEGIUL NAȚIONAL MILITAR "MIHAI VITEAZUL"')).toMatchObject({
+      kind: 'excluded',
+    });
   });
 
   it('skips clubs, inspectorates and units of unknown level', () => {

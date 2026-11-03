@@ -39,7 +39,7 @@ describe('parseSheetRows', () => {
 });
 
 describe('readXlsxRows', () => {
-  it('reads the first sheet of a workbook', async () => {
+  it('reads the first sheet of a workbook through its shared strings', async () => {
     const rows = await readXlsxRows(FIXTURE);
     expect(rows[0]?.[0]).toBe('Generat la data: 08/10/2025 14:26');
     expect(rows[1]?.[11]).toBe('Cod SIIIR unitate');

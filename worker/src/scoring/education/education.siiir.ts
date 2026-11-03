@@ -58,7 +58,7 @@ export function classifySiiirUnit(type: string, longName: string): SiiirUnitKind
   if (type === COMMUNITY_KINDERGARTEN) return { kind: 'scored', levels: ['kindergarten'] };
   if (type !== SCHOOL_UNIT) return { kind: 'skipped', reason: 'not_a_school' };
   const name = plain(longName);
-  if (/\b(postliceal\w*|posticeal\w*|militara|politie|agentilor|agenti)\b/.test(name)) {
+  if (/\b(postliceal\w*|posticeal\w*|militar\w*|politie|agentilor|agenti)\b/.test(name)) {
     return { kind: 'excluded', levels: ['upper_secondary'], reason: 'post_secondary' };
   }
   if (/\b(special\w*|incluziv\w*|pedagogie curativa)\b/.test(name)) {
