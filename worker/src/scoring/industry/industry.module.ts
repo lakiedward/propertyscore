@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { JsonObject } from '../../db/sql.ts';
 import { WorkerError } from '../../lib/errors.ts';
 import { downloadOnce } from '../../sources/download.ts';
+import { readZipMember } from '../../sources/zip.ts';
 import type { ScoreModule } from '../score-module.ts';
 import { writeCategoryScores, type CellCategoryScore } from '../write-category-scores.ts';
 import {
@@ -11,7 +12,6 @@ import {
   INSTALLATION_COLUMNS,
   latestReportingYear,
   readCountryRows,
-  readZipMember,
   RELEASE_COLUMNS,
 } from './eea-register.ts';
 import {

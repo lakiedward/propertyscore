@@ -13,7 +13,41 @@ const PHRASES: readonly [RegExp, string][] = [
   [/\bnumarul\b/g, 'nr'],
 ];
 
-const IGNORED_TOKENS = new Set(['nr', 'de', 'si', 'cu', 'din', 'la']);
+const IGNORED_TOKENS = new Set(['nr', 'de', 'si', 'cu', 'din', 'la', 'pt', 'pentru']);
+
+const UNIT_TYPE_TOKENS = new Set([
+  'sg',
+  'sp',
+  'gpp',
+  'gpn',
+  'gps',
+  'gr',
+  'pp',
+  'pn',
+  'cresa',
+  'scoala',
+  'generala',
+  'gimnaziala',
+  'primara',
+  'clasele',
+  'i',
+  'iv',
+  'viii',
+  'program',
+  'prelungit',
+  'normal',
+  'l',
+  'lt',
+  'ltehn',
+  'cn',
+  'ct',
+  'liceul',
+  'colegiul',
+  'national',
+  'tehnic',
+  'tehnologic',
+  'teoretic',
+]);
 
 export function normalizeName(name: string): string {
   let text = name
@@ -26,8 +60,16 @@ export function normalizeName(name: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
-function tokens(normalized: string): string[] {
-  return normalized.split(' ').filter((token) => token !== '' && !IGNORED_TOKENS.has(token));
+function distinctiveTokens(name: string, ignoredWords: ReadonlySet<string>): string[] {
+  return normalizeName(name)
+    .split(' ')
+    .filter(
+      (token) =>
+        token !== '' &&
+        !IGNORED_TOKENS.has(token) &&
+        !UNIT_TYPE_TOKENS.has(token) &&
+        !ignoredWords.has(token),
+    );
 }
 
 function numbers(list: readonly string[]): string {
@@ -38,12 +80,39 @@ function numbers(list: readonly string[]): string {
     .join(',');
 }
 
-export function nameSimilarity(a: string, b: string): number {
-  const left = tokens(normalizeName(a));
-  const right = tokens(normalizeName(b));
-  if (left.length === 0 || right.length === 0) return 0;
-  if (numbers(left) !== numbers(right)) return 0;
-  const rightSet = new Set(right);
-  const shared = new Set(left.filter((token) => rightSet.has(token))).size;
-  return (2 * shared) / (new Set(left).size + rightSet.size);
+function words(list: readonly string[]): Set<string> {
+  return new Set(list.filter((token) => !/^\d+$/.test(token)));
+}
+
+function dice(left: ReadonlySet<string>, right: ReadonlySet<string>): number {
+  if (left.size === 0 || right.size === 0) return 0;
+  const shared = [...left].filter((token) => right.has(token)).length;
+  return (2 * shared) / (left.size + right.size);
+}
+
+export function placeWords(text: string): Set<string> {
+  return new Set(
+    normalizeName(text)
+      .split(' ')
+      .filter((token) => token !== ''),
+  );
+}
+
+export function nameSimilarity(
+  a: string,
+  b: string,
+  ignoredWords: ReadonlySet<string> = new Set(),
+): number {
+  const left = distinctiveTokens(a, ignoredWords);
+  const right = distinctiveTokens(b, ignoredWords);
+  const leftNumbers = numbers(left);
+  const rightNumbers = numbers(right);
+  const leftWords = words(left);
+  const rightWords = words(right);
+  if (leftNumbers !== '' && rightNumbers !== '') {
+    if (leftNumbers !== rightNumbers) return 0;
+    if (leftWords.size === 0 || rightWords.size === 0) return 1;
+    return dice(leftWords, rightWords);
+  }
+  return dice(leftWords, rightWords);
 }
