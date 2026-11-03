@@ -24,8 +24,16 @@ paths:
 | `src/test/` | test helpers only: `hasOsmium`, `prepareSourcesDir` (turns an `.osm` fixture into a cached extract) |
 | `src/scoring/` | `categories.ts` (the 9 keys), `components.ts` (`linearPoints`, `weightedScore`), `score-module.ts`, `registry.ts`, `write-category-scores.ts` |
 | `src/scoring/<score>/` | one folder per score (`green`, `noise`, …): its module, its pure formula and their tests |
+| `src/scoring/accessibility/` | the transit score: GTFS and OpenStreetMap transit import, the reference weekday, the r5py job wrapper (`routing.ts`) and the formula |
 | `src/report/` | `generateReport` (the report job), `report.db.ts`, `report-section.ts` (the section contract) and `sections.ts` (the registry) |
 | `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `osmExtractDate`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`) |
+
+## Transit routing (Python)
+
+- `worker/transit/route.py` is the only Python in the worker: an r5py (R5, Java 21) job the accessibility module runs as a subprocess, like `osmium`. It reads a `job.json` (OSM clip, GTFS archives or folders, reference date and window, origins, stops, destinations) and writes `walk_stops.csv`, `destinations.csv`, `itineraries.csv` and `matrix.bin` (big-endian `uint16` minutes, `65535` = not reachable). It never connects to the database; TypeScript reads its outputs and writes the rows.
+- Its dependencies are pinned in `worker/transit/requirements.txt` and installed into the `/opt/transit` venv of the image, whose `bin` comes first on `PATH`, so the module calls `python3`. Java comes from the `eclipse-temurin:21.0.12_8-jre-noble` stage (an exact tag, bumped on purpose) of the `Dockerfile`; the R5 jar is downloaded and checksum-verified by r5py at build time into `XDG_CACHE_HOME`.
+- The JVM is capped with r5py's `--max-memory 60%` (`R5_MAX_MEMORY` in `routing.ts`, passed as `r5py_arguments` in the job), leaving the rest of the container's RAM to Node and postgres.js. Size the Railway service from the largest city: the cell-to-cell matrix of București (~6,700 cells) is about 90 MB on top of the R5 network.
+- Only pure helpers live outside `run()`, and they are tested with the standard library (`python3 -m unittest discover --start-directory worker/transit`), so CI needs no Java for them.
 
 ## Database access
 
@@ -106,5 +114,6 @@ pnpm test:worker          # worker Vitest suite; the database tests run when DAT
 
 - One Railway service per long-running role, all from this folder's `Dockerfile`, built from the **repository root** (the lockfile lives there): Root Directory empty, `RAILWAY_DOCKERFILE_PATH=worker/Dockerfile`, Watch Paths `worker/**`, `supabase/migrations/**`, `pnpm-lock.yaml`.
 - The snapshot builder is a cron service whose start command is the image default (`node src/main.ts build-snapshot`), scheduled monthly. Later document jobs get their own command and service.
-- System tools the worker shells out to (`osmium-tool`, later `gdal-bin` and Chromium) are installed in the `Dockerfile`, pinned by the base image's Debian release.
+- System tools the worker shells out to (`osmium-tool`, `unzip`, `python3`, later `gdal-bin` and Chromium) are installed in the `Dockerfile`, pinned by the base image's Debian release.
+- The transit routing stack is also in the image: Java 21 copied from `eclipse-temurin:21.0.12_8-jre-noble`, the `/opt/transit` venv with `r5py` 1.1.7 from `worker/transit/requirements.txt`, and the R5 jar r5py downloads and checksum-verifies during the build (cached under `XDG_CACHE_HOME=/opt/cache`). The Temurin JRE runs on the bookworm base (glibc 2.36); the first Railway build is the check that the jar download works.
 - Migrations reach production only through `deploy-db.yml`; deploy the worker after the migrations it needs are live.
