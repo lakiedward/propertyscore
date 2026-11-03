@@ -3,6 +3,7 @@ import { readEnv } from './config/env.ts';
 import { createSql } from './db/sql.ts';
 import { errorCode } from './lib/errors.ts';
 import { createLogger } from './lib/logger.ts';
+import { createValhallaClient } from './routing/valhalla.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
 import { buildSnapshot } from './snapshot/build-snapshot.ts';
 
@@ -20,6 +21,7 @@ async function main(): Promise<void> {
       scoreKeys: command.scoreKeys,
       sourcesDir: env.SOURCES_DIR,
       osmExtractUrl: env.OSM_EXTRACT_URL,
+      router: env.VALHALLA_URL ? createValhallaClient(env.VALHALLA_URL) : null,
       logger,
     });
     logger.info('build-snapshot done', {

@@ -97,6 +97,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('safetyModule against the local da
       params: version?.params.safety,
       sourcesDir,
       osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      router: null,
       logger: silentLogger,
     });
     expect(result).toEqual({ sourceDates: { osm: '2026-10-31' } });

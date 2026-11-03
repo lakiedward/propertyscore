@@ -97,6 +97,7 @@ describe.skipIf(!databaseUrl)('buildSnapshot against the local database', () => 
       scoreKeys: [],
       sourcesDir: '/tmp/propertyscore-sources',
       osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      router: null,
       logger: silentLogger,
     });
     created.push(result.snapshotId);
@@ -152,6 +153,7 @@ describe.skipIf(!databaseUrl)('buildSnapshot against the local database', () => 
         scoreKeys: [],
         sourcesDir: '/tmp/propertyscore-sources',
         osmExtractUrl: 'https://example.test/romania.osm.pbf',
+        router: null,
         logger: silentLogger,
       }),
     ).rejects.toThrow('source_missing');
