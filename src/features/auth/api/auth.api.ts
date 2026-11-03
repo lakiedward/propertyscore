@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase/client';
 import { Constants } from '@/lib/supabase/database.types';
 import { toAppError } from '@/lib/supabase/errors';
 import { safeRedirectPath } from '@/lib/url';
-import type { Credentials, SignUpPayload } from '../auth.schemas';
+import type { AuthConfirmSearch, Credentials, SignUpPayload } from '../auth.schemas';
 import { SOCIAL_PROVIDERS, type AppRole, type SocialProvider } from '../auth.types';
 
 const APP_ROLES: readonly string[] = Constants.public.Enums.app_role;
@@ -20,6 +20,19 @@ const authSettingsSchema = z.object({
 
 function isAppRole(value: string): value is AppRole {
   return APP_ROLES.includes(value);
+}
+
+const REPEATED_SIGN_UP_AGE_MS = 120_000;
+
+type CaptchaToken = { captchaToken?: string | undefined };
+
+function emailLinkRedirectUrl(redirect: string | undefined): string {
+  if (!redirect) {
+    return env.siteUrl;
+  }
+  const url = new URL('/', env.siteUrl);
+  url.searchParams.set('redirect', safeRedirectPath(redirect));
+  return url.toString();
 }
 
 function authCallbackUrl(redirect: string | undefined): string {
@@ -51,8 +64,16 @@ export function subscribeToAuthChanges(
   };
 }
 
-export async function signInWithPassword({ email, password }: Credentials) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+export async function signInWithPassword({
+  email,
+  password,
+  captchaToken,
+}: Credentials & CaptchaToken) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+    options: { captchaToken },
+  });
   if (error) throw toAppError(error);
   return data.session;
 }
@@ -85,22 +106,87 @@ export async function signInWithProvider({ provider, redirect }: SocialSignInReq
   if (error) throw toAppError(error);
 }
 
-export async function signUp({ email, password, fullName, locale, redirect }: SignUpPayload) {
+export type SignUpResult = {
+  status: 'signed_in' | 'confirmation_sent' | 'confirmation_resent' | 'already_registered';
+};
+
+export async function signUp({
+  email,
+  password,
+  fullName,
+  locale,
+  redirect,
+  captchaToken,
+}: SignUpPayload & CaptchaToken): Promise<SignUpResult> {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: { locale, full_name: fullName },
-      emailRedirectTo: authCallbackUrl(redirect),
+      emailRedirectTo: emailLinkRedirectUrl(redirect),
+      captchaToken,
     },
   });
-  if (error) throw toAppError(error);
-  return { session: data.session, needsEmailConfirmation: data.session === null };
+  if (error) {
+    const appError = toAppError(error);
+    if (appError.reason === 'user_already_exists') {
+      return { status: 'already_registered' };
+    }
+    throw appError;
+  }
+  if (data.session) {
+    return { status: 'signed_in' };
+  }
+  if (!data.user?.identities?.length) {
+    return { status: 'already_registered' };
+  }
+  const age = Date.now() - Date.parse(data.user.created_at);
+  return { status: age > REPEATED_SIGN_UP_AGE_MS ? 'confirmation_resent' : 'confirmation_sent' };
 }
 
-export async function requestPasswordReset(email: string) {
+type ResendConfirmationRequest = CaptchaToken & {
+  email: string;
+  redirect: string | undefined;
+};
+
+export async function resendConfirmation({
+  email,
+  redirect,
+  captchaToken,
+}: ResendConfirmationRequest) {
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: emailLinkRedirectUrl(redirect), captchaToken },
+  });
+  if (error) throw toAppError(error);
+}
+
+export type EmailLinkResult = { status: 'verified' | 'expired' | 'invalid' };
+
+export async function verifyEmailLink({
+  token_hash: tokenHash,
+  type,
+}: AuthConfirmSearch): Promise<EmailLinkResult> {
+  if (!tokenHash || !type) {
+    return { status: 'invalid' };
+  }
+  const { error } = await supabase.auth.verifyOtp({
+    token_hash: tokenHash,
+    type: type === 'signup' ? 'email' : type,
+  });
+  if (!error) {
+    return { status: 'verified' };
+  }
+  return { status: error.code === 'otp_expired' ? 'expired' : 'invalid' };
+}
+
+type PasswordResetRequest = CaptchaToken & { email: string };
+
+export async function requestPasswordReset({ email, captchaToken }: PasswordResetRequest) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: authCallbackUrl('/password-reset/new'),
+    redirectTo: emailLinkRedirectUrl('/password-reset/new'),
+    captchaToken,
   });
   if (error) throw toAppError(error);
 }
@@ -108,6 +194,8 @@ export async function requestPasswordReset(email: string) {
 export async function updatePassword(password: string) {
   const { error } = await supabase.auth.updateUser({ password });
   if (error) throw toAppError(error);
+  const { error: signOutError } = await supabase.auth.signOut({ scope: 'others' });
+  if (signOutError) throw toAppError(signOutError);
 }
 
 export async function signOut() {

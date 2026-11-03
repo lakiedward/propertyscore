@@ -41,6 +41,7 @@ import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminScoringRouteImport } from './routes/_authenticated/admin/scoring'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth/callback'
+import { Route as PublicAuthConfirmRouteImport } from './routes/_public/auth/confirm'
 import { Route as PublicPasswordResetIndexRouteImport } from './routes/_public/password-reset/index'
 import { Route as PublicPasswordResetNewRouteImport } from './routes/_public/password-reset/new'
 import { Route as ReportCheckResultReportIdRouteImport } from './routes/_report/check/result.$reportId'
@@ -221,6 +222,11 @@ const PublicAuthCallbackRoute = PublicAuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicAuthConfirmRoute = PublicAuthConfirmRouteImport.update({
+  id: '/auth/confirm',
+  path: '/auth/confirm',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicPasswordResetIndexRoute =
   PublicPasswordResetIndexRouteImport.update({
     id: '/password-reset/',
@@ -266,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
+  '/auth/confirm': typeof PublicAuthConfirmRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -297,6 +304,7 @@ export interface FileRoutesByTo {
   '/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
+  '/auth/confirm': typeof PublicAuthConfirmRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -335,6 +343,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
+  '/_public/auth/confirm': typeof PublicAuthConfirmRoute
   '/_public/password-reset/new': typeof PublicPasswordResetNewRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -370,6 +379,7 @@ export interface FileRouteTypes {
     | '/admin/scoring'
     | '/admin/users'
     | '/auth/callback'
+    | '/auth/confirm'
     | '/password-reset/new'
     | '/account/'
     | '/admin/'
@@ -401,6 +411,7 @@ export interface FileRouteTypes {
     | '/admin/scoring'
     | '/admin/users'
     | '/auth/callback'
+    | '/auth/confirm'
     | '/password-reset/new'
     | '/account'
     | '/admin'
@@ -438,6 +449,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/scoring'
     | '/_authenticated/admin/users'
     | '/_public/auth/callback'
+    | '/_public/auth/confirm'
     | '/_public/password-reset/new'
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
@@ -678,6 +690,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicAuthCallbackRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/auth/confirm': {
+      id: '/_public/auth/confirm'
+      path: '/auth/confirm'
+      fullPath: '/auth/confirm'
+      preLoaderRoute: typeof PublicAuthConfirmRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/password-reset/': {
       id: '/_public/password-reset/'
       path: '/password-reset'
@@ -786,6 +805,7 @@ interface PublicRouteRouteChildren {
   PublicLoginRoute: typeof PublicLoginRoute
   PublicSignUpRoute: typeof PublicSignUpRoute
   PublicAuthCallbackRoute: typeof PublicAuthCallbackRoute
+  PublicAuthConfirmRoute: typeof PublicAuthConfirmRoute
   PublicPasswordResetNewRoute: typeof PublicPasswordResetNewRoute
   PublicPasswordResetIndexRoute: typeof PublicPasswordResetIndexRoute
 }
@@ -794,6 +814,7 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicLoginRoute: PublicLoginRoute,
   PublicSignUpRoute: PublicSignUpRoute,
   PublicAuthCallbackRoute: PublicAuthCallbackRoute,
+  PublicAuthConfirmRoute: PublicAuthConfirmRoute,
   PublicPasswordResetNewRoute: PublicPasswordResetNewRoute,
   PublicPasswordResetIndexRoute: PublicPasswordResetIndexRoute,
 }

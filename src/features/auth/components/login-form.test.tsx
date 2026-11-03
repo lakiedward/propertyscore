@@ -88,9 +88,14 @@ describe('LoginForm', () => {
     expect(screen.getByText(roCommon.errors.unknown)).toBeInTheDocument();
   });
 
-  it('warns when the email is not confirmed yet, without offering a resend', async () => {
+  it('warns when the email is not confirmed yet and sends the link again', async () => {
+    const resends: unknown[] = [];
     server.use(
       http.post(supabaseUrl('/auth/v1/token'), () => authErrorResponse('email_not_confirmed')),
+      http.post(supabaseUrl('/auth/v1/resend'), async ({ request }) => {
+        resends.push(await request.json());
+        return HttpResponse.json({});
+      }),
     );
     const { user } = await renderWithProviders(<LoginForm />);
 
@@ -100,7 +105,16 @@ describe('LoginForm', () => {
     expect(
       screen.getByText(roAuth.login.unconfirmedText.replace('{{email}}', 'ana.ro@example.test')),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole('button')).toHaveLength(4);
+
+    await user.click(screen.getByRole('button', { name: roAuth.resend.action }));
+
+    expect(await screen.findByText(roAuth.resend.sent)).toBeInTheDocument();
+    expect(resends).toEqual([
+      expect.objectContaining({ type: 'signup', email: 'ana.ro@example.test' }),
+    ]);
+    expect(
+      screen.getByRole('button', { name: roAuth.resend.wait_other.replace('{{count}}', '60') }),
+    ).toBeDisabled();
   });
 
   it('explains that a social provider is not turned on yet', async () => {

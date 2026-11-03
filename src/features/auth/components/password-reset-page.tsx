@@ -10,27 +10,42 @@ import { useErrorMessage } from '@/i18n/error-message';
 import { isAppError } from '@/lib/errors';
 import { useRequestPasswordReset } from '../api/auth.queries';
 import { passwordResetRequestSchema, type PasswordResetRequestValues } from '../auth.schemas';
+import { useCaptcha } from '../hooks/use-captcha';
 import { AuthNotice } from './auth-notice';
 import { AuthPageHeading } from './auth-page-heading';
 import { AuthStatusCard } from './auth-status-card';
 import { AuthTextField } from './auth-text-field';
+import { Captcha } from './captcha';
+import { ResendLink } from './resend-link';
 
 export function PasswordResetPage() {
   const { t } = useTranslation('auth');
   const errorMessage = useErrorMessage();
   const requestReset = useRequestPasswordReset();
   const [sentTo, setSentTo] = useState<string>();
+  const captcha = useCaptcha();
+  const [isCaptchaMissing, setIsCaptchaMissing] = useState(false);
   const form = useForm<PasswordResetRequestValues>({
     resolver: zodResolver(passwordResetRequestSchema),
     defaultValues: { email: '' },
   });
 
   const handleSubmit = form.handleSubmit((values) => {
-    requestReset.mutate(values.email, {
-      onSuccess: () => {
-        setSentTo(values.email);
+    setIsCaptchaMissing(!captcha.isReady);
+    if (!captcha.isReady) {
+      return;
+    }
+    requestReset.mutate(
+      { email: values.email, captchaToken: captcha.token },
+      {
+        onSuccess: () => {
+          setSentTo(values.email);
+        },
+        onSettled: () => {
+          captcha.reset();
+        },
       },
-    });
+    );
   });
 
   if (sentTo) {
@@ -61,6 +76,12 @@ export function PasswordResetPage() {
           />
         </p>
         <AuthNotice tone="info">{t('passwordReset.sent.spam')}</AuthNotice>
+        <ResendLink
+          isCoolingDownAtStart
+          onResend={async (captchaToken) => {
+            await requestReset.mutateAsync({ email: sentTo, captchaToken });
+          }}
+        />
       </AuthStatusCard>
     );
   }
@@ -75,6 +96,7 @@ export function PasswordResetPage() {
             : t('passwordReset.failedText')}
         </AuthNotice>
       ) : null}
+      {isCaptchaMissing ? <AuthNotice tone="error">{t('captcha.required')}</AuthNotice> : null}
       <form onSubmit={(event) => void handleSubmit(event)} noValidate>
         <FieldGroup className="gap-3">
           <Controller
@@ -91,6 +113,7 @@ export function PasswordResetPage() {
               />
             )}
           />
+          <Captcha key={captcha.widgetKey} onToken={captcha.setToken} />
           <Button type="submit" size="xl" disabled={requestReset.isPending} className="mt-1 w-full">
             {requestReset.isPending ? t('passwordReset.pending') : t('passwordReset.submit')}
           </Button>

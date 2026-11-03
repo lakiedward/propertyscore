@@ -61,7 +61,8 @@
       "user_already_exists": "Există deja un cont cu acest email.",
       "weak_password": "Parola este prea slabă. Alege una mai lungă sau mai variată.",
       "rate_limited": "Prea multe încercări. Așteaptă puțin și încearcă din nou.",
-      "same_password": "Parola nouă trebuie să fie diferită de cea veche."
+      "same_password": "Parola nouă trebuie să fie diferită de cea veche.",
+      "captcha_failed": "Verificarea anti-robot a eșuat. Încearcă din nou."
     }
   },
   "validation": {

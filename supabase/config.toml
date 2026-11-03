@@ -30,7 +30,7 @@ schema_paths = []
 
 [db.seed]
 enabled = true
-sql_paths = ["./seed.sql"]
+sql_paths = ["./seed.sql", "./seed.local*.sql"]
 
 [db.network_restrictions]
 enabled = false
@@ -85,7 +85,7 @@ enable_signup = true
 enable_anonymous_sign_ins = false
 enable_manual_linking = false
 minimum_password_length = 8
-password_requirements = ""
+password_requirements = "letters_digits"
 
 [auth.rate_limit]
 email_sent = 2
@@ -99,9 +99,9 @@ web3 = 30
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
-enable_confirmations = false
-secure_password_change = false
-max_frequency = "1s"
+enable_confirmations = true
+secure_password_change = true
+max_frequency = "1m"
 otp_length = 6
 otp_expiry = 3600
 
@@ -116,6 +116,11 @@ content_path = "./supabase/templates/recovery.html"
 [auth.email.template.email_change]
 subject = "Confirmă noua adresă de email · Confirm your new email address"
 content_path = "./supabase/templates/email-change.html"
+
+[auth.captcha]
+enabled = true
+provider = "turnstile"
+secret = "1x0000000000000000000000000000000AA"
 
 [auth.hook.custom_access_token]
 enabled = true

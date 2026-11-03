@@ -79,7 +79,7 @@ create policy "Owners can update their properties"
 
 ## Auth configuration and email templates
 
-- Auth settings, redirect URLs and email templates are configured in `supabase/config.toml` for local; hosted changes are mirrored by hand and listed in the PR.
+- Auth settings, redirect URLs and email templates are configured in `supabase/config.toml` for local; hosted changes are mirrored by hand and listed in the PR. Email confirmation is on locally as in production. Email links use `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=<type>&next={{ .RedirectTo }}` (any device); OAuth alone uses the PKCE `/auth/callback`. `[auth.captcha]` uses Turnstile with Cloudflare's always-pass test secret locally; the real secret is set only in the hosted dashboard.
 - Templates live in `supabase/templates/` and branch on the user's language, Romanian by default: `{{ if eq .Data.locale "en" }}…{{ else }}…{{ end }}`. Both branches change together.
 
 ## Seed and tests

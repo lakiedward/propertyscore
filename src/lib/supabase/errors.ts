@@ -21,6 +21,7 @@ const AUTH_REASONS: Readonly<Record<string, AppErrorReason>> = {
   email_exists: 'user_already_exists',
   weak_password: 'weak_password',
   same_password: 'same_password',
+  captcha_failed: 'captcha_failed',
   over_request_rate_limit: 'rate_limited',
   over_email_send_rate_limit: 'rate_limited',
 };

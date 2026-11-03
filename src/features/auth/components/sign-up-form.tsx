@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useId, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import { TextLink } from '@/components/navigation/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
@@ -18,28 +19,33 @@ import {
   type SignUpValues,
 } from '../auth.schemas';
 import type { SocialProvider } from '../auth.types';
+import { useCaptcha } from '../hooks/use-captcha';
 import { useSocialSignIn } from '../hooks/use-social-sign-in';
 import { AuthNotice } from './auth-notice';
 import { AuthTextField } from './auth-text-field';
+import { Captcha } from './captcha';
 import { SocialSignIn } from './social-sign-in';
 import { SocialSignInNotice } from './social-sign-in-notice';
 
 type SignUpFormProps = {
   redirect?: string | undefined;
-  onEmailSent: (email: string) => void;
+  onConfirmationNeeded: (email: string, isRepeat: boolean) => void;
 };
 
 function hasSpecificMessage(error: unknown): boolean {
   return isAppError(error) && (error.code !== 'unknown' || error.reason !== undefined);
 }
 
-export function SignUpForm({ redirect, onEmailSent }: SignUpFormProps) {
+export function SignUpForm({ redirect, onConfirmationNeeded }: SignUpFormProps) {
   const { t } = useTranslation('auth');
   const errorMessage = useErrorMessage();
   const validationMessage = useValidationMessage();
   const signUp = useSignUp();
   const social = useSocialSignIn(redirect);
+  const captcha = useCaptcha();
   const [formError, setFormError] = useState<unknown>();
+  const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
+  const [isCaptchaMissing, setIsCaptchaMissing] = useState(false);
   const termsId = useId();
   const termsErrorId = `${termsId}-error`;
   const form = useForm<SignUpValues>({
@@ -50,15 +56,27 @@ export function SignUpForm({ redirect, onEmailSent }: SignUpFormProps) {
   const handleSubmit = form.handleSubmit(async (values) => {
     social.clearNotice();
     setFormError(undefined);
+    setIsAlreadyRegistered(false);
+    setIsCaptchaMissing(!captcha.isReady);
+    if (!captcha.isReady) {
+      return;
+    }
     try {
-      const result = await signUp.mutateAsync(toSignUpPayload(values, currentLocale(), redirect));
-      if (result.needsEmailConfirmation) {
-        onEmailSent(values.email);
+      const result = await signUp.mutateAsync({
+        ...toSignUpPayload(values, currentLocale(), redirect),
+        captchaToken: captcha.token,
+      });
+      if (result.status === 'already_registered') {
+        setIsAlreadyRegistered(true);
+      } else if (result.status !== 'signed_in') {
+        onConfirmationNeeded(values.email, result.status === 'confirmation_resent');
       }
     } catch (error) {
       if (!applyServerErrors(form, error)) {
         setFormError(error);
       }
+    } finally {
+      captcha.reset();
     }
   });
 
@@ -71,6 +89,21 @@ export function SignUpForm({ redirect, onEmailSent }: SignUpFormProps) {
   return (
     <>
       {social.notice ? <SocialSignInNotice notice={social.notice} /> : null}
+      {isAlreadyRegistered ? (
+        <AuthNotice tone="warning" title={t('signUp.alreadyRegistered.title')}>
+          <Trans
+            t={t}
+            i18nKey="signUp.alreadyRegistered.text"
+            components={{
+              signIn: (
+                <TextLink to="/login" search={{ redirect }} size="inherit" className="px-0.5" />
+              ),
+              reset: <TextLink to="/password-reset" size="inherit" className="px-0.5" />,
+            }}
+          />
+        </AuthNotice>
+      ) : null}
+      {isCaptchaMissing ? <AuthNotice tone="error">{t('captcha.required')}</AuthNotice> : null}
       {formError ? (
         <AuthNotice tone="error" title={t('signUp.failedTitle')}>
           {hasSpecificMessage(formError) ? errorMessage(formError) : t('signUp.failedText')}
@@ -151,6 +184,7 @@ export function SignUpForm({ redirect, onEmailSent }: SignUpFormProps) {
               </Field>
             )}
           />
+          <Captcha key={captcha.widgetKey} onToken={captcha.setToken} />
           <Button type="submit" size="xl" disabled={signUp.isPending} className="mt-1 w-full">
             {signUp.isPending ? t('signUp.pending') : t('signUp.submit')}
           </Button>

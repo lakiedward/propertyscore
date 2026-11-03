@@ -11,15 +11,18 @@ const EXPIRED_LINK_CODES = new Set(['otp_expired', 'flow_state_expired', 'flow_s
 
 export function AuthCallbackPage() {
   const { t } = useTranslation('auth');
-  const { error_code: errorCode, redirect } = route.useSearch();
+  const { error, error_code: errorCode, redirect } = route.useSearch();
   const isExpired = errorCode !== undefined && EXPIRED_LINK_CODES.has(errorCode);
+  const message = isExpired
+    ? t('callback.expired')
+    : error === 'access_denied'
+      ? t('callback.cancelled')
+      : t('callback.failed');
 
   return (
     <>
       <AuthPageHeading title={t('callback.failedTitle')} />
-      <AuthNotice tone="error">
-        {isExpired ? t('callback.expired') : t('callback.failed')}
-      </AuthNotice>
+      <AuthNotice tone="error">{message}</AuthNotice>
       <TextLink
         to="/login"
         search={{ redirect }}

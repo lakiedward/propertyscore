@@ -14,7 +14,7 @@ export class SignUpPage {
   }
 
   get checkEmailHeading(): Locator {
-    return this.page.getByRole('heading', { name: this.text.signUp.sent.title });
+    return this.page.getByRole('heading', { name: this.text.confirmEmail.title });
   }
 
   async goto() {

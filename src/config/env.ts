@@ -12,6 +12,10 @@ const envSchema = z.object({
     .literal('')
     .transform(() => undefined)
     .or(z.url().optional()),
+  VITE_TURNSTILE_SITE_KEY: z
+    .string()
+    .optional()
+    .transform((value) => (value === '' ? undefined : value)),
 });
 
 const parsedEnv = envSchema.parse(import.meta.env);

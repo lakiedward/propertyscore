@@ -7,6 +7,7 @@ export type AppErrorReason =
   | 'user_already_exists'
   | 'weak_password'
   | 'same_password'
+  | 'captcha_failed'
   | 'rate_limited';
 
 type AppErrorOptions = {

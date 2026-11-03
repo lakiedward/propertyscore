@@ -1,4 +1,4 @@
-import type { Session, User } from '@supabase/supabase-js';
+import type { Session, User, UserIdentity } from '@supabase/supabase-js';
 import { createAuthState, type AuthState } from '@/features/auth';
 
 const TEST_USER_ID = 'a0000000-0000-4000-8000-000000000001';
@@ -15,6 +15,28 @@ export function buildUser(overrides: Partial<User> = {}): User {
     created_at: '2026-10-01T09:00:00.000Z',
     ...overrides,
   };
+}
+
+function buildIdentity(overrides: Partial<UserIdentity> = {}): UserIdentity {
+  return {
+    id: TEST_USER_ID,
+    identity_id: 'b0000000-0000-4000-8000-000000000001',
+    user_id: TEST_USER_ID,
+    identity_data: { email: 'ana.ro@example.test' },
+    provider: 'email',
+    created_at: '2026-10-01T09:00:00.000Z',
+    last_sign_in_at: '2026-10-01T09:00:00.000Z',
+    updated_at: '2026-10-01T09:00:00.000Z',
+    ...overrides,
+  };
+}
+
+export function buildUnconfirmedSignUp(email: string, createdAt = new Date()): User {
+  return buildUser({
+    email,
+    created_at: createdAt.toISOString(),
+    identities: [buildIdentity({ identity_data: { email } })],
+  });
 }
 
 export function buildSession(overrides: Partial<Session> = {}): Session {

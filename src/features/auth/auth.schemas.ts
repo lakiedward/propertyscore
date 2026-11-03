@@ -17,7 +17,9 @@ const newPasswordSchema = z
   .min(PASSWORD_MIN_LENGTH, {
     error: messageKey('auth:fields.password.tooShort', { count: PASSWORD_MIN_LENGTH }),
   })
-  .max(PASSWORD_MAX_LENGTH);
+  .max(PASSWORD_MAX_LENGTH)
+  .regex(/\p{L}/u, { error: messageKey('auth:fields.password.needsLetterAndDigit') })
+  .regex(/\p{N}/u, { error: messageKey('auth:fields.password.needsLetterAndDigit') });
 
 export const credentialsSchema = z.object({
   email: emailSchema,
@@ -69,5 +71,15 @@ export const newPasswordFormSchema = z
 export type NewPasswordFormValues = z.infer<typeof newPasswordFormSchema>;
 
 export const authCallbackSearchSchema = authSearchSchema.extend({
+  error: z.string().optional().catch(undefined),
   error_code: z.string().optional().catch(undefined),
 });
+
+const EMAIL_LINK_TYPES = ['signup', 'email', 'recovery', 'email_change'] as const;
+
+export const authConfirmSearchSchema = z.object({
+  token_hash: z.string().min(1).optional().catch(undefined),
+  type: z.enum(EMAIL_LINK_TYPES).optional().catch(undefined),
+  next: z.string().optional().catch(undefined),
+});
+export type AuthConfirmSearch = z.infer<typeof authConfirmSearchSchema>;

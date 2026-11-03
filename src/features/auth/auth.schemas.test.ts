@@ -35,12 +35,24 @@ describe('auth schemas', () => {
   it('keeps the password between the minimum and the maximum length', () => {
     expect(PASSWORD_MIN_LENGTH).toBe(8);
     expect(PASSWORD_MAX_LENGTH).toBe(72);
-    expect(signUpMessages({ password: 'a'.repeat(7) }).password).toBe(
+    expect(signUpMessages({ password: 'abc1234' }).password).toBe(
       messageKey('auth:fields.password.tooShort', { count: 8 }),
     );
-    expect(signUpMessages({ password: 'a'.repeat(8) }).password).toBeUndefined();
-    expect(signUpMessages({ password: 'a'.repeat(72) }).password).toBeUndefined();
-    expect(signUpMessages({ password: 'a'.repeat(73) }).password).toMatch(/^validation\.maxLength/);
+    expect(signUpMessages({ password: 'abcd1234' }).password).toBeUndefined();
+    expect(signUpMessages({ password: `${'a'.repeat(71)}1` }).password).toBeUndefined();
+    expect(signUpMessages({ password: `${'a'.repeat(72)}1` }).password).toMatch(
+      /^validation\.maxLength/,
+    );
+  });
+
+  it('asks for at least one letter and one digit', () => {
+    expect(signUpMessages({ password: 'parolafaracifre' }).password).toBe(
+      messageKey('auth:fields.password.needsLetterAndDigit'),
+    );
+    expect(signUpMessages({ password: '1234567890' }).password).toBe(
+      messageKey('auth:fields.password.needsLetterAndDigit'),
+    );
+    expect(signUpMessages({ password: 'Șosea123' }).password).toBeUndefined();
   });
 
   it('rejects a name made only of spaces and a name longer than 120 characters', () => {

@@ -95,7 +95,7 @@ export function useCreateProperty() {
 
 ## Environment
 
-- Read configuration only through `env` from `@/config/env`, a Zod-validated object (`VITE_APP_ENV`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SENTRY_DSN`, `VITE_SITE_URL`). Never `import.meta.env` outside `config/env.ts`.
+- Read configuration only through `env` from `@/config/env`, a Zod-validated object (`VITE_APP_ENV`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SENTRY_DSN`, `VITE_SITE_URL`, `VITE_TURNSTILE_SITE_KEY`). Never `import.meta.env` outside `config/env.ts`.
 - A new variable is added to the schema, to `.env.example` with a placeholder, and to the hosting provider and CI in the same change.
 - Everything in a `VITE_` variable is public. Never the secret / service-role key.
 - `src/lib/supabase/client.ts` holds the only `createClient<Database>()` call.
