@@ -1,4 +1,5 @@
-export { signOut } from './api/auth.api';
+export { signInWithPassword, signOut } from './api/auth.api';
+export { useSignOut } from './api/auth.queries';
 export { authCallbackSearchSchema, authSearchSchema } from './auth.schemas';
 export { AuthContext, createAuthState, useAuth, type AuthState } from './auth-context';
 export { AuthProvider } from './auth-provider';

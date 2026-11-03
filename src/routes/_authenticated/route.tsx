@@ -1,7 +1,5 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { AppShell } from '@/components/layout/app-shell';
-import { SignOutButton } from '@/features/auth';
-import { LanguageSwitcher, useSyncProfileLocale } from '@/features/profile';
+import { useSyncProfileLocale } from '@/features/profile';
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: ({ context, location }) => {
@@ -17,16 +15,5 @@ function AuthenticatedLayout() {
   const { user } = Route.useRouteContext();
   useSyncProfileLocale(user.id);
 
-  return (
-    <AppShell
-      actions={
-        <>
-          <LanguageSwitcher userId={user.id} />
-          <SignOutButton />
-        </>
-      }
-    >
-      <Outlet />
-    </AppShell>
-  );
+  return <Outlet />;
 }

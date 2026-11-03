@@ -369,7 +369,7 @@ export const Route = createFileRoute('/_authenticated')({
 ### Authorization
 
 - **RLS is the authorization layer.** If a policy doesn't allow it, no client code can do it. UI checks (hiding a button, guarding a route) are UX only.
-- **Roles, when we need them**: a `public.user_roles` table, plus a **Custom Access Token Hook** that adds a `user_role` claim to the JWT. Policies and the UI read that claim.
+- **Roles, when we need them**: a `public.user_roles` table, plus a **Custom Access Token Hook** that adds a `user_roles` claim (an array, so one person can hold several roles) to the JWT. Policies and the UI read that claim; the browser reads it with `supabase.auth.getClaims()`, never by decoding the token. A signed-in account without a row is a regular user.
   - **Never** use `user_metadata` for authorization, because users can edit it. `app_metadata` and the hook claim are server-controlled.
 - `useAuth()` exposes `hasRole(role)` / `can(permission)` helpers that read the claims. Route guards for role-restricted areas use them in `beforeLoad`.
 - **Never use the service-role / secret key in the frontend**, and never put it in a `VITE_` variable. It belongs only in Edge Functions and CI secrets.

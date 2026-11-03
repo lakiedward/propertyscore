@@ -13,12 +13,16 @@ export class AppShellPage {
     this.text = COMMON_TEXT[locale];
   }
 
-  get signOutButton(): Locator {
-    return this.page.getByRole('button', { name: this.text.actions.signOut });
+  get userMenuButton(): Locator {
+    return this.page.getByRole('banner').locator('button[aria-haspopup="menu"]:visible');
   }
 
   get accountHeading(): Locator {
-    return this.page.getByRole('heading', { name: this.text.account.title });
+    return this.page.getByRole('heading', { name: this.text.panel.account.nav.overview });
+  }
+
+  get adminHeading(): Locator {
+    return this.page.getByRole('heading', { name: this.text.panel.admin.nav.dashboard });
   }
 
   get document(): Locator {
@@ -26,7 +30,12 @@ export class AppShellPage {
   }
 
   async switchLanguage(to: keyof typeof COMMON_TEXT) {
-    await this.page.getByRole('button', { name: this.text.language.label }).click();
-    await this.page.getByRole('menuitemradio', { name: COMMON_TEXT[to].language[to] }).click();
+    await this.userMenuButton.click();
+    await this.page.getByRole('menuitem', { name: COMMON_TEXT[to].language[to] }).click();
+  }
+
+  async signOut() {
+    await this.userMenuButton.click();
+    await this.page.getByRole('menuitem', { name: this.text.panel.userMenu.signOut }).click();
   }
 }

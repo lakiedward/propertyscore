@@ -44,7 +44,7 @@ create policy "Owners can update their properties"
 - `insert` and `update` policies have `with check`.
 - Auth functions are wrapped in a sub-select: `(select auth.uid())`, `(select auth.jwt())`.
 - Complex checks (membership, roles) live in a `security definer` function in the `private` schema with `set search_path = ''`, called from the policy.
-- Roles are read from the `user_role` claim set by the Custom Access Token Hook; never from `user_metadata`.
+- Roles are read from the `user_roles` claim (an array of `app_role` values) set by the Custom Access Token Hook from `public.user_roles`; never from `user_metadata`. In a policy, check it inline (`coalesce(((select auth.jwt()) -> 'user_roles') ? 'admin', false)`); `security definer` functions use `private.has_role(role)`. A new role is a new `app_role` value, never a new claim.
 - Columns the client must not write (computed scores, ownership) are protected with column privileges (`revoke update (score) on public.properties from authenticated`) or a trigger; a policy alone does not protect a column.
 - Every policy has pgTAP tests for both outcomes: the owner can, another user and `anon` cannot.
 

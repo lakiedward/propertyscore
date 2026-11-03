@@ -36,11 +36,6 @@
       "en": "EN"
     }
   },
-  "account": {
-    "pageTitle": "Dashboard",
-    "title": "Welcome",
-    "description": "You are signed in as {{email}}. Your properties will appear here."
-  },
   "pages": {
     "notFound": {
       "pageTitle": "Page not found",
@@ -190,5 +185,65 @@
   },
   "price": {
     "perMonth": "{{price}} / month"
+  },
+  "panel": {
+    "account": {
+      "label": "My account",
+      "navLabel": "Account sections",
+      "groups": {
+        "activity": "Activity",
+        "homes": "Homes",
+        "account": "Account"
+      },
+      "nav": {
+        "overview": "Overview",
+        "reports": "Reports",
+        "appointments": "Appointments",
+        "requests": "Requests",
+        "listings": "Listings",
+        "favorites": "Favourites",
+        "products": "Products",
+        "invoices": "Invoices",
+        "settings": "Settings"
+      },
+      "openMenu": "Open the menu",
+      "closeMenu": "Close the menu"
+    },
+    "admin": {
+      "label": "Admin",
+      "navLabel": "Admin navigation",
+      "groups": {
+        "today": "Today",
+        "portal": "Portal",
+        "business": "Business"
+      },
+      "nav": {
+        "dashboard": "Dashboard",
+        "appointments": "Appointments",
+        "inspections": "Inspections",
+        "listings": "Listings",
+        "feedback": "Feedback",
+        "users": "Users",
+        "partners": "Partners",
+        "payments": "Payments",
+        "scoring": "Scoring",
+        "analytics": "Analytics",
+        "products": "Products",
+        "content": "Content"
+      },
+      "openMenu": "Expand the menu",
+      "closeMenu": "Collapse the menu"
+    },
+    "brandHome": "PropertyScore, public site",
+    "userMenu": {
+      "open": "Account menu",
+      "profile": "Profile",
+      "settings": "Settings",
+      "signOut": "Sign out",
+      "role": {
+        "admin": "Admin"
+      }
+    },
+    "crumb": "{{area}} / {{page}}"
   }
 }

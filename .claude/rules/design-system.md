@@ -74,7 +74,7 @@ shadcn names keep their meaning so the primitives in `src/components/ui/` work u
 | `border`, `input` | green 200 | default borders and inputs |
 | `ring` | blue 500 | focus ring |
 | `chart-1…5` | green 800 · blue 500 · lime 500 · amber 400 · green 400 | charts |
-| `sidebar*` | white surface, green 800 primary, green 100 accent, green 200 border, blue 500 ring | admin sidebar |
+| `sidebar*` | forest surface (green 800), white 86% text, white active item with forest text, white 8% hover, white 12% border, lime 300 ring; `sidebar-control` / `-control-hover` white 6% / 12% (collapse toggle), `sidebar-group` white 50% (group titles), `sidebar-icon` lime 300 (item icons) | account and admin panel sidebars (copied from the `PS AppShell` and `PS AdminShell` designs) |
 
 PropertyScore additions:
 
@@ -253,6 +253,8 @@ A row's notes, including the variants marked built, describe the component as sp
 | SignaturePad | `features/field-inspection/components/signature-pad.tsx` | empty, signed (with time), invalid |
 | **navigation** | | |
 | SiteFooter, SiteMenu | `components/layout/site-footer.tsx`, `site-menu.tsx` | footer on `surface-inverse` with brand block, two CTAs and link columns; menu drawer on `sheet` (left, forest) with page sections, services with prices and the segmented RO/EN switch |
+| AccountShell, AdminShell | `components/layout/account-shell.tsx`, `admin-shell.tsx` on `panel-shell.tsx` (navigation in `panel-navigation.ts`) | copied from `PS AppShell` (area `account`) and `PS AdminShell`; `compact` density; from `md`: forest sidebar 272px (76px collapsed, state in `localStorage` `ps-sb-closed`), brand tile (lime 34px, `rounded-thumb`) with the inverse wordmark, collapse toggle 40px, uppercase group titles (11/800, 0.1em, `sidebar-group`), items 46px (`rounded-icon`, 15/600, icon tile 32px radius 9px; active: white item, 800, lime tile), white header 60px with a bottom border (account: breadcrumb "Contul meu / <section>"; admin: none yet), user menu on the right; below `md`: forest top bar (mark, uppercase lime area label 12/700, user menu) and a horizontally scrolling row of 44px tabs (active lime); main padding 28/32/64 (account) or 24 (admin), 20/16/40 on mobile; the notification bell, counts and admin search are not built yet |
+| UserMenu | `features/profile/components/user-menu.tsx` on shadcn `dropdown-menu` | `tone` `light` (forest avatar) · `inverse` (lime avatar, on forest); 34px initials avatar, name (hidden below `md`), optional role label (11/800 uppercase `text-brand`), chevron; menu 260px: name and email, Profil, Setări, the other language, Ieși din cont (destructive) |
 | SiteHeader | `components/layout/site-header.tsx` | tones `cream` (default), `white`, `forest`; brand 22/800; nav links with active underline; RO/EN switcher (forest when pressed); mobile panel below `lg`; `scrolled` border |
 | Breadcrumbs | `components/navigation/breadcrumbs.tsx` | truncates current item at 32ch |
 | Tabs | shadcn `tabs` | `underline` (3px forest indicator) and `pill` (mist track, white selected); count bubble |

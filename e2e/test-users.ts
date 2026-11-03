@@ -4,6 +4,7 @@ export const testUsers = {
   ro: { email: 'ana.ro@example.test', password: SEED_PASSWORD, locale: 'ro' },
   en: { email: 'emma.en@example.test', password: SEED_PASSWORD, locale: 'en' },
   otherRo: { email: 'ion.ro@example.test', password: SEED_PASSWORD, locale: 'ro' },
+  admin: { email: 'admin.ro@example.test', password: SEED_PASSWORD, locale: 'ro' },
 } as const;
 
 export type TestUserName = keyof typeof testUsers;

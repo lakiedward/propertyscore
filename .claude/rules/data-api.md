@@ -89,12 +89,13 @@ export function useCreateProperty() {
 - `AuthProvider` reads the initial session with `getSession()`, subscribes with `onAuthStateChange`, calls `router.invalidate()` on every change, clears the query cache on `SIGNED_OUT`, and renders nothing until the first session is known.
 - Sign-up and magic-link calls pass `options.data.locale` with the current language and `emailRedirectTo` from `env`.
 - After sign-in: set Sentry's user (id only), load `profiles.locale` and switch the language when it differs.
-- Roles come from the JWT claim added by the Custom Access Token Hook, read through `hasRole`. Never authorize from `user_metadata`. UI checks are UX; RLS is the authorization.
+- Roles come from the `user_roles` JWT claim added by the Custom Access Token Hook; `AuthProvider` reads it with `supabase.auth.getClaims()` together with the session (both change at once), and components read it through `useAuth().roles` / `hasRole`. After sign-in, `postSignInPath(roles, redirect)` keeps a safe `redirect`, otherwise admins land on `/admin` and everyone else on `/account`. Never authorize from `user_metadata`. UI checks are UX; RLS is the authorization.
+- The client uses the PKCE flow: OAuth, email confirmation and recovery links all return to `/auth/callback?redirect=…`, where supabase-js exchanges the code before the router loads.
 - Never decode or store tokens yourself; supabase-js manages the session.
 
 ## Environment
 
-- Read configuration only through `env` from `@/config/env`, a Zod-validated object (`VITE_APP_ENV`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SENTRY_DSN`). Never `import.meta.env` outside `config/env.ts`.
+- Read configuration only through `env` from `@/config/env`, a Zod-validated object (`VITE_APP_ENV`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SENTRY_DSN`, `VITE_SITE_URL`). Never `import.meta.env` outside `config/env.ts`.
 - A new variable is added to the schema, to `.env.example` with a placeholder, and to the hosting provider and CI in the same change.
 - Everything in a `VITE_` variable is public. Never the secret / service-role key.
 - `src/lib/supabase/client.ts` holds the only `createClient<Database>()` call.

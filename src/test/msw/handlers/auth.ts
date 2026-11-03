@@ -11,7 +11,7 @@ export function authErrorResponse(code: string, status = 400) {
   );
 }
 
-export function authSettingsResponse(external: Record<string, boolean> = {}) {
+function authSettingsResponse(external: Record<string, boolean> = {}) {
   return HttpResponse.json(
     { external: { email: true, google: false, facebook: false, ...external } },
     { headers: API_VERSION_HEADERS },

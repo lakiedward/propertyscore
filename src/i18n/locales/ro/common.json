@@ -36,11 +36,6 @@
       "en": "EN"
     }
   },
-  "account": {
-    "pageTitle": "Panou",
-    "title": "Bun venit",
-    "description": "Ești conectat ca {{email}}. Proprietățile tale vor apărea aici."
-  },
   "pages": {
     "notFound": {
       "pageTitle": "Pagina nu există",
@@ -192,5 +187,65 @@
   },
   "price": {
     "perMonth": "{{price}} / lună"
+  },
+  "panel": {
+    "account": {
+      "label": "Contul meu",
+      "navLabel": "Secțiuni cont",
+      "groups": {
+        "activity": "Activitate",
+        "homes": "Locuințe",
+        "account": "Cont"
+      },
+      "nav": {
+        "overview": "Prezentare",
+        "reports": "Rapoarte",
+        "appointments": "Programări",
+        "requests": "Cereri",
+        "listings": "Anunțuri",
+        "favorites": "Favorite",
+        "products": "Produse",
+        "invoices": "Facturi",
+        "settings": "Setări"
+      },
+      "openMenu": "Deschide meniul",
+      "closeMenu": "Închide meniul"
+    },
+    "admin": {
+      "label": "Admin",
+      "navLabel": "Navigare admin",
+      "groups": {
+        "today": "Azi",
+        "portal": "Portal",
+        "business": "Business"
+      },
+      "nav": {
+        "dashboard": "Panou",
+        "appointments": "Programări",
+        "inspections": "Inspecții",
+        "listings": "Anunțuri",
+        "feedback": "Feedback",
+        "users": "Utilizatori",
+        "partners": "Parteneri",
+        "payments": "Plăți",
+        "scoring": "Scoring",
+        "analytics": "Analytics",
+        "products": "Produse",
+        "content": "Conținut"
+      },
+      "openMenu": "Extinde meniul",
+      "closeMenu": "Restrânge meniul"
+    },
+    "brandHome": "PropertyScore, site-ul public",
+    "userMenu": {
+      "open": "Meniul contului",
+      "profile": "Profil",
+      "settings": "Setări",
+      "signOut": "Ieși din cont",
+      "role": {
+        "admin": "Admin"
+      }
+    },
+    "crumb": "{{area}} / {{page}}"
   }
 }
