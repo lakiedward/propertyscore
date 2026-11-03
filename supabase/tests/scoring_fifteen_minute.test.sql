@@ -164,8 +164,15 @@ select cmp_ok(
 
 select is(
   private.cell_score_percentile(:'snapshot_id', :'sibiu_id', 'fifteen_minute', 40),
-  0,
-  'The percentile counts only strictly lower scores'
+  (
+    select round(100.0 * 0.5 * (count(*) - 1) / count(*))::integer
+    from private.cell_scores cs
+    join private.grid_cells g on g.id = cs.cell_id
+    where cs.snapshot_id = :'snapshot_id'
+      and g.city_id = :'sibiu_id'
+      and cs.is_residential is not false
+  ),
+  'Cells with equal scores share the middle rank'
 );
 
 select results_eq(

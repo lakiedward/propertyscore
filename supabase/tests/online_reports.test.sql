@@ -168,13 +168,14 @@ select results_eq(
       (result -> 'zone' ->> 'score')::integer,
       (result -> 'zone' ->> 'city_avg')::integer,
       (result -> 'categories' -> 'green' ->> 'percentile')::integer >= 99,
+      (result -> 'categories' -> 'noise' ->> 'percentile')::integer,
       (result -> 'categories' -> 'green' ->> 'city_avg')::integer,
       jsonb_array_length(result -> 'categories' -> 'green' -> 'histogram'),
       result -> 'green' -> 'parks'
     from public.online_reports where id = 'd0000000-0000-4000-8000-000000000002'
   $$,
-  $$ values ('sibiu'::text, '2026-10-31'::text, 'v1'::text, 69, 51, true, 40, 20, '[]'::jsonb) $$,
-  'The frozen result holds the city, the sources, the percentiles, the city averages and the score sections'
+  $$ values ('sibiu'::text, '2026-10-31'::text, 'v1'::text, 69, 51, true, 50, 40, 20, '[]'::jsonb) $$,
+  'The frozen result holds the city, the sources, the percentiles with ties at the middle rank, the city averages and the score sections'
 );
 
 select throws_ok(
