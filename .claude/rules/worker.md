@@ -28,7 +28,7 @@ paths:
 | `src/lib/concurrency.ts` | `mapWithConcurrency`, the bounded parallel map for calls to outside services |
 | `src/scoring/accessibility/` | the transit score: GTFS and OpenStreetMap transit import, the reference weekday, the r5py job wrapper (`routing.ts`) and the formula |
 | `src/report/` | `generateReport` (the report job), `report.db.ts`, `report-section.ts` (the section contract) and `sections.ts` (the registry) |
-| `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `osmExtractDate`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`), GDAL rasters (`readRaster`, `sampleBilinear`, `sampleRasterAtPoints`) |
+| `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `osmExtractDate`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`), GDAL rasters (`readRaster`, `sampleBilinear`, `sampleRasterAtPoints`), CSV (`readCsvObjects`), ZIP members (`readZipMember`, through `unzip`) and XLSX sheets (`readXlsxRows`, first sheet as rows of strings) |
 
 ## Walking routing
 

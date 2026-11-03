@@ -18,6 +18,11 @@ const PARAMS: EducationParams = {
   max_candidates: 12,
   count_bands_min: [5, 10, 15],
   require_official_register: true,
+  register: {
+    school_year: '2025-2026',
+    url: 'https://data.gov.ro/siiir-2025-2026.xlsx',
+    cities: { timisoara: [155252] },
+  },
   match: { radius_m: 300, min_similarity: 0.6, name_only_similarity: 0.9 },
 };
 
