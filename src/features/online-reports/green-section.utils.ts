@@ -2,8 +2,6 @@ import type { GreenComponent, GreenPark } from './online-report.types';
 
 const WALK_METERS_PER_MINUTE = 80;
 
-const LARGE_PARK_MIN_HA = 2;
-
 export const PARK_FILTERS = ['playground', 'dog_park', 'large'] as const;
 
 export type ParkFilter = (typeof PARK_FILTERS)[number];
@@ -24,24 +22,28 @@ export function shareFor(shares: Readonly<Record<string, number>>, radiusM: numb
   return shares[String(radiusM)] ?? 0;
 }
 
-function matchesFilter(park: GreenPark, filter: ParkFilter): boolean {
-  if (filter === 'large') return park.area_ha >= LARGE_PARK_MIN_HA;
+function matchesFilter(park: GreenPark, filter: ParkFilter, largeMinHa: number): boolean {
+  if (filter === 'large') return park.area_ha >= largeMinHa;
   return park.amenities.includes(filter);
 }
 
 export function filterParks(
   parks: readonly GreenPark[],
   filters: ReadonlySet<ParkFilter>,
+  largeMinHa: number,
 ): GreenPark[] {
-  return parks.filter((park) => [...filters].every((filter) => matchesFilter(park, filter)));
+  return parks.filter((park) =>
+    [...filters].every((filter) => matchesFilter(park, filter, largeMinHa)),
+  );
 }
 
-export function parkFilterCounts(parks: readonly GreenPark[]): Record<ParkFilter, number> {
-  return {
-    playground: parks.filter((park) => matchesFilter(park, 'playground')).length,
-    dog_park: parks.filter((park) => matchesFilter(park, 'dog_park')).length,
-    large: parks.filter((park) => matchesFilter(park, 'large')).length,
-  };
+export function parkFilterCounts(
+  parks: readonly GreenPark[],
+  largeMinHa: number,
+): Record<ParkFilter, number> {
+  const count = (filter: ParkFilter) =>
+    parks.filter((park) => matchesFilter(park, filter, largeMinHa)).length;
+  return { playground: count('playground'), dog_park: count('dog_park'), large: count('large') };
 }
 
 export type ComponentShare = GreenComponent & {
