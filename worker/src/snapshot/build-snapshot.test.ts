@@ -1,15 +1,18 @@
+import { rm } from 'node:fs/promises';
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createSql, type Sql } from '../db/sql.ts';
 import { createLogger } from '../lib/logger.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
 import { cityBoundingBox } from '../sources/osm.ts';
+import { hasOsmium, prepareSourcesDir } from '../test/osm-fixture.ts';
 import { writeCategoryScores } from '../scoring/write-category-scores.ts';
 import { buildSnapshot, selectModules } from './build-snapshot.ts';
 
 const silentLogger = createLogger('error', () => undefined);
 
-const greenModule: ScoreModule = {
+const fakeGreenModule: ScoreModule = {
   key: 'green',
   run: async ({ sql, snapshotId }) => {
     const cells = await sql<{ cell_id: string; position: number }[]>`
@@ -35,11 +38,11 @@ describe('selectModules', () => {
   const air: ScoreModule = { key: 'air', run: () => Promise.resolve({ sourceDates: {} }) };
 
   it('runs every module when no score is named', () => {
-    expect(selectModules([greenModule, air], [])).toEqual([greenModule, air]);
+    expect(selectModules([fakeGreenModule, air], [])).toEqual([fakeGreenModule, air]);
   });
 
   it('keeps only the named scores and refuses a score without a module', () => {
-    expect(selectModules([greenModule, air], ['air'])).toEqual([air]);
+    expect(selectModules([fakeGreenModule, air], ['air'])).toEqual([air]);
     expect(() => selectModules([air], ['green'])).toThrow(
       expect.objectContaining({ code: 'score_module_missing' }),
     );
@@ -48,14 +51,16 @@ describe('selectModules', () => {
 
 const databaseUrl = process.env.DATABASE_URL;
 
-describe.skipIf(!databaseUrl)('buildSnapshot against the local database', () => {
+describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local database', () => {
   let sql: Sql;
   let previousReady: string | undefined;
   let hadSibiuCells = false;
+  let sourcesDir = '';
   const created: string[] = [];
 
   beforeAll(async () => {
     sql = createSql(databaseUrl ?? '');
+    sourcesDir = await prepareSourcesDir('sibiu.osm', '2026-11-01');
     const [ready] = await sql<{ id: string }[]>`
       select id from public.score_snapshots where status = 'ready'
     `;
@@ -86,16 +91,17 @@ describe.skipIf(!databaseUrl)('buildSnapshot against the local database', () => 
       `;
     }
     await sql.end({ timeout: 5 });
+    await rm(sourcesDir, { recursive: true, force: true });
   });
 
   it('publishes a snapshot with the module scores, zone scores and city stats', async () => {
     const result = await buildSnapshot({
       sql,
-      modules: [greenModule],
+      modules: [fakeGreenModule],
       period: '2026-11-01',
       citySlugs: ['sibiu'],
       scoreKeys: [],
-      sourcesDir: '/tmp/propertyscore-sources',
+      sourcesDir,
       osmExtractUrl: 'https://example.test/romania.osm.pbf',
       logger: silentLogger,
     });
@@ -117,6 +123,9 @@ describe.skipIf(!databaseUrl)('buildSnapshot against the local database', () => 
       cells: result.cells,
       categories: { green: { avg: 80, no_data: Math.ceil(result.cells / 2) } },
     });
+    const residentialCells = Number(snapshot?.sibiu.residential_cells);
+    expect(residentialCells).toBeGreaterThan(10);
+    expect(residentialCells).toBeLessThan(result.cells / 4);
 
     const overall = await sql<{ overall: number | null; green: number | null }[]>`
       select overall, (categories ->> 'green')::int as green
@@ -150,7 +159,7 @@ describe.skipIf(!databaseUrl)('buildSnapshot against the local database', () => 
         period: '2026-11-01',
         citySlugs: ['sibiu'],
         scoreKeys: [],
-        sourcesDir: '/tmp/propertyscore-sources',
+        sourcesDir,
         osmExtractUrl: 'https://example.test/romania.osm.pbf',
         logger: silentLogger,
       }),

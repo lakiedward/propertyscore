@@ -1,3 +1,6 @@
+import { rm } from 'node:fs/promises';
+import { join } from 'node:path';
+
 import { z } from 'zod';
 
 import type { Sql } from '../db/sql.ts';
@@ -5,6 +8,8 @@ import { errorCode, WorkerError } from '../lib/errors.ts';
 import type { Logger } from '../lib/logger.ts';
 import type { CategoryKey } from '../scoring/categories.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
+import { downloadOsmExtract } from '../sources/osm.ts';
+import { markResidentialCells } from './residential.ts';
 import {
   failSnapshot,
   finishSnapshot,
@@ -33,6 +38,7 @@ export type BuildSnapshotResult = {
 
 const versionParamsSchema = z.looseObject({
   cell_size_m: z.number().int().min(50).max(2000),
+  residential_min_share: z.number().min(0).max(1),
 });
 
 export function selectModules(
@@ -56,19 +62,38 @@ export async function buildSnapshot(options: BuildSnapshotOptions): Promise<Buil
   }
 
   const version = await startSnapshot(sql, options.period);
+  const workDir = join(options.sourcesDir, 'work', version.snapshotId);
   const log = (message: string, fields = {}) =>
     logger.info(message, { snapshot_id: version.snapshotId, ...fields });
 
   try {
     const params = versionParamsSchema.safeParse(version.params);
-    if (!params.success) throw new WorkerError('invalid_version_params', 'cell_size_m is missing');
+    if (!params.success) {
+      throw new WorkerError(
+        'invalid_version_params',
+        'cell_size_m or residential_min_share is missing',
+      );
+    }
     const cellSizeM = params.data.cell_size_m;
+    const extractPath = await downloadOsmExtract(
+      options.osmExtractUrl,
+      options.sourcesDir,
+      version.period,
+    );
 
     let cells = 0;
     for (const city of cities) {
       const seeded = await prepareCityCells(sql, version.snapshotId, city.id, cellSizeM);
+      const residential = await markResidentialCells({
+        sql,
+        snapshotId: version.snapshotId,
+        city,
+        extractPath,
+        workDir,
+        minShare: params.data.residential_min_share,
+      });
       cells += seeded;
-      log('city cells ready', { city: city.slug, cells: seeded });
+      log('city cells ready', { city: city.slug, cells: seeded, residential_cells: residential });
     }
 
     const sourceDates: Record<string, string> = {};
@@ -102,5 +127,7 @@ export async function buildSnapshot(options: BuildSnapshotOptions): Promise<Buil
     logger.error('snapshot failed', { snapshot_id: version.snapshotId, code });
     await failSnapshot(sql, version.snapshotId, code);
     throw error;
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
   }
 }
