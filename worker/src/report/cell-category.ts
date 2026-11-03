@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { Sql } from '../db/sql.ts';
-import type { CategoryKey } from '../scoring/categories.ts';
+import type { CategoryKey, ContextKey } from '../scoring/categories.ts';
 
 export type CellCategory = {
   score: number | null;
@@ -28,7 +28,7 @@ export async function readCellCategory(
   return { score: row.score, inputs: row.inputs, cityId: row.city_id };
 }
 
-export function sectionParams(params: unknown, key: CategoryKey): unknown {
+export function sectionParams(params: unknown, key: CategoryKey | ContextKey): unknown {
   const parsed = z.record(z.string(), z.unknown()).safeParse(params);
   return parsed.success ? parsed.data[key] : undefined;
 }

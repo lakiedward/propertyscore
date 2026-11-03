@@ -26,7 +26,16 @@ export type CreateReportCommand = {
   locale: 'ro' | 'en';
 };
 
-export type WorkerCommand = BuildSnapshotCommand | GenerateReportCommand | CreateReportCommand;
+export type ImportMarketListingsCommand = {
+  command: 'import-market-listings';
+  source: string;
+  period: string;
+  filePath: string;
+  eurRonRate: number | null;
+};
+
+export type WorkerCommand =
+  BuildSnapshotCommand | GenerateReportCommand | CreateReportCommand | ImportMarketListingsCommand;
 
 const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
 
@@ -38,6 +47,13 @@ const createReportSchema = z.object({
   lon: z.coerce.number().min(-180).max(180),
   address: z.string().trim().min(3).max(300),
   locale: z.enum(['ro', 'en']).default('ro'),
+});
+
+const importMarketListingsSchema = z.object({
+  source: z.string().regex(/^[a-z][a-z0-9_]{1,39}$/),
+  period: z.string().regex(PERIOD),
+  file: z.string().min(1),
+  'eur-ron': z.coerce.number().positive().optional(),
 });
 
 function isCategoryKey(value: string): value is CategoryKey {
@@ -112,6 +128,30 @@ function parseCreateReport(argv: readonly string[]): CreateReportCommand {
   };
 }
 
+function parseImportMarketListings(argv: readonly string[]): ImportMarketListingsCommand {
+  const { values } = parseArgs({
+    args: [...argv],
+    options: {
+      source: { type: 'string' },
+      period: { type: 'string' },
+      file: { type: 'string' },
+      'eur-ron': { type: 'string' },
+    },
+  });
+  const parsed = importMarketListingsSchema.safeParse(values);
+  if (!parsed.success) {
+    const fields = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
+    throw new WorkerError('invalid_market_import', `import-market-listings needs valid: ${fields}`);
+  }
+  return {
+    command: 'import-market-listings',
+    source: parsed.data.source,
+    period: `${parsed.data.period}-01`,
+    filePath: parsed.data.file,
+    eurRonRate: parsed.data['eur-ron'] ?? null,
+  };
+}
+
 export function parseCommand(argv: readonly string[], now: Date): WorkerCommand {
   const [command, ...rest] = argv;
   switch (command) {
@@ -121,6 +161,8 @@ export function parseCommand(argv: readonly string[], now: Date): WorkerCommand 
       return parseGenerateReport(rest);
     case 'create-report':
       return parseCreateReport(rest);
+    case 'import-market-listings':
+      return parseImportMarketListings(rest);
     default:
       throw new WorkerError('unknown_command', `Unknown command: ${command ?? '(none)'}`);
   }
