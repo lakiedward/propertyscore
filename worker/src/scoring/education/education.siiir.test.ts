@@ -6,7 +6,20 @@ import {
   convertSiiirRows,
   generatedOn,
   registerName,
+  resolveUnit,
+  type SiiirUnitKind,
 } from './education.siiir.ts';
+import type { UnitPlan } from './education.plan.ts';
+
+function unitPlan(overrides: Partial<UnitPlan>): UnitPlan {
+  return {
+    regularLevels: [],
+    otherLevels: [],
+    teachingLanguages: [],
+    hasPostSecondary: false,
+    ...overrides,
+  };
+}
 
 const SCHOOL = 'Unitate de învățământ';
 
@@ -140,6 +153,74 @@ describe('generatedOn', () => {
   });
 });
 
+describe('resolveUnit', () => {
+  it('takes the levels and languages of the schooling plan over the name', () => {
+    expect(
+      resolveUnit(
+        { kind: 'scored', levels: ['upper_secondary'] },
+        unitPlan({
+          regularLevels: ['primary', 'lower_secondary', 'upper_secondary'],
+          teachingLanguages: ['hu', 'ro'],
+        }),
+      ),
+    ).toEqual({
+      unit: { kind: 'scored', levels: ['primary', 'lower_secondary', 'upper_secondary'] },
+      levelSource: 'plan',
+      teachingLanguages: ['hu', 'ro'],
+    });
+  });
+
+  it('scores a unit whose name gives no level when the plan has its classes', () => {
+    expect(
+      resolveUnit(
+        { kind: 'skipped', reason: 'unknown_level' },
+        unitPlan({ regularLevels: ['primary'] }),
+      ).unit,
+    ).toEqual({ kind: 'scored', levels: ['primary'] });
+  });
+
+  it('excludes a unit with only evening, special or post-secondary classes', () => {
+    expect(
+      resolveUnit(
+        { kind: 'scored', levels: ['upper_secondary'] },
+        unitPlan({ otherLevels: ['upper_secondary'] }),
+      ).unit,
+    ).toEqual({ kind: 'excluded', levels: ['upper_secondary'], reason: 'no_regular_classes' });
+    expect(
+      resolveUnit(
+        { kind: 'scored', levels: ['upper_secondary'] },
+        unitPlan({ hasPostSecondary: true }),
+      ),
+    ).toEqual({
+      unit: { kind: 'excluded', levels: ['upper_secondary'], reason: 'post_secondary' },
+      levelSource: 'name',
+      teachingLanguages: null,
+    });
+  });
+
+  it('keeps name exclusions and units outside the plan as they are', () => {
+    const special: SiiirUnitKind = {
+      kind: 'excluded',
+      levels: ['primary'],
+      reason: 'special_education',
+    };
+    expect(
+      resolveUnit(special, unitPlan({ regularLevels: ['primary', 'lower_secondary'] })).unit,
+    ).toEqual({ ...special, levels: ['primary', 'lower_secondary'] });
+    expect(resolveUnit({ kind: 'scored', levels: ['primary'] }, undefined)).toEqual({
+      unit: { kind: 'scored', levels: ['primary'] },
+      levelSource: 'name',
+      teachingLanguages: null,
+    });
+    expect(
+      resolveUnit(
+        { kind: 'skipped', reason: 'not_a_school' },
+        unitPlan({ regularLevels: ['primary'] }),
+      ).unit.kind,
+    ).toBe('skipped');
+  });
+});
+
 describe('convertSiiirRows', () => {
   it('converts the units of the covered cities into register rows', () => {
     const result = convertSiiirRows(
@@ -167,6 +248,7 @@ describe('convertSiiirRows', () => {
 
     expect(result.sourceDate).toBe('2025-10-08');
     expect(result.skipped).toEqual({ not_a_school: 1, duplicate_code: 1 });
+    expect(result.levelSources).toEqual({ plan: 0, name: 3 });
     expect(result.rows).toEqual([
       {
         siiir_code: '3261100001',

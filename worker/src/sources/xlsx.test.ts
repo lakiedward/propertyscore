@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { WorkerError } from '../lib/errors.ts';
-import { parseSharedStrings, parseSheetRows, readXlsxRows } from './xlsx.ts';
+import { parseSharedStrings, readXlsxRows, sheetRows } from './xlsx.ts';
 
 const FIXTURE = fileURLToPath(new URL('./fixtures/siiir-sample.xlsx', import.meta.url));
 
@@ -15,8 +15,14 @@ describe('parseSharedStrings', () => {
   });
 });
 
-describe('parseSheetRows', () => {
-  it('places cells by column, reads shared, inline and number cells, and drops empty rows', () => {
+async function collect(rows: AsyncIterable<string[]>): Promise<string[][]> {
+  const collected: string[][] = [];
+  for await (const row of rows) collected.push(row);
+  return collected;
+}
+
+describe('sheetRows', () => {
+  it('places cells by column, reads shared, inline and number cells, and drops empty rows', async () => {
     const xml = [
       '<sheetData>',
       '<row r="1"><c r="A1" t="s"><v>0</v></c><c r="C1"><v>143469</v></c></row>',
@@ -25,16 +31,23 @@ describe('parseSheetRows', () => {
       '<row r="4"><c r="B4" t="inlineStr"><is><t> Sibiu </t></is></c></row>',
       '</sheetData>',
     ].join('');
-    expect(parseSheetRows(xml, ['0161102892'])).toEqual([
+    expect(await collect(sheetRows([xml], ['0161102892']))).toEqual([
       ['0161102892', '', '143469'],
       ['', 'Sibiu'],
     ]);
   });
 
-  it('rejects a reference to a missing shared string', () => {
-    expect(() => parseSheetRows('<row><c r="A1" t="s"><v>4</v></c></row>', [])).toThrow(
-      WorkerError,
-    );
+  it('reads rows split across chunks', async () => {
+    const xml =
+      '<row r="1"><c r="A1" t="inlineStr"><is><t>Școala</t></is></c></row><row r="2"><c r="A2"><v>7</v></c></row>';
+    const chunks = [xml.slice(0, 17), xml.slice(17, 60), xml.slice(60, 75), xml.slice(75)];
+    expect(await collect(sheetRows(chunks, []))).toEqual([['Școala'], ['7']]);
+  });
+
+  it('rejects a reference to a missing shared string', async () => {
+    await expect(
+      collect(sheetRows(['<row><c r="A1" t="s"><v>4</v></c></row>'], [])),
+    ).rejects.toThrow(WorkerError);
   });
 });
 

@@ -1,5 +1,6 @@
 import { WorkerError } from '../../lib/errors.ts';
 import type { EducationLevel, Ownership } from './education.osm.ts';
+import { mergeLevels, type SchoolingPlan, type UnitPlan } from './education.plan.ts';
 
 export type RegisterRow = {
   siiir_code: string;
@@ -20,6 +21,15 @@ export type SiiirConversion = {
   rows: RegisterRow[];
   sourceDate: string;
   skipped: Record<string, number>;
+  levelSources: Record<LevelSource, number>;
+};
+
+type LevelSource = 'plan' | 'name';
+
+export type ResolvedUnit = {
+  unit: SiiirUnitKind;
+  levelSource: LevelSource;
+  teachingLanguages: string[] | null;
 };
 
 export type SiiirUnitKind =
@@ -78,6 +88,46 @@ export function classifySiiirUnit(type: string, longName: string): SiiirUnitKind
   }
   if (/\bscoala primara\b/.test(name)) return { kind: 'scored', levels: ['primary'] };
   return { kind: 'skipped', reason: 'unknown_level' };
+}
+
+function withoutPlan(unit: SiiirUnitKind): ResolvedUnit {
+  return { unit, levelSource: 'name', teachingLanguages: null };
+}
+
+export function resolveUnit(unit: SiiirUnitKind, plan: UnitPlan | undefined): ResolvedUnit {
+  if (!plan || (unit.kind === 'skipped' && unit.reason === 'not_a_school')) {
+    return withoutPlan(unit);
+  }
+  const languages = plan.teachingLanguages.length > 0 ? plan.teachingLanguages : null;
+  const planLevels = mergeLevels(plan.regularLevels, plan.otherLevels);
+  if (unit.kind === 'excluded') {
+    return planLevels.length > 0
+      ? {
+          unit: { ...unit, levels: planLevels },
+          levelSource: 'plan',
+          teachingLanguages: languages,
+        }
+      : withoutPlan(unit);
+  }
+  if (plan.regularLevels.length > 0) {
+    return {
+      unit: { kind: 'scored', levels: plan.regularLevels },
+      levelSource: 'plan',
+      teachingLanguages: languages,
+    };
+  }
+  const fallback =
+    plan.otherLevels.length > 0 ? plan.otherLevels : unit.kind === 'scored' ? unit.levels : [];
+  if (fallback.length === 0) return withoutPlan(unit);
+  return {
+    unit: {
+      kind: 'excluded',
+      levels: fallback,
+      reason: plan.hasPostSecondary ? 'post_secondary' : 'no_regular_classes',
+    },
+    levelSource: plan.otherLevels.length > 0 ? 'plan' : 'name',
+    teachingLanguages: languages,
+  };
 }
 
 function escapeRegExp(text: string): string {
@@ -170,6 +220,7 @@ function citiesBySiruta(cities: Record<string, readonly number[]>): Map<string, 
 export function convertSiiirRows(
   rows: readonly string[][],
   cities: Record<string, readonly number[]>,
+  plan: SchoolingPlan = new Map(),
 ): SiiirConversion {
   const sourceDate = generatedOn(rows);
   const headerAt = headerIndex(rows);
@@ -181,6 +232,7 @@ export function convertSiiirRows(
   };
   const converted: RegisterRow[] = [];
   const seen = new Set<string>();
+  const levelSources: Record<LevelSource, number> = { plan: 0, name: 0 };
 
   for (const row of rows.slice(headerAt + 1)) {
     const cell = (column: Column) => (row[position[column]] ?? '').trim();
@@ -196,12 +248,16 @@ export function convertSiiirRows(
       skip('duplicate_code');
       continue;
     }
-    const unit = classifySiiirUnit(cell('type'), longName);
+    const { unit, levelSource, teachingLanguages } = resolveUnit(
+      classifySiiirUnit(cell('type'), longName),
+      plan.get(code),
+    );
     if (unit.kind === 'skipped') {
       skip(unit.reason);
       continue;
     }
     seen.add(code);
+    levelSources[levelSource] += 1;
     const parentCode = cell('parentCode');
     converted.push({
       siiir_code: code,
@@ -210,7 +266,7 @@ export function convertSiiirRows(
       name: registerName(longName, cell('locality')).slice(0, 300),
       levels: unit.levels,
       ownership: /privat/i.test(cell('ownership')) ? 'private' : 'public',
-      teaching_languages: null,
+      teaching_languages: teachingLanguages,
       address: address(cell('street'), cell('number'), cell('locality')),
       lng: null,
       lat: null,
@@ -219,5 +275,5 @@ export function convertSiiirRows(
     });
   }
 
-  return { rows: converted, sourceDate, skipped };
+  return { rows: converted, sourceDate, skipped, levelSources };
 }

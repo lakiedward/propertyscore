@@ -56,21 +56,36 @@ function cellValue(attributes: string, body: string, shared: readonly string[]):
   return decodeXml(raw);
 }
 
-export function parseSheetRows(xml: string, shared: readonly string[]): string[][] {
-  const rows: string[][] = [];
-  for (const rowMatch of xml.matchAll(/<row\b(?:[^>]*[^/>])?>([\s\S]*?)<\/row>/g)) {
-    const cells: string[] = [];
-    for (const cellMatch of (rowMatch[1] ?? '').matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
-      const attributes = cellMatch[1] ?? '';
-      const reference = attribute(attributes, 'r');
-      const letters = reference ? /^([A-Z]+)/.exec(reference)?.[1] : undefined;
-      const index = letters ? columnIndex(letters) : cells.length;
-      while (cells.length < index) cells.push('');
-      cells[index] = cellValue(attributes, cellMatch[2] ?? '', shared).trim();
-    }
-    if (cells.some((cell) => cell !== '')) rows.push(cells);
+const ROW_PATTERN = /<row\b(?:[^>]*[^/>])?>([\s\S]*?)<\/row>/g;
+
+function parseRow(body: string, shared: readonly string[]): string[] {
+  const cells: string[] = [];
+  for (const cellMatch of body.matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
+    const attributes = cellMatch[1] ?? '';
+    const reference = attribute(attributes, 'r');
+    const letters = reference ? /^([A-Z]+)/.exec(reference)?.[1] : undefined;
+    const index = letters ? columnIndex(letters) : cells.length;
+    while (cells.length < index) cells.push('');
+    cells[index] = cellValue(attributes, cellMatch[2] ?? '', shared).trim();
   }
-  return rows;
+  return cells;
+}
+
+export async function* sheetRows(
+  chunks: AsyncIterable<string> | Iterable<string>,
+  shared: readonly string[],
+): AsyncGenerator<string[]> {
+  let buffer = '';
+  for await (const chunk of chunks) {
+    buffer += chunk;
+    let consumed = 0;
+    for (const match of buffer.matchAll(ROW_PATTERN)) {
+      const cells = parseRow(match[1] ?? '', shared);
+      if (cells.some((cell) => cell !== '')) yield cells;
+      consumed = match.index + match[0].length;
+    }
+    if (consumed > 0) buffer = buffer.slice(consumed);
+  }
 }
 
 async function readMember(path: string, member: string): Promise<string> {
@@ -88,10 +103,10 @@ async function readSharedStrings(path: string): Promise<string[]> {
   }
 }
 
-export async function readXlsxRows(path: string): Promise<string[][]> {
+export async function* streamXlsxRows(path: string): AsyncGenerator<string[]> {
   const shared = await readSharedStrings(path);
   try {
-    return parseSheetRows(await readMember(path, 'xl/worksheets/sheet1.xml'), shared);
+    yield* sheetRows(readZipMember(path, 'xl/worksheets/sheet1.xml'), shared);
   } catch (error) {
     if (error instanceof WorkerError && error.code === 'unzip_failed') {
       throw new WorkerError('xlsx_invalid', `${path} is not a readable XLSX workbook`, {
@@ -100,4 +115,10 @@ export async function readXlsxRows(path: string): Promise<string[][]> {
     }
     throw error;
   }
+}
+
+export async function readXlsxRows(path: string): Promise<string[][]> {
+  const rows: string[][] = [];
+  for await (const row of streamXlsxRows(path)) rows.push(row);
+  return rows;
 }

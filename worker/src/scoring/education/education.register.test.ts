@@ -5,13 +5,17 @@ import { fileURLToPath } from 'node:url';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { loadRegister, registerPath } from './education.register.ts';
+import { loadRegister, planPath, registerPath } from './education.register.ts';
 
 const FIXTURE = fileURLToPath(new URL('../../sources/fixtures/siiir-sample.xlsx', import.meta.url));
+const PLAN_FIXTURE = fileURLToPath(
+  new URL('../../sources/fixtures/siiir-plan-sample.xlsx', import.meta.url),
+);
 
 const REGISTER = {
   school_year: '2025-2026',
   url: 'https://data.gov.ro/siiir-2025-2026.xlsx',
+  plan_url: null,
   cities: { sibiu: [143469] },
 };
 
@@ -44,5 +48,32 @@ describe('loadRegister', () => {
     ]);
     expect(result.rows[1]?.parent_siiir_code).toBe('3261100001');
     expect(result.rows[2]?.ownership).toBe('private');
+    expect(result.levelSources).toEqual({ plan: 0, name: 4 });
+  });
+
+  it('takes the levels from the schooling plan kept next to the register', async () => {
+    const sourcesDir = await mkdtemp(join(tmpdir(), 'education-register-'));
+    dirs.push(sourcesDir);
+    const path = registerPath(sourcesDir, REGISTER.school_year);
+    await mkdir(dirname(path), { recursive: true });
+    await copyFile(FIXTURE, path);
+    await copyFile(PLAN_FIXTURE, planPath(sourcesDir, REGISTER.school_year));
+
+    const result = await loadRegister(sourcesDir, REGISTER);
+
+    expect(
+      result.rows.map((row) => [
+        row.siiir_code,
+        row.levels,
+        row.teaching_languages,
+        row.is_excluded,
+      ]),
+    ).toEqual([
+      ['3261100001', ['primary', 'lower_secondary'], ['de', 'ro'], false],
+      ['3261100002', ['kindergarten'], ['ro'], false],
+      ['3261100003', ['nursery', 'kindergarten'], ['ro'], false],
+      ['3261100005', ['upper_secondary'], null, true],
+    ]);
+    expect(result.levelSources).toEqual({ plan: 3, name: 1 });
   });
 });

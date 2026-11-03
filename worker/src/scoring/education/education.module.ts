@@ -277,11 +277,14 @@ export const educationModule: ScoreModule = {
       rows: register,
       sourceDate,
       skipped,
+      levelSources,
     } = await loadRegister(context.sourcesDir, params.register);
     context.logger.info('education register read', {
       school_year: params.register.school_year,
       source_date: sourceDate,
       rows: register.length,
+      levels_from_plan: levelSources.plan,
+      levels_from_name: levelSources.name,
       ...skipped,
     });
 
