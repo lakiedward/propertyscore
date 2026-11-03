@@ -21,6 +21,7 @@ const PARAMS: EducationParams = {
   register: {
     school_year: '2025-2026',
     url: 'https://data.gov.ro/siiir-2025-2026.xlsx',
+    plan_url: null,
     cities: { timisoara: [155252] },
   },
   match: { radius_m: 300, min_similarity: 0.6, name_only_similarity: 0.9 },
