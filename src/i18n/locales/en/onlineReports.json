@@ -1,0 +1,147 @@
+{
+  "pageTitle": "Smart Check report",
+  "header": {
+    "saved": "Saved to your account",
+    "code": "{{product}} · {{code}} · {{date}}",
+    "calculatedOn": "Calculated on data from {{period}}, formula {{formula}}",
+    "declaredSuffix": "details you declared",
+    "rooms_one": "{{count}} room",
+    "rooms_other": "{{count}} rooms",
+    "area": "{{area}} m²",
+    "floor": "floor {{floor}}",
+    "floorOf": "floor {{floor}} of {{floors}}",
+    "builtIn": "built in {{year}}"
+  },
+  "zone": {
+    "eyebrow": "Area score",
+    "scoreLabel": "Area score: {{score}} out of 100",
+    "outOf": "/100",
+    "percentile": "Better than {{percent}} of residential areas in {{city}}.",
+    "describesZone": "It describes the area, not the flat.",
+    "partial_one": "Calculated from {{count}} of 9 scores; the others have no data yet.",
+    "partial_other": "Calculated from {{count}} of 9 scores; the others have no data yet.",
+    "noScore": "No data"
+  },
+  "band": {
+    "excellent": "Excellent",
+    "veryGood": "Very good",
+    "good": "Good",
+    "average": "Average",
+    "belowAverage": "Below average"
+  },
+  "tabs": {
+    "label": "Report chapters",
+    "noScore": "no data"
+  },
+  "chapter": {
+    "summary": "In short",
+    "safety": "Safety",
+    "accessibility": "Accessibility",
+    "fifteen_minute": "15 minutes",
+    "green": "Green score",
+    "noise": "Noise",
+    "air": "Air",
+    "industry": "Industry"
+  },
+  "category": {
+    "safety": "Safety",
+    "accessibility": "Public transport access",
+    "fifteen_minute": "15-minute city",
+    "green": "Green space",
+    "noise": "Quiet",
+    "air": "Air quality",
+    "industry": "Industrial sites",
+    "education": "Education",
+    "health": "Health"
+  },
+  "method": {
+    "safety": "We combine the distance to police and fire stations, street lighting, guarded perimeters and places open at night, by day and by night. We do not use street crime statistics, because no reliable public data exists.",
+    "accessibility": "We count the nearby stops, the lines through them, their rush-hour frequency and how long it takes to reach the city's key places.",
+    "fifteen_minute": "We check how many everyday services (shops, pharmacies, schools, parks, restaurants) are within a 15-minute walk.",
+    "green": "We measure how much of the area within 500 m and 1 km is a park, square or public woodland, and how close the nearest park is. Private gardens are not counted.",
+    "noise": "We start from the strategic noise maps and the distance to boulevards, trams and railways. The level inside the flat also depends on the windows and orientation.",
+    "air": "We use the 12-month average, not today's value: air changes from one day to the next. The precision is at neighbourhood level.",
+    "industry": "We look for industrial installations that report emissions to the EU and the distance to them. Below 1 km the score drops sharply.",
+    "education": "We count the schools, kindergartens and high schools within walking distance and weight them by distance. We do not rate school quality.",
+    "health": "The distance to pharmacies, practices, clinics and the nearest hospital with an emergency unit."
+  },
+  "summary": {
+    "title": "Best chapter: {{best}}. Weakest: {{worst}}.",
+    "titleSingle": "First chapter calculated: {{best}}.",
+    "titleEmpty": "There are no scores for this address yet.",
+    "lead": "We calculated {{count}} of 9 scores for the address, within up to 1.2 km. Each has its own tab.",
+    "strengths": "What is good",
+    "concerns": "What to watch",
+    "aboveAverage": "Above the city average ({{average}}). Better than {{percent}} of residential areas.",
+    "belowAverage": "Below the city average ({{average}}). Better than {{percent}} of residential areas.",
+    "scoreOf": "{{name}}: {{score}} out of 100",
+    "noStrengths": "No score is clearly above the city average.",
+    "noConcerns": "No score is clearly below the city average.",
+    "allScores": "All scores, by chapter",
+    "legendAddress": "address",
+    "legendCity": "city average",
+    "seeChapter": "See chapter",
+    "barLabel": "{{name}}: {{score}} out of 100, city average {{average}}",
+    "barLabelNoAverage": "{{name}}: {{score}} out of 100",
+    "barMissing": "{{name}}: no data",
+    "footnote": "The area score is the weighted average of the calculated scores. A score without data is left out of the average.",
+    "group": {
+      "mostImportant": "Matters most",
+      "environment": "Environment and quiet",
+      "services": "Services"
+    }
+  },
+  "categoryChapter": {
+    "eyebrow": "{{name}} · {{score}} / 100",
+    "eyebrowMissing": "{{name}} · no data",
+    "title": "Better than {{percent}} of residential areas in {{city}}",
+    "titleMissing": "There is no data for this score yet",
+    "leadMissing": "The score is added once its sources are imported. Until then it does not count in the area score.",
+    "factScore": "the address's score",
+    "factAverage": "city average",
+    "factWeight": "of the area score",
+    "distribution": "How it compares with the city",
+    "distributionLabel": "Distribution of {{name}} scores in {{city}}; the address is in the {{from}}–{{to}} range",
+    "distributionAxisLow": "0",
+    "distributionAxisHigh": "100",
+    "distributionNote": "Each bar is a 5-point group of the city's residential areas. The blue bar is the address's group.",
+    "alsoInChapter": "Also in this chapter"
+  },
+  "next": {
+    "eyebrow": "Next chapter"
+  },
+  "map": {
+    "label": "Report map",
+    "address": "The address analysed",
+    "note": "The circles: 500 m and 1 km around the address.",
+    "unavailable": "The map cannot load right now."
+  },
+  "how": {
+    "eyebrow": "How we made the report",
+    "title": "The same address gets the same score, whenever you check it.",
+    "body": "Scores are calculated from coordinates, with the same formula for every address. Where we lack good data, we tell you.",
+    "sources": "Sources and dates",
+    "weights": "How much each score counts",
+    "formula": "Formula {{formula}}, data from {{period}}"
+  },
+  "source": {
+    "osm": "OpenStreetMap",
+    "cams": "Copernicus CAMS",
+    "eea_stations": "Air monitoring stations (EEA)",
+    "eea_air_map": "Air quality map (EEA)",
+    "noise": "Strategic noise maps",
+    "siiir": "School register (SIIIR)",
+    "cnas": "CNAS lists",
+    "ms_upu": "Emergency units (Ministry of Health)",
+    "gtfs": "Public transport timetables (GTFS)"
+  },
+  "status": {
+    "pendingPaymentTitle": "The report is waiting for payment",
+    "pendingPaymentBody": "We generate it as soon as the payment is confirmed.",
+    "generatingTitle": "Preparing the report",
+    "generatingBody": "It usually takes less than a minute. The page updates by itself.",
+    "failedTitle": "The report could not be generated",
+    "failedBody": "We have logged the problem and are fixing it. If the report is not ready within 24 hours, we refund you.",
+    "backHome": "Back to the home page"
+  }
+}

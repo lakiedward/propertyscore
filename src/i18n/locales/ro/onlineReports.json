@@ -1,0 +1,149 @@
+{
+  "pageTitle": "Raport Smart Check",
+  "header": {
+    "saved": "Salvat în cont",
+    "code": "{{product}} · {{code}} · {{date}}",
+    "calculatedOn": "Calculat pe datele din {{period}}, formula {{formula}}",
+    "declaredSuffix": "detalii declarate de tine",
+    "rooms_one": "{{count}} cameră",
+    "rooms_few": "{{count}} camere",
+    "rooms_other": "{{count}} de camere",
+    "area": "{{area}} m²",
+    "floor": "etaj {{floor}}",
+    "floorOf": "etaj {{floor}} din {{floors}}",
+    "builtIn": "construit în {{year}}"
+  },
+  "zone": {
+    "eyebrow": "Scor de zonă",
+    "scoreLabel": "Scor de zonă: {{score}} din 100",
+    "outOf": "/100",
+    "percentile": "Mai bun decât {{percent}} din zonele locuite din {{city}}.",
+    "describesZone": "Descrie zona, nu apartamentul.",
+    "partial_one": "Calculat din {{count}} scor din 9; celelalte nu au încă date.",
+    "partial_few": "Calculat din {{count}} scoruri din 9; celelalte nu au încă date.",
+    "partial_other": "Calculat din {{count}} de scoruri din 9; celelalte nu au încă date.",
+    "noScore": "Fără date"
+  },
+  "band": {
+    "excellent": "Excelent",
+    "veryGood": "Foarte bun",
+    "good": "Bun",
+    "average": "Mediu",
+    "belowAverage": "Sub medie"
+  },
+  "tabs": {
+    "label": "Capitolele raportului",
+    "noScore": "fără date"
+  },
+  "chapter": {
+    "summary": "Pe scurt",
+    "safety": "Siguranță",
+    "accessibility": "Accesibilitate",
+    "fifteen_minute": "15 minute",
+    "green": "Green score",
+    "noise": "Zgomot",
+    "air": "Aer",
+    "industry": "Industrie"
+  },
+  "category": {
+    "safety": "Siguranță",
+    "accessibility": "Accesibilitate transport",
+    "fifteen_minute": "Oraș de 15 minute",
+    "green": "Spații verzi",
+    "noise": "Liniște",
+    "air": "Calitatea aerului",
+    "industry": "Zone industriale",
+    "education": "Educație",
+    "health": "Sănătate"
+  },
+  "method": {
+    "safety": "Combinăm distanța până la poliție și pompieri, iluminatul stradal, perimetrele de pază și localurile deschise noaptea, ziua și noaptea. Nu folosim statistici de infracționalitate pe stradă, pentru că nu există date publice de încredere.",
+    "accessibility": "Numărăm stațiile din apropiere, liniile care trec prin ele, frecvența la ora de vârf și cât faci până la punctele importante ale orașului.",
+    "fifteen_minute": "Verificăm câte servicii zilnice (magazine, farmacii, școli, parcuri, restaurante) ajung în 15 minute de mers pe jos.",
+    "green": "Calculăm cât din suprafața pe o rază de 500 m și de 1 km e parc, scuar sau pădure publică și cât de aproape e cel mai apropiat parc. Grădinile private nu intră în calcul.",
+    "noise": "Pornim de la hărțile strategice de zgomot și de la distanța până la bulevarde, tramvai și calea ferată. Nivelul din apartament depinde și de geamuri și de orientare.",
+    "air": "Folosim media pe 12 luni, nu valoarea de azi: aerul se schimbă de la o zi la alta. Precizia e la nivel de cartier.",
+    "industry": "Căutăm instalațiile industriale care raportează emisii la UE și distanța până la ele. Sub 1 km scorul scade puternic.",
+    "education": "Numărăm școlile, grădinițele și liceele la care ajungi pe jos și le ponderăm după distanță. Nu notăm calitatea școlilor.",
+    "health": "Distanța până la farmacii, cabinete, clinici și cel mai apropiat spital cu urgențe."
+  },
+  "summary": {
+    "title": "Cel mai bun capitol: {{best}}. Cel mai slab: {{worst}}.",
+    "titleSingle": "Primul capitol calculat: {{best}}.",
+    "titleEmpty": "Încă nu avem scoruri pentru această adresă.",
+    "lead": "Am calculat {{count}} din 9 scoruri pentru adresă, pe o rază de până la 1,2 km. Fiecare are tabul lui.",
+    "strengths": "Ce e bun",
+    "concerns": "La ce să fii atent",
+    "aboveAverage": "Peste media orașului ({{average}}). Mai bun decât {{percent}} din zonele locuite.",
+    "belowAverage": "Sub media orașului ({{average}}). Mai bun decât {{percent}} din zonele locuite.",
+    "scoreOf": "{{name}}: {{score}} din 100",
+    "noStrengths": "Niciun scor nu e clar peste media orașului.",
+    "noConcerns": "Niciun scor nu e clar sub media orașului.",
+    "allScores": "Toate scorurile, pe capitole",
+    "legendAddress": "adresa",
+    "legendCity": "media orașului",
+    "seeChapter": "Vezi capitolul",
+    "barLabel": "{{name}}: {{score}} din 100, media orașului {{average}}",
+    "barLabelNoAverage": "{{name}}: {{score}} din 100",
+    "barMissing": "{{name}}: fără date",
+    "footnote": "Scorul de zonă e media ponderată a scorurilor calculate. Un scor fără date nu intră în medie.",
+    "group": {
+      "mostImportant": "Contează cel mai mult",
+      "environment": "Mediu și liniște",
+      "services": "Servicii"
+    }
+  },
+  "categoryChapter": {
+    "eyebrow": "{{name}} · {{score}} / 100",
+    "eyebrowMissing": "{{name}} · fără date",
+    "title": "Mai bun decât {{percent}} din zonele locuite din {{city}}",
+    "titleMissing": "Încă nu avem date pentru acest scor",
+    "leadMissing": "Scorul se adaugă când sursele lui sunt importate. Până atunci nu intră în scorul de zonă.",
+    "factScore": "scorul adresei",
+    "factAverage": "media orașului",
+    "factWeight": "din scorul de zonă",
+    "distribution": "Cum se compară cu orașul",
+    "distributionLabel": "Distribuția scorurilor {{name}} în {{city}}; adresa e în intervalul {{from}}–{{to}}",
+    "distributionAxisLow": "0",
+    "distributionAxisHigh": "100",
+    "distributionNote": "Fiecare bară e o grupă de 5 puncte din zonele locuite ale orașului. Bara albastră e grupa adresei.",
+    "alsoInChapter": "Tot în acest capitol"
+  },
+  "next": {
+    "eyebrow": "Capitolul următor"
+  },
+  "map": {
+    "label": "Harta raportului",
+    "address": "Adresa analizată",
+    "note": "Cercurile: 500 m și 1 km în jurul adresei.",
+    "unavailable": "Harta nu se poate încărca acum."
+  },
+  "how": {
+    "eyebrow": "Cum am făcut raportul",
+    "title": "Aceeași adresă primește același scor, oricând o verifici.",
+    "body": "Scorurile se calculează din coordonate, cu aceeași formulă pentru toate adresele. Unde nu avem date bune, îți spunem.",
+    "sources": "Surse și date",
+    "weights": "Cât contează fiecare scor",
+    "formula": "Formula {{formula}}, date din {{period}}"
+  },
+  "source": {
+    "osm": "OpenStreetMap",
+    "cams": "Copernicus CAMS",
+    "eea_stations": "Stații de măsurare a aerului (EEA)",
+    "eea_air_map": "Harta calității aerului (EEA)",
+    "noise": "Hărți strategice de zgomot",
+    "siiir": "Registrul unităților de învățământ (SIIIR)",
+    "cnas": "Liste CNAS",
+    "ms_upu": "Unități de primiri urgențe (Ministerul Sănătății)",
+    "gtfs": "Orare transport public (GTFS)"
+  },
+  "status": {
+    "pendingPaymentTitle": "Raportul așteaptă plata",
+    "pendingPaymentBody": "Îl generăm imediat după confirmarea plății.",
+    "generatingTitle": "Pregătim raportul",
+    "generatingBody": "Durează de obicei mai puțin de un minut. Pagina se actualizează singură.",
+    "failedTitle": "Raportul nu a putut fi generat",
+    "failedBody": "Am înregistrat problema și o rezolvăm. Dacă raportul nu e gata în 24 de ore, îți returnăm banii.",
+    "backHome": "Înapoi la pagina principală"
+  }
+}
