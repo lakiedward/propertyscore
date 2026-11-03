@@ -39,7 +39,7 @@ create policy "Owners can update their properties"
   with check ((select auth.uid()) = owner_id);
 ```
 
-- RLS is enabled in the same migration that creates the table. No table, view or storage bucket is exposed without policies; `supabase db lint` and the advisors must report nothing.
+- RLS is enabled in the same migration that creates the table. No table, view or storage bucket is exposed without policies; `supabase db lint` and `supabase db advisors --local` (level `warn`) must report nothing. At level `info` two findings are accepted: `rls_enabled_no_policy` on a server-only table (no client policy on purpose, `anon` and `authenticated` grants revoked, a pgTAP test proving both get `42501`), and `unused_index` on the local database, whose indexes see no real traffic.
 - One policy per operation, named as an English sentence, with an explicit role (`to authenticated` or `to anon`); never a policy open to every role.
 - `insert` and `update` policies have `with check`.
 - Auth functions are wrapped in a sub-select: `(select auth.uid())`, `(select auth.jwt())`.

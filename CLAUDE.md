@@ -15,7 +15,7 @@ React 19 single-page application for Property Score (TypeScript, Vite), with Sup
 - **The schema changes only through migrations** in `supabase/migrations/`, followed by `pnpm db:types`. Never edit a hosted project in the dashboard, never hand-edit `database.types.ts`.
 - **Never write comments, in any file.** No explanatory comments, section headers, TODOs, commented-out code or JSDoc in TypeScript, TSX (`{/* */}`), CSS, SQL migrations and pgTAP tests, Edge Functions, scripts, JSON/JSONC, YAML, TOML, email templates or dotfiles such as `.gitignore`, `.env.example` and `.editorconfig`. Code and configuration must be self-documenting through names, types and small functions; explain in the conversation or the PR description instead. The only lines allowed in comment syntax are functional directives a tool reads (`/// <reference types="vite/client" />`, `// @ts-expect-error <reason>`, `// eslint-disable-next-line <rule> -- <reason>`, `// prettier-ignore`) and the headers of generated files (`src/routeTree.gen.ts`, `src/lib/supabase/database.types.ts`, shadcn files the CLI writes). SQL that needs a description for the database itself uses `comment on …`, which is data, not a comment.
 - **Do NOT create summary or changelog files** (no `CHANGES.md`, `SUMMARY.md`, etc.). Explain changes in the conversation.
-- **Do NOT run tests unless explicitly asked.** Never run `pnpm test`, `pnpm test:run`, `pnpm test:e2e` or `pnpm db:test` without a user request. Approving an `/implement` proposal or a `/plan-from-design` plan counts as a request for `pnpm test:run` and `pnpm db:test` for the steps it covers; `pnpm test:e2e` still needs its own request.
+- **Do NOT run tests unless explicitly asked.** Never run `pnpm test`, `pnpm test:run`, `pnpm test:e2e`, `pnpm test:worker` or `pnpm db:test` without a user request. Approving an `/implement` proposal or a `/plan-from-design` plan counts as a request for `pnpm test:run` and `pnpm db:test` for the steps it covers; `pnpm test:e2e` still needs its own request.
 - **Keep the workspace clean.** No temporary files unless required for the implementation.
 - **Never guess or assume.** If you don't have enough information about an API, a value, a file location, a library behaviour or the user's intent, search the project first (grep, read more files, follow imports). For library questions read the current official docs (Supabase, TanStack, React, i18next, shadcn/ui); for the live database use the Supabase MCP server's read tools (`list_tables`, `get_advisors`, `search_docs`). If the answer is still unclear, ask the user. A confident-sounding guess is worse than admitting uncertainty.
 - **Do not add libraries.** Add a dependency only when a feature needs it, and record it under Tech stack below. Deliberately not installed: Next.js or any SSR framework, Redux / RTK / MobX, SWR, Axios, Formik, `react-intl` / Lingui, MUI / Ant / Chakra or any second component library, CSS-in-JS, `moment` / `dayjs`, Jest, Cypress, Enzyme, a second icon set, a second toast library. Zustand, `recharts` and `@tanstack/react-table` are pre-approved but added only when the first feature needs them.
@@ -34,6 +34,7 @@ The detailed rules live in `.claude/rules/` and load automatically when a matchi
 | `.claude/rules/design-system.md` | PropertyScore design system: token values, density modes, component catalogue and where each lives, usage rules | `src/**/*.tsx`, `src/**/*.css`, `components.json`                                                               |
 | `.claude/rules/testing.md`   | Vitest, React Testing Library, MSW, factories                                                                  | `src/**/*.test.ts`, `src/**/*.test.tsx`, `src/test/**`, `vitest.config.ts`                                      |
 | `.claude/rules/e2e.md`       | the Playwright suite against the local Supabase stack                                                          | `e2e/**`, `playwright.config.ts`                                                                                |
+| `.claude/rules/worker.md`    | the SmartCheck scoring worker: runtime, database access, shared scoring tables, adding a score, Railway deploy | `worker/**`, `supabase/migrations/**`, `supabase/tests/scoring*.test.sql`                                       |
 
 ## Tech stack
 
@@ -53,6 +54,7 @@ Pin exact versions when installing (`pnpm add -E`) and record them here.
 - **Unit and component tests:** Vitest, React Testing Library, `@testing-library/user-event`, `@testing-library/jest-dom`, MSW 2
 - **End-to-end:** Playwright
 - **Database tests:** pgTAP through `supabase test db`
+- **Worker** (`worker/`, pnpm workspace package `@propertyscore/worker`, `.claude/rules/worker.md`): Node 24 running TypeScript directly, `postgres` 3.4.9 (postgres.js) as its only database client, Zod 4, Vitest, `hyparquet` 1.32.0 (reads the EEA air quality station files, published only as Parquet); PostGIS (`extensions.postgis`) for the scoring grid; `osmium-tool` and `unzip` in its Docker image for OpenStreetMap extracts and GTFS archives, `gdal-bin` for the CAMS (GRIB) and EEA (GeoTIFF) air rasters; transit routing in `worker/transit/` with Python 3 and `r5py` 1.1.7 (R5 jar fetched and checksum-verified by r5py at image build) on Java 21 from `eclipse-temurin:21.0.12_8-jre-noble`; deployed to Railway from `worker/Dockerfile`
 - **Quality:** ESLint 9 flat config (`typescript-eslint` strict type-checked, `react-hooks`, `react-refresh`, `jsx-a11y`, TanStack Query and Router plugins, `eslint-plugin-i18next`, `testing-library`, `playwright`), Prettier 3 + `prettier-plugin-tailwindcss`, EditorConfig, Knip, lefthook
 - **Delivery:** GitHub Actions (`ci.yml` on pull requests, `deploy-db.yml` for migrations), static hosting with SPA fallback
 
@@ -67,8 +69,10 @@ Scaffolding from `SETUP_PLAN.md` section 25 is done through step 9:
 - Features: `auth` (sign-in, sign-up, sign-out, `useAuth`) and `profile` (locale sync, language switcher).
 - i18n: `common` and `auth` namespaces in `ro` and `en`, typed keys, `format.ts`, translated Zod messages.
 - Tooling: ESLint, Prettier, EditorConfig, Vitest + RTL + MSW, Playwright, Knip, lefthook, `scripts/check-translations.ts`, and the `ci.yml` / `deploy-db.yml` workflows.
+- SmartCheck engine foundation (S16, partial): migrations `create_cities` (PostGIS, the 9 cities with a circular coverage area each), `create_scoring_versions_and_snapshots` (formula `v1` with the design's weights, snapshot lifecycle functions) and `create_scoring_grid` (`private.grid_cells`, `cell_scores`, `poi_features`, grid, zone score and stats functions), with pgTAP tests; migration `create_residential_areas` (residential cells from OSM land use, set by the orchestrator); the `worker/` package with the `build-snapshot` command, the score-module contract and the shared OSM extract helpers. Score modules registered: `green` (migration `create_green_areas`, OSM only, walking distance approximated in a straight line until the routing lands). Air score engine: migration `create_air_quality_layers` (`private.air_stations`, `air_station_months`, `air_city_calibration`, `cell_air`, `upsert_air_stations`, `params.air` on `v1`) and the `air` module (CAMS analysis from the ADS API, calibrated with the EEA/ANPM stations, refined with an optional EEA 1 km map); the report tab is not built yet. No admin access to these tables yet (no `user_roles`).
+- SmartCheck noise score (engine only, no UI): migration `create_noise_layers` (`private.noise_datasets`, `noise_contours`, `noise_snapshot_datasets`, `noise_sources`, `noise_buildings`, the sampling, nearest-source and map-layer functions, `params.noise` on `v1`) with `scoring_noise.test.sql`; `worker/src/scoring/noise/` (OSM proxy calibrated by parameters, strategic-map bands when a dataset is imported, cell = median of 7 points, `assessNoiseAtAddress` for the frozen report block). No importer for the strategic-map files yet.
 
-Not built yet: step 10 (hosting, SPA fallback, security headers) waits on the hosting decision in section 26; the password-reset and auth-callback pages; every product feature (properties, scoring). Anything the rules describe that is not in the file system does not exist yet: check before importing, and create it following the rules when a feature needs it. Update this section as pieces land.
+Not built yet: step 10 (hosting, SPA fallback, security headers) waits on the hosting decision in section 26; the password-reset and auth-callback pages; every product feature (properties, the SmartCheck report and score UI; the engines above run only in the worker). Anything the rules describe that is not in the file system does not exist yet: check before importing, and create it following the rules when a feature needs it. Update this section as pieces land.
 
 ## Project structure
 
@@ -86,6 +90,9 @@ supabase/
 └── tests/                       pgTAP (*.test.sql)
 e2e/                             Playwright specs, fixtures, page objects
 scripts/check-translations.ts
+worker/                          SmartCheck scoring and document jobs (Railway), see .claude/rules/worker.md
+├── Dockerfile  package.json  tsconfig.json  vitest.config.ts
+└── src/{main.ts, cli.ts, config/, db/, lib/, snapshot/, scoring/<score>/, sources/}
 src/
 ├── main.tsx                     mounts <App/>, initialises Sentry and i18n
 ├── app/{app.tsx, router.ts, query-client.ts}
@@ -152,12 +159,14 @@ pnpm db:start             # supabase start (Docker)
 pnpm db:reset             # re-apply migrations and seed.sql locally
 pnpm db:test              # pgTAP; only when the user asks
 pnpm db:types             # regenerate src/lib/supabase/database.types.ts from the local database
+pnpm db:lint              # plpgsql_check on the public and private schemas
+pnpm test:worker          # worker Vitest suite (database tests need DATABASE_URL); only when the user asks
 ```
 
 - Check `node -v` (24 LTS) and that Docker is running before Supabase CLI commands.
 - After every migration: `pnpm db:reset`, then `pnpm db:types`, and commit the migration and the regenerated types together.
 - For the in-app browser preview use the `property-score-dev` configuration in `.claude/launch.json`.
-- CI on every pull request: typecheck → lint → format check → `i18n:check` → unit and component tests → `supabase start` → `db reset` → pgTAP → generated-types drift check → Playwright → build. Lefthook only formats and lints staged files; CI is the gate.
+- CI on every pull request: typecheck → lint → format check → `i18n:check` → unit and component tests → `supabase start` → `db reset` → pgTAP → worker tests against the local database → generated-types drift check → Playwright → build. Lefthook only formats and lints staged files; CI is the gate.
 
 ## Git
 

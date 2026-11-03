@@ -157,6 +157,19 @@ export default defineConfig([
     },
   },
   {
+    files: ['worker/**/*.ts'],
+    languageOptions: { globals: globals.node },
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TSEnumDeclaration',
+          message: 'Use a string-literal union or an as-const object.',
+        },
+      ],
+    },
+  },
+  {
     files: ['e2e/**/*.ts'],
     extends: [playwright.configs['flat/recommended']],
   },
