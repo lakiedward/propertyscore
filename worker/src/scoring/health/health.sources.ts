@@ -39,8 +39,22 @@ export type CnasProvider = {
   id: string;
   kind: CnasProviderKind;
   name: string;
+  address: string | null;
   location: Point | null;
 };
+
+export async function geocodeProviders(
+  providers: readonly CnasProvider[],
+  geocode: (address: string) => Promise<Point | null>,
+): Promise<CnasProvider[]> {
+  const placed: CnasProvider[] = [];
+  for (const provider of providers) {
+    const location =
+      provider.location ?? (provider.address ? await geocode(provider.address) : null);
+    placed.push(location === provider.location ? provider : { ...provider, location });
+  }
+  return placed;
+}
 
 const AMENITY_CATEGORY: Record<string, HealthCategory> = {
   pharmacy: 'health_pharmacy',
