@@ -1,5 +1,6 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import { http } from 'msw';
+import { formatPercent } from '@/i18n/format';
 import roOnlineReports from '@/i18n/locales/ro/onlineReports.json';
 import { buildOnlineReport, buildReportResult } from '@/test/factories/online-report';
 import {
@@ -218,5 +219,36 @@ describe('the report route', () => {
     const { router } = await renderAppRoute(`/check/result/${SEEDED_ONLINE_REPORT.id}`);
 
     expect(router.state.location.pathname).toBe('/login');
+  });
+});
+
+describe('OnlineReportPage when printed', () => {
+  it('lays out every chapter one after another for the PDF and goes back after printing', async () => {
+    await renderReport(SEEDED_ONLINE_REPORT.id);
+    await screen.findByRole('heading', { level: 1, name: SEEDED_ONLINE_REPORT.address_text });
+    const greenTitle = fill(text.categoryChapter.title, {
+      percent: formatPercent(0.95),
+      city: 'Timișoara',
+    });
+    expect(screen.queryByRole('heading', { name: greenTitle })).not.toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event('beforeprint'));
+    });
+    expect(screen.getByRole('heading', { name: greenTitle })).toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event('afterprint'));
+    });
+    expect(screen.queryByRole('heading', { name: greenTitle })).not.toBeInTheDocument();
+  });
+
+  it('opens the print window from the PDF button', async () => {
+    const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
+    const { user } = await renderReport(SEEDED_ONLINE_REPORT.id);
+
+    await user.click(await screen.findByRole('button', { name: text.pdf.download }));
+
+    expect(print).toHaveBeenCalledOnce();
   });
 });

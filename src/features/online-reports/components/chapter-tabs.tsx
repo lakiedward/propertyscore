@@ -13,7 +13,7 @@ export function ChapterTabs({ scoreOf }: ChapterTabsProps) {
   const { t } = useTranslation('onlineReports');
 
   return (
-    <div className="border-b border-border bg-background">
+    <div className="border-b border-border bg-background print:hidden">
       <TabsList
         variant="line"
         aria-label={t('tabs.label')}

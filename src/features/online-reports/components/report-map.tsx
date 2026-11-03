@@ -154,6 +154,7 @@ export function ReportMap({ position, green }: ReportMapProps) {
           focus={
             selectedPark ? { position: selectedPark.center, requestId: selectedIndex } : undefined
           }
+          isPrintable
           className="size-full"
           fallbackClassName="size-full rounded-xl"
           errorFallback={

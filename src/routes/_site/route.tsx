@@ -15,7 +15,7 @@ function SiteLayout() {
   const userId = user?.id;
 
   return (
-    <div className="flex min-h-svh flex-col bg-background" data-density="comfortable">
+    <div className="flex min-h-svh flex-col bg-background print:bg-card" data-density="comfortable">
       {userId ? <ProfileLocaleSync userId={userId} /> : null}
       <a
         href="#main"
@@ -23,10 +23,12 @@ function SiteLayout() {
       >
         {t('site.skipToContent')}
       </a>
-      <SiteHeader
-        isSignedIn={Boolean(user)}
-        menuLanguageSwitcher={<LanguageSwitcher userId={userId} variant="segmented" />}
-      />
+      <div className="contents print:hidden">
+        <SiteHeader
+          isSignedIn={Boolean(user)}
+          menuLanguageSwitcher={<LanguageSwitcher userId={userId} variant="segmented" />}
+        />
+      </div>
       <main
         id="main"
         tabIndex={-1}
@@ -34,7 +36,9 @@ function SiteLayout() {
       >
         <Outlet />
       </main>
-      <SiteFooter />
+      <div className="contents print:hidden">
+        <SiteFooter />
+      </div>
     </div>
   );
 }

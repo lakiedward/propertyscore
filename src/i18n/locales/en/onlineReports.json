@@ -252,5 +252,9 @@
     "renew": "Create a new link",
     "revoke": "Turn off the link",
     "revoked": "The link was turned off."
+  },
+  "pdf": {
+    "download": "Download PDF",
+    "hint": "In the print window choose \"Save as PDF\"."
   }
 }

@@ -13,6 +13,7 @@ import {
   type ChapterId,
 } from '../online-report.utils';
 import type { OnlineReport, ReportResult } from '../online-report.types';
+import { usePrintMode } from '@/hooks/use-print-mode';
 import { oneOf } from '@/lib/utils';
 import { CategoryChapter } from './category-chapter';
 import { ChapterTabs } from './chapter-tabs';
@@ -21,6 +22,7 @@ import { NextChapterButton } from './next-chapter-button';
 import { ReportHeader } from './report-header';
 import { ReportMap } from './report-map';
 import { ReportMethod } from './report-method';
+import { ReportPdfButton } from './report-pdf-button';
 import { ReportShareDialog } from './report-share-dialog';
 import { ReportStatus } from './report-status';
 import { SummaryChapter } from './summary-chapter';
@@ -75,6 +77,7 @@ type ReadyReportProps = {
 
 function ReadyReport({ report, result, isShared, chapter, onChapterChange }: ReadyReportProps) {
   const tabsRef = useRef<HTMLDivElement>(null);
+  const isPrinting = usePrintMode();
   const { categories, zone } = result;
   const green = result.green?.status === 'scored' ? result.green : undefined;
   const [greenRadiusM, setGreenRadiusM] = useState(green?.near_radius_m ?? 500);
@@ -94,6 +97,29 @@ function ReadyReport({ report, result, isShared, chapter, onChapterChange }: Rea
     tabsRef.current?.scrollIntoView({ block: 'start' });
   };
 
+  const renderChapter = (id: ChapterId) =>
+    isScoreChapter(id) ? (
+      <CategoryChapter
+        chapter={id}
+        categories={categories}
+        cityName={result.city.name}
+        totalWeight={totalWeight}
+        details={
+          id === 'green' && green ? (
+            <GreenChapter
+              section={green}
+              radiusM={greenRadiusM}
+              onRadiusChange={setGreenRadiusM}
+              selectedParkId={selectedParkId}
+              onSelectPark={selectPark}
+            />
+          ) : undefined
+        }
+      />
+    ) : (
+      <SummaryChapter categories={categories} onOpenChapter={openChapter} />
+    );
+
   return (
     <>
       <ReportHeader
@@ -104,7 +130,12 @@ function ReadyReport({ report, result, isShared, chapter, onChapterChange }: Rea
         formulaLabel={result.formula.label}
         declared={report}
         isShared={isShared}
-        actions={isShared ? undefined : <ReportShareDialog reportId={report.id} />}
+        actions={
+          <>
+            <ReportPdfButton />
+            {isShared ? null : <ReportShareDialog reportId={report.id} />}
+          </>
+        }
         scoreCard={
           <ZoneScoreCard
             score={zone.score}
@@ -126,32 +157,23 @@ function ReadyReport({ report, result, isShared, chapter, onChapterChange }: Rea
         <ChapterTabs scoreOf={(id) => chapterScore(id, zone.score, categories)} />
         <div className="mx-auto grid w-full max-w-wide items-start gap-7 px-gutter py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:py-12">
           <div className="order-2 min-w-0 lg:order-1">
-            {CHAPTER_IDS.map((id) => (
-              <TabsContent key={id} value={id} className="flex flex-col gap-5 text-base">
-                {isScoreChapter(id) ? (
-                  <CategoryChapter
-                    chapter={id}
-                    categories={categories}
-                    cityName={result.city.name}
-                    totalWeight={totalWeight}
-                    details={
-                      id === 'green' && green ? (
-                        <GreenChapter
-                          section={green}
-                          radiusM={greenRadiusM}
-                          onRadiusChange={setGreenRadiusM}
-                          selectedParkId={selectedParkId}
-                          onSelectPark={selectPark}
-                        />
-                      ) : undefined
-                    }
-                  />
-                ) : (
-                  <SummaryChapter categories={categories} onOpenChapter={openChapter} />
-                )}
-                {following ? <NextChapterButton chapter={following} onOpen={openChapter} /> : null}
-              </TabsContent>
-            ))}
+            {isPrinting
+              ? CHAPTER_IDS.map((id) => (
+                  <div
+                    key={id}
+                    className="flex flex-col gap-5 border-border pb-10 text-base not-first:border-t not-first:pt-10"
+                  >
+                    {renderChapter(id)}
+                  </div>
+                ))
+              : CHAPTER_IDS.map((id) => (
+                  <TabsContent key={id} value={id} className="flex flex-col gap-5 text-base">
+                    {renderChapter(id)}
+                    {following ? (
+                      <NextChapterButton chapter={following} onOpen={openChapter} />
+                    ) : null}
+                  </TabsContent>
+                ))}
           </div>
           {report.longitude !== null && report.latitude !== null ? (
             <div className="order-1 lg:sticky lg:top-32 lg:order-2">

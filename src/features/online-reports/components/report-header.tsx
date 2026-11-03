@@ -93,7 +93,7 @@ export function ReportHeader({
               formula: formulaLabel,
             })}
           </p>
-          {actions ? <div className="flex flex-wrap gap-2 pt-1">{actions}</div> : null}
+          {actions ? <div className="flex flex-wrap gap-2 pt-1 print:hidden">{actions}</div> : null}
         </div>
         {scoreCard}
       </div>
