@@ -93,10 +93,10 @@ select is(
 select results_eq(
   format(
     $$
-      select source_listing_id, price_eur
+      select l.source_listing_id, o.price_eur
       from private.market_observations(%L, '2026-10-02 00:00:00+00', 'sale', '2026-07-01', '2026-09-30') o
       join private.market_listings l on l.id = o.listing_id
-      order by source_listing_id
+      order by l.source_listing_id
     $$,
     :'timisoara_id'
   ),
@@ -133,12 +133,12 @@ select results_eq(
 select results_eq(
   format(
     $$
-      select transaction::text, listing_count, p50_eur_m2
+      select transaction::text, listing_count, round(p50_eur_m2::numeric, 4)
       from private.market_city_summary(%L, '2026-10-02 00:00:00+00', '2026-07-01', '2026-09-30', '2026-09-16')
     $$,
     :'timisoara_id'
   ),
-  $$ values ('sale'::text, 2, 2050::double precision), ('rent'::text, 1, (600.0 / 70)::double precision) $$,
+  $$ values ('sale'::text, 2, 2050.0000::numeric), ('rent'::text, 1, 8.5714::numeric) $$,
   'The city summary gives the median price per square metre for sale and rent'
 );
 
