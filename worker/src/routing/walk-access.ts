@@ -73,14 +73,16 @@ export type RoutedCell<T extends Candidate> = {
 export async function walkCellCandidates<T extends Candidate>(
   router: ValhallaClient,
   cells: readonly CellCandidates<T>[],
-  concurrency = 4,
+  options: { walkSpeedKmh?: number; concurrency?: number } = {},
 ): Promise<RoutedCell<T>[]> {
+  const { walkSpeedKmh, concurrency = 4 } = options;
   return mapWithConcurrency(cells, concurrency, async (cell) => {
     if (cell.candidates.length === 0) return { cellId: cell.cell_id, routed: [] };
     const [row] = await router.matrix({
       costing: 'pedestrian',
       sources: [{ lng: cell.lng, lat: cell.lat }],
       targets: cell.candidates,
+      ...(walkSpeedKmh === undefined ? {} : { walkSpeedKmh }),
     });
     return {
       cellId: cell.cell_id,

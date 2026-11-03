@@ -184,9 +184,8 @@ export const safetyModule: ScoreModule = {
           );
       scored.push(...cells);
 
-      const distanceMethod: DistanceMethod = context.router
-        ? 'pedestrian_routing'
-        : 'straight_line';
+      const distanceMethod: DistanceMethod =
+        context.router && walkingTypes(params).length > 0 ? 'pedestrian_routing' : 'straight_line';
       await writeCategoryScores(
         sql,
         snapshotId,

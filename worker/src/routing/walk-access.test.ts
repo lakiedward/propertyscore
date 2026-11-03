@@ -104,10 +104,15 @@ describe('legsFromOrigin', () => {
 
 describe('walkCellCandidates', () => {
   it('routes each cell on foot to its own candidates and keeps a missing route as null', async () => {
-    const requests: { costing: string; sources: number; targets: number }[] = [];
+    const requests: {
+      costing: string;
+      sources: number;
+      targets: number;
+      walkSpeedKmh: number | undefined;
+    }[] = [];
     const router: ValhallaClient = {
-      matrix: ({ costing, sources, targets }) => {
-        requests.push({ costing, sources: sources.length, targets: targets.length });
+      matrix: ({ costing, sources, targets, walkSpeedKmh }) => {
+        requests.push({ costing, sources: sources.length, targets: targets.length, walkSpeedKmh });
         return Promise.resolve([
           targets.map((_, index) => (index === 1 ? null : { seconds: 100, meters: 120 + index })),
         ]);
@@ -117,12 +122,18 @@ describe('walkCellCandidates', () => {
       tilesetDate: () => Promise.resolve(null),
     };
 
-    const routed = await walkCellCandidates(router, [
-      { cell_id: 'c1', lng: 21.2, lat: 45.7, candidates },
-      { cell_id: 'c2', lng: 21.3, lat: 45.7, candidates: [] },
-    ]);
+    const routed = await walkCellCandidates(
+      router,
+      [
+        { cell_id: 'c1', lng: 21.2, lat: 45.7, candidates },
+        { cell_id: 'c2', lng: 21.3, lat: 45.7, candidates: [] },
+      ],
+      { walkSpeedKmh: 4.5 },
+    );
 
-    expect(requests).toEqual([{ costing: 'pedestrian', sources: 1, targets: 3 }]);
+    expect(requests).toEqual([
+      { costing: 'pedestrian', sources: 1, targets: 3, walkSpeedKmh: 4.5 },
+    ]);
     expect(routed[0]?.cellId).toBe('c1');
     expect(routed[0]?.routed.map((candidate) => candidate.leg)).toEqual([
       { seconds: 100, meters: 120 },
