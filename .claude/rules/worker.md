@@ -23,7 +23,16 @@ paths:
 | `src/snapshot/` | `buildSnapshot` (the orchestrator) and `snapshot.db.ts` (one function per SQL call) |
 | `src/scoring/` | `categories.ts` (the 9 keys), `components.ts` (`linearPoints`, `weightedScore`), `score-module.ts`, `registry.ts`, `write-category-scores.ts` |
 | `src/scoring/<score>/` | one folder per score (`green`, `noise`, …): its module, its pure formula and their tests |
+| `src/routing/` | `valhalla.ts` (`createValhallaClient`: `matrix`, `isochrones`, `route`, `tilesetDate`) and `walk-access.ts` (`computeWalkAccess`, `legsFromOrigin`, `refreshCityCategoryStats`) |
+| `src/lib/concurrency.ts` | `mapWithConcurrency`, the bounded parallel map for calls to outside services |
 | `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `osmExtractDate`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`) |
+
+## Walking routing
+
+- Walking times come from a self-hosted Valhalla service (`VALHALLA_URL`), built from the same Geofabrik extract. It runs as its own Railway service from the official Valhalla image, never inside `worker/Dockerfile`; the worker only calls its HTTP API. Locally: `docker run -p 8002:8002 -v $PWD/valhalla:/custom_files -e tile_urls=https://download.geofabrik.de/europe/romania-latest.osm.pbf ghcr.io/valhalla/valhalla-scripted:<pinned tag>`, then `VALHALLA_URL=http://localhost:8002`.
+- Modules receive the client as `context.router` (`null` when `VALHALLA_URL` is unset). A module that walks calls `computeWalkAccess` with its own targets (`key`, `poiCategories`, `searchRadiusM`, `maxCandidates`) instead of routing itself; without a router it records `distance_method: 'straight_line'` and the straight line times `walk_detour_factor`.
+- Walking speed is `params.<key>.walk_speed_kmh`, passed to Valhalla as the pedestrian `walking_speed`; car times use `costing: 'auto'` on the same client.
+- Neighbour smoothing uses `smoothScores` and `listNeighbourPairs` from `src/scoring/smoothing.ts` (backed by `private.grid_cell_neighbours`); percentiles against the city use `private.cell_score_percentile`.
 
 ## Database access
 
@@ -39,9 +48,11 @@ paths:
 | `public.cities` | the 9 cities with `boundary` (the coverage area the grid covers); read only |
 | `public.scoring_versions` | the active `online` formula: `weights` (the 9 category weights) and `params` (`cell_size_m` plus one object per score key, for example `params.green`); a version used by a snapshot is frozen, so a formula change is a new version |
 | `public.score_snapshots` | one row per monthly build; `source_dates` and `stats` are written by the orchestrator |
-| `private.grid_cells` | hexagons built with `ST_HexagonGrid` in EPSG:3844, key `size:i:j`, stable across snapshots |
+| `private.grid_cells` | hexagons built with `ST_HexagonGrid` in EPSG:3844, key `size:i:j`, stable across snapshots; `private.grid_cell_neighbours(city_id, size_m)` returns each cell with its (up to 6) touching neighbours, for smoothing |
 | `private.cell_scores` | one row per cell and snapshot; a score writes `categories.<key>` (0–100 or `null` for no data) and `inputs.<key>` (the audit trail) through `writeCategoryScores` |
-| `private.poi_features` | points of interest frozen per snapshot, `category` in `snake_case`, `source_ref` such as `osm:node/123` |
+| `private.poi_features` | points of interest frozen per snapshot, `category` in `snake_case`, `source_ref` such as `osm:node/123`; `area` holds the outline of points that are areas (parks), and walking targets use its point closest to the origin |
+| `private.cell_walk_access` | per snapshot, cell and walking category: `t_nearest_s`, `d_nearest_m`, cumulative `n5`/`n10`/`n15`, `nearest_poi_id`, `distance_method`; written by `computeWalkAccess` |
+| `private.city_category_stats` | per snapshot, city and walking category: `poi_count`, `is_covered` (enough points to score the category in that city), city average time and share of cells within 15 minutes |
 
 The orchestrator computes `overall` (weighted mean of the categories that have data, `private.compute_overall_scores`) and `stats.cities.<slug>` (cells, residential cells, and per category `scored`, `no_data`, `avg` over residential cells, a 20-bin `histogram`) after every module ran. A score that needs extra city figures writes them under `stats.<key>` itself.
 
@@ -77,7 +88,7 @@ pnpm test:worker          # worker Vitest suite; the database tests run when DAT
 ```
 
 - Unit tests sit next to the source (`*.test.ts`) and import from `vitest` explicitly.
-- Tests that need the database use `describe.skipIf(!process.env.DATABASE_URL)`, run against the local stack only, and remove the rows they created. CI runs them after `pnpm db:test` with the local stack's URL.
+- Tests that need the database use `describe.skipIf(!process.env.DATABASE_URL)`, run against the local stack only, and remove the rows they created (snapshots, and the grid cells of a city when it had none before). Test files run one at a time (`fileParallelism: false`) because only one snapshot can be building. CI runs them after `pnpm db:test` with the local stack's URL.
 - Tests that need `osmium` use `describe.skipIf` on its presence; CI installs `osmium-tool`.
 
 ## Deploy (Railway)

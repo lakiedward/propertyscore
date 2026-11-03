@@ -201,25 +201,6 @@ begin
 end;
 $$;
 
-create function private.grid_cell_neighbours(p_snapshot_id uuid, p_city_id uuid)
-returns table (cell_id uuid, neighbour_id uuid)
-language sql
-stable
-set search_path = ''
-as $$
-  select a.id, b.id
-  from private.cell_scores csa
-  join private.grid_cells a on a.id = csa.cell_id
-  join private.cell_scores csb on csb.snapshot_id = csa.snapshot_id
-  join private.grid_cells b on b.id = csb.cell_id
-  where csa.snapshot_id = p_snapshot_id
-    and a.city_id = p_city_id
-    and b.city_id = p_city_id
-    and b.size_m = a.size_m
-    and b.id <> a.id
-    and extensions.st_dwithin(a.center, b.center, a.size_m * 1.9);
-$$;
-
 create function private.cell_score_percentile(p_snapshot_id uuid, p_city_id uuid, p_category text, p_score numeric)
 returns integer
 language sql
@@ -236,4 +217,58 @@ as $$
     and g.city_id = p_city_id
     and cs.is_residential is not false
     and jsonb_typeof(cs.categories -> p_category) = 'number';
+$$;
+
+create function private.walk_candidates_from(p_snapshot_id uuid, p_origin extensions.geography, p_targets jsonb)
+returns table (
+  key text,
+  poi_id uuid,
+  source_ref text,
+  name text,
+  lng double precision,
+  lat double precision,
+  straight_m integer,
+  opening_hours text,
+  is_24h boolean
+)
+language sql
+stable
+set search_path = ''
+as $$
+  select
+    target.key,
+    candidate.id,
+    candidate.source_ref,
+    candidate.name,
+    extensions.st_x(candidate.point),
+    extensions.st_y(candidate.point),
+    round(candidate.straight_m)::integer,
+    candidate.opening_hours,
+    candidate.is_24h
+  from jsonb_to_recordset(p_targets) as target (
+    key text,
+    poi_categories text[],
+    search_radius_m integer,
+    max_candidates integer
+  )
+  cross join lateral (
+    select
+      p.id,
+      p.source_ref,
+      p.name,
+      p.opening_hours,
+      p.is_24h,
+      case
+        when p.area is null then p.location::extensions.geometry
+        else extensions.st_closestpoint(p.area::extensions.geometry, p_origin::extensions.geometry)
+      end as point,
+      extensions.st_distance(coalesce(p.area, p.location), p_origin) as straight_m
+    from private.poi_features p
+    where p.snapshot_id = p_snapshot_id
+      and p.category = any (target.poi_categories)
+      and extensions.st_dwithin(coalesce(p.area, p.location), p_origin, target.search_radius_m)
+    order by straight_m
+    limit target.max_candidates
+  ) as candidate
+  order by target.key, candidate.straight_m;
 $$;

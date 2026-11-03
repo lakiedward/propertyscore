@@ -241,7 +241,7 @@ async function scoreCity(
 
   const smoothed = smoothScores(
     new Map(results.map((result) => [result.cellId, result.raw])),
-    await listNeighbourPairs(sql, snapshotId, city.id),
+    await listNeighbourPairs(sql, city.id, context.cellSizeM),
     { cellWeight: 1 - params.neighbour_weight, neighbourWeight: params.neighbour_weight },
   );
 
