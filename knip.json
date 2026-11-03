@@ -19,7 +19,7 @@
       ]
     },
     "worker": {
-      "ignoreBinaries": ["osmium"]
+      "ignoreBinaries": ["osmium", "unzip", "python3"]
     }
   }
 }

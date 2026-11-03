@@ -23,7 +23,14 @@ paths:
 | `src/snapshot/` | `buildSnapshot` (the orchestrator) and `snapshot.db.ts` (one function per SQL call) |
 | `src/scoring/` | `categories.ts` (the 9 keys), `components.ts` (`linearPoints`, `weightedScore`), `score-module.ts`, `registry.ts`, `write-category-scores.ts` |
 | `src/scoring/<score>/` | one folder per score (`green`, `noise`, …): its module, its pure formula and their tests |
+| `src/scoring/accessibility/` | the transit score: GTFS and OpenStreetMap transit import, the reference weekday, the r5py job wrapper (`routing.ts`) and the formula |
 | `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `osmExtractDate`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`) |
+
+## Transit routing (Python)
+
+- `worker/transit/route.py` is the only Python in the worker: an r5py (R5, Java 21) job the accessibility module runs as a subprocess, like `osmium`. It reads a `job.json` (OSM clip, GTFS archives or folders, reference date and window, origins, stops, destinations) and writes `walk_stops.csv`, `destinations.csv`, `itineraries.csv` and `matrix.bin` (big-endian `uint16` minutes, `65535` = not reachable). It never connects to the database; TypeScript reads its outputs and writes the rows.
+- Its dependencies are pinned in `worker/transit/requirements.txt` and installed into the `/opt/transit` venv of the image, whose `bin` comes first on `PATH`, so the module calls `python3`. Java comes from the `eclipse-temurin:21-jre` stage of the `Dockerfile`; the R5 jar is downloaded and checksum-verified by r5py at build time into `XDG_CACHE_HOME`.
+- Only pure helpers live outside `run()`, and they are tested with the standard library (`python3 -m unittest discover --start-directory worker/transit`), so CI needs no Java for them.
 
 ## Database access
 
