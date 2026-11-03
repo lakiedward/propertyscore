@@ -237,3 +237,57 @@ as $$
     and cs.is_residential is not false
     and jsonb_typeof(cs.categories -> p_category) = 'number';
 $$;
+
+create function private.walk_candidates_from(p_snapshot_id uuid, p_origin extensions.geography, p_targets jsonb)
+returns table (
+  key text,
+  poi_id uuid,
+  source_ref text,
+  name text,
+  lng double precision,
+  lat double precision,
+  straight_m integer,
+  opening_hours text,
+  is_24h boolean
+)
+language sql
+stable
+set search_path = ''
+as $$
+  select
+    target.key,
+    candidate.id,
+    candidate.source_ref,
+    candidate.name,
+    extensions.st_x(candidate.point),
+    extensions.st_y(candidate.point),
+    round(candidate.straight_m)::integer,
+    candidate.opening_hours,
+    candidate.is_24h
+  from jsonb_to_recordset(p_targets) as target (
+    key text,
+    poi_categories text[],
+    search_radius_m integer,
+    max_candidates integer
+  )
+  cross join lateral (
+    select
+      p.id,
+      p.source_ref,
+      p.name,
+      p.opening_hours,
+      p.is_24h,
+      case
+        when p.area is null then p.location::extensions.geometry
+        else extensions.st_closestpoint(p.area::extensions.geometry, p_origin::extensions.geometry)
+      end as point,
+      extensions.st_distance(coalesce(p.area, p.location), p_origin) as straight_m
+    from private.poi_features p
+    where p.snapshot_id = p_snapshot_id
+      and p.category = any (target.poi_categories)
+      and extensions.st_dwithin(coalesce(p.area, p.location), p_origin, target.search_radius_m)
+    order by straight_m
+    limit target.max_candidates
+  ) as candidate
+  order by target.key, candidate.straight_m;
+$$;
