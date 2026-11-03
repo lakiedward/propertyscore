@@ -43,6 +43,22 @@ describe('parseAddress', () => {
     });
   });
 
+  it('keeps the numbers that belong to the street name', () => {
+    expect(parseAddress('Str. 1 Mai 10')).toEqual({ streetKey: '1 mai', houseNumber: '10' });
+    expect(parseAddress('Bd. 1 Decembrie 1918 12, Timișoara')).toEqual({
+      streetKey: '1 decembrie 1918',
+      houseNumber: '12',
+    });
+    expect(parseAddress('Str. 1 Decembrie 1918 nr. 5')).toEqual({
+      streetKey: '1 decembrie 1918',
+      houseNumber: '5',
+    });
+    expect(parseAddress('Str. 16 Februarie 3A, bl. 2')).toEqual({
+      streetKey: '16 februarie',
+      houseNumber: '3a',
+    });
+  });
+
   it('keeps a street without a number and rejects a locality alone', () => {
     expect(parseAddress('Aleea Viilor, Sibiu')).toEqual({ streetKey: 'viilor', houseNumber: null });
     expect(parseAddress('SIBIU', placeWordSet('Sibiu'))).toBeNull();

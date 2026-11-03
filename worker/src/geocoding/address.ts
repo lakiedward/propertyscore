@@ -153,25 +153,38 @@ export function parseAddress(
   text: string,
   ignoredWords: ReadonlySet<string> = new Set(),
 ): ParsedAddress | null {
-  const tokens = streetSegment(text);
-  const street: string[] = [];
-  let houseNumber: string | null = null;
-  const hasMarker = tokens.some((token) => NUMBER_MARKERS.has(token));
-  for (let index = 0; index < tokens.length; index += 1) {
-    const token = tokens[index] ?? '';
-    if (DETAIL_WORDS.has(token)) break;
-    if (NUMBER_MARKERS.has(token)) {
-      const next = tokens[index + 1];
-      if (next !== undefined && /^\d/.test(next)) houseNumber = next;
-      break;
-    }
-    if (!hasMarker && isHouseNumber(token) && street.some((word) => /[a-z]/.test(word))) {
-      const suffix = tokens[index + 1];
-      houseNumber = suffix !== undefined && /^[a-z]$/.test(suffix) ? `${token}${suffix}` : token;
-      break;
-    }
-    street.push(token);
+  const segment = streetSegment(text);
+  const detailAt = segment.findIndex((token) => DETAIL_WORDS.has(token));
+  const tokens = detailAt === -1 ? segment : segment.slice(0, detailAt);
+  const markerAt = tokens.findIndex((token) => NUMBER_MARKERS.has(token));
+  if (markerAt !== -1) {
+    const next = tokens[markerAt + 1];
+    return withStreet(
+      tokens.slice(0, markerAt),
+      next !== undefined && /^\d/.test(next) ? next : null,
+      ignoredWords,
+    );
   }
+  const numberAt = tokens.findLastIndex(
+    (token, index) =>
+      isHouseNumber(token) &&
+      tokens.slice(0, index).some((word) => /[a-z]/.test(word) && !STREET_TYPES.has(word)),
+  );
+  if (numberAt === -1) return withStreet(tokens, null, ignoredWords);
+  const number = tokens[numberAt] ?? '';
+  const suffix = tokens[numberAt + 1];
+  return withStreet(
+    tokens.slice(0, numberAt),
+    suffix !== undefined && /^[a-z]$/.test(suffix) ? `${number}${suffix}` : number,
+    ignoredWords,
+  );
+}
+
+function withStreet(
+  street: readonly string[],
+  houseNumber: string | null,
+  ignoredWords: ReadonlySet<string>,
+): ParsedAddress | null {
   const key = streetKey(street.join(' '));
   if (key === '' || key.split(' ').every((word) => ignoredWords.has(word))) return null;
   return { streetKey: key, houseNumber };
