@@ -11,3 +11,5 @@ export const CATEGORY_KEYS = [
 ] as const;
 
 export type CategoryKey = (typeof CATEGORY_KEYS)[number];
+
+export type ContextKey = 'seismic';
