@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(25);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -13,6 +13,12 @@ select is(
   (select params -> 'education' -> 'levels' -> 'school' ->> 'weight' from public.scoring_versions where kind = 'online' and label = 'v1'),
   '45',
   'The v1 formula carries the education parameters'
+);
+
+select is(
+  (select params -> 'education' -> 'register' -> 'cities' -> 'bucuresti' -> 0 from public.scoring_versions where kind = 'online' and label = 'v1'),
+  '179141'::jsonb,
+  'The v1 formula names the SIIIR edition and the localities of each city'
 );
 
 select is(
