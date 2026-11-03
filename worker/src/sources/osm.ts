@@ -44,6 +44,21 @@ export async function downloadOsmExtract(
   return downloadOnce(url, join(sourcesDir, 'osm', `romania-${period.slice(0, 7)}.osm.pbf`));
 }
 
+export async function osmExtractDate(extractPath: string, fallback: string): Promise<string> {
+  try {
+    const { stdout } = await run('osmium', [
+      'fileinfo',
+      '--get',
+      'header.option.osmosis_replication_timestamp',
+      extractPath,
+    ]);
+    const date = /^\d{4}-\d{2}-\d{2}/.exec(stdout.trim());
+    return date ? date[0] : fallback;
+  } catch (error) {
+    throw new WorkerError('osmium_failed', 'osmium fileinfo failed', { cause: error });
+  }
+}
+
 export async function cityBoundingBox(sql: Sql, cityId: string): Promise<BoundingBox> {
   const [row] = await sql<BoundingBox[]>`
     select

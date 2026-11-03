@@ -5,7 +5,13 @@ import { join } from 'node:path';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { extractOsmFeatures, osmSourceRef, parseGeoJsonSeqLine, readOsmFeatures } from './osm.ts';
+import {
+  extractOsmFeatures,
+  osmExtractDate,
+  osmSourceRef,
+  parseGeoJsonSeqLine,
+  readOsmFeatures,
+} from './osm.ts';
 
 function hasOsmium(): boolean {
   try {
@@ -76,5 +82,22 @@ describe.skipIf(!hasOsmium())('extractOsmFeatures', () => {
       geometry: { type: 'MultiPolygon' },
       properties: { leisure: 'park', name: 'Parcul Rozelor' },
     });
+  });
+
+  it('reads the extract date from the replication header, with a fallback', async () => {
+    const workDir = await mkdtemp(join(tmpdir(), 'osm-test-'));
+    workDirs.push(workDir);
+    const fixture = join(import.meta.dirname, 'fixtures', 'parks.osm');
+    const stamped = join(workDir, 'stamped.osm.pbf');
+    execFileSync('osmium', [
+      'cat',
+      fixture,
+      '--output-header=osmosis_replication_timestamp=2026-10-31T20:21:02Z',
+      '--output',
+      stamped,
+    ]);
+
+    await expect(osmExtractDate(stamped, '2026-11-01')).resolves.toBe('2026-10-31');
+    await expect(osmExtractDate(fixture, '2026-11-01')).resolves.toBe('2026-11-01');
   });
 });

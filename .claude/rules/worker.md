@@ -23,7 +23,7 @@ paths:
 | `src/snapshot/` | `buildSnapshot` (the orchestrator) and `snapshot.db.ts` (one function per SQL call) |
 | `src/scoring/` | `categories.ts` (the 9 keys), `components.ts` (`linearPoints`, `weightedScore`), `score-module.ts`, `registry.ts`, `write-category-scores.ts` |
 | `src/scoring/<score>/` | one folder per score (`green`, `noise`, …): its module, its pure formula and their tests |
-| `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`) |
+| `src/sources/` | shared source helpers: `downloadOnce`, the OSM extract (`downloadOsmExtract`, `osmExtractDate`, `cityBoundingBox`, `extractOsmFeatures`, `readOsmFeatures`, `osmSourceRef`) |
 
 ## Database access
 
@@ -54,6 +54,20 @@ The orchestrator computes `overall` (weighted mean of the categories that have d
 5. Run it for one city: `pnpm --filter @propertyscore/worker start build-snapshot --city timisoara --score <key>`.
 
 Modules are idempotent: running a snapshot twice overwrites, never duplicates. Big source files (OSM extracts, GeoPackages) are cached under `SOURCES_DIR`, never stored in the database; only the derived rows are.
+
+## Working on several scores in parallel
+
+Each score is built on its own branch on top of the foundation; these conventions keep the branches from colliding.
+
+- **Shared files you may touch:** one line in `src/scoring/registry.ts` (modules listed in the order of `CATEGORY_KEYS`), new `apt-get` packages appended to the single install line of `worker/Dockerfile`, new variables in `src/config/env.ts`. Changing `ScoreContext`, `ScoreModule`, `writeCategoryScores`, the orchestrator or the foundation tables goes through the foundation owner (the Green thread) in its own PR.
+- **Migrations:** `supabase migration new <verb>_<object>` at the time you write it; the timestamp order between scores does not matter because no score migration depends on another. Add parameters only to your own key: `update public.scoring_versions set params = params || jsonb_build_object('<key>', …) where kind = 'online' and label = 'v1'`. That works only while `v1` is unused; once a snapshot used it, the freeze trigger refuses and the change becomes a new version.
+- **Schema:** score tables, enums and functions go in `private`, so `database.types.ts` does not change and the branches do not conflict on it. pgTAP files are named `supabase/tests/scoring_<key>.test.sql`.
+- **`is_residential`** belongs to the foundation: the orchestrator sets it from OSM land use before the modules run. Modules never write it.
+- **`poi_features`** is shared: insert with `on conflict (snapshot_id, source_ref, category) do nothing`, use your own `category` codes and never delete rows of another category. The 15-minute thread owns the common categories (shops, schools, clinics, transit stops).
+- **Walking distance:** the 15-minute thread owns the pedestrian routing (Valhalla, exposed as `context.router`, `null` when `VALHALLA_URL` is unset). When the router is `null`, use the straight-line distance times `params.<key>.walk_detour_factor` and record `distance_method: 'straight_line'` in `inputs.<key>`, so the report shows an approximate value.
+- **Source dates:** `sourceDates.osm` is `osmExtractDate(extractPath, context.period)`, the replication date of the extract; other sources use their edition (`urban_atlas: '2021'`).
+- **No data:** a cell without usable source data gets `score: null` and `inputs.<key>.reason` (a `snake_case` code such as `no_source_data`), never a guessed value.
+- **City figures** beyond the shared ones go under `score_snapshots.stats.<key>.<city slug>`, written with `stats = stats || jsonb_build_object('<key>', …)`.
 
 ## Commands and tests
 
