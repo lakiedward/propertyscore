@@ -10,6 +10,7 @@ The rule files are the source; this checklist is the index a reviewer works thro
 | `src/**/*.tsx`, `src/**/*.css`, `components.json` | `styling.md`, `design-system.md`, `i18n.md` (`.tsx`) |
 | `src/features/*/api/**`, `src/features/auth/**`, `src/lib/**`, `src/app/**`, `src/config/**`, `src/routes/**`, `.env.example` | `data-api.md` |
 | `supabase/**`, `src/lib/supabase/**` | `supabase.md` |
+| `supabase/**`, `worker/**`, `src/features/*/api/**`, `netlify.toml`, `.github/**` | `architecture.md` |
 | `src/i18n/**`, `supabase/templates/**`, `scripts/check-translations.ts` | `i18n.md` |
 | `src/**/*.test.ts(x)`, `src/test/**`, `vitest.config.ts` | `testing.md` |
 | `e2e/**`, `playwright.config.ts` | `e2e.md` |
@@ -103,6 +104,12 @@ The rule files are the source; this checklist is the index a reviewer works thro
 - Branch `<type>/<ticket>-<short-desc>`, Conventional Commits.
 - Nothing ignored is committed: `.env.local`, `supabase/functions/.env`, `supabase/.temp`, `e2e/.auth`, reports, coverage, `.claude/` outside `rules/` and `skills/`.
 - `netlify.toml` and the workflows keep previews off the production database and keep the security headers.
+
+### 2.10 architecture.md
+
+- Each behaviour runs where `architecture.md` places it: no long or heavy job (PDF rendering, imports, system binaries, loops over many rows) in an Edge Function, no business rule only in the worker or an Edge Function when it belongs in an RPC, hand-off to the worker through a status or job row the frontend follows, no Edge Function waiting for a worker job.
+- Integrated pieces reused before new ones: heavy jobs are commands of the existing `worker/` package, not a second worker; no service, provider, runtime or binary outside `architecture.md` §1 without an approved decision recorded in the Tech stack and §1.
+- `architecture.md` §1 updated when the change adds or removes an integrated piece (the first Edge Function, `pg_cron`, a worker command or Railway service).
 
 ## 3. Grep scans
 

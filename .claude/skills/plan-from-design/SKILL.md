@@ -98,7 +98,7 @@ The confirmed scope is the list of screens and sections, the shared pieces they 
 Launch read-only `Explore` subagents in one message, each returning a compact report with `file:line` evidence and never file dumps:
 
 - **Design spec subagents**, one per group of about four selected screens (or about six sections of one long screen): build the spec (`design-analysis.md` §3, §4 and §8, with this skill's design path and selection in place of a step) and, on top of it, the **screen data inventory** of `requirements-analysis.md` §2. Subagents cannot drive the browser, so their spec gives structure, copy and data; you then fill in every visual value yourself from the rendered design with the extractor (`design-measurement.md` §2) at 1440 px, 375 px and each design breakpoint, and record the measured values in the spec (container, gutters, breakpoints, per-section padding and background, grid templates, type sizes and weights, colours, radii, shadows, pseudo-element decorations).
-- **Code and schema subagent**: the gap analysis (`gap-analysis.md` §3 and §5, labels as above) for every item of the confirmed scope: existing tables, columns, policies, functions, buckets, Edge Functions, routes, features, queries, shared components, tokens and translation namespaces.
+- **Code and schema subagent**: the gap analysis (`gap-analysis.md` §3 and §5, labels as above) for every item of the confirmed scope: existing tables, columns, policies, functions, buckets, Edge Functions, routes, features, queries, shared components, tokens and translation namespaces, plus the integration inventory of `.claude/rules/architecture.md` §1 confirmed against the code (`pg_cron` jobs, worker commands and Railway services, providers).
 
 Read source files yourself only where the reports leave a real doubt.
 
@@ -108,7 +108,7 @@ Follow `references/requirements-analysis.md` to combine the reports into:
 
 1. The **data requirements matrix**: every screen element mapped to the table and column (or RPC, Edge Function, bucket, computed value, copy) that serves it, with its status (`exists`, `new`, `copy`).
 2. The **schema**: the tables, columns with types and constraints, enums, relationships, indexes, RLS policies per operation and role, column privileges, functions, triggers, views, buckets and their policies, seed data and pgTAP tests the scope needs, reconciled with the existing migrations.
-3. **Backend logic**: RPCs, Edge Functions, scheduled jobs and the rules each one enforces.
+3. **Backend logic**: RPCs, Edge Functions, scheduled jobs, worker jobs and the rules each one enforces, each placed with `.claude/rules/architecture.md`: the integrated options considered, the one chosen and why, and the code it reuses (a PDF with photos goes to a command of the existing Railway worker, not an Edge Function). Something not yet integrated is an open question for the user.
 4. **Auth and access**: who may see and do what on each screen, and how the guard, the RLS policy and the role claim implement it.
 5. **Integrations**: third-party services, where their secrets live, webhooks, failure behaviour, and what is needed locally to test them.
 6. **Design-system additions**: every measured value the design system lacks (colours, text roles, shadows, radii, breakpoints, container), with the token name it will get; and design gaps (states the screens need but do not draw).
