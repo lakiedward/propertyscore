@@ -1,12 +1,15 @@
 import { HouseIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LazyMapCanvas } from '@/components/map/lazy-map-canvas';
-import type { MapFeatureCollection, MapMarkerItem, MapOverlay } from '@/components/map/map-canvas';
+import type { MapMarkerItem, MapOverlay } from '@/components/map/map-canvas';
 import type { LngLat, LngLatBounds } from '@/components/map/map.config';
 import { cn } from '@/lib/utils';
 import { useRadiusLabel } from '../hooks/use-radius-label';
+import { ringOverlay } from '../chapter-layers.utils';
 import { circleRing } from '../online-report.utils';
 import type { GreenPark, ScoredGreenSection } from '../online-report.types';
+import type { CategoryKey } from '../online-report.utils';
+import { categoryClasses } from './category-style';
 
 const RING_RADII_M = [500, 1000] as const;
 
@@ -18,32 +21,39 @@ type ReportMapGreenLayer = {
   onSelectPark: (parkId: string) => void;
 };
 
+type ReportMapPlace = {
+  id: string;
+  position: LngLat;
+  label: string;
+};
+
+export type ReportMapLayer = {
+  hueKey: CategoryKey;
+  overlays: readonly MapOverlay[];
+  places: readonly ReportMapPlace[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  radiusM: number | null;
+  note: string;
+};
+
 type ReportMapProps = {
   position: LngLat;
   green?: ReportMapGreenLayer | undefined;
+  layer?: ReportMapLayer | undefined;
 };
 
-function ringOverlay(id: string, position: LngLat, radiusM: number): MapFeatureCollection {
-  return {
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        properties: { id, radius: String(radiusM) },
-        geometry: { type: 'LineString', coordinates: circleRing(position, radiusM) },
-      },
-    ],
-  };
-}
-
-function ringBounds(position: LngLat, radiusM: number): LngLatBounds {
-  const ring = circleRing(position, radiusM, 36);
-  const longitudes = ring.map(([longitude]) => longitude);
-  const latitudes = ring.map(([, latitude]) => latitude);
+function pointsBounds(points: readonly LngLat[]): LngLatBounds {
+  const longitudes = points.map(([longitude]) => longitude);
+  const latitudes = points.map(([, latitude]) => latitude);
   return [
     [Math.min(...longitudes), Math.min(...latitudes)],
     [Math.max(...longitudes), Math.max(...latitudes)],
   ];
+}
+
+function ringBounds(position: LngLat, radiusM: number): LngLatBounds {
+  return pointsBounds(circleRing(position, radiusM, 36));
 }
 
 function greenOverlays(position: LngLat, green: ReportMapGreenLayer): MapOverlay[] {
@@ -92,7 +102,7 @@ function zoneOverlays(position: LngLat): MapOverlay[] {
   }));
 }
 
-export function ReportMap({ position, green }: ReportMapProps) {
+export function ReportMap({ position, green, layer }: ReportMapProps) {
   const { t } = useTranslation('onlineReports');
   const radiusLabel = useRadiusLabel();
 
@@ -138,6 +148,36 @@ export function ReportMap({ position, green }: ReportMapProps) {
     };
   });
 
+  const layerHue = layer ? categoryClasses(layer.hueKey) : undefined;
+  const layerMarkers: MapMarkerItem[] = (layer?.places ?? []).map((place, index) => {
+    const isSelected = place.id === layer?.selectedId;
+    return {
+      id: `place-${place.id}`,
+      position: place.position,
+      anchor: 'center',
+      node: (
+        <button
+          type="button"
+          aria-pressed={isSelected}
+          aria-label={place.label}
+          onClick={() => {
+            layer?.onSelect(place.id);
+          }}
+          className={cn(
+            'grid size-7 place-items-center rounded-full border-2 border-card text-meta font-extrabold tabular-nums shadow-sm',
+            isSelected ? cn('scale-125 text-on-inverse', layerHue?.fill) : layerHue?.tile,
+          )}
+        >
+          {index + 1}
+        </button>
+      ),
+    };
+  });
+  const selectedPlaceIndex =
+    layer?.places.findIndex((place) => place.id === layer.selectedId) ?? -1;
+  const selectedPlace = layer?.places[selectedPlaceIndex];
+  const layerRadiusM = layer?.radiusM ?? null;
+
   const selectedPark = green?.parks.find((park) => park.id === green.selectedParkId);
   const selectedIndex = green?.parks.findIndex((park) => park.id === green.selectedParkId) ?? -1;
 
@@ -147,12 +187,26 @@ export function ReportMap({ position, green }: ReportMapProps) {
         <LazyMapCanvas
           label={t('map.label')}
           center={position}
-          zoom={green ? 14.5 : 14}
-          bounds={green ? ringBounds(position, green.radiusM) : undefined}
-          markers={[...parkMarkers, addressMarker]}
-          overlays={green ? greenOverlays(position, green) : zoneOverlays(position)}
+          zoom={green || layer ? 14.5 : 14}
+          bounds={
+            green
+              ? ringBounds(position, green.radiusM)
+              : layerRadiusM !== null
+                ? ringBounds(position, layerRadiusM)
+                : layer && layer.places.length > 0
+                  ? pointsBounds([position, ...layer.places.map((place) => place.position)])
+                  : undefined
+          }
+          markers={[...parkMarkers, ...layerMarkers, addressMarker]}
+          overlays={
+            green ? greenOverlays(position, green) : layer ? layer.overlays : zoneOverlays(position)
+          }
           focus={
-            selectedPark ? { position: selectedPark.center, requestId: selectedIndex } : undefined
+            selectedPark
+              ? { position: selectedPark.center, requestId: selectedIndex }
+              : selectedPlace
+                ? { position: selectedPlace.position, requestId: selectedPlaceIndex }
+                : undefined
           }
           className="size-full"
           fallbackClassName="size-full rounded-xl"
@@ -164,7 +218,9 @@ export function ReportMap({ position, green }: ReportMapProps) {
         />
       </div>
       <p className="text-meta text-muted-foreground">
-        {green ? t('green.map.note', { radius: radiusLabel(green.radiusM) }) : t('map.note')}
+        {green
+          ? t('green.map.note', { radius: radiusLabel(green.radiusM) })
+          : (layer?.note ?? t('map.note'))}
       </p>
     </div>
   );

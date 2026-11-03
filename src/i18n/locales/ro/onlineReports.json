@@ -236,5 +236,385 @@
         "trees_other": "Mai mulți copaci pe stradă ar putea aduce {{count}} de puncte."
       }
     }
+  },
+  "chapterLimits": {
+    "title": "Ce nu poate ști raportul"
+  },
+  "noise": {
+    "decibels": "{{value}} dB",
+    "noData": "Orașul nu are încă hărți de zgomot în format digital și nici surse din care să-l estimăm aici. Scorul de zgomot nu intră în scorul zonei.",
+    "facts": {
+      "lden": "Media pe 24 de ore la adresă (Lden)",
+      "lnight": "Noaptea la adresă (Lnight)",
+      "nearest": "Până la cea mai apropiată sursă: {{source}}",
+      "nearestNone": "Nicio sursă mare de zgomot în apropiere"
+    },
+    "level": {
+      "title": "Cam {{level}} la adresă",
+      "leadStreet": "Valoarea vine din hărțile strategice de zgomot ale orașului, la punctul adresei.",
+      "leadEstimate": "Valoarea e o estimare din OpenStreetMap, calibrată pe hărțile oficiale din alte orașe."
+    },
+    "scale": {
+      "label": "Nivelul la adresă, {{level}}, față de recomandarea OMS pentru trafic, {{guideline}}",
+      "guideline": "OMS: {{value}}"
+    },
+    "sources": {
+      "title": "Sursele de zgomot din apropiere",
+      "lead": "Străzile mari, tramvaiul, calea ferată și aeroportul cele mai apropiate de adresă.",
+      "none": "Nu am găsit surse mari de zgomot în apropiere.",
+      "band": "{{low}}–{{high}} dB"
+    },
+    "kind": {
+      "road": "Stradă",
+      "tram": "Tramvai",
+      "rail": "Cale ferată",
+      "air": "Aeroport",
+      "industry": "Industrie",
+      "aggregate": "Mai multe surse"
+    },
+    "map": {
+      "note": "Petele colorate sunt benzile de zgomot (mai închis înseamnă mai zgomotos); liniile sunt sursele. Comutatorul zi / noapte schimbă benzile."
+    },
+    "limits": {
+      "windows": "Nivelul din apartament depinde de geamuri, etaj și orientarea camerelor.",
+      "maps": "Hărțile de zgomot se refac o dată la cinci ani: un șantier sau o stradă nouă pot lipsi.",
+      "estimate": "O parte din valoare e estimată din tipul străzilor, nu măsurată."
+    }
+  },
+  "air": {
+    "micrograms": "{{value}} µg/m³",
+    "noData": "Nu avem date de calitatea aerului pentru această zonă pe ultimele 12 luni. Scorul de aer nu intră în scorul zonei.",
+    "facts": {
+      "annual": "PM2,5, media pe 12 luni",
+      "highest": "Luna cea mai grea: {{month}}",
+      "highestNone": "Luna cea mai grea",
+      "lowest": "Luna cea mai curată: {{month}}",
+      "lowestNone": "Luna cea mai curată"
+    },
+    "verdict": {
+      "clean_all_year": "Aer curat tot anul",
+      "winter_peaks": "Aer bun vara, mai greu iarna",
+      "above_limit_most_year": "Peste limita UE din 2030 în cea mai mare parte a anului",
+      "moderate": "Aer moderat, cu câteva luni mai grele"
+    },
+    "months": {
+      "title": "Particule fine (PM2,5) lună de lună",
+      "lead_one": "{{count}} lună din 12 peste limita UE din 2030 ({{limit}}).",
+      "lead_few": "{{count}} luni din 12 peste limita UE din 2030 ({{limit}}).",
+      "lead_other": "{{count}} de luni din 12 peste limita UE din 2030 ({{limit}}).",
+      "chartLabel": "PM2,5 în fiecare lună",
+      "bar": "{{month}}: {{value}}",
+      "noValue": "fără date",
+      "limitLegend": "Linia punctată: limita UE 2030, {{limit}}"
+    },
+    "compare": {
+      "title": "Adresa față de oraș",
+      "address": "PM2,5 la adresă",
+      "city": "PM2,5, media orașului",
+      "no2": "NO₂ la adresă",
+      "noNo2": "fără date",
+      "precision": "Precizie"
+    },
+    "precision": {
+      "eea_1km": "~1 km",
+      "cams_10km": "~10 km"
+    },
+    "limits": {
+      "indoor": "Nu măsurăm aerul din interiorul apartamentului, fumul de la sobe sau mirosurile.",
+      "notMeasured": "Valorile vin din modele europene corectate cu stațiile din oraș, nu dintr-o măsurătoare la adresă.",
+      "uncalibrated": "Orașul nu a avut stații valide pe perioada asta, așa că valorile sunt din model, necorectate."
+    }
+  },
+  "industry": {
+    "noData": "Nu avem încă registrul instalațiilor industriale pentru această perioadă. Scorul nu intră în scorul zonei.",
+    "facts": {
+      "nearest": "Cel mai apropiat amplasament raportat",
+      "inRadius": "Amplasamente pe o rază de {{radius}}",
+      "near": "Amplasamente sub {{radius}}"
+    },
+    "verdict": {
+      "noneInRadius": "Niciun amplasament industrial raportat pe o rază de {{radius}}",
+      "noneNear": "Niciun amplasament industrial sub {{near}}",
+      "oneNear": "Un amplasament industrial la {{distance}}",
+      "manyNear": "Mai multe instalații industriale sub {{near}}"
+    },
+    "sites": {
+      "lead": "Instalațiile care raportează emisii la registrul european, de la cea mai apropiată.",
+      "none": "Nicio instalație raportată pe o rază de {{radius}}.",
+      "pointsLost_one": "−{{count}} punct din scor",
+      "pointsLost_few": "−{{count}} puncte din scor",
+      "pointsLost_other": "−{{count}} de puncte din scor",
+      "noPoints": "Nu scade scorul"
+    },
+    "sector": {
+      "energy": "Energie",
+      "metals": "Metalurgie",
+      "minerals": "Materiale de construcții",
+      "chemicals": "Chimie",
+      "waste_water": "Deșeuri și ape uzate",
+      "paper_wood": "Hârtie și lemn",
+      "livestock": "Ferme de animale",
+      "food": "Industrie alimentară",
+      "other": "Altă activitate"
+    },
+    "impact": {
+      "air": "Emisii în aer",
+      "water": "Emisii în apă",
+      "odour": "Poate produce mirosuri",
+      "seasonal_winter": "Mai activă iarna"
+    },
+    "map": {
+      "site": "Arată pe listă: {{name}}",
+      "note": "Numerele de pe hartă sunt instalațiile din listă; apasă pe unul ca să-l găsești în listă."
+    },
+    "limits": {
+      "register": "Registrul acoperă doar instalațiile mari raportate la UE, nu atelierele sau depozitele mici.",
+      "smell": "Nu măsurăm mirosul, zgomotul sau traficul de camioane de la ele.",
+      "year": "Datele de emisii sunt din {{year}}."
+    }
+  },
+  "fifteenMinute": {
+    "noData": "Nu avem destule date despre serviciile din jurul adresei. Scorul nu intră în scorul zonei.",
+    "walk_one": "{{count}} minut",
+    "walk_few": "{{count}} minute",
+    "walk_other": "{{count}} de minute",
+    "walkApproximate_one": "~{{count}} minut",
+    "walkApproximate_few": "~{{count}} minute",
+    "walkApproximate_other": "~{{count}} de minute",
+    "notInReach": "peste 15 minute",
+    "facts": {
+      "coveredValue": "{{covered}} din {{total}}",
+      "covered": "Servicii zilnice la 15 minute pe jos",
+      "places": "Locuri la 15 minute pe jos",
+      "missing": "Servicii mai departe de 15 minute"
+    },
+    "groups": {
+      "title": "{{covered}} din {{total}} servicii zilnice la 15 minute pe jos",
+      "lead": "Timpul de mers pe jos până la cel mai apropiat loc din fiecare categorie."
+    },
+    "group": {
+      "shops": "Cumpărături",
+      "food_drink": "Mâncare și cafea",
+      "services": "Servicii",
+      "pharmacies": "Farmacii",
+      "medical": "Medici",
+      "schools": "Școli",
+      "parks": "Parcuri",
+      "sport": "Sport",
+      "culture": "Cultură",
+      "other": "Altele"
+    },
+    "category": {
+      "supermarket": "Supermarket",
+      "convenience": "Magazin de cartier",
+      "bakery": "Brutărie",
+      "greengrocer_market": "Piață sau aprozar",
+      "butcher": "Măcelărie",
+      "drugstore": "Drogerie",
+      "restaurant": "Restaurant",
+      "cafe": "Cafenea",
+      "bank_atm": "Bancă sau bancomat",
+      "post": "Poștă sau easybox",
+      "hairdresser": "Frizerie sau coafor",
+      "laundry": "Curățătorie",
+      "car_service": "Service auto",
+      "public_office": "Instituție publică",
+      "pharmacy": "Farmacie",
+      "doctor": "Medic de familie",
+      "dentist": "Stomatolog",
+      "clinic": "Clinică",
+      "veterinary": "Cabinet veterinar",
+      "kindergarten": "Grădiniță",
+      "school": "Școală",
+      "high_school": "Liceu",
+      "park": "Parc",
+      "playground": "Loc de joacă",
+      "fitness": "Sală de fitness",
+      "sports_ground": "Teren de sport",
+      "swimming_pool": "Piscină",
+      "library": "Bibliotecă",
+      "cinema_theatre": "Cinema sau teatru",
+      "place_of_worship": "Lăcaș de cult",
+      "other": "Alt serviciu"
+    },
+    "nearest": {
+      "title": "Cel mai aproape, pe categorii",
+      "lead": "Cel mai apropiat loc din fiecare grup; apasă pe unul ca să-l vezi pe hartă."
+    },
+    "map": {
+      "place": "Arată pe listă: {{name}}",
+      "note": "Zonele colorate arată unde ajungi pe jos în 5, 10 și 15 minute; numerele sunt locurile din listă."
+    },
+    "limits": {
+      "osm": "Locurile vin din OpenStreetMap: un magazin nou sau unul închis de curând poate lipsi.",
+      "hours": "Nu verificăm programul fiecărui loc.",
+      "approximate": "Timpii sunt aproximați din linia dreaptă până avem traseele pe străzi."
+    }
+  },
+  "education": {
+    "noData": "Nu avem destule date despre școlile din jurul adresei.",
+    "levels": {
+      "label": "Cel mai apropiat, pe niveluri"
+    },
+    "level": {
+      "kindergarten": "Grădiniță",
+      "school": "Școală",
+      "high_school": "Liceu"
+    },
+    "notInReach": "Nicio unitate aproape",
+    "walk_one": "{{count}} minut pe jos",
+    "walk_few": "{{count}} minute pe jos",
+    "walk_other": "{{count}} de minute pe jos",
+    "institutions": {
+      "label": "Cele mai apropiate unități de învățământ",
+      "unnamed": "Unitate fără nume",
+      "distance": "~{{distance}} pe jos"
+    },
+    "ownership": {
+      "public": "De stat",
+      "private": "Particulară",
+      "unknown": "Tip necunoscut"
+    },
+    "note": "Nu notăm calitatea școlilor, doar cât de aproape sunt. Circumscripția școlară se verifică la școală."
+  },
+  "health": {
+    "noData": "Nu avem destule date despre serviciile medicale din jurul adresei.",
+    "layers": {
+      "label": "Serviciile medicale cele mai apropiate"
+    },
+    "layer": {
+      "h1": "Farmacie",
+      "h2": "Medic de familie",
+      "h3": "Clinică sau policlinică",
+      "h4": "Spital cu urgențe",
+      "h5": "Farmacie non-stop"
+    },
+    "noLayerData": "Fără date în acest oraș",
+    "notInReach": "Departe",
+    "walk_one": "{{count}} minut pe jos",
+    "walk_few": "{{count}} minute pe jos",
+    "walk_other": "{{count}} de minute pe jos",
+    "drive_one": "{{count}} minut cu mașina",
+    "drive_few": "{{count}} minute cu mașina",
+    "drive_other": "{{count}} de minute cu mașina"
+  },
+  "moment": {
+    "label": "Ziua sau noaptea",
+    "day": "Ziua",
+    "night": "Noaptea"
+  },
+  "safety": {
+    "noData": "Nu avem destule date pentru scorul de siguranță în această zonă. Scorul nu intră în scorul zonei.",
+    "facts": {
+      "day": "Scorul zonei ziua",
+      "night": "Scorul zonei noaptea",
+      "police": "Până la cea mai apropiată secție de poliție"
+    },
+    "moment": {
+      "day": "Ziua · {{score}}",
+      "night": "Noaptea · {{score}}"
+    },
+    "why": {
+      "title": "De ce are adresa {{score}}",
+      "lead": "Pornim de la {{start}} de puncte și adunăm ce se află în jurul adresei. Alege momentul zilei ca să vezi diferența.",
+      "raising": "Ce ridică scorul",
+      "lowering": "Ce coboară scorul",
+      "none": "Nimic notabil."
+    },
+    "row": {
+      "lighting": "Iluminat stradal",
+      "shop": "Magazine",
+      "nonstop": "Magazine non-stop",
+      "mixed_use": "Clădiri cu spații comerciale",
+      "police": "Poliție",
+      "fire_station": "Pompieri",
+      "diplomatic": "Ambasade și consulate",
+      "bar": "Baruri și cluburi",
+      "park": "Parcuri",
+      "park_lit": "Parcuri iluminate",
+      "isolated_passage": "Pasaje și locuri izolate",
+      "train_station": "Gară",
+      "train_halt": "Haltă",
+      "transit_stop": "Stații de transport",
+      "start": "Punct de pornire",
+      "night_offset": "Noaptea, în general",
+      "far_types": "Alte elemente, prea departe ca să conteze mult",
+      "limit": "Limita scalei 0–100"
+    },
+    "landmarks": {
+      "title": "Repere din apropiere",
+      "lead": "Cel mai apropiat reper din fiecare tip; apasă pe unul ca să-l vezi pe hartă."
+    },
+    "map": {
+      "landmark": "Arată pe listă: {{name}}",
+      "note": "Numerele de pe hartă sunt reperele din listă."
+    },
+    "limits": {
+      "proxy": "E un indicator de proximitate și percepție, nu o statistică a infracțiunilor: nu există date publice de încredere pe stradă.",
+      "osm": "Felinarele și programul localurilor vin din OpenStreetMap și pot fi incomplete."
+    }
+  },
+  "accessibility": {
+    "noData": "Nu avem date de transport public pentru această zonă. Scorul nu intră în scorul zonei.",
+    "minutes_one": "{{count}} minut",
+    "minutes_few": "{{count}} minute",
+    "minutes_other": "{{count}} de minute",
+    "facts": {
+      "stops": "Stații la câteva minute de mers",
+      "routes": "Linii care trec prin ele",
+      "average": "În medie până la punctele importante"
+    },
+    "destinations": {
+      "title": "Cum ajungi în punctele importante ale orașului",
+      "lead": "Timpul total într-o zi lucrătoare dimineața, de la ușă la ușă.",
+      "unreachable": "Fără legătură directă",
+      "walking": "Pe jos e mai rapid",
+      "route": "{{mode}} {{ref}}",
+      "noRoute": "Fără linie directă",
+      "transfers_one": "{{count}} schimbare",
+      "transfers_few": "{{count}} schimbări",
+      "transfers_other": "{{count}} de schimbări",
+      "note": "Timp total = mers pe jos + așteptare medie + drumul cu linia + mers pe jos."
+    },
+    "stops": {
+      "title": "Stațiile din jur",
+      "lead": "Liniile care opresc și cât faci pe jos până la fiecare stație.",
+      "none": "Nicio stație la distanță de mers pe jos.",
+      "unnamed": "Stație fără nume"
+    },
+    "routes": {
+      "title": "Liniile care trec pe aici",
+      "peak_one": "o dată pe oră la vârf",
+      "peak_few": "de {{count}} ori pe oră la vârf",
+      "peak_other": "de {{count}} de ori pe oră la vârf"
+    },
+    "mode": {
+      "bus": "Autobuz",
+      "trolleybus": "Troleibuz",
+      "tram": "Tramvai",
+      "subway": "Metrou"
+    },
+    "map": {
+      "destination": "Arată pe listă: {{name}}",
+      "note": "Numerele de pe hartă sunt punctele importante din listă."
+    },
+    "limits": {
+      "schedule": "Folosim mersul oficial al liniilor; întârzierile și lucrările nu apar.",
+      "peak": "Timpii sunt pentru o zi lucrătoare dimineața; seara și în weekend pot fi mai lungi.",
+      "partial": "Orașul nu are mers oficial publicat, așa că folosim doar stațiile și liniile din OpenStreetMap (date parțiale)."
+    }
+  },
+  "context": {
+    "title": "Context, fără scor",
+    "lead": "Două lucruri pe care le arătăm ca informație, nu în scorul zonei.",
+    "seismic": {
+      "title": "Risc seismic",
+      "text": "În curând: clasa de risc a clădirii și zona seismică a orașului."
+    },
+    "investment": {
+      "title": "Investiție",
+      "text": "În curând: prețurile din zonă și cum au evoluat."
+    },
+    "soon": "În curând"
   }
 }
