@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { getDefaultNormalizer, screen, within } from '@testing-library/react';
 import { delay, http, HttpResponse } from 'msw';
 import { formatPrice } from '@/i18n/format';
 import roCommon from '@/i18n/locales/ro/common.json';
@@ -74,7 +74,9 @@ describe('ListingsBoard', () => {
       await screen.findByText(fill(count.rent_one, { count: 1, city: CITY })),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(fill(roCommon.price.perMonth, { price: formatPrice(450, 'EUR') })),
+      screen.getByText(
+        getDefaultNormalizer()(fill(roCommon.price.perMonth, { price: formatPrice(450, 'EUR') })),
+      ),
     ).toBeInTheDocument();
   });
 
