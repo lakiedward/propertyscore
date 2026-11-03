@@ -144,9 +144,9 @@ select results_eq(
 select results_eq(
   format($$
     select count(*)::integer
-    from private.grid_cell_neighbours(%L, %L)
+    from private.grid_cell_neighbours(%L, 175)
     where cell_id = %L
-  $$, :'snapshot_id', :'sibiu_id', :'centre_cell'),
+  $$, :'sibiu_id', :'centre_cell'),
   $$ values (6) $$,
   'An inner hexagon has six neighbours'
 );

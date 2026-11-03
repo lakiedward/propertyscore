@@ -48,7 +48,7 @@ paths:
 | `public.cities` | the 9 cities with `boundary` (the coverage area the grid covers); read only |
 | `public.scoring_versions` | the active `online` formula: `weights` (the 9 category weights) and `params` (`cell_size_m` plus one object per score key, for example `params.green`); a version used by a snapshot is frozen, so a formula change is a new version |
 | `public.score_snapshots` | one row per monthly build; `source_dates` and `stats` are written by the orchestrator |
-| `private.grid_cells` | hexagons built with `ST_HexagonGrid` in EPSG:3844, key `size:i:j`, stable across snapshots |
+| `private.grid_cells` | hexagons built with `ST_HexagonGrid` in EPSG:3844, key `size:i:j`, stable across snapshots; `private.grid_cell_neighbours(city_id, size_m)` returns each cell with its (up to 6) touching neighbours, for smoothing |
 | `private.cell_scores` | one row per cell and snapshot; a score writes `categories.<key>` (0–100 or `null` for no data) and `inputs.<key>` (the audit trail) through `writeCategoryScores` |
 | `private.poi_features` | points of interest frozen per snapshot, `category` in `snake_case`, `source_ref` such as `osm:node/123`; `area` holds the outline of points that are areas (parks), and walking targets use its point closest to the origin |
 | `private.cell_walk_access` | per snapshot, cell and walking category: `t_nearest_s`, `d_nearest_m`, cumulative `n5`/`n10`/`n15`, `nearest_poi_id`, `distance_method`; written by `computeWalkAccess` |
@@ -88,7 +88,7 @@ pnpm test:worker          # worker Vitest suite; the database tests run when DAT
 ```
 
 - Unit tests sit next to the source (`*.test.ts`) and import from `vitest` explicitly.
-- Tests that need the database use `describe.skipIf(!process.env.DATABASE_URL)`, run against the local stack only, and remove the rows they created. CI runs them after `pnpm db:test` with the local stack's URL.
+- Tests that need the database use `describe.skipIf(!process.env.DATABASE_URL)`, run against the local stack only, and remove the rows they created (snapshots, and the grid cells of a city when it had none before). Test files run one at a time (`fileParallelism: false`) because only one snapshot can be building. CI runs them after `pnpm db:test` with the local stack's URL.
 - Tests that need `osmium` use `describe.skipIf` on its presence; CI installs `osmium-tool`.
 
 ## Deploy (Railway)

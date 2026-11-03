@@ -144,6 +144,22 @@ as $$
   limit 1;
 $$;
 
+create function private.grid_cell_neighbours(p_city_id uuid, p_size_m integer)
+returns table (cell_id uuid, neighbour_id uuid)
+language sql
+stable
+set search_path = ''
+as $$
+  select g.id, n.id
+  from private.grid_cells g
+  join private.grid_cells n
+    on n.city_id = g.city_id
+    and n.size_m = g.size_m
+    and n.id <> g.id
+    and extensions.st_dwithin(n.geometry, g.center, p_size_m)
+  where g.city_id = p_city_id and g.size_m = p_size_m;
+$$;
+
 create function private.seed_cell_scores(p_snapshot_id uuid, p_city_id uuid)
 returns integer
 language plpgsql
