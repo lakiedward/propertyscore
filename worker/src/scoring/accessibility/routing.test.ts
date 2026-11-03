@@ -33,6 +33,7 @@ async function job(): Promise<RoutingJob> {
     stops: [{ id: 'g0:A', lng: 24.151, lat: 45.791 }],
     destinations: [{ id: 'center', lng: 24.152, lat: 45.797 }],
     withMatrix: true,
+    withItineraries: true,
     workDir,
   };
 }
@@ -50,6 +51,7 @@ describe('runTransitRouting', () => {
         max_rides: 3,
         transport_modes: ['TRAM', 'SUBWAY', 'BUS'],
         matrix: true,
+        itineraries: true,
         r5py_arguments: ['--max-memory', '60%'],
       });
       expect(await readFile(String(config.origins), 'utf8')).toBe(

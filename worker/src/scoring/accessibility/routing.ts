@@ -32,6 +32,7 @@ export type RoutingJob = {
   stops: RoutingPoint[];
   destinations: RoutingPoint[];
   withMatrix: boolean;
+  withItineraries: boolean;
   workDir: string;
 };
 
@@ -148,6 +149,7 @@ export async function runTransitRouting(
       stops: files.stops,
       destinations: files.destinations,
       matrix: job.withMatrix,
+      itineraries: job.withItineraries,
       output_dir: outputDir,
       r5py_arguments: ['--max-memory', R5_MAX_MEMORY],
     }),

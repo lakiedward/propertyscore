@@ -301,6 +301,7 @@ export const accessibilityModule: ScoreModule = {
         stops: network.stops.map((stop) => ({ id: stop.key, lng: stop.lng, lat: stop.lat })),
         destinations: destinations.map((item) => ({ id: item.id, lng: item.lng, lat: item.lat })),
         withMatrix: true,
+        withItineraries: false,
         workDir,
       });
 
