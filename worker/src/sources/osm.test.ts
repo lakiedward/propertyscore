@@ -12,15 +12,7 @@ import {
   parseGeoJsonSeqLine,
   readOsmFeatures,
 } from './osm.ts';
-
-function hasOsmium(): boolean {
-  try {
-    execFileSync('osmium', ['--version'], { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
-}
+import { hasOsmium } from '../test/osm-fixture.ts';
 
 describe('parseGeoJsonSeqLine', () => {
   it('reads a record-separated feature and keeps only string tags', () => {
