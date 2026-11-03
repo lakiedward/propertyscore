@@ -19,7 +19,7 @@ export function LoginPage() {
           t={t}
           i18nKey="login.noAccount"
           components={{
-            link: (
+            action: (
               <TextLink
                 to="/sign-up"
                 search={{ redirect }}

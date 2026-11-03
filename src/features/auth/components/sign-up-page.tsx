@@ -55,7 +55,7 @@ export function SignUpPage() {
           t={t}
           i18nKey="signUp.hasAccount"
           components={{
-            link: (
+            action: (
               <TextLink to="/login" search={{ redirect }} size="inherit" className="px-0.5 py-1" />
             ),
           }}

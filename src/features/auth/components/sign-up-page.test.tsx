@@ -9,6 +9,15 @@ import { renderAppRoute } from '@/test/render';
 const signedIn = signedInAs();
 
 describe('SignUpPage', { timeout: 20_000 }, () => {
+  it('links back to sign-in with the words inside the link', async () => {
+    await renderAppRoute('/sign-up');
+
+    expect(await screen.findByRole('link', { name: 'Intră în cont.' })).toHaveAttribute(
+      'href',
+      '/login',
+    );
+  });
+
   it('sends a signed-in visitor to the page named in redirect', async () => {
     const { router } = await renderAppRoute('/sign-up?redirect=%2Fpublish', { auth: signedIn });
 
