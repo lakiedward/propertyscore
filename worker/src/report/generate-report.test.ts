@@ -111,7 +111,7 @@ describe.skipIf(!databaseUrl)('generateReport against the local database', () =>
     expect(report?.result).toMatchObject({
       schema_version: 1,
       city: { slug: 'sibiu', name: 'Sibiu' },
-      zone: { score: 59, percentile: 0, city_avg: 59 },
+      zone: { score: 59, percentile: 50, city_avg: 59 },
       categories: { green: { score: 70, city_avg: 70, weight: 10 }, safety: { score: null } },
       green: { city: 'sibiu', latitude: PIATA_MARE.latitude },
     });
