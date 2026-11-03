@@ -35,6 +35,7 @@ This document sets the stack, structure and rules for the Property Score fronten
 | Lint / format | ESLint 9 flat config + typescript-eslint + Prettier 3 | TSLint, Biome (good, but its React/a11y rule coverage is smaller) |
 | Monitoring | Sentry (`@sentry/react`) | Console logs only |
 | CI | GitHub Actions: typecheck, lint, unit, DB, E2E, build | — |
+| Scoring and document jobs | `worker/` in this repository: a pnpm workspace package run by Node 24 directly, connecting to the same Supabase Postgres with `postgres.js`, deployed to Railway (decided 2026-11-03; rules in `.claude/rules/worker.md`). SmartCheck scores are precomputed per monthly snapshot on an EPSG:3844 hexagon grid in PostGIS (`private` schema); reports only read the ready snapshot | Edge Functions (time and memory limits, no Chromium, no `osmium`), a scheduled GitHub Action (no long-running job runner for reports and PDFs later), a second Supabase project (two auth systems, no RLS across databases), a separate repository (the schema, generated types and translations would drift), H3 in JavaScript (an extra dependency for what `ST_HexagonGrid` already does) |
 
 Pin exact versions when the project is created (`pnpm add -E`). Upgrade on purpose, through Renovate or Dependabot PRs.
 
@@ -923,5 +924,5 @@ These are product or business choices that change parts of this plan. Decide the
 | Which sign-in methods: email only, or also Google, Microsoft, etc.? | Auth configuration, redirect URLs |
 | Is Romanian the right default for visitors whose browser is in neither language? Is the English audience mainly British/European (`en-GB` formats) or American (`en-US`)? | Language detection and date/number formats (section 18) |
 | Which currencies are prices in: RON, EUR or both? | Money columns, `formatCurrency`, score inputs |
-| Where does the score come from: client formula, Postgres function, or an external data API? | Whether scoring lives in `*.utils.ts`, an RPC, or an Edge Function |
+| ~~Where does the score come from?~~ Decided 2026-11-03 for SmartCheck: the `worker/` builds monthly snapshots in PostGIS, reports read them (section 1); the inspection score (0–10) is still open | Whether scoring lives in `*.utils.ts`, an RPC, or an Edge Function |
 | Domain for production (hosting is decided: Netlify, setup step 10) | Supabase auth redirect URLs, CSP |

@@ -23,7 +23,21 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "listings": {
+            "cities": {
+                  Row: {
+                    "boundary": unknown,"center": unknown,"county": string,"created_at": string,"has_field_team": boolean,"has_online_coverage": boolean,"id": string,"name": string,"position": number,"slug": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "boundary": unknown,"center": unknown,"county": string,"created_at"?: string,"has_field_team"?: boolean,"has_online_coverage"?: boolean,"id"?: string,"name": string,"position"?: number,"slug": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "boundary"?: unknown,"center"?: unknown,"county"?: string,"created_at"?: string,"has_field_team"?: boolean,"has_online_coverage"?: boolean,"id"?: string,"name"?: string,"position"?: number,"slug"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"listings": {
                   Row: {
                     "area_m2": number,"city": string,"created_at": string,"currency": string,"id": string,"latitude": number,"longitude": number,"owner_id": string,"photo_path": string | null,"price": number,"published_at": string | null,"rooms": number,"smartcheck_score": number | null,"status": Database["public"]['Enums']["listing_status"],"street_label": string,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at": string,"verification": Database["public"]['Enums']["listing_verification"]
                   }
@@ -51,6 +65,40 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"score_snapshots": {
+                  Row: {
+                    "created_at": string,"error_code": string | null,"finished_at": string | null,"id": string,"period": string,"scoring_version_id": string,"source_dates": NonNullable<Json>,"started_at": string,"stats": NonNullable<Json>,"status": Database["public"]['Enums']["snapshot_status"],"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"error_code"?: string | null,"finished_at"?: string | null,"id"?: string,"period": string,"scoring_version_id": string,"source_dates"?: NonNullable<Json>,"started_at"?: string,"stats"?: NonNullable<Json>,"status"?: Database["public"]['Enums']["snapshot_status"],"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"error_code"?: string | null,"finished_at"?: string | null,"id"?: string,"period"?: string,"scoring_version_id"?: string,"source_dates"?: NonNullable<Json>,"started_at"?: string,"stats"?: NonNullable<Json>,"status"?: Database["public"]['Enums']["snapshot_status"],"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "score_snapshots_scoring_version_id_fkey"
+      columns: ["scoring_version_id"]
+isOneToOne: false
+      referencedRelation: "scoring_versions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"scoring_versions": {
+                  Row: {
+                    "activated_at": string | null,"created_at": string,"created_by": string | null,"id": string,"is_active": boolean,"kind": Database["public"]['Enums']["scoring_kind"],"label": string,"params": NonNullable<Json>,"updated_at": string,"weights": NonNullable<Json>
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activated_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_active"?: boolean,"kind": Database["public"]['Enums']["scoring_kind"],"label": string,"params"?: NonNullable<Json>,"updated_at"?: string,"weights"?: NonNullable<Json>
+                  }
+                  Update: {
+                    "activated_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_active"?: boolean,"kind"?: Database["public"]['Enums']["scoring_kind"],"label"?: string,"params"?: NonNullable<Json>,"updated_at"?: string,"weights"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -60,7 +108,7 @@ export type Database = {
             [_ in never]: never
           }
           Enums: {
-            "listing_status": "draft"|"published","listing_transaction": "sale"|"rent","listing_verification": "physical"|"smartcheck"|"none"
+            "listing_status": "draft"|"published","listing_transaction": "sale"|"rent","listing_verification": "physical"|"smartcheck"|"none","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -180,7 +228,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "listing_status": ["draft", "published"],"listing_transaction": ["sale", "rent"],"listing_verification": ["physical", "smartcheck", "none"]
+            "listing_status": ["draft", "published"],"listing_transaction": ["sale", "rent"],"listing_verification": ["physical", "smartcheck", "none"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
           }
         }
 } as const
