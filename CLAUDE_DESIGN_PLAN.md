@@ -42,7 +42,7 @@ You are designing PropertyScore, a Romanian web app (mobile first, comfortable o
 
 PropertyScore sells four things and runs a listings portal:
 
-1. Online report, product name SmartCheck ("PropertyScore SmartCheck", in copy "Raport online SmartCheck", 30 lei). Anyone enters an address (or pastes a link to a listing from another site), confirms the pin on a map, optionally answers a few questions, sees a free preview, pays, and gets a report about the AREA: 6 category scores (Educație, Sănătate, Transport, Cumpărături & servicii, Spații verzi, Siguranță & liniște), neighbourhood rent and asking-price averages, price per m², nearby amenities and walking routes. It never says anything about the condition of the home itself. Score scale: 0–100, shown in BLUE.
+1. Online report, product name SmartCheck ("PropertyScore SmartCheck", in copy "Raport online SmartCheck", 30 lei). Anyone enters an address (or pastes a link to a listing from another site), confirms the pin on a map, optionally answers a few questions, sees a free preview, pays, and gets a report about the AREA: a zone score built from 9 scores (Siguranță, Accesibilitate, 15 minute, Green score, Zgomot, Aer, Industrie, Educație, Sănătate), seismic hazard and investment yield as context that never enters the score, neighbourhood rent and asking-price averages, price per m², nearby amenities and walking routes. It never says anything about the condition of the home itself. Score scale: 0–100, shown in BLUE.
 2. Physical inspection, product name PropertyScore Physical ("Inspecție fizică", 500 lei). A PropertyScore inspector visits the home, answers about 44 questions in 11 categories with photos and videos, takes 10 presentation photos, a 360° panorama of every room and a 2D floor plan (Polycam). The result is a PDF "book" with a score from 0 to 10 (one decimal, Romanian comma: "8,6 / 10"), shown in GREEN. The book always includes the full online report. For the owner, PropertyScore also prepares a professional listing for free, which the owner can choose to publish.
 3. Consultation ("Consultanță", price to be decided, e.g. 150 lei / 30 min). A video or phone session with an expert.
 4. Digital products ("Produse digitale"). Downloadable PDFs: interior designs, house plans, buying guides, viewing checklists.
@@ -574,7 +574,7 @@ Batch F of 8: the 30 lei online report, consultations and digital products.
 
 1. /admin/scoring (desktop)
    - Versions: list (v1, v2, v3 active), "Creează versiune nouă" from the active one; a version used by issued reports is read-only.
-   - Editor: weights per category (Educație, Sănătate, Transport, Cumpărături & servicii, Spații verzi, Siguranță & liniște), search radii, score thresholds; for Siguranță & liniște: four layer weights (bază oraș 20, prezență 25, factori din jur 30, sesizări 25), points per place type, distance thresholds, cell size.
+   - Editor: weights for the 9 area scores (Siguranță, Accesibilitate, 15 minute, Green score, Zgomot, Aer, Industrie, Educație, Sănătate), search radii, score thresholds; for Siguranță: four layer weights (bază oraș 20, prezență 25, factori din jur 30, sesizări 25), points per place type, distance thresholds, cell size.
    - Data updates log: month, status (în lucru, gata, eșuat), sources and their dates, per city the number of cells "fără date" per layer; button "Reconstruiește".
    - City baselines table (city, year, crime coefficient, class, source link) and police zones import status per city.
 
@@ -582,23 +582,23 @@ Batch F of 8: the 30 lei online report, consultations and digital products.
    - Step 1 Address: AddressAutocomplete or "lipește linkul anunțului" (imobiliare.ro, OLX, Storia). Outside coverage → stop.
    - Step 2 Confirm: PinConfirmMap.
    - Step 3 Details (optional, skippable): intro "Completează ce știi din anunț sau din discuția cu vânzătorul. Poți continua și fără aceste detalii." and the note "Localizarea este singura informație obligatorie." Questions, each with "Nu știu": rooms and approximate m² (two independent fields); floor and building floors ("3 din 8"); lift (Da / Nu / Nu știu); parking (Loc inclus / Loc disponibil separat / Doar pe stradă / Fără parcare / Nu știu); construction year or period; heating (Centrală proprie / A blocului / Termoficare / Altceva / Nu știu). When fields were prefilled from a listing link, show them as "preluat din anunț · confirmă".
-   - Step 4 Preview (free): overall score and 1–2 categories visible, the other categories blurred with a lock and "Deblochează raportul complet · 30 lei"; line "calculat pe datele din 1 sept 2026, formula v3".
-   - Step 5 Checkout: CheckoutSummary "Raport online · 30 lei".
+   - Step 4 Preview (free): zone score and 1–2 of the 9 scores visible, the others blurred with a lock and "Deblochează raportul complet · 30 lei"; line "calculat pe datele din 1 sept 2026, formula v3".
+   - Step 5 Checkout: CheckoutSummary "Raport online · 30 lei", listing "9 scoruri" (the current Smart Check mock still says "6 scoruri pe categorii"; correct it).
 
-3. /check/result/[id]: the online report (the richest content page; design it carefully for reading)
-   1. Header: address, date, "calculat pe datele din 1 sept 2026, formula v3", Descarcă PDF, Partajează.
-   2. Overall score 91 / 100 and six category cards with scores.
-   3. Each category opens a section with the concrete places, real walking time and distance, and a small map. "Cumpărături & servicii" includes non-stop shops with "program necunoscut" when hours are missing.
-   4. Siguranță & liniște: "74 / 100", four layer lines (e.g. "Secția 1 Poliție la 650 m, Poliția Locală la 1,1 km", "Iluminat mapat pe 88% din străzile din raza de 300 m", "2 baruri de noapte și 1 casă de pariuri pe stradă; școală și parc la sub 400 m", "14 sesizări la Poliția Locală în zona Centru în 12 luni; media pe zone: 11", "Timișoara: coeficient de criminalitate 2025 în categoria «ridicat»"), each with source and date on hover; a missing layer shows "fără date · cerere în curs"; disclaimer "Indicator de proximitate și percepție, nu statistică de criminalitate la adresă. În România nu există date oficiale la nivel de stradă."
-   5. Market block: neighbourhood average rent, average asking price for apartments, €/m², each with source, period and area used.
-   6. Map of amenities and walking routes.
-   7. Building block: construction year with where it came from ("declarat de cumpărător" or a source), "necunoscut" allowed, what still needs to be checked at a viewing. No safe/unsafe verdict.
-   8. "Ce ai declarat": the buyer's answers labelled "declarat".
-   9. "Orașul în cifre" panel: city-level pollution, traffic, health, cost of living, price per m² centre vs outside, rank among the 9 cities, "Sursa: Numbeo, sondaje cu utilizatorii" and a note that it describes the city, not the address.
-   10. "Cum am calculat": sources and weights.
-   11. "Ce nu poate ști acest raport" + upsell (mandatory): "Vrei să știi și în ce stare e efectiv? Inspecție fizică, 500 lei."
+3. /check/result/[id]: the online report (the richest content page; design it carefully for reading). Reference design: "PropertyScore Smart Check.html"; states, building block, declared answers and feedback come from "PropertyScore Raport Online.dc.html".
+   1. Header: address, neighbourhood, declared details, report code, date, "calculat pe datele din 1 sept 2026, formula v3", Descarcă PDF, Partajează.
+   2. Zone score card "79 / 100 · Foarte bun", the address's percentile in its city, "descrie zona, nu apartamentul".
+   3. Tab bar by chapter, each tab with its value: Pe scurt · Siguranță · Accesibilitate · 15 minute · Green score · Zgomot · Aer · Industrie · Seismic · Investiție. A map on every tab (right column on desktop) with layers Transport, 15 minute pe jos, Spații verzi, Zgomot, Industrial, Siguranță.
+   4. Pe scurt: verdict line; "Ce e bun" and "La ce să fii atent" (three each); all 9 scores vs. the city average, grouped "Contează cel mai mult" (Accesibilitate, 15 minute, Siguranță), "Mediu și liniște" (Zgomot, Green score, Aer, Industrie), "Servicii" (Educație, Sănătate); note that Seismic and Investiție are context, not part of the score.
+   5. Siguranță: "74 / 100" in five bands, layer lines (e.g. "Secția 1 Poliție la 650 m, Poliția Locală la 1,1 km", "Iluminat mapat pe 88% din străzile din raza de 300 m", "14 sesizări la Poliția Locală în zona Centru în 12 luni; media pe zone: 11"), each with source and date on hover; a missing layer shows "fără date · cerere în curs"; scores on the surrounding streets; disclaimer "Indicator de proximitate și percepție, nu statistică de criminalitate la adresă. În România nu există date oficiale la nivel de stradă."
+   6. Accesibilitate: stops and lines within walking distance, average travel time at 8:00 to key destinations, routes on the map. 15 minute: services reachable on foot in a 5 / 10 / 15 min table, what is missing, the Educație and Sănătate scores, non-stop shops with "program necunoscut" when hours are missing.
+   7. Green score (green share within 500 m and 1 km, parks), Zgomot (dB at the address and on the main road, scale explained), Aer (PM2.5 over 12 months vs. the EU 2030 limit), Industrie (EU-registered sites, distance, emission type), each with source and date.
+   8. Seismic (context): P100-1/2013 ground acceleration vs. other cities, "nu descrie blocul". Investiție (context): €/m², estimated value, rent and asking-price averages, gross yield vs. the city, price histogram, each with source, period and area.
+   9. Under every tab: "Capitolul următor"; "De întrebat la vizionare"; building block (year, structure, height and where each came from, seismic expertise from the city hall list, "necunoscut" allowed, what to check at a viewing, no safe/unsafe verdict); "Ce ai declarat" with answers labelled "declarat".
+   10. "Orașul în cifre" panel: city-level pollution, traffic, health, cost of living, price per m² centre vs outside, rank among the 9 cities, "Sursa: Numbeo, sondaje cu utilizatorii" and a note that it describes the city, not the address.
+   11. "Cum am făcut raportul": same address gives the same score, sources with dates, weights, formula version. "Ce nu poate ști acest raport" + upsell (mandatory): "Programează inspecția · 500 lei" and "Verifică altă adresă".
    12. "Semnalează o problemă sau o sugestie" (same dialog as Batch E, without the inspector rating).
-   States: generating (progress, auto-refresh), failed, revised version available.
+   States: generating (progress by step, auto-refresh), failed (automatic retry, refund after 24 h), revised version available ("versiune revizuită v2").
 
 4. /consultation
    Steps: topic (Interpretarea book-ului / Ce să verifici la vizionare / Negociere / Comparație de zone) → duration (30 or 60 min, with prices) → slot (experts' calendar) → optional context (which property or book, preselected when coming from a book; notes) → checkout. Confirmation with meeting link and "Adaugă în calendar". Then: consultation cards inside /account/appointments (meeting link, reschedule, cancel, written summary after the session) and the expert's view inside /admin/appointments ("Marchează efectuată", write summary).
@@ -642,7 +642,7 @@ Batch G of 8: the listings portal. The listing page is the most important page o
    2. Header: "De vânzare" or "De închiriat", price (or rent / lună), m², rooms, floor, approximate address and area, favourite and share.
    3. Floor plan + 360° tour (inspected listings): 2D plan with clickable rooms; tapping a room or its point plays an animated transition into that room's 360° panorama; inside: drag to look around, room name, "Înapoi la plan", next / previous room. Rooms without a panorama appear on the plan without a point. Reduced motion: cross-fade. Design the plan view, the transition (3 frames) and the panorama view.
    4. PropertyScore block, four variants (design all four):
-      - Physical: "✓ Verificat de PropertyScore", "8,6 / 10 · nota inspecției", "Inspecție 14 aug 2026 · inspector Ana M. · valabil 12 luni", 11 category scores, verdict, publishable findings, then the online report (91, six categories, safety, rent and price averages, €/m², map).
+      - Physical: "✓ Verificat de PropertyScore", "8,6 / 10 · nota inspecției", "Inspecție 14 aug 2026 · inspector Ana M. · valabil 12 luni", 11 category scores, verdict, publishable findings, then the online report (zone score, the 9 scores, seismic and investment context, rent and price averages, €/m², map).
       - Physical expired: same + "reinspecție recomandată".
       - Online only: blue score with breakdown + "Scorul online nu poate vedea starea reală a locuinței. Cere o inspecție fizică." + CTA.
       - None: grey "Fără raport PropertyScore" + "Cere PropertyScore pentru această proprietate" and "Verifică zona · 30 lei".
@@ -720,7 +720,7 @@ Property #1042
   Structură 9,2 · Umezeală 9,0 · Electrice 9,5 · Apă & canal 8,8 · Încălzire 9,0 · Tâmplărie 6,7 · Izolație 7,5 · Finisaje 8,3 · Părți comune 8,0 · Acte 9,5 · Siguranță & vecinătate 8,0
 - Verdict: "Stare bună, instalații schimbate în 2021, fără umezeală. Tâmplărie de înlocuit la 2 ferestre."
 - Online score: 91 / 100
-  Educație 96 · Sănătate 92 · Transport 88 · Cumpărături & servicii 94 · Spații verzi 84 · Siguranță & liniște 74
+  Siguranță 74 · Accesibilitate 95 · 15 minute 96 · Green score 84 · Zgomot 88 · Aer 90 · Industrie 98 · Educație 96 · Sănătate 92; context: Seismic 0,20 g · Investiție 4,2%
 - Nearby: Școala Gen. 30 · 6 min pe jos; Tramvai 1, 2 · 4 min; Parcul Central · 7 min; Spitalul Județean · 12 min; Piața Unirii · 6 min
 - Data date: "calculat pe datele din 1 sept 2026, formula v3"
 - Generated description: "Apartament cu 3 camere, 84 mp utili, la etajul 2 din 4, într-un imobil din cărămidă construit în 1962, în zona Centru. Inspectat de PropertyScore pe 14 august 2026, cu nota 8,6: instalațiile electrice și sanitare au fost schimbate în 2021, nu s-au găsit urme de umezeală, iar structura este în stare bună. De reținut: tâmplăria de la două ferestre este de înlocuit. La 6 minute de mers pe jos de Piața Unirii, cu școală și grădiniță la sub 500 m și tramvaiul la 4 minute."
