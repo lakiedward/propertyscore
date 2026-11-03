@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="propertyscore-fixture">
+  <node id="1" version="1" lat="45.7537" lon="21.2257">
+    <tag k="amenity" v="police"/>
+    <tag k="name" v="Secția 1 Poliție"/>
+  </node>
+  <node id="2" version="1" lat="45.7539" lon="21.2259">
+    <tag k="shop" v="convenience"/>
+    <tag k="opening_hours" v="24/7"/>
+  </node>
+  <node id="3" version="1" lat="45.7536" lon="21.2255">
+    <tag k="shop" v="bakery"/>
+    <tag k="opening_hours" v="Mo-Fr 07:00-19:00"/>
+  </node>
+  <node id="4" version="1" lat="45.7538" lon="21.2256">
+    <tag k="highway" v="street_lamp"/>
+  </node>
+  <node id="5" version="1" lat="45.7400" lon="21.2000">
+    <tag k="amenity" v="nightclub"/>
+  </node>
+  <node id="6" version="1" lat="45.7535" lon="21.2250"/>
+  <node id="7" version="1" lat="45.7535" lon="21.2270"/>
+  <node id="8" version="1" lat="45.7700" lon="21.2400"/>
+  <node id="9" version="1" lat="45.7700" lon="21.2440"/>
+  <node id="10" version="1" lat="45.7400" lon="21.2001">
+    <tag k="shop" v="vacant"/>
+  </node>
+  <way id="20" version="1">
+    <nd ref="6"/>
+    <nd ref="7"/>
+    <tag k="highway" v="residential"/>
+    <tag k="lit" v="yes"/>
+    <tag k="name" v="Strada Mărășești"/>
+  </way>
+  <way id="21" version="1">
+    <nd ref="8"/>
+    <nd ref="9"/>
+    <tag k="railway" v="rail"/>
+    <tag k="usage" v="main"/>
+  </way>
+</osm>
