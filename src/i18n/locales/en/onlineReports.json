@@ -182,7 +182,7 @@
       "filter": {
         "playground": "With a playground",
         "dog_park": "For dogs",
-        "large": "Over 2 ha"
+        "large": "Over {{area}} ha"
       },
       "noneFiltered": "No nearby park matches all the chosen filters.",
       "clearFilters": "Clear filters",

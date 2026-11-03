@@ -20,14 +20,28 @@ describe('normalizeName', () => {
 describe('nameSimilarity', () => {
   it('matches the register and OSM spellings of the same unit', () => {
     expect(nameSimilarity('Școala Gimnazială Nr. 15', 'Scoala Gimnaziala nr.15')).toBe(1);
-    expect(nameSimilarity('Grădinița PP 21', 'Grădinița cu program prelungit nr. 21')).toBeLessThan(
-      1,
-    );
+    expect(nameSimilarity('Colegiul Național „C.D. Loga”', 'Liceul C. D. Loga')).toBe(1);
   });
 
   it('never matches units with different numbers', () => {
     expect(nameSimilarity('Școala Gimnazială nr. 15', 'Școala Gimnazială nr. 16')).toBe(0);
     expect(nameSimilarity('Școala Gimnazială nr. 15', 'Școala Gimnazială')).toBe(0);
+  });
+
+  it('compares the distinctive words, not the unit type or the ignored place words', () => {
+    expect(nameSimilarity('Grădinița cu program prelungit nr. 21', 'Grădinița nr. 21')).toBe(1);
+    expect(nameSimilarity('Școala Gimnazială nr. 13', 'Școala Generală Nr. 13')).toBe(1);
+    expect(
+      nameSimilarity('Școala Gimnazială „Ioan Slavici”', 'Școala Gimnazială Ioan Slavici (nr. 20)'),
+    ).toBe(1);
+    expect(
+      nameSimilarity(
+        'Școala Gimnazială nr. 2',
+        'Școala gimnazială Nr. 2 Sibiu',
+        new Set(['sibiu']),
+      ),
+    ).toBe(1);
+    expect(nameSimilarity('Grădinița nr. 5 „Rapunzel”', 'Grădinița nr. 5 „Ursuleții”')).toBe(0);
   });
 
   it('gives nothing for an empty name', () => {

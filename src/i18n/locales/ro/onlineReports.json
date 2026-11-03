@@ -185,7 +185,7 @@
       "filter": {
         "playground": "Cu loc de joacă",
         "dog_park": "Pentru câini",
-        "large": "Peste 2 ha"
+        "large": "Peste {{area}} ha"
       },
       "noneFiltered": "Niciun parc din apropiere nu are toate filtrele alese.",
       "clearFilters": "Șterge filtrele",

@@ -1,9 +1,9 @@
-import { nameSimilarity } from './education.names.ts';
+import { nameSimilarity, placeWords } from './education.names.ts';
 import type { EducationLevel, OsmEducationUnit, Point } from './education.osm.ts';
 import type { EducationParams } from './education.params.ts';
-import type { RegisterRow } from './education.register.ts';
+import type { RegisterRow } from './education.siiir.ts';
 
-type MatchStatus = 'matched' | 'siiir_only' | 'osm_only';
+type MatchStatus = 'matched' | 'siiir_only' | 'osm_only' | 'excluded';
 
 export type InstitutionRow = {
   siiir_code: string | null;
@@ -50,9 +50,12 @@ function sharesLevelGroup(a: readonly EducationLevel[], b: readonly EducationLev
 }
 
 function registerLocation(row: RegisterRow): Point | null {
-  return row.lng === null || row.lng === undefined || row.lat === null || row.lat === undefined
-    ? null
-    : { lng: row.lng, lat: row.lat };
+  return row.lng === null || row.lat === null ? null : { lng: row.lng, lat: row.lat };
+}
+
+function registerStatus(row: RegisterRow, isMatched: boolean): MatchStatus {
+  if (row.is_excluded) return 'excluded';
+  return isMatched ? 'matched' : 'siiir_only';
 }
 
 type Pairing = { registerIndex: number; osmIndex: number; similarity: number };
@@ -63,15 +66,17 @@ function proposePairings(
   params: EducationParams['match'],
 ): Pairing[] {
   const proposals: Pairing[] = [];
+  const nameOnly: Pairing[] = [];
   register.forEach((row, registerIndex) => {
     const location = registerLocation(row);
+    const ignoredWords = placeWords(row.city_slug);
     const scored = osm
       .map((unit, osmIndex) => ({
         osmIndex,
         unit,
-        similarity: unit.name ? nameSimilarity(row.name, unit.name) : 0,
+        similarity: unit.name ? nameSimilarity(row.name, unit.name, ignoredWords) : 0,
       }))
-      .filter(({ unit }) => sharesLevelGroup(row.levels, unit.levels));
+      .filter(({ unit }) => row.is_excluded || sharesLevelGroup(row.levels, unit.levels));
 
     if (location) {
       const near = scored.filter(
@@ -88,10 +93,23 @@ function proposePairings(
     const confident = scored.filter(({ similarity }) => similarity >= params.name_only_similarity);
     const best = confident.reduce((max, { similarity }) => Math.max(max, similarity), 0);
     const top = confident.filter(({ similarity }) => similarity === best);
-    const only = top.length === 1 ? top[0] : undefined;
-    if (only)
-      proposals.push({ registerIndex, osmIndex: only.osmIndex, similarity: only.similarity });
+    const first = top[0];
+    const isOnePlace =
+      first !== undefined &&
+      top.every(
+        ({ unit }) => haversineMeters(first.unit.location, unit.location) <= params.radius_m,
+      );
+    if (first && isOnePlace) {
+      nameOnly.push({ registerIndex, osmIndex: first.osmIndex, similarity: first.similarity });
+    }
   });
+
+  const claims = new Map<number, number>();
+  for (const pairing of nameOnly) {
+    claims.set(pairing.osmIndex, (claims.get(pairing.osmIndex) ?? 0) + 1);
+  }
+  proposals.push(...nameOnly.filter((pairing) => claims.get(pairing.osmIndex) === 1));
+
   return proposals.sort(
     (a, b) =>
       b.similarity - a.similarity || a.registerIndex - b.registerIndex || a.osmIndex - b.osmIndex,
@@ -117,17 +135,17 @@ export function matchInstitutions(
     const location = unit?.location ?? registerLocation(row);
     return {
       siiir_code: row.siiir_code,
-      parent_siiir_code: row.parent_siiir_code ?? null,
+      parent_siiir_code: row.parent_siiir_code,
       osm_ref: unit?.osmRef ?? null,
       name: row.name,
       levels: row.levels,
       ownership: row.ownership,
-      teaching_languages: row.teaching_languages ?? null,
-      address_text: row.address ?? null,
+      teaching_languages: row.teaching_languages,
+      address_text: row.address,
       lng: location?.lng ?? null,
       lat: location?.lat ?? null,
       location_precision: unit ? 'osm' : location ? 'geocoded' : null,
-      match_status: unit ? 'matched' : 'siiir_only',
+      match_status: registerStatus(row, unit !== undefined),
       source_date: row.source_date,
     };
   });
@@ -160,6 +178,7 @@ export function matchSummary(rows: readonly InstitutionRow[]): Record<string, nu
     matched: rows.filter((row) => row.match_status === 'matched').length,
     siiir_only: rows.filter((row) => row.match_status === 'siiir_only').length,
     osm_only: rows.filter((row) => row.match_status === 'osm_only').length,
-    unplaced: rows.filter((row) => row.lng === null).length,
+    excluded: rows.filter((row) => row.match_status === 'excluded').length,
+    unplaced: rows.filter((row) => row.match_status === 'siiir_only' && row.lng === null).length,
   };
 }

@@ -1,4 +1,4 @@
-import { DogIcon, FootprintsIcon, TreesIcon, TrophyIcon, type LucideIcon } from 'lucide-react';
+import { DogIcon, FerrisWheelIcon, FootprintsIcon, TreesIcon, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FilterChip } from '@/components/property/filter-chip';
@@ -15,7 +15,7 @@ import {
 import type { GreenPark, ScoredGreenSection } from '../online-report.types';
 
 const AMENITY_ICONS: Readonly<Record<string, LucideIcon>> = {
-  playground: TrophyIcon,
+  playground: FerrisWheelIcon,
   dog_park: DogIcon,
   sports: FootprintsIcon,
 };
@@ -32,8 +32,9 @@ export function GreenParks({ section, selectedParkId, onSelectPark }: GreenParks
   const { t } = useTranslation('onlineReports');
   const [filters, setFilters] = useState<ReadonlySet<ParkFilter>>(new Set());
   const itemRefs = useRef(new Map<string, HTMLLIElement>());
-  const counts = parkFilterCounts(section.parks);
-  const parks = filterParks(section.parks, filters);
+  const largeMinHa = section.thresholds.large_min_ha;
+  const counts = parkFilterCounts(section.parks, largeMinHa);
+  const parks = filterParks(section.parks, filters, largeMinHa);
   const isApproximate = section.distance_method === 'straight_line';
 
   useEffect(() => {
@@ -76,7 +77,9 @@ export function GreenParks({ section, selectedParkId, onSelectPark }: GreenParks
               {PARK_FILTERS.filter((filter) => counts[filter] > 0).map((filter) => (
                 <FilterChip
                   key={filter}
-                  label={t(`green.parks.filter.${filter}`)}
+                  label={t(`green.parks.filter.${filter}`, {
+                    area: formatNumber(largeMinHa, { maximumFractionDigits: 1 }),
+                  })}
                   count={counts[filter]}
                   isSelected={filters.has(filter)}
                   onSelectedChange={(isSelected) => {

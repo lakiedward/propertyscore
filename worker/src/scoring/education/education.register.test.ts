@@ -1,66 +1,48 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { WorkerError } from '../../lib/errors.ts';
-import { latestSourceDate, parseRegisterLine, readRegister } from './education.register.ts';
+import { loadRegister, registerPath } from './education.register.ts';
 
-const ROW = {
-  siiir_code: '3561100001',
-  city_slug: 'timisoara',
-  name: 'Școala Gimnazială nr. 15',
-  levels: ['primary', 'lower_secondary'],
-  ownership: 'public',
-  source_date: '2026-09-01',
+const FIXTURE = fileURLToPath(new URL('../../sources/fixtures/siiir-sample.xlsx', import.meta.url));
+
+const REGISTER = {
+  school_year: '2025-2026',
+  url: 'https://data.gov.ro/siiir-2025-2026.xlsx',
+  cities: { sibiu: [143469] },
 };
 
-describe('parseRegisterLine', () => {
-  it('reads a register row and fills the optional fields', () => {
-    expect(parseRegisterLine(JSON.stringify(ROW), 1)).toEqual(ROW);
-    expect(parseRegisterLine(JSON.stringify({ ...ROW, ownership: undefined }), 1)?.ownership).toBe(
-      'unknown',
-    );
-  });
-
-  it('skips blank lines and rejects rows outside the schema with a code', () => {
-    expect(parseRegisterLine('  ', 3)).toBeNull();
-    expect(() => parseRegisterLine('{', 4)).toThrow(WorkerError);
-    expect(() => parseRegisterLine(JSON.stringify({ ...ROW, levels: ['doctorate'] }), 5)).toThrow(
-      'Register line 5',
-    );
-  });
-});
-
-describe('readRegister', () => {
+describe('loadRegister', () => {
   const dirs: string[] = [];
 
   afterAll(async () => {
     await Promise.all(dirs.map((dir) => rm(dir, { recursive: true, force: true })));
   });
 
-  it('returns null when no register file is in the sources folder', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'education-register-'));
-    dirs.push(dir);
-    expect(await readRegister(join(dir, 'register.ndjson'))).toBeNull();
-  });
+  it('reads the SIIIR export kept in the sources folder for the school year', async () => {
+    const sourcesDir = await mkdtemp(join(tmpdir(), 'education-register-'));
+    dirs.push(sourcesDir);
+    const path = registerPath(sourcesDir, REGISTER.school_year);
+    await mkdir(dirname(path), { recursive: true });
+    await copyFile(FIXTURE, path);
 
-  it('reads every row and reports the newest edition', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'education-register-'));
-    dirs.push(dir);
-    const path = join(dir, 'register.ndjson');
-    await writeFile(
-      path,
-      [
-        JSON.stringify(ROW),
-        '',
-        JSON.stringify({ ...ROW, siiir_code: '2', source_date: '2025-09-01' }),
-      ].join('\n'),
-    );
-    const rows = await readRegister(path);
-    expect(rows).toHaveLength(2);
-    expect(latestSourceDate(rows ?? [])).toBe('2026-09-01');
-    expect(latestSourceDate([])).toBeNull();
+    const result = await loadRegister(sourcesDir, REGISTER);
+
+    expect(path).toBe(join(sourcesDir, 'education', 'siiir-2025-2026.xlsx'));
+    expect(result.sourceDate).toBe('2025-10-08');
+    expect(result.skipped).toEqual({ not_a_school: 1 });
+    expect(
+      result.rows.map((row) => [row.siiir_code, row.name, row.levels, row.is_excluded]),
+    ).toEqual([
+      ['3261100001', 'ŞCOALA GIMNAZIALĂ NR. 2', ['primary', 'lower_secondary'], false],
+      ['3261100002', 'GRĂDINIŢA CU PROGRAM NORMAL NR. 2', ['kindergarten'], false],
+      ['3261100003', 'GRĂDINIŢA "PINOCCHIO"', ['kindergarten'], false],
+      ['3261100005', 'ŞCOALA POSTLICEALĂ SANITARĂ', ['upper_secondary'], true],
+    ]);
+    expect(result.rows[1]?.parent_siiir_code).toBe('3261100001');
+    expect(result.rows[2]?.ownership).toBe('private');
   });
 });

@@ -46,11 +46,15 @@ describe('green section utils', () => {
       park({ id: 'c', area_ha: 8 }),
     ];
 
-    expect(filterParks(parks, new Set(['playground'])).map((item) => item.id)).toEqual(['a', 'b']);
-    expect(filterParks(parks, new Set(['playground', 'large'])).map((item) => item.id)).toEqual([
+    expect(filterParks(parks, new Set(['playground']), 2).map((item) => item.id)).toEqual([
+      'a',
+      'b',
+    ]);
+    expect(filterParks(parks, new Set(['playground', 'large']), 2).map((item) => item.id)).toEqual([
       'a',
     ]);
-    expect(parkFilterCounts(parks)).toEqual({ playground: 2, dog_park: 1, large: 2 });
+    expect(parkFilterCounts(parks, 2)).toEqual({ playground: 2, dog_park: 1, large: 2 });
+    expect(parkFilterCounts(parks, 5).large).toBe(1);
   });
 
   it('splits the score between the components that have data', () => {
