@@ -1,8 +1,17 @@
-export function safeRedirectPath(value: string | undefined, fallback = '/'): string {
-  if (!value?.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) {
+export function safeRedirectPath(value: string | undefined, fallback = '/account'): string {
+  if (!value?.startsWith('/')) {
     return fallback;
   }
-  return value;
+  const origin = window.location.origin;
+  try {
+    const url = new URL(value, origin);
+    if (url.origin !== origin) {
+      return fallback;
+    }
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return fallback;
+  }
 }
 
 const SHARE_TOKEN_PARAM = /((?:^|[?&#]|%3F|%26)share(?:=|%3D))[^&#\s"'%]+/gi;

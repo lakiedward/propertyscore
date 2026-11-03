@@ -1,33 +1,38 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from 'cn';
+import { cn } from '@/lib/utils';
 
 const alertVariants = cva(
   "group/alert relative grid w-full gap-0.5 rounded-lg border px-2.5 py-2 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",
   {
     variants: {
-      variant: {
-        default: 'bg-card text-card-foreground',
-        destructive:
-          'bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current',
+      tone: {
+        neutral: 'bg-card text-card-foreground',
+        info: 'border-info-border bg-info-surface text-foreground *:[svg]:text-info',
+        success: 'border-success-border bg-success-surface text-foreground *:[svg]:text-success',
+        warning: 'border-warning-border bg-warning-surface text-foreground *:[svg]:text-warning',
+        error: 'border-error-border bg-error-surface text-foreground *:[svg]:text-destructive',
       },
     },
     defaultVariants: {
-      variant: 'default',
+      tone: 'neutral',
     },
   },
 );
 
+const POLITE_TONES = new Set(['info', 'success']);
+
 function Alert({
   className,
-  variant,
+  tone,
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof alertVariants>) {
   return (
     <div
       data-slot="alert"
-      role="alert"
-      className={cn(alertVariants({ variant }), className)}
+      data-tone={tone ?? 'neutral'}
+      role={tone && POLITE_TONES.has(tone) ? 'status' : 'alert'}
+      className={cn(alertVariants({ tone }), className)}
       {...props}
     />
   );

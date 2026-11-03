@@ -24,6 +24,7 @@ paths:
 
 - **Mock the network, not the code.** Supabase calls are answered by MSW handlers on the PostgREST, Auth, Storage and Functions endpoints (`*/rest/v1/properties*`), kept per feature in `src/test/msw/handlers/<feature>.ts`. Override per test with `server.use(...)`.
 - Never `vi.mock('@supabase/supabase-js')` or the client module. `vi.mock` of a feature's `api` module is allowed only in tests of hooks where MSW cannot express the case.
+- jsdom has no WebGL, so tests of components that render a map replace `@/components/map/map-canvas` with the shared stub in `src/test/mocks/map-canvas.tsx` (a labelled region that can trigger `onError`); never an inline copy of the stub. `map-canvas.tsx` itself is tested with `vi.mock('maplibre-gl')` and a fake `Map`.
 - Test data only from builders in `src/test/factories/` (`buildProperty({ score: 80 })`), typed from the generated DB types; never inline literals copied across tests.
 - Timers with `vi.useFakeTimers()`, restored in `afterEach`.
 

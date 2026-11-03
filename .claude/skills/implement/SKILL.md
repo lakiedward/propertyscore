@@ -12,7 +12,7 @@ Read these references when the phase that needs them starts, not before:
 
 | Reference | Phase |
 | --- | --- |
-| `references/gap-analysis.md` | 1 and 2 (also used by `/plan-sync`) |
+| `references/gap-analysis.md` | 1 and 2 |
 | `references/design-analysis.md` | 1 and 2 |
 | `references/proposal-template.md` | 3 |
 | `references/execution.md` | 5, 6 and 7 |

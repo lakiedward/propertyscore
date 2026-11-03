@@ -1,6 +1,8 @@
 import { z } from 'zod';
+import roAuth from './locales/ro/auth.json';
 import { changeLocale, i18n } from './i18n';
 import {
+  messageKey,
   parseValidationMessage,
   translateValidationMessage,
   validationMessage,
@@ -15,7 +17,7 @@ function firstMessage(schema: z.ZodType, value: unknown): string {
 }
 
 function translate(message: string): string {
-  return translateValidationMessage(i18n.getFixedT(null, 'common'), message);
+  return translateValidationMessage(i18n, message);
 }
 
 describe('validation messages', () => {
@@ -26,10 +28,12 @@ describe('validation messages', () => {
     );
     expect(parseValidationMessage(firstMessage(z.email(), 'nope')).key).toBe('email');
     expect(parseValidationMessage(firstMessage(z.string().min(3), 'ab'))).toEqual({
+      kind: 'validation',
       key: 'minLength',
       params: { count: 3 },
     });
     expect(parseValidationMessage(firstMessage(z.number().max(10), 11))).toEqual({
+      kind: 'validation',
       key: 'max',
       params: { max: 10 },
     });
@@ -41,6 +45,14 @@ describe('validation messages', () => {
 
   it('falls back to invalid for text that is not a validation key', () => {
     expect(parseValidationMessage('Something else').key).toBe('invalid');
+  });
+
+  it('translates a namespaced feature key with its count', async () => {
+    await changeLocale('ro');
+    expect(translate(messageKey('auth:fields.email.error'))).toBe(roAuth.fields.email.error);
+    expect(translate(messageKey('auth:fields.password.tooShort', { count: 8 }))).toBe(
+      roAuth.fields.password.tooShort_few.replace('{{count}}', '8'),
+    );
   });
 
   it('uses the three Romanian plural forms', async () => {

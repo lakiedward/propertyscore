@@ -43,7 +43,7 @@ Pin exact versions when the project is created (`pnpm add -E`). Upgrade on purpo
 
 ## 2. Project structure
 
-Code is organised **by feature**. Technical folders (`components/`, `lib/`) hold only code that more than one feature uses.
+Code is organised **by feature**. Technical folders (`components/`, `lib/`) hold only code that more than one feature uses. Design-system catalogue components are the exception: each lives at the path the catalogue in `.claude/rules/design-system.md` §4 gives it from its first use, because the catalogue is built to be shared and moving a component between a feature and `components/` on its second use only adds churn.
 
 ```
 property_score/
@@ -167,7 +167,7 @@ Pure domain logic (scoring rules, formatting, calculations) goes in `*.utils.ts`
 - **Smart edges, dumb leaves.** Route components and feature "screen" components call hooks and own state. Leaf components receive props and render. Leaves are then easy to test and reuse.
 - **Colocate.** State lives in the lowest component that needs it, and files live next to the code that uses them. Lift state only when two siblings need it.
 - **Composition over configuration.** Prefer `children` and small composable components to a single component with 15 boolean props.
-- **Suspense for loading where it fits.** Route loaders call `queryClient.ensureQueryData(...)`, and components use `useSuspenseQuery`. The route's `pendingComponent` and `errorComponent` handle loading and error states, so components contain no `if (isLoading)` branches.
+- **Suspense for loading where it fits.** Route loaders call `queryClient.query({ ...options, staleTime: 'static' })` (TanStack Query 5's replacement for the deprecated `ensureQueryData`), and components use `useSuspenseQuery`. The route's `pendingComponent` and `errorComponent` handle loading and error states, so components contain no `if (isLoading)` branches.
 - **Keys are stable IDs**, never array indexes, for lists that change.
 - **Accessibility is not optional.** Use semantic HTML, and give every input a label (the shadcn `Field` components do this). Dialogs and menus come from Radix, which handles focus management. `eslint-plugin-jsx-a11y` is on.
 - **Use React 19 APIs where they simplify code**: `ref` as a prop (no `forwardRef` in new code) and `use()` for context. Don't use React 19 form Actions for data mutations; TanStack Query mutations are the single mutation path.
@@ -283,7 +283,7 @@ export function useCreateProperty() {
 
 Rules:
 - **One `queryOptions` factory per feature.** Components, loaders and tests all use it, so a key is never typed by hand twice.
-- Route loaders prefetch with `queryClient.ensureQueryData(propertyQueries.detail(id))`.
+- Route loaders prefetch with `queryClient.query({ ...propertyQueries.detail(id), staleTime: 'static' })`. `ensureQueryData`, `fetchQuery` and `prefetchQuery` are deprecated in TanStack Query 5.10x in favour of `query`, and the strict ESLint config rejects deprecated calls.
 - **Invalidate rather than hand-edit the cache** after mutations. Use optimistic updates only where the UX clearly benefits (toggles, reordering), and always roll back in `onError`.
 - **`QueryClient` defaults** (`app/query-client.ts`): `staleTime: 30_000`, `retry` disabled for 4xx-class `AppError`s (permission, not found, validation) and at most 2 retries otherwise. `refetchOnWindowFocus` stays on.
 - **Clear the whole cache on sign-out** (`queryClient.clear()`) so one user's data never shows for the next.
@@ -295,6 +295,7 @@ Rules:
 
 - **React Hook Form + Zod**: each form has one schema in `*.schemas.ts`, and the schema gives us the form type with `z.infer`.
 - Use React Hook Form's `Controller` with the shadcn `Field` components (`Field`, `FieldLabel`, `FieldError`, `FieldGroup`, `FieldSet`) for consistent labels, errors and ARIA. This is the pattern shadcn's current form guide uses; the older `Form` wrapper (`FormField`, `FormItem`, `FormMessage`) hides the wiring behind context and was not installed, so every form shows its label, `aria-invalid` and error explicitly.
+- **Labels stay in the DOM.** Every field has a `FieldLabel`. When the design export shows a field without a visible label (the login and sign-up screens use placeholders only), the label is `sr-only` and the placeholder repeats it, so screen readers and voice control still get a name while the screen matches the design.
 - Submitting calls a mutation hook: `mutateAsync` when server errors map back to fields (`useCreateProperty().mutateAsync`), `mutate` when the only server error is form-level (sign-in). The form's submit button reads `isPending` from the mutation (or `formState.isSubmitting`).
 - **Server errors are mapped back to fields** when they can be. A unique-violation `AppError` becomes `setError('title', …)`; anything else shows in a form-level alert.
 - **Client validation is for UX only.** The database enforces the real constraints (`not null`, `check`, `unique`, foreign keys, RLS `with check`). Keep both in sync. When they disagree, the database wins.
@@ -323,11 +324,12 @@ Messages that need values (such as "at least 3 characters") read them from the Z
 
 - **TanStack Router with file-based routes**, generated by `@tanstack/router-plugin/vite`. The generated `routeTree.gen.ts` is committed, and ESLint and Prettier skip it.
 - **Route groups** (folders with a `_` prefix) split the app by access level:
+  - `_site/` holds the public pages everyone may see, signed in or not (home, marketing), in the site layout with the public header and footer. It has no guard; added with the home page because `_public` redirects signed-in users away and uses the narrow auth layout.
   - `_public/` holds login, sign-up, password reset and the auth callback. Authenticated users who land here are redirected into the app.
   - `_authenticated/` holds everything behind login. Its `route.tsx` holds the guard and the app shell.
 - **Router context** carries `queryClient` and `auth`, so loaders and guards can use them without imports.
 - **Search params are validated** with a Zod schema in each route's `validateSearch`. Components read them through `Route.useSearch()`, which is fully typed.
-- **Every route that fetches data** defines a `loader` (prefetch), a `pendingComponent`, and either an `errorComponent` or the root default.
+- **Every route that fetches data** defines a `loader` (prefetch), a `pendingComponent`, and either an `errorComponent` or the root default. A public page whose optional widget must not hold back the first paint (the listings board on the home page) prefetches without awaiting (`void queryClient.query(…).catch(() => undefined)`, the replacement for the deprecated `prefetchQuery`), and the widget reads with `useQuery` and its own inline skeleton and error state; blocking the home page on a list query would put the whole page behind the slowest request.
 - Code splitting is automatic (`autoCodeSplitting: true` in the plugin config).
 - `notFoundComponent` lives on the root route. Loaders throw `notFound()` when a record does not exist or is not visible under RLS.
 - **URLs carry no language prefix** (`/properties`, not `/ro/properties`). Pages behind login are not indexed by search engines, so a prefix would only add routing complexity. If public, indexable pages are added later, they get `/ro/…` and `/en/…` prefixes and `hreflang` links (section 18). URL path segments stay in English for both languages.
@@ -601,10 +603,10 @@ What this gives us:
 - **Design tokens** (colours, radius, fonts) are CSS variables in `globals.css`, using the shadcn token names (`--background`, `--primary`, …) plus the PropertyScore additions. Their values, the density modes and the component catalogue come from the PropertyScore design system, recorded in `.claude/rules/design-system.md`. Components use semantic classes (`bg-primary`), never raw hex values.
 - **shadcn/ui**: components are added with the CLI into `src/components/ui/` and are ours to edit. Edit them only for design-system-wide changes. Feature-specific variants go in feature components that wrap the primitive.
 - **`cn()`** merges classes. It comes from shadcn's `cn` package (a drop-in for `clsx` + `tailwind-merge`) and is re-exported from `lib/utils.ts`, which `components.json` points to. **`class-variance-authority`** handles component variants, as shadcn does.
-- **Icons**: `lucide-react` only.
+- **Icons**: `lucide-react` only. Exception: the official Google and Facebook marks on the sign-in buttons live as inline SVG in `components/brand/`, because brand rules require the original marks and lucide has none.
 - **Responsive**: mobile-first with Tailwind's default breakpoints (`sm` 640, `md` 768, `lg` 1024, `xl` 1280). No custom breakpoint ladder.
-- **Dark mode**: tokens are defined for both themes from day one (shadcn does this), and the `dark` class goes on `<html>`. Whether we ship a theme toggle is a product decision.
-- **Self-host fonts** with `@fontsource/*`, including the `latin-ext` subset for Romanian ș/ț/ă/â/î; no Google Fonts requests at runtime.
+- **Dark mode**: light-only until a dark design is approved. The first build kept shadcn's neutral `.dark` block, but none of the PropertyScore tokens had dark values, so a `dark` class produced a half-themed, unreadable UI; the block was removed. When a dark design exists, every semantic token gets its dark value in one change and the `dark` class on `<html>` switches them. Whether we ship a theme toggle is a product decision.
+- **Self-host fonts** with `@fontsource/*`, including the `latin-ext` subset for Romanian ș/ț/ă/â/î; no Google Fonts requests at runtime. The fonts follow the Claude Design home export: Manrope for body text and every heading (`--font-sans`, `--font-heading`), because the export sets all titles in its body font, and Sora for brand wordmarks only (`--font-brand`), both variable `@fontsource-variable/*` packages. Bricolage Grotesque, used for headings in the first build, was removed when the page was copied one to one. They replaced Geist, which was a placeholder until the design settled decision D15; Segoe UI, the design system's original stack, cannot be self-hosted.
 - **Charts** (score visualisations): add `recharts`, through shadcn's chart wrapper, only when the first chart is built.
 - `prettier-plugin-tailwindcss` sorts class names. Long class lists are fine. When the same set of classes repeats, extract a component, not an `@apply` class.
 
@@ -620,8 +622,7 @@ The app ships in **Romanian (`ro`)** and **English (`en`)** from the first scree
 - **The starting language is chosen in this order**, and the first match wins:
   1. `profiles.locale` of the signed-in user, so the choice follows them across devices;
   2. the `locale` value in `localStorage`, for visitors who aren't signed in yet;
-  3. the browser language: `ro*` → `ro`, `en*` → `en`;
-  4. otherwise `ro`.
+  3. otherwise `ro`. The browser language is deliberately ignored: the site always opens in Romanian until the person chooses English (owner's decision; an English-language browser used to switch the first visit to English).
 - **The language switcher** sits in the app header and on the login screen. Each option is labelled in its own language ("Română", "English") with a matching `lang` attribute. Switching:
   - calls `i18n.changeLanguage()`;
   - writes `localStorage`;
@@ -632,7 +633,7 @@ The app ships in **Romanian (`ro`)** and **English (`en`)** from the first scree
 
 ### Setup
 
-- **Libraries**: `i18next` + `react-i18next`. Nothing else is needed for two languages: no ICU message format, no backend plugin, no language-detector plugin (the four-step detection above is ~15 lines in `i18n.ts`).
+- **Libraries**: `i18next` + `react-i18next`. Nothing else is needed for two languages: no ICU message format, no backend plugin, no language-detector plugin (the three-step detection above is a few lines in `i18n.ts`).
 - **One namespace per feature** (`properties.json`, `auth.json`), plus `common.json` for shared words, `errors.*` and `validation.*`. Components load their namespace with `useTranslation('properties')`.
 - **Both languages are bundled** while the JSON is small. When the translations pass ~50 KB, switch to loading namespaces on demand with `i18next-resources-to-backend` and dynamic imports. That change touches only `i18n.ts`.
 
@@ -794,6 +795,7 @@ Rules:
   - unit tests for `i18n/format.ts` (dates, numbers, currency, `parseLocaleNumber`) in both locales, and for Romanian plural forms (1, 2, 19, 20, 101, 102);
   - one component test that switches language and checks that text, validation errors and `<html lang>` all update;
   - an E2E smoke test per language: sign in as the `ro` test user and as the `en` test user, and check that each sees their language and that the choice survives a reload.
+- **Maps in jsdom**: jsdom has no WebGL, so components that render a map are tested with one shared `MapCanvas` stub (`src/test/mocks/map-canvas.tsx`) that renders a labelled region and can trigger `onError`; `map-canvas.tsx` itself is tested against a mocked `maplibre-gl` `Map`. Mocking a component is otherwise avoided; this is the one module whose real implementation cannot run in the test environment.
 - **MSW handlers** mock the PostgREST endpoints (`*/rest/v1/properties*`) in `src/test/msw/handlers/<feature>.ts`, with data from `src/test/factories`. `onUnhandledRequest: 'error'` catches unmocked calls.
 - **Unit tests are required** for every Postgres function and RLS policy (pgTAP) and every pure util.
 - **Component tests are required** for forms (validation plus server-error mapping) and for screens with conditional logic. Simple presentational components don't need them.
@@ -907,7 +909,7 @@ The architecture above is deliberately thin. Keep it that way:
    - `ci.yml` on every PR: typecheck, lint, format check, translation check, unit tests, DB tests, E2E and build, plus the check that generated types match the migrations.
    - `deploy-db.yml`: `supabase db push` to production on a `vX.Y.Z` tag. There is no hosted dev environment; merges to `main` only run CI.
    - Frontend deploys go through the hosting provider's Git integration.
-10. Hosting: any static host (Vercel, Netlify or Cloudflare Pages) with an SPA fallback to `index.html`, and with security headers set (CSP allowing the Supabase and Sentry domains, HSTS, `X-Content-Type-Options`).
+10. Hosting: Netlify, connected to the repository through its Git integration and configured in `netlify.toml`: `pnpm build` on Node 24, `dist` published, an SPA fallback to `index.html`, and security headers (CSP allowing the Supabase, Sentry and OpenFreeMap domains, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`). Vercel and Cloudflare Pages would have worked equally well; Netlify was chosen because the owner's other projects already run there. The Supabase URL and publishable key are set as Netlify environment variables for the `production` context only, never committed, so Deploy Previews and branch deploys never reach the production database. HSTS is sent without `includeSubDomains` and `preload` until the production domain is chosen, because a preload entry is hard to withdraw. Sentry stays off on Netlify until `VITE_SENTRY_DSN` is set there; source maps keep uploading from CI (section 20), so `SENTRY_AUTH_TOKEN` is not set in Netlify.
 
 ---
 
@@ -923,4 +925,4 @@ These are product or business choices that change parts of this plan. Decide the
 | Is Romanian the right default for visitors whose browser is in neither language? Is the English audience mainly British/European (`en-GB` formats) or American (`en-US`)? | Language detection and date/number formats (section 18) |
 | Which currencies are prices in: RON, EUR or both? | Money columns, `formatCurrency`, score inputs |
 | ~~Where does the score come from?~~ Decided 2026-11-03 for SmartCheck: the `worker/` builds monthly snapshots in PostGIS, reports read them (section 1); the inspection score (0–10) is still open | Whether scoring lives in `*.utils.ts`, an RPC, or an Edge Function |
-| Hosting provider and domain | Env management, deploy workflow, CSP |
+| Domain for production (hosting is decided: Netlify, setup step 10) | Supabase auth redirect URLs, CSP |
