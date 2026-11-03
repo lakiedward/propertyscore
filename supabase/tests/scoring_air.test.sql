@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(20);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -131,8 +131,36 @@ select throws_ok(
   'A visitor cannot read the air stations'
 );
 
+select throws_ok(
+  $$ select count(*) from private.air_station_months $$,
+  '42501',
+  null,
+  'A visitor cannot read the station months'
+);
+
+select throws_ok(
+  $$ select count(*) from private.air_city_calibration $$,
+  '42501',
+  null,
+  'A visitor cannot read the city calibration'
+);
+
 set local role authenticated;
 set local request.jwt.claims = '{"role": "authenticated", "sub": "11111111-1111-1111-1111-111111111111"}';
+
+select throws_ok(
+  $$ select count(*) from private.cell_air $$,
+  '42501',
+  null,
+  'A signed-in user cannot read the air cells'
+);
+
+select throws_ok(
+  $$ select count(*) from private.air_stations $$,
+  '42501',
+  null,
+  'A signed-in user cannot read the air stations'
+);
 
 select throws_ok(
   $$ select count(*) from private.air_station_months $$,
