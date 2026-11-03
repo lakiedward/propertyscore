@@ -11,6 +11,7 @@ describe('readEnv', () => {
       SOURCES_DIR: '/tmp/propertyscore-sources',
       OSM_EXTRACT_URL: 'https://download.geofabrik.de/europe/romania-latest.osm.pbf',
       LOG_LEVEL: 'info',
+      ADS_API_URL: 'https://ads.atmosphere.copernicus.eu/api',
     });
   });
 
