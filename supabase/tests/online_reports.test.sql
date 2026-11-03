@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(23);
+select plan(25);
 
 insert into auth.users (id, email)
 values
@@ -126,6 +126,24 @@ select results_eq(
   $$ select snapshot_id, cell_id, city_slug from private.begin_online_report('d0000000-0000-4000-8000-000000000002') $$,
   format($$ values (%L::uuid, %L::uuid, 'sibiu'::text) $$, :'snapshot_id', :'report_cell'),
   'Starting a report picks the ready snapshot and the cell under the address'
+);
+
+select throws_ok(
+  $$ select * from private.begin_online_report('d0000000-0000-4000-8000-000000000002') $$,
+  'P0001',
+  'report_in_progress',
+  'A report another run is generating is not started twice'
+);
+
+alter table public.online_reports disable trigger online_reports_set_updated_at;
+update public.online_reports set updated_at = now() - interval '20 minutes'
+where id = 'd0000000-0000-4000-8000-000000000002';
+alter table public.online_reports enable trigger online_reports_set_updated_at;
+
+select results_eq(
+  $$ select cell_id from private.begin_online_report('d0000000-0000-4000-8000-000000000002') $$,
+  format($$ values (%L::uuid) $$, :'report_cell'),
+  'A report stuck in generation for more than 15 minutes can be started again'
 );
 
 select private.complete_online_report(

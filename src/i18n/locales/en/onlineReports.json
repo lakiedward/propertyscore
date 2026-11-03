@@ -2,7 +2,7 @@
   "pageTitle": "Smart Check report",
   "header": {
     "saved": "Saved to your account",
-    "code": "{{product}} · {{code}} · {{date}}",
+    "code": "{{code}} · {{date}}",
     "calculatedOn": "Calculated on data from {{period}}, formula {{formula}}",
     "declaredSuffix": "details you declared",
     "rooms_one": "{{count}} room",
@@ -136,6 +136,11 @@
     "gtfs": "Public transport timetables (GTFS)"
   },
   "status": {
+    "pill": {
+      "pendingPayment": "Awaiting payment",
+      "generating": "Generating",
+      "failed": "Failed"
+    },
     "pendingPaymentTitle": "The report is waiting for payment",
     "pendingPaymentBody": "We generate it as soon as the payment is confirmed.",
     "generatingTitle": "Preparing the report",

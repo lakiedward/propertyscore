@@ -133,6 +133,25 @@ describe.skipIf(!databaseUrl)('generateReport against the local database', () =>
     expect(report).toEqual({ status: 'failed', error_code: 'noise_map_missing' });
   });
 
+  it('leaves a report that another run is generating untouched', async () => {
+    const reportId = await insertReport(sql, {
+      ownerEmail: OWNER_EMAIL,
+      ...PIATA_MARE,
+      addressText: 'Piața Mare 4, Sibiu',
+      locale: 'ro',
+    });
+    await sql`select private.begin_online_report(${reportId})`;
+
+    await expect(
+      generateReport({ sql, reportId, sections: [greenSection], logger: silentLogger }),
+    ).rejects.toThrow('report_in_progress');
+
+    const [report] = await sql<{ status: string; error_code: string | null }[]>`
+      select status, error_code from public.online_reports where id = ${reportId}
+    `;
+    expect(report).toEqual({ status: 'generating', error_code: null });
+  });
+
   it('refuses an address outside every covered city and an unknown owner', async () => {
     await expect(
       insertReport(sql, {

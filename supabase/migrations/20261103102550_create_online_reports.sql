@@ -81,6 +81,10 @@ begin
     raise exception using errcode = 'P0001', message = 'report_already_ready';
   end if;
 
+  if v_report.status = 'generating' and v_report.updated_at > now() - interval '15 minutes' then
+    raise exception using errcode = 'P0001', message = 'report_in_progress';
+  end if;
+
   v_snapshot_id := private.current_score_snapshot_id();
   if v_snapshot_id is null then
     raise exception using errcode = 'P0001', message = 'no_ready_snapshot';

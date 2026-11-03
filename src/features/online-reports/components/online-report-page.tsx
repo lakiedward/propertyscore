@@ -119,9 +119,11 @@ function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportPr
               </TabsContent>
             ))}
           </div>
-          <div className="order-1 lg:sticky lg:top-32 lg:order-2">
-            <ReportMap position={[report.longitude ?? 0, report.latitude ?? 0]} />
-          </div>
+          {report.longitude !== null && report.latitude !== null ? (
+            <div className="order-1 lg:sticky lg:top-32 lg:order-2">
+              <ReportMap position={[report.longitude, report.latitude]} />
+            </div>
+          ) : null}
         </div>
       </Tabs>
       <ReportMethod

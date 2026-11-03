@@ -2,7 +2,7 @@
   "pageTitle": "Raport Smart Check",
   "header": {
     "saved": "Salvat în cont",
-    "code": "{{product}} · {{code}} · {{date}}",
+    "code": "{{code}} · {{date}}",
     "calculatedOn": "Calculat pe datele din {{period}}, formula {{formula}}",
     "declaredSuffix": "detalii declarate de tine",
     "rooms_one": "{{count}} cameră",
@@ -138,6 +138,11 @@
     "gtfs": "Orare transport public (GTFS)"
   },
   "status": {
+    "pill": {
+      "pendingPayment": "Așteaptă plata",
+      "generating": "Se generează",
+      "failed": "Eșuat"
+    },
     "pendingPaymentTitle": "Raportul așteaptă plata",
     "pendingPaymentBody": "Îl generăm imediat după confirmarea plății.",
     "generatingTitle": "Pregătim raportul",

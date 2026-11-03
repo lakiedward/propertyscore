@@ -1,6 +1,7 @@
 import { CircleCheckIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ProductTag } from '@/components/brand/product-tag';
 import { formatDate, formatNumber } from '@/i18n/format';
 
 type DeclaredDetails = {
@@ -22,7 +23,7 @@ type ReportHeaderProps = {
 };
 
 function useDeclaredParts(declared: DeclaredDetails): string[] {
-  const { t } = useTranslation(['onlineReports', 'common']);
+  const { t } = useTranslation('onlineReports');
   const parts: string[] = [];
   if (declared.declared_rooms !== null) {
     parts.push(t('header.rooms', { count: declared.declared_rooms }));
@@ -55,7 +56,7 @@ export function ReportHeader({
   declared,
   scoreCard,
 }: ReportHeaderProps) {
-  const { t } = useTranslation(['onlineReports', 'common']);
+  const { t } = useTranslation('onlineReports');
   const declaredParts = useDeclaredParts(declared);
 
   return (
@@ -67,12 +68,9 @@ export function ReportHeader({
               <CircleCheckIcon aria-hidden className="size-3.5" />
               {t('header.saved')}
             </span>
+            <ProductTag product="smartcheck" />
             <span className="inline-flex min-h-7.5 items-center rounded-full bg-on-inverse/12 px-3 text-caption font-bold">
-              {t('header.code', {
-                product: t('common:brand.smartcheck'),
-                code,
-                date: formatDate(generatedAt),
-              })}
+              {t('header.code', { code, date: formatDate(generatedAt) })}
             </span>
           </div>
           <h1 className="text-h1 text-balance">{addressText}</h1>

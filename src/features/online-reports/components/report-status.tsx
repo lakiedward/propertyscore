@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { ClockIcon, LoaderCircleIcon, TriangleAlertIcon, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { StatusPill } from '@/components/feedback/status-pill';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +15,8 @@ const STATUS_VIEW: Readonly<
       role: 'status' | 'alert';
       title: 'pendingPaymentTitle' | 'generatingTitle' | 'failedTitle';
       body: 'pendingPaymentBody' | 'generatingBody' | 'failedBody';
+      pill: 'pendingPayment' | 'generating' | 'failed';
+      tone: 'info' | 'warning';
       iconClass: string;
     }
   >
@@ -23,6 +26,8 @@ const STATUS_VIEW: Readonly<
     role: 'status',
     title: 'pendingPaymentTitle',
     body: 'pendingPaymentBody',
+    pill: 'pendingPayment',
+    tone: 'info',
     iconClass: 'text-info',
   },
   generating: {
@@ -30,6 +35,8 @@ const STATUS_VIEW: Readonly<
     role: 'status',
     title: 'generatingTitle',
     body: 'generatingBody',
+    pill: 'generating',
+    tone: 'info',
     iconClass: 'animate-spin text-info motion-reduce:animate-none',
   },
   failed: {
@@ -37,6 +44,8 @@ const STATUS_VIEW: Readonly<
     role: 'alert',
     title: 'failedTitle',
     body: 'failedBody',
+    pill: 'failed',
+    tone: 'warning',
     iconClass: 'text-destructive',
   },
 };
@@ -57,6 +66,7 @@ export function ReportStatus({ status, addressText }: ReportStatusProps) {
       className="mx-auto flex min-h-[60svh] max-w-narrow flex-col items-center justify-center gap-4 px-gutter py-16 text-center"
     >
       <Icon aria-hidden className={cn('size-8', view.iconClass)} />
+      <StatusPill tone={view.tone} label={t(`status.pill.${view.pill}`)} />
       <p className="text-caption">{addressText}</p>
       <h1 className="text-h2">{t(`status.${view.title}`)}</h1>
       <p className="text-lead">{t(`status.${view.body}`)}</p>
