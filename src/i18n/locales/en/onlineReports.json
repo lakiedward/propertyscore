@@ -227,5 +227,144 @@
         "trees_other": "More street trees could add {{count}} points."
       }
     }
+  },
+  "chapterLimits": {
+    "title": "What the report cannot know"
+  },
+  "noise": {
+    "decibels": "{{value}} dB",
+    "noData": "The city has no digital noise maps yet and no sources to estimate them from here. The noise score does not count in the zone score.",
+    "facts": {
+      "lden": "24-hour average at the address (Lden)",
+      "lnight": "At night at the address (Lnight)",
+      "nearest": "To the nearest source: {{source}}",
+      "nearestNone": "No major noise source nearby"
+    },
+    "level": {
+      "title": "About {{level}} at the address",
+      "leadStreet": "The value comes from the city's strategic noise maps, at the address point.",
+      "leadEstimate": "The value is an estimate from OpenStreetMap, calibrated on the official maps of other cities."
+    },
+    "moment": {
+      "label": "Day or night",
+      "day": "Day",
+      "night": "Night"
+    },
+    "scale": {
+      "label": "Level at the address, {{level}}, against the WHO guideline for traffic, {{guideline}}",
+      "guideline": "WHO: {{value}}"
+    },
+    "sources": {
+      "title": "Noise sources nearby",
+      "lead": "The major roads, tram, railway and airport closest to the address.",
+      "none": "We found no major noise sources nearby.",
+      "band": "{{low}}–{{high}} dB"
+    },
+    "kind": {
+      "road": "Road",
+      "tram": "Tram",
+      "rail": "Railway",
+      "air": "Airport",
+      "industry": "Industry",
+      "aggregate": "Several sources"
+    },
+    "map": {
+      "note": "The coloured areas are the noise bands (darker means louder); the lines are the sources. The day / night switch changes the bands."
+    },
+    "limits": {
+      "windows": "The level inside the flat depends on the windows, the floor and which way the rooms face.",
+      "maps": "Noise maps are redone every five years: a building site or a new road may be missing.",
+      "estimate": "Part of the value is estimated from the type of road, not measured."
+    }
+  },
+  "air": {
+    "micrograms": "{{value}} µg/m³",
+    "noData": "We have no air quality data for this area over the last 12 months. The air score does not count in the zone score.",
+    "facts": {
+      "annual": "PM2.5, 12-month average",
+      "highest": "Worst month: {{month}}",
+      "highestNone": "Worst month",
+      "lowest": "Cleanest month: {{month}}",
+      "lowestNone": "Cleanest month"
+    },
+    "verdict": {
+      "clean_all_year": "Clean air all year",
+      "winter_peaks": "Good air in summer, worse in winter",
+      "above_limit_most_year": "Above the 2030 EU limit for most of the year",
+      "moderate": "Moderate air, with a few worse months"
+    },
+    "months": {
+      "title": "Fine particles (PM2.5) month by month",
+      "lead_one": "{{count}} month out of 12 above the 2030 EU limit ({{limit}}).",
+      "lead_other": "{{count}} months out of 12 above the 2030 EU limit ({{limit}}).",
+      "chartLabel": "PM2.5 in each month",
+      "bar": "{{month}}: {{value}}",
+      "noValue": "no data",
+      "limitLegend": "Dashed line: 2030 EU limit, {{limit}}"
+    },
+    "compare": {
+      "title": "The address against the city",
+      "address": "PM2.5 at the address",
+      "city": "PM2.5, city average",
+      "no2": "NO₂ at the address",
+      "noNo2": "no data",
+      "precision": "Precision"
+    },
+    "precision": {
+      "eea_1km": "~1 km",
+      "cams_10km": "~10 km"
+    },
+    "limits": {
+      "indoor": "We do not measure the air inside the flat, smoke from stoves or smells.",
+      "notMeasured": "The values come from European models corrected with the city's stations, not from a measurement at the address.",
+      "uncalibrated": "The city had no valid stations for this period, so the values come from the model, uncorrected."
+    }
+  },
+  "industry": {
+    "noData": "We do not have the register of industrial sites for this period yet. The score does not count in the zone score.",
+    "facts": {
+      "nearest": "Nearest reported site",
+      "inRadius": "Sites within {{radius}}",
+      "near": "Sites within {{radius}}"
+    },
+    "verdict": {
+      "noneInRadius": "No reported industrial site within {{radius}}",
+      "noneNear": "No industrial site within {{near}}",
+      "oneNear": "One industrial site at {{distance}}",
+      "manyNear": "Several industrial sites within {{near}}"
+    },
+    "sites": {
+      "lead": "The sites that report emissions to the European register, nearest first.",
+      "none": "No reported site within {{radius}}.",
+      "pointsLost_one": "−{{count}} point from the score",
+      "pointsLost_other": "−{{count}} points from the score",
+      "noPoints": "Does not lower the score"
+    },
+    "sector": {
+      "energy": "Energy",
+      "metals": "Metals",
+      "minerals": "Building materials",
+      "chemicals": "Chemicals",
+      "waste_water": "Waste and waste water",
+      "paper_wood": "Paper and wood",
+      "livestock": "Livestock farms",
+      "food": "Food industry",
+      "other": "Other activity"
+    },
+    "impact": {
+      "air": "Air emissions",
+      "water": "Water emissions",
+      "odour": "May cause smells",
+      "seasonal_winter": "More active in winter"
+    },
+    "map": {
+      "site": "Show in the list: {{name}}",
+      "note": "The numbers on the map are the sites in the list; tap one to find it in the list."
+    },
+    "limits": {
+      "register": "The register covers only large sites reported to the EU, not small workshops or warehouses.",
+      "smell": "We do not measure their smell, noise or lorry traffic.",
+      "year": "The emission data is from {{year}}."
+    }
   }
 }

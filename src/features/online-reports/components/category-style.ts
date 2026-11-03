@@ -21,6 +21,7 @@ type HueClasses = {
   track: string;
   ink: string;
   underline: string;
+  border: string;
 };
 
 const HUE_CLASSES: Readonly<Record<CategoryHue, HueClasses>> = {
@@ -30,6 +31,7 @@ const HUE_CLASSES: Readonly<Record<CategoryHue, HueClasses>> = {
     track: 'bg-category-transport-surface',
     ink: 'text-category-transport-strong',
     underline: 'data-active:border-category-transport',
+    border: 'border-category-transport',
   },
   shopping: {
     tile: 'bg-category-shopping-surface text-category-shopping',
@@ -37,6 +39,7 @@ const HUE_CLASSES: Readonly<Record<CategoryHue, HueClasses>> = {
     track: 'bg-category-shopping-surface',
     ink: 'text-category-shopping',
     underline: 'data-active:border-category-shopping',
+    border: 'border-category-shopping',
   },
   safety: {
     tile: 'bg-category-safety-surface text-category-safety',
@@ -44,6 +47,7 @@ const HUE_CLASSES: Readonly<Record<CategoryHue, HueClasses>> = {
     track: 'bg-category-safety-surface',
     ink: 'text-category-safety',
     underline: 'data-active:border-category-safety',
+    border: 'border-category-safety',
   },
   green: {
     tile: 'bg-category-green-surface text-category-green',
@@ -51,6 +55,7 @@ const HUE_CLASSES: Readonly<Record<CategoryHue, HueClasses>> = {
     track: 'bg-category-green-surface',
     ink: 'text-category-green',
     underline: 'data-active:border-category-green',
+    border: 'border-category-green',
   },
   education: {
     tile: 'bg-category-education-surface text-category-education',
@@ -58,6 +63,7 @@ const HUE_CLASSES: Readonly<Record<CategoryHue, HueClasses>> = {
     track: 'bg-category-education-surface',
     ink: 'text-category-education',
     underline: 'data-active:border-category-education',
+    border: 'border-category-education',
   },
   health: {
     tile: 'bg-category-health-surface text-category-health-strong',
@@ -65,6 +71,7 @@ const HUE_CLASSES: Readonly<Record<CategoryHue, HueClasses>> = {
     track: 'bg-category-health-surface',
     ink: 'text-category-health-strong',
     underline: 'data-active:border-category-health',
+    border: 'border-category-health',
   },
 };
 
@@ -105,4 +112,8 @@ export const CHAPTER_ICON: Readonly<Record<ChapterId, LucideIcon>> = {
 
 export function categoryClasses(key: CategoryKey): HueClasses {
   return HUE_CLASSES[CATEGORY_HUE[key]];
+}
+
+export function categoryColorToken(key: CategoryKey): string {
+  return `--category-${CATEGORY_HUE[key]}`;
 }

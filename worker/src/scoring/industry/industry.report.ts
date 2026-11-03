@@ -1,4 +1,6 @@
-import type { Sql } from '../../db/sql.ts';
+import type { JsonObject, Sql } from '../../db/sql.ts';
+import { readCellCategory, sectionParams } from '../../report/cell-category.ts';
+import type { ReportSection } from '../../report/report-section.ts';
 import { importedReportingYear, listSitesNear, type NearbySite } from './industry.db.ts';
 import { pointsLostPerSite, type IndustryParams } from './industry.formula.ts';
 import { parseIndustryParams, siteContribution } from './industry.module.ts';
@@ -96,3 +98,23 @@ export async function buildIndustryReport(
         });
   return industryReportFromSites({ sites, cellScore: input.cellScore, params, reportingYear });
 }
+
+export const industryReportSection: ReportSection = {
+  key: 'industry',
+  build: async ({ sql, snapshotId, cellId, latitude, longitude, params }) => {
+    const cell = await readCellCategory(sql, snapshotId, cellId, 'industry');
+    if (!cell) return null;
+    const report = await buildIndustryReport(sql, {
+      longitude,
+      latitude,
+      cellScore: cell.score,
+      params: sectionParams(params, 'industry'),
+    });
+    const section: JsonObject = {
+      schema_version: 1,
+      status: report.score === null ? 'no_data' : 'scored',
+      ...report,
+    };
+    return section;
+  },
+};

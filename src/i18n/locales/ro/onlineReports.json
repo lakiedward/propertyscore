@@ -236,5 +236,146 @@
         "trees_other": "Mai mulți copaci pe stradă ar putea aduce {{count}} de puncte."
       }
     }
+  },
+  "chapterLimits": {
+    "title": "Ce nu poate ști raportul"
+  },
+  "noise": {
+    "decibels": "{{value}} dB",
+    "noData": "Orașul nu are încă hărți de zgomot în format digital și nici surse din care să-l estimăm aici. Scorul de zgomot nu intră în scorul zonei.",
+    "facts": {
+      "lden": "Media pe 24 de ore la adresă (Lden)",
+      "lnight": "Noaptea la adresă (Lnight)",
+      "nearest": "Până la cea mai apropiată sursă: {{source}}",
+      "nearestNone": "Nicio sursă mare de zgomot în apropiere"
+    },
+    "level": {
+      "title": "Cam {{level}} la adresă",
+      "leadStreet": "Valoarea vine din hărțile strategice de zgomot ale orașului, la punctul adresei.",
+      "leadEstimate": "Valoarea e o estimare din OpenStreetMap, calibrată pe hărțile oficiale din alte orașe."
+    },
+    "moment": {
+      "label": "Ziua sau noaptea",
+      "day": "Ziua",
+      "night": "Noaptea"
+    },
+    "scale": {
+      "label": "Nivelul la adresă, {{level}}, față de recomandarea OMS pentru trafic, {{guideline}}",
+      "guideline": "OMS: {{value}}"
+    },
+    "sources": {
+      "title": "Sursele de zgomot din apropiere",
+      "lead": "Străzile mari, tramvaiul, calea ferată și aeroportul cele mai apropiate de adresă.",
+      "none": "Nu am găsit surse mari de zgomot în apropiere.",
+      "band": "{{low}}–{{high}} dB"
+    },
+    "kind": {
+      "road": "Stradă",
+      "tram": "Tramvai",
+      "rail": "Cale ferată",
+      "air": "Aeroport",
+      "industry": "Industrie",
+      "aggregate": "Mai multe surse"
+    },
+    "map": {
+      "note": "Petele colorate sunt benzile de zgomot (mai închis înseamnă mai zgomotos); liniile sunt sursele. Comutatorul zi / noapte schimbă benzile."
+    },
+    "limits": {
+      "windows": "Nivelul din apartament depinde de geamuri, etaj și orientarea camerelor.",
+      "maps": "Hărțile de zgomot se refac o dată la cinci ani: un șantier sau o stradă nouă pot lipsi.",
+      "estimate": "O parte din valoare e estimată din tipul străzilor, nu măsurată."
+    }
+  },
+  "air": {
+    "micrograms": "{{value}} µg/m³",
+    "noData": "Nu avem date de calitatea aerului pentru această zonă pe ultimele 12 luni. Scorul de aer nu intră în scorul zonei.",
+    "facts": {
+      "annual": "PM2,5, media pe 12 luni",
+      "highest": "Luna cea mai grea: {{month}}",
+      "highestNone": "Luna cea mai grea",
+      "lowest": "Luna cea mai curată: {{month}}",
+      "lowestNone": "Luna cea mai curată"
+    },
+    "verdict": {
+      "clean_all_year": "Aer curat tot anul",
+      "winter_peaks": "Aer bun vara, mai greu iarna",
+      "above_limit_most_year": "Peste limita UE din 2030 în cea mai mare parte a anului",
+      "moderate": "Aer moderat, cu câteva luni mai grele"
+    },
+    "months": {
+      "title": "Particule fine (PM2,5) lună de lună",
+      "lead_one": "{{count}} lună din 12 peste limita UE din 2030 ({{limit}}).",
+      "lead_few": "{{count}} luni din 12 peste limita UE din 2030 ({{limit}}).",
+      "lead_other": "{{count}} de luni din 12 peste limita UE din 2030 ({{limit}}).",
+      "chartLabel": "PM2,5 în fiecare lună",
+      "bar": "{{month}}: {{value}}",
+      "noValue": "fără date",
+      "limitLegend": "Linia punctată: limita UE 2030, {{limit}}"
+    },
+    "compare": {
+      "title": "Adresa față de oraș",
+      "address": "PM2,5 la adresă",
+      "city": "PM2,5, media orașului",
+      "no2": "NO₂ la adresă",
+      "noNo2": "fără date",
+      "precision": "Precizie"
+    },
+    "precision": {
+      "eea_1km": "~1 km",
+      "cams_10km": "~10 km"
+    },
+    "limits": {
+      "indoor": "Nu măsurăm aerul din interiorul apartamentului, fumul de la sobe sau mirosurile.",
+      "notMeasured": "Valorile vin din modele europene corectate cu stațiile din oraș, nu dintr-o măsurătoare la adresă.",
+      "uncalibrated": "Orașul nu a avut stații valide pe perioada asta, așa că valorile sunt din model, necorectate."
+    }
+  },
+  "industry": {
+    "noData": "Nu avem încă registrul instalațiilor industriale pentru această perioadă. Scorul nu intră în scorul zonei.",
+    "facts": {
+      "nearest": "Cel mai apropiat amplasament raportat",
+      "inRadius": "Amplasamente pe o rază de {{radius}}",
+      "near": "Amplasamente sub {{radius}}"
+    },
+    "verdict": {
+      "noneInRadius": "Niciun amplasament industrial raportat pe o rază de {{radius}}",
+      "noneNear": "Niciun amplasament industrial sub {{near}}",
+      "oneNear": "Un amplasament industrial la {{distance}}",
+      "manyNear": "Mai multe instalații industriale sub {{near}}"
+    },
+    "sites": {
+      "lead": "Instalațiile care raportează emisii la registrul european, de la cea mai apropiată.",
+      "none": "Nicio instalație raportată pe o rază de {{radius}}.",
+      "pointsLost_one": "−{{count}} punct din scor",
+      "pointsLost_few": "−{{count}} puncte din scor",
+      "pointsLost_other": "−{{count}} de puncte din scor",
+      "noPoints": "Nu scade scorul"
+    },
+    "sector": {
+      "energy": "Energie",
+      "metals": "Metalurgie",
+      "minerals": "Materiale de construcții",
+      "chemicals": "Chimie",
+      "waste_water": "Deșeuri și ape uzate",
+      "paper_wood": "Hârtie și lemn",
+      "livestock": "Ferme de animale",
+      "food": "Industrie alimentară",
+      "other": "Altă activitate"
+    },
+    "impact": {
+      "air": "Emisii în aer",
+      "water": "Emisii în apă",
+      "odour": "Poate produce mirosuri",
+      "seasonal_winter": "Mai activă iarna"
+    },
+    "map": {
+      "site": "Arată pe listă: {{name}}",
+      "note": "Numerele de pe hartă sunt instalațiile din listă; apasă pe unul ca să-l găsești în listă."
+    },
+    "limits": {
+      "register": "Registrul acoperă doar instalațiile mari raportate la UE, nu atelierele sau depozitele mici.",
+      "smell": "Nu măsurăm mirosul, zgomotul sau traficul de camioane de la ele.",
+      "year": "Datele de emisii sunt din {{year}}."
+    }
   }
 }
