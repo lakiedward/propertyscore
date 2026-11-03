@@ -90,7 +90,7 @@ set params = params || jsonb_build_object('safety', '{
   "night_check_minute": 1380,
   "min_open_nights": 5,
   "lighting_coverage_ratio": 0.2,
-  "calibration": { "median_day": 60, "p90_day": 85 },
+  "calibration": { "median_day": 60, "p90_day": 85, "lived_in_types": ["shop", "transit_stop"] },
   "types": {
     "lighting": { "radius_m": 45, "weight_day": 0.15, "weight_night": 0.6, "cap": 6 },
     "shop": { "radius_m": 120, "weight_day": 1, "weight_night": 1, "cap": 4, "night_activity": { "open": 1, "closed": 0, "unknown": 0.25 } },

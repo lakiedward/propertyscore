@@ -93,20 +93,34 @@ describe('lightingExcludedCities', () => {
 });
 
 describe('calibrate', () => {
-  it('proposes the k that would put the median and the 90th percentile on target', () => {
-    const cells = [52, 54, 58, 62, 70, 100].map((dayRaw, index) => ({
-      cellId: String(index),
-      isResidential: dayRaw < 100,
-      score: 0,
-      day: 0,
-      night: 0,
-      dayRaw,
-      nightRaw: 0,
-      layers: {},
-    }));
-    const result = calibrate(cells, params);
-    expect(result).toMatchObject({ k: 4, cells: 5, median_day: 58, k_for_median: 5 });
-    expect(result.p90_day).toBeCloseTo(66.8);
-    expect(result.k_for_p90).toBeCloseTo(8.33, 2);
+  const cell = (dayRaw: number, isResidential: boolean | null, isLivedIn: boolean) => ({
+    cellId: `${String(dayRaw)}-${String(isResidential)}-${String(isLivedIn)}`,
+    isResidential,
+    isLivedIn,
+    score: 0,
+    day: 0,
+    night: 0,
+    dayRaw,
+    nightRaw: 0,
+    layers: {},
+  });
+
+  it('proposes the k that would put the median and the 90th percentile of lived-in cells on target', () => {
+    const result = calibrate(
+      [
+        cell(52, true, false),
+        cell(54, true, false),
+        cell(58, true, false),
+        cell(62, true, false),
+        cell(70, true, false),
+        cell(100, false, true),
+        cell(58, null, true),
+        cell(50, null, false),
+      ],
+      params,
+    );
+    expect(result).toMatchObject({ k: 4, cells: 6, median_day: 58, k_for_median: 5 });
+    expect(result.p90_day).toBeCloseTo(66);
+    expect(result.k_for_p90).toBeCloseTo(8.75, 2);
   });
 });

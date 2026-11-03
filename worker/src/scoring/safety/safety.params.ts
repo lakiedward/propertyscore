@@ -55,6 +55,7 @@ export const safetyParamsSchema = z
     calibration: z.object({
       median_day: z.number().min(0).max(100),
       p90_day: z.number().min(0).max(100),
+      lived_in_types: z.array(z.enum(SAFETY_TYPES)).min(1),
     }),
     types: z.record(z.enum(SAFETY_TYPES), typeParamsSchema),
   })

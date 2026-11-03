@@ -20,6 +20,7 @@ export type CellPlacement = {
 export type CellSafety = {
   cellId: string;
   isResidential: boolean | null;
+  isLivedIn: boolean;
   score: number;
   day: number;
   night: number;
@@ -119,6 +120,9 @@ export function scoreCells(
     return {
       cellId: cell.cellId,
       isResidential: cell.isResidential,
+      isLivedIn: own.day.contributions.some(
+        (row) => params.calibration.lived_in_types.includes(row.type) && row.count > 0,
+      ),
       score: finalScore(day, night, params.moment_weights),
       day,
       night,
@@ -166,7 +170,7 @@ export type Calibration = {
 
 export function calibrate(cells: readonly CellSafety[], params: SafetyParams): Calibration {
   const points = cells
-    .filter((cell) => cell.isResidential !== false)
+    .filter((cell) => cell.isResidential ?? cell.isLivedIn)
     .map((cell) => (cell.dayRaw - params.start) / params.k);
   const median = percentile(points, 0.5);
   const p90 = percentile(points, 0.9);
