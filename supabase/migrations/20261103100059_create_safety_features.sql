@@ -56,7 +56,7 @@ as $$
   group by cs.cell_id, f.feature_type;
 $$;
 
-create function private.grid_cell_neighbours(p_snapshot_id uuid, p_city_id uuid)
+create function private.safety_cell_neighbours(p_snapshot_id uuid, p_city_id uuid)
 returns table (cell_id uuid, neighbour_ids uuid[])
 language sql
 stable

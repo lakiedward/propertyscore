@@ -186,6 +186,7 @@ export const safetyModule: ScoreModule = {
         lighting_per_km:
           city.streetKm > 0 ? Math.round((100 * city.lighting) / city.streetKm) / 100 : null,
         excluded_types: [...excluded],
+        lighting_coverage_compared_with: imports.map((other) => other.slug),
         distance_method: distanceMethod,
         ...(reason ? { reason } : {}),
       };

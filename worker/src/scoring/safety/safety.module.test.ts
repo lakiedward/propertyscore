@@ -143,13 +143,14 @@ describe.skipIf(!databaseUrl || !hasOsmium())('safetyModule against the local da
         calibration: Record<string, unknown>;
       }[]
     >`
-      select stats -> 'safety' -> 'timisoara' as city, stats -> 'safety_calibration' as calibration
+      select stats -> 'safety' -> 'timisoara' as city, stats -> 'safety' -> 'calibration' as calibration
       from public.score_snapshots
       where id = ${snapshotId}
     `;
     expect(stats?.city).toMatchObject({
       features: { police: 1, lighting: 2, shop: 1, nonstop: 1, bar: 1, isolated_passage: 1 },
       excluded_types: [],
+      lighting_coverage_compared_with: ['timisoara'],
     });
     expect(stats?.city.street_km).toBeCloseTo(0.2, 1);
     expect(stats?.calibration).toMatchObject({ k: 4, cells: cells.length });

@@ -91,7 +91,7 @@ export async function listCellNeighbours(
 ): Promise<CellNeighbours[]> {
   const rows = await sql<CellNeighbours[]>`
     select n.cell_id, n.neighbour_ids, cs.is_residential
-    from private.grid_cell_neighbours(${snapshotId}, ${cityId}) as n
+    from private.safety_cell_neighbours(${snapshotId}, ${cityId}) as n
     join private.cell_scores cs on cs.cell_id = n.cell_id and cs.snapshot_id = ${snapshotId}
     order by n.cell_id
   `;
@@ -128,8 +128,10 @@ export async function writeSafetyStats(
   await sql`
     update public.score_snapshots
     set stats = stats
-      || jsonb_build_object('safety', ${sql.json(cities)}::jsonb)
-      || jsonb_build_object('safety_calibration', ${sql.json(calibration)}::jsonb)
+      || jsonb_build_object(
+        'safety',
+        ${sql.json(cities)}::jsonb || jsonb_build_object('calibration', ${sql.json(calibration)}::jsonb)
+      )
     where id = ${snapshotId}
   `;
 }

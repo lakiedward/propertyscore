@@ -101,7 +101,7 @@ select ok(
 select results_eq(
   format(
     $$ select count(*) filter (where cardinality(neighbour_ids) = 6) > count(*) / 2, max(cardinality(neighbour_ids))
-       from private.grid_cell_neighbours(%L, %L) $$,
+       from private.safety_cell_neighbours(%L, %L) $$,
     :'snapshot_id', :'sibiu_id'
   ),
   $$ values (true, 6) $$,
