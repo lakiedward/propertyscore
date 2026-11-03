@@ -9,7 +9,7 @@ export type CategoryAccess = {
   n15: number;
 };
 
-export type CategoryResult = {
+type CategoryResult = {
   t1_min: number | null;
   n5: number;
   n10: number;

@@ -79,7 +79,7 @@ export const fifteenMinuteReportSchema = z.object({
   ),
 });
 
-export type FifteenMinuteReport = z.infer<typeof fifteenMinuteReportSchema>;
+type FifteenMinuteReport = z.infer<typeof fifteenMinuteReportSchema>;
 
 export type ReportCandidate = {
   key: string;
@@ -321,7 +321,7 @@ async function readCandidates(
   return z.array(reportCandidateSchema).parse(rows);
 }
 
-export async function buildFifteenMinuteReport(options: {
+async function buildFifteenMinuteReport(options: {
   sql: Sql;
   router: ValhallaClient | null;
   snapshotId: string;

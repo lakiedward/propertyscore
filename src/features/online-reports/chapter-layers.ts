@@ -42,10 +42,7 @@ export function lineFeatures(
   return [];
 }
 
-export function areaFeatures(
-  geometry: SectionGeometry,
-  properties: Record<string, string>,
-): MapFeature[] {
+function areaFeatures(geometry: SectionGeometry, properties: Record<string, string>): MapFeature[] {
   if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
     return [{ type: 'Feature', properties, geometry }];
   }

@@ -137,7 +137,7 @@ function momentJson(moment: PointSafety['day']): JsonObject {
   };
 }
 
-export function safetySection(input: {
+function safetySection(input: {
   cell: z.infer<typeof cellInputsSchema>;
   point: PointSafety;
   landmarks: readonly z.infer<typeof landmarkSchema>[];

@@ -6,33 +6,33 @@ export type LngLat = { lng: number; lat: number };
 
 export type Leg = { seconds: number; meters: number };
 
-export type Costing = 'pedestrian' | 'auto';
+type Costing = 'pedestrian' | 'auto';
 
-export type MatrixRequest = {
+type MatrixRequest = {
   costing: Costing;
   sources: readonly LngLat[];
   targets: readonly LngLat[];
   walkSpeedKmh?: number;
 };
 
-export type IsochroneRequest = {
+type IsochroneRequest = {
   origin: LngLat;
   minutes: readonly number[];
   walkSpeedKmh: number;
 };
 
-export type IsochroneFeature = {
+type IsochroneFeature = {
   minutes: number;
   geometry: { type: string; coordinates: unknown };
 };
 
-export type RouteRequest = {
+type RouteRequest = {
   origin: LngLat;
   destination: LngLat;
   walkSpeedKmh: number;
 };
 
-export type Route = Leg & { polyline6: string };
+type Route = Leg & { polyline6: string };
 
 export type ValhallaClient = {
   matrix: (request: MatrixRequest) => Promise<(Leg | null)[][]>;

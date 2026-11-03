@@ -21,7 +21,7 @@ type ReportMapGreenLayer = {
   onSelectPark: (parkId: string) => void;
 };
 
-export type ReportMapPlace = {
+type ReportMapPlace = {
   id: string;
   position: LngLat;
   label: string;

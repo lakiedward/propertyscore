@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import type { CategoryKey } from '../online-report.utils';
 import { categoryClasses } from './category-style';
 
-export type PlaceListItem = {
+type PlaceListItem = {
   id: string;
   title: string;
   trailing: string;

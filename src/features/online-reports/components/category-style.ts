@@ -113,7 +113,3 @@ export const CHAPTER_ICON: Readonly<Record<ChapterId, LucideIcon>> = {
 export function categoryClasses(key: CategoryKey): HueClasses {
   return HUE_CLASSES[CATEGORY_HUE[key]];
 }
-
-export function categoryColorToken(key: CategoryKey): string {
-  return `--category-${CATEGORY_HUE[key]}`;
-}

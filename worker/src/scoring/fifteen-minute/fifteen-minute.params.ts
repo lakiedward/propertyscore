@@ -52,7 +52,7 @@ export type FifteenMinuteParams = z.infer<typeof fifteenMinuteParamsSchema>;
 
 export type FifteenMinuteCategory = FifteenMinuteParams['categories'][number];
 
-export const POI_CATEGORY_PREFIX = 'fifteen_minute_';
+const POI_CATEGORY_PREFIX = 'fifteen_minute_';
 
 export function poiCategoryOf(key: string): string {
   return `${POI_CATEGORY_PREFIX}${key}`;

@@ -1,6 +1,6 @@
 export type MonthValue = { month: string; value: number };
 
-export function presentMonths(
+function presentMonths(
   months: readonly string[],
   values: readonly (number | null)[],
 ): MonthValue[] {
