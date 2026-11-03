@@ -39,7 +39,7 @@ paths:
 | `public.cities` | the 9 cities with `boundary` (the coverage area the grid covers); read only |
 | `public.scoring_versions` | the active `online` formula: `weights` (the 9 category weights) and `params` (`cell_size_m` plus one object per score key, for example `params.green`); a version used by a snapshot is frozen, so a formula change is a new version |
 | `public.score_snapshots` | one row per monthly build; `source_dates` and `stats` are written by the orchestrator |
-| `private.grid_cells` | hexagons built with `ST_HexagonGrid` in EPSG:3844, key `size:i:j`, stable across snapshots |
+| `private.grid_cells` | hexagons built with `ST_HexagonGrid` in EPSG:3844, key `size:i:j`, stable across snapshots; `private.grid_cell_neighbours(city_id, size_m)` returns each cell with its (up to 6) touching neighbours, for smoothing |
 | `private.cell_scores` | one row per cell and snapshot; a score writes `categories.<key>` (0–100 or `null` for no data) and `inputs.<key>` (the audit trail) through `writeCategoryScores` |
 | `private.poi_features` | points of interest frozen per snapshot, `category` in `snake_case`, `source_ref` such as `osm:node/123` |
 
