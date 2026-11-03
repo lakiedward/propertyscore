@@ -30,3 +30,4 @@ e2e/.auth/
 .DS_Store
 *.log
 .tanstack/
+__pycache__/

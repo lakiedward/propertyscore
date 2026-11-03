@@ -1,0 +1,7 @@
+stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station,wheelchair_boarding
+A1,"Piața Libertății",45.75370,21.22570,0,,1
+A2,Piata Libertatii,45.75390,21.22580,0,,0
+P,Gara de Nord,45.75000,21.20800,1,,
+B1,Gara de Nord peron 1,45.75010,21.20810,0,P,
+B2,Gara de Nord peron 2,45.74990,21.20790,0,P,
+C,"Calea Aradului, capăt",45.77500,21.22000,0,,
