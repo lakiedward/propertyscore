@@ -208,6 +208,7 @@ export function ReportMap({ position, green, layer }: ReportMapProps) {
                 ? { position: selectedPlace.position, requestId: selectedPlaceIndex }
                 : undefined
           }
+          isPrintable
           className="size-full"
           fallbackClassName="size-full rounded-xl"
           errorFallback={

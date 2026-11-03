@@ -2,6 +2,7 @@
   "pageTitle": "Raport Smart Check",
   "header": {
     "saved": "Salvat în cont",
+    "shared": "Raport partajat cu tine",
     "code": "{{code}} · {{date}}",
     "calculatedOn": "Calculat pe datele din {{period}}, formula {{formula}}",
     "declaredSuffix": "detalii declarate de tine",
@@ -236,6 +237,34 @@
         "trees_other": "Mai mulți copaci pe stradă ar putea aduce {{count}} de puncte."
       }
     }
+  },
+  "share": {
+    "open": "Partajează",
+    "title": "Partajează raportul",
+    "description": "Oricine are linkul vede raportul interactiv, fără cont. Nu poate modifica nimic.",
+    "loading": "Se încarcă…",
+    "expiryLabel": "Cât timp funcționează linkul",
+    "expiry": {
+      "never": "Fără expirare",
+      "month": "30 de zile",
+      "week": "7 zile"
+    },
+    "create": "Creează linkul",
+    "linkLabel": "Linkul de partajare",
+    "copy": "Copiază",
+    "copied": "Linkul a fost copiat.",
+    "copyFailed": "Nu am putut copia linkul. Selectează-l și copiază-l manual.",
+    "onlyOnce": "Păstrează linkul acum: din motive de siguranță îl arătăm o singură dată.",
+    "active": "Ai un link activ, creat pe {{date}}, fără expirare.",
+    "activeUntil": "Ai un link activ, creat pe {{date}}, valabil până pe {{until}}.",
+    "lostLink": "Dacă nu mai ai linkul, creează unul nou. Cel vechi nu va mai funcționa.",
+    "renew": "Creează un link nou",
+    "revoke": "Dezactivează linkul",
+    "revoked": "Linkul a fost dezactivat."
+  },
+  "pdf": {
+    "download": "Descarcă PDF",
+    "hint": "În fereastra de tipărire alege „Salvează ca PDF”."
   },
   "chapterLimits": {
     "title": "Ce nu poate ști raportul"

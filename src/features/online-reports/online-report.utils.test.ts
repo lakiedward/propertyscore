@@ -12,6 +12,9 @@ import {
   scoreBand,
   type CategoryKey,
   type CategorySummary,
+  reportShareUrl,
+  SHARE_EXPIRIES,
+  shareExpiryDays,
 } from './online-report.utils';
 
 function summaries(
@@ -134,6 +137,20 @@ describe('online report utils', () => {
     const north = ring[0] ?? center;
     const metresNorth = ((north[1] - center[1]) * Math.PI * 6_371_008.8) / 180;
     expect(metresNorth).toBeCloseTo(500, 0);
+  });
+});
+
+describe('reportShareUrl', () => {
+  it('points at the report page with the token in the share parameter', () => {
+    expect(reportShareUrl('https://propertyscore.ro', 'r1', 'abc')).toBe(
+      'https://propertyscore.ro/check/result/r1?share=abc',
+    );
+  });
+});
+
+describe('shareExpiryDays', () => {
+  it('gives no expiry for a permanent link and the number of days otherwise', () => {
+    expect(SHARE_EXPIRIES.map(shareExpiryDays)).toEqual([null, 30, 7]);
   });
 });
 
