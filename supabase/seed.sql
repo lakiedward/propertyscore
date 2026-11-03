@@ -35,7 +35,8 @@ from (
   values
     ('a0000000-0000-4000-8000-000000000001'::uuid, 'ana.ro@example.test', 'ro', 'Ana Mărginean'),
     ('a0000000-0000-4000-8000-000000000002'::uuid, 'emma.en@example.test', 'en', 'Emma Stănescu'),
-    ('a0000000-0000-4000-8000-000000000003'::uuid, 'ion.ro@example.test', 'ro', 'Ion Țurcanu')
+    ('a0000000-0000-4000-8000-000000000003'::uuid, 'ion.ro@example.test', 'ro', 'Ion Țurcanu'),
+    ('a0000000-0000-4000-8000-000000000004'::uuid, 'admin.ro@example.test', 'ro', 'Radu Marin')
 ) as seed (id, email, locale, full_name);
 
 insert into auth.identities (
@@ -59,6 +60,9 @@ select
   now()
 from auth.users as users
 where users.email like '%@example.test';
+
+insert into public.user_roles (user_id, role)
+values ('a0000000-0000-4000-8000-000000000004', 'admin');
 
 insert into public.listings (
   id,

@@ -117,6 +117,10 @@ content_path = "./supabase/templates/recovery.html"
 subject = "Confirmă noua adresă de email · Confirm your new email address"
 content_path = "./supabase/templates/email-change.html"
 
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/public/custom_access_token_hook"
+
 [auth.sms]
 enable_signup = false
 enable_confirmations = false
@@ -143,10 +147,19 @@ otp_length = 6
 template = "Your code is {{ .Code }}"
 max_frequency = "5s"
 
-[auth.external.apple]
-enabled = false
-client_id = ""
-secret = "env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)"
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+redirect_uri = ""
+url = ""
+skip_nonce_check = false
+email_optional = false
+
+[auth.external.facebook]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_FACEBOOK_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_FACEBOOK_SECRET)"
 redirect_uri = ""
 url = ""
 skip_nonce_check = false
