@@ -1,8 +1,11 @@
+import { rm } from 'node:fs/promises';
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createSql, type Sql } from '../../db/sql.ts';
 import { createLogger } from '../../lib/logger.ts';
 import { buildSnapshot } from '../../snapshot/build-snapshot.ts';
+import { hasOsmium, prepareSourcesDir } from '../../test/osm-fixture.ts';
 import type { ScoreModule } from '../score-module.ts';
 import { runAir } from './air.module.ts';
 import type { AirSources } from './air.sources.ts';
@@ -73,14 +76,16 @@ const testAirModule: ScoreModule = {
 
 const databaseUrl = process.env.DATABASE_URL;
 
-describe.skipIf(!databaseUrl)('air module against the local database', () => {
+describe.skipIf(!databaseUrl || !hasOsmium())('air module against the local database', () => {
   let sql: Sql;
+  let sourcesDir = '';
   let previousReady: string | undefined;
   let hadSibiuCells = false;
   let snapshotId = '';
 
   beforeAll(async () => {
     sql = createSql(databaseUrl ?? '');
+    sourcesDir = await prepareSourcesDir('sibiu.osm', '2026-11-01');
     const [ready] = await sql<
       { id: string }[]
     >`select id from public.score_snapshots where status = 'ready'`;
@@ -98,7 +103,7 @@ describe.skipIf(!databaseUrl)('air module against the local database', () => {
       period: '2026-11-01',
       citySlugs: ['sibiu'],
       scoreKeys: [],
-      sourcesDir: '/tmp/propertyscore-sources',
+      sourcesDir,
       osmExtractUrl: 'https://example.test/romania.osm.pbf',
       router: null,
       logger: silentLogger,
@@ -115,6 +120,7 @@ describe.skipIf(!databaseUrl)('air module against the local database', () => {
     if (previousReady)
       await sql`update public.score_snapshots set status = 'ready' where id = ${previousReady}`;
     await sql.end({ timeout: 5 });
+    await rm(sourcesDir, { recursive: true, force: true });
   });
 
   it('stores the stations, assigns them to the city and keeps their monthly means', async () => {
