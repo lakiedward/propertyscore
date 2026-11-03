@@ -1,4 +1,5 @@
 import { accessibilityModule } from './accessibility/accessibility.module.ts';
+import { educationModule } from './education/education.module.ts';
 import { fifteenMinuteModule } from './fifteen-minute/fifteen-minute.module.ts';
 import { greenModule } from './green/green.module.ts';
 import { industryModule } from './industry/industry.module.ts';
@@ -13,4 +14,5 @@ export const SCORE_MODULES: readonly ScoreModule[] = [
   greenModule,
   noiseModule,
   industryModule,
+  educationModule,
 ];
