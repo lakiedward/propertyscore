@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(23);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -49,6 +49,35 @@ select throws_ok(
   'P0001',
   'city_not_found',
   'The grid is built only for a known city'
+);
+
+select results_eq(
+  format($$
+    select count(*)::integer
+    from private.grid_cell_neighbours(%L, 175)
+    where cell_id = private.find_grid_cell(extensions.st_point(24.15192, 45.79705, 4326)::extensions.geography, 175)
+  $$, :'sibiu_id'),
+  $$ values (6) $$,
+  'A cell inside the coverage area has its six hexagon neighbours'
+);
+
+select is(
+  (select count(*)::integer from private.grid_cell_neighbours(:'sibiu_id', 175) where cell_id = neighbour_id),
+  0,
+  'A cell is never its own neighbour'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from private.grid_cell_neighbours(:'sibiu_id', 175) as pair
+    where not exists (
+      select 1 from private.grid_cell_neighbours(:'sibiu_id', 175) as back
+      where back.cell_id = pair.neighbour_id and back.neighbour_id = pair.cell_id
+    )
+  ),
+  0,
+  'Neighbours are symmetric'
 );
 
 select private.start_score_snapshot('2026-11-01') as snapshot_id \gset
