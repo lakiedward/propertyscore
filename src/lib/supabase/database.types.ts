@@ -37,6 +37,38 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"online_reports": {
+                  Row: {
+                    "address_text": string,"category_scores": NonNullable<Json>,"city_id": string,"created_at": string,"declared_area_m2": number | null,"declared_building_floors": number | null,"declared_construction_year": number | null,"declared_floor": number | null,"declared_has_elevator": boolean | null,"declared_rooms": number | null,"error_code": string | null,"generated_at": string | null,"id": string,"latitude": number | null,"locale": string,"location": unknown,"longitude": number | null,"number": number,"overall_score": number | null,"owner_id": string,"pdf_path": string | null,"result": NonNullable<Json>,"scoring_version_id": string | null,"snapshot_id": string | null,"source_listing_url": string | null,"status": Database["public"]['Enums']["online_report_status"],"updated_at": string,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address_text": string,"category_scores"?: NonNullable<Json>,"city_id": string,"created_at"?: string,"declared_area_m2"?: number | null,"declared_building_floors"?: number | null,"declared_construction_year"?: number | null,"declared_floor"?: number | null,"declared_has_elevator"?: boolean | null,"declared_rooms"?: number | null,"error_code"?: string | null,"generated_at"?: string | null,"id"?: string,"latitude"?: never,"locale"?: string,"location": unknown,"longitude"?: never,"number"?: never,"overall_score"?: number | null,"owner_id"?: string,"pdf_path"?: string | null,"result"?: NonNullable<Json>,"scoring_version_id"?: string | null,"snapshot_id"?: string | null,"source_listing_url"?: string | null,"status"?: Database["public"]['Enums']["online_report_status"],"updated_at"?: string,"version"?: number
+                  }
+                  Update: {
+                    "address_text"?: string,"category_scores"?: NonNullable<Json>,"city_id"?: string,"created_at"?: string,"declared_area_m2"?: number | null,"declared_building_floors"?: number | null,"declared_construction_year"?: number | null,"declared_floor"?: number | null,"declared_has_elevator"?: boolean | null,"declared_rooms"?: number | null,"error_code"?: string | null,"generated_at"?: string | null,"id"?: string,"latitude"?: never,"locale"?: string,"location"?: unknown,"longitude"?: never,"number"?: never,"overall_score"?: number | null,"owner_id"?: string,"pdf_path"?: string | null,"result"?: NonNullable<Json>,"scoring_version_id"?: string | null,"snapshot_id"?: string | null,"source_listing_url"?: string | null,"status"?: Database["public"]['Enums']["online_report_status"],"updated_at"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "online_reports_city_id_fkey"
+      columns: ["city_id"]
+isOneToOne: false
+      referencedRelation: "cities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "online_reports_scoring_version_id_fkey"
+      columns: ["scoring_version_id"]
+isOneToOne: false
+      referencedRelation: "scoring_versions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "online_reports_snapshot_id_fkey"
+      columns: ["snapshot_id"]
+isOneToOne: false
+      referencedRelation: "score_snapshots"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"id": string,"locale": string,"updated_at": string
@@ -94,7 +126,7 @@ isOneToOne: false
             [_ in never]: never
           }
           Enums: {
-            "scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
+            "online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -214,7 +246,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
+            "online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
           }
         }
 } as const

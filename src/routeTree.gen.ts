@@ -14,6 +14,7 @@ import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
+import { Route as AuthenticatedCheckResultReportIdRouteImport } from './routes/_authenticated/check/result.$reportId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -38,16 +39,24 @@ const PublicSignUpRoute = PublicSignUpRouteImport.update({
   path: '/sign-up',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const AuthenticatedCheckResultReportIdRoute =
+  AuthenticatedCheckResultReportIdRouteImport.update({
+    id: '/check/result/$reportId',
+    path: '/check/result/$reportId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/check/result/$reportId': typeof AuthenticatedCheckResultReportIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/check/result/$reportId': typeof AuthenticatedCheckResultReportIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -56,12 +65,13 @@ export interface FileRoutesById {
   '/_public/login': typeof PublicLoginRoute
   '/_public/sign-up': typeof PublicSignUpRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/check/result/$reportId': typeof AuthenticatedCheckResultReportIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/sign-up'
+  fullPaths: '/' | '/login' | '/sign-up' | '/check/result/$reportId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/sign-up'
+  to: '/' | '/login' | '/sign-up' | '/check/result/$reportId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -69,6 +79,7 @@ export interface FileRouteTypes {
     | '/_public/login'
     | '/_public/sign-up'
     | '/_authenticated/'
+    | '/_authenticated/check/result/$reportId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -113,15 +124,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicSignUpRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_authenticated/check/result/$reportId': {
+      id: '/_authenticated/check/result/$reportId'
+      path: '/check/result/$reportId'
+      fullPath: '/check/result/$reportId'
+      preLoaderRoute: typeof AuthenticatedCheckResultReportIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedCheckResultReportIdRoute: typeof AuthenticatedCheckResultReportIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedCheckResultReportIdRoute: AuthenticatedCheckResultReportIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

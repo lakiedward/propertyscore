@@ -58,5 +58,17 @@
     "maxLength_other": "Introdu cel mult {{count}} de caractere.",
     "min": "Valoarea minimă este {{min}}.",
     "max": "Valoarea maximă este {{max}}."
+  },
+  "brand": {
+    "core": "PropertyScore",
+    "physical": "Property Fizic",
+    "smartcheck": "Smart Check"
+  },
+  "map": {
+    "zoomIn": "Mărește",
+    "zoomOut": "Micșorează",
+    "title": "Hartă",
+    "toggleAttribution": "Afișează sau ascunde sursele hărții",
+    "mapFeedback": "Trimite feedback despre hartă"
   }
 }

@@ -59,7 +59,7 @@ create policy "Owners can update their properties"
 ## Generated types
 
 - `src/lib/supabase/database.types.ts` comes only from `pnpm db:types`; never edit it.
-- JSON column shapes are typed in `src/lib/supabase/database.overrides.ts` with the `MergeDeep` pattern from the Supabase docs.
+- JSON column shapes are typed in `src/lib/supabase/database.overrides.ts` with the `MergeDeep` pattern from the Supabase docs. The exception is a versioned payload the backend freezes (the online report's `result`): the feature's `api/` function parses it with its Zod schema and the type comes from `z.infer`, so a payload that does not match fails loudly instead of being trusted by a cast.
 - Features alias the helpers in `<entity>.types.ts`: `Tables<'properties'>`, `TablesInsert<'properties'>`, `TablesUpdate<'properties'>`, `Enums<'property_status'>`.
 
 ## Storage

@@ -465,7 +465,7 @@ export type PropertyStatus = Enums<'property_status'>;
 ```
 
 - **Keep DB field names (`snake_case`) in TypeScript.** No camelCase mapping layer: it doubles the type surface and adds bugs for little gain. Write a mapping only when the UI needs a genuinely different *shape* (e.g. nesting joined rows), and keep it in the feature's `api/` folder.
-- For JSON columns, override the type in a small `database.overrides.ts` with the `MergeDeep` pattern from the Supabase docs. Never hand-edit the generated file.
+- For JSON columns, override the type in a small `database.overrides.ts` with the `MergeDeep` pattern from the Supabase docs. Never hand-edit the generated file. A large versioned payload the backend freezes (the online report's `result`) is parsed with a Zod schema in the feature's `api/` function instead: an override is only a cast, while the parse checks old report versions at runtime and gives the same type through `z.infer`.
 
 ---
 

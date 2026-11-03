@@ -56,5 +56,17 @@
     "maxLength_other": "Enter at most {{count}} characters.",
     "min": "The minimum value is {{min}}.",
     "max": "The maximum value is {{max}}."
+  },
+  "brand": {
+    "core": "PropertyScore",
+    "physical": "Property Fizic",
+    "smartcheck": "Smart Check"
+  },
+  "map": {
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "title": "Map",
+    "toggleAttribution": "Show or hide map sources",
+    "mapFeedback": "Send map feedback"
   }
 }
