@@ -1,4 +1,4 @@
-import { CircleCheckIcon } from 'lucide-react';
+import { CircleCheckIcon, EyeIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ProductTag } from '@/components/brand/product-tag';
@@ -20,6 +20,8 @@ type ReportHeaderProps = {
   formulaLabel: string;
   declared: DeclaredDetails;
   scoreCard: ReactNode;
+  isShared: boolean;
+  actions?: ReactNode;
 };
 
 function useDeclaredParts(declared: DeclaredDetails): string[] {
@@ -55,6 +57,8 @@ export function ReportHeader({
   formulaLabel,
   declared,
   scoreCard,
+  isShared,
+  actions,
 }: ReportHeaderProps) {
   const { t } = useTranslation('onlineReports');
   const declaredParts = useDeclaredParts(declared);
@@ -65,8 +69,12 @@ export function ReportHeader({
         <div className="flex min-w-0 flex-col gap-3.5">
           <div className="flex flex-wrap gap-2">
             <span className="inline-flex min-h-7.5 items-center gap-1.5 rounded-full bg-cta px-3 text-caption font-extrabold text-cta-foreground">
-              <CircleCheckIcon aria-hidden className="size-3.5" />
-              {t('header.saved')}
+              {isShared ? (
+                <EyeIcon aria-hidden className="size-3.5" />
+              ) : (
+                <CircleCheckIcon aria-hidden className="size-3.5" />
+              )}
+              {isShared ? t('header.shared') : t('header.saved')}
             </span>
             <ProductTag product="smartcheck" />
             <span className="inline-flex min-h-7.5 items-center rounded-full bg-on-inverse/12 px-3 text-caption font-bold">
@@ -85,6 +93,7 @@ export function ReportHeader({
               formula: formulaLabel,
             })}
           </p>
+          {actions ? <div className="flex flex-wrap gap-2 pt-1">{actions}</div> : null}
         </div>
         {scoreCard}
       </div>

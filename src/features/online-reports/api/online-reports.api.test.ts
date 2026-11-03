@@ -1,9 +1,19 @@
-import { http } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { buildOnlineReport } from '@/test/factories/online-report';
-import { onlineReportResponse, SEEDED_ONLINE_REPORT } from '@/test/msw/handlers/online-reports';
+import {
+  CREATED_SHARE_TOKEN,
+  onlineReportResponse,
+  SEEDED_ONLINE_REPORT,
+  SEEDED_SHARE_TOKEN,
+} from '@/test/msw/handlers/online-reports';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
-import { getOnlineReport } from './online-reports.api';
+import {
+  createReportShareLink,
+  getActiveShareLink,
+  getOnlineReport,
+  getSharedOnlineReport,
+} from './online-reports.api';
 
 function serveReport(report: ReturnType<typeof buildOnlineReport>) {
   server.use(http.get(supabaseUrl('/rest/v1/online_reports'), () => onlineReportResponse(report)));
@@ -40,5 +50,45 @@ describe('getOnlineReport', () => {
     serveReport(broken);
 
     await expect(getOnlineReport(broken.id)).rejects.toMatchObject({ code: 'unknown' });
+  });
+});
+
+describe('getSharedOnlineReport', () => {
+  it('opens a ready report with a valid share token', async () => {
+    const report = await getSharedOnlineReport(SEEDED_ONLINE_REPORT.id, SEEDED_SHARE_TOKEN);
+
+    expect(report.id).toBe(SEEDED_ONLINE_REPORT.id);
+    expect(report.result?.categories.green.score).toBe(84);
+  });
+
+  it('answers not found for a token that does not open the report or is malformed', async () => {
+    await expect(
+      getSharedOnlineReport(SEEDED_ONLINE_REPORT.id, 'c'.repeat(48)),
+    ).rejects.toMatchObject({ code: 'not_found' });
+    await expect(getSharedOnlineReport(SEEDED_ONLINE_REPORT.id, 'short')).rejects.toMatchObject({
+      code: 'not_found',
+    });
+  });
+});
+
+describe('createReportShareLink', () => {
+  it('returns the new token', async () => {
+    await expect(
+      createReportShareLink({ reportId: SEEDED_ONLINE_REPORT.id, expiresInDays: 30 }),
+    ).resolves.toBe(CREATED_SHARE_TOKEN);
+  });
+});
+
+describe('getActiveShareLink', () => {
+  it('gives no link when the active one has expired', async () => {
+    server.use(
+      http.get(supabaseUrl('/rest/v1/report_share_links'), () =>
+        HttpResponse.json([
+          { id: 'l1', created_at: '2026-10-01T10:00:00Z', expires_at: '2026-10-08T10:00:00Z' },
+        ]),
+      ),
+    );
+
+    await expect(getActiveShareLink(SEEDED_ONLINE_REPORT.id)).resolves.toBeNull();
   });
 });

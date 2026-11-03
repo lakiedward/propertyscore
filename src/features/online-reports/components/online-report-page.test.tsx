@@ -2,10 +2,14 @@ import { screen, within } from '@testing-library/react';
 import { http } from 'msw';
 import roOnlineReports from '@/i18n/locales/ro/onlineReports.json';
 import { buildOnlineReport, buildReportResult } from '@/test/factories/online-report';
-import { onlineReportResponse, SEEDED_ONLINE_REPORT } from '@/test/msw/handlers/online-reports';
+import {
+  onlineReportResponse,
+  SEEDED_ONLINE_REPORT,
+  SEEDED_SHARE_TOKEN,
+} from '@/test/msw/handlers/online-reports';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
-import { renderWithProviders } from '@/test/render';
+import { renderAppRoute, renderWithProviders } from '@/test/render';
 import type { ChapterId } from '../online-report.utils';
 import { OnlineReportPage } from './online-report-page';
 
@@ -179,5 +183,40 @@ describe('OnlineReportPage', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: title })).toBeInTheDocument();
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+  });
+});
+
+describe('OnlineReportPage opened through a share link', () => {
+  it('shows the report read-only, without the share button', async () => {
+    await renderWithProviders(
+      <OnlineReportPage
+        reportId={SEEDED_ONLINE_REPORT.id}
+        shareToken={SEEDED_SHARE_TOKEN}
+        chapter="summary"
+        onChapterChange={vi.fn()}
+      />,
+    );
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: SEEDED_ONLINE_REPORT.address_text }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(text.header.shared)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: text.share.open })).not.toBeInTheDocument();
+  });
+});
+
+describe('the report route', () => {
+  it('opens a shared report for a signed-out visitor', async () => {
+    await renderAppRoute(`/check/result/${SEEDED_ONLINE_REPORT.id}?share=${SEEDED_SHARE_TOKEN}`);
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: SEEDED_ONLINE_REPORT.address_text }),
+    ).toBeInTheDocument();
+  });
+
+  it('sends a signed-out visitor without a share link to the login page', async () => {
+    const { router } = await renderAppRoute(`/check/result/${SEEDED_ONLINE_REPORT.id}`);
+
+    expect(router.state.location.pathname).toBe('/login');
   });
 });

@@ -2,6 +2,7 @@
   "pageTitle": "Smart Check report",
   "header": {
     "saved": "Saved to your account",
+    "shared": "Report shared with you",
     "code": "{{code}} · {{date}}",
     "calculatedOn": "Calculated on data from {{period}}, formula {{formula}}",
     "declaredSuffix": "details you declared",
@@ -227,5 +228,29 @@
         "trees_other": "More street trees could add {{count}} points."
       }
     }
+  },
+  "share": {
+    "open": "Share",
+    "title": "Share the report",
+    "description": "Anyone with the link sees the interactive report without an account. They cannot change anything.",
+    "loading": "Loading…",
+    "expiryLabel": "How long the link works",
+    "expiry": {
+      "never": "No expiry",
+      "month": "30 days",
+      "week": "7 days"
+    },
+    "create": "Create the link",
+    "linkLabel": "Share link",
+    "copy": "Copy",
+    "copied": "Link copied.",
+    "copyFailed": "We could not copy the link. Select it and copy it yourself.",
+    "onlyOnce": "Keep the link now: for your safety we show it only once.",
+    "active": "You have an active link, created on {{date}}, with no expiry.",
+    "activeUntil": "You have an active link, created on {{date}}, valid until {{until}}.",
+    "lostLink": "If you no longer have the link, create a new one. The old one will stop working.",
+    "renew": "Create a new link",
+    "revoke": "Turn off the link",
+    "revoked": "The link was turned off."
   }
 }

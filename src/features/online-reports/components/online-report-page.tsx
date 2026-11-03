@@ -21,18 +21,29 @@ import { NextChapterButton } from './next-chapter-button';
 import { ReportHeader } from './report-header';
 import { ReportMap } from './report-map';
 import { ReportMethod } from './report-method';
+import { ReportShareDialog } from './report-share-dialog';
 import { ReportStatus } from './report-status';
 import { SummaryChapter } from './summary-chapter';
 import { ZoneScoreCard } from './zone-score-card';
 
 type OnlineReportPageProps = {
   reportId: string;
+  shareToken?: string;
   chapter: ChapterId;
   onChapterChange: (chapter: ChapterId) => void;
 };
 
-export function OnlineReportPage({ reportId, chapter, onChapterChange }: OnlineReportPageProps) {
-  const { data: report } = useSuspenseQuery(onlineReportQueries.detail(reportId));
+export function OnlineReportPage({
+  reportId,
+  shareToken,
+  chapter,
+  onChapterChange,
+}: OnlineReportPageProps) {
+  const { data: report } = useSuspenseQuery(
+    shareToken === undefined
+      ? onlineReportQueries.detail(reportId)
+      : onlineReportQueries.shared(reportId, shareToken),
+  );
 
   if (report.result === null || report.status !== 'ready') {
     return (
@@ -47,6 +58,7 @@ export function OnlineReportPage({ reportId, chapter, onChapterChange }: OnlineR
     <ReadyReport
       report={report}
       result={report.result}
+      isShared={shareToken !== undefined}
       chapter={chapter}
       onChapterChange={onChapterChange}
     />
@@ -56,11 +68,12 @@ export function OnlineReportPage({ reportId, chapter, onChapterChange }: OnlineR
 type ReadyReportProps = {
   report: OnlineReport;
   result: ReportResult;
+  isShared: boolean;
   chapter: ChapterId;
   onChapterChange: (chapter: ChapterId) => void;
 };
 
-function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportProps) {
+function ReadyReport({ report, result, isShared, chapter, onChapterChange }: ReadyReportProps) {
   const tabsRef = useRef<HTMLDivElement>(null);
   const { categories, zone } = result;
   const green = result.green?.status === 'scored' ? result.green : undefined;
@@ -90,6 +103,8 @@ function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportPr
         period={result.snapshot.period}
         formulaLabel={result.formula.label}
         declared={report}
+        isShared={isShared}
+        actions={isShared ? undefined : <ReportShareDialog reportId={report.id} />}
         scoreCard={
           <ZoneScoreCard
             score={zone.score}

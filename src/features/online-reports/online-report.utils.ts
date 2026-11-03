@@ -193,3 +193,23 @@ export function circleRing(center: LngLat, radiusM: number, steps = 72): LngLat[
   }
   return points;
 }
+
+export const SHARE_EXPIRIES = ['never', 'month', 'week'] as const;
+
+export type ShareExpiry = (typeof SHARE_EXPIRIES)[number];
+
+const SHARE_EXPIRY_DAYS: Readonly<Record<ShareExpiry, number | null>> = {
+  never: null,
+  month: 30,
+  week: 7,
+};
+
+export function shareExpiryDays(expiry: ShareExpiry): number | null {
+  return SHARE_EXPIRY_DAYS[expiry];
+}
+
+export function reportShareUrl(siteUrl: string, reportId: string, token: string): string {
+  const url = new URL(`/check/result/${reportId}`, siteUrl);
+  url.searchParams.set('share', token);
+  return url.toString();
+}
