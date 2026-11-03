@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { Sql } from '../db/sql.ts';
 import { errorCode, WorkerError } from '../lib/errors.ts';
 import type { Logger } from '../lib/logger.ts';
+import type { ValhallaClient } from '../routing/valhalla.ts';
 import type { CategoryKey } from '../scoring/categories.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
 import {
@@ -21,6 +22,7 @@ export type BuildSnapshotOptions = {
   scoreKeys: readonly CategoryKey[];
   sourcesDir: string;
   osmExtractUrl: string;
+  router: ValhallaClient | null;
   logger: Logger;
 };
 
@@ -83,6 +85,7 @@ export async function buildSnapshot(options: BuildSnapshotOptions): Promise<Buil
         params: version.params[module.key],
         sourcesDir: options.sourcesDir,
         osmExtractUrl: options.osmExtractUrl,
+        router: options.router,
         logger,
       });
       Object.assign(sourceDates, result.sourceDates);
