@@ -37,11 +37,11 @@ export function smoothScores(
 
 export async function listNeighbourPairs(
   sql: Sql,
-  snapshotId: string,
   cityId: string,
+  cellSizeM: number,
 ): Promise<NeighbourPair[]> {
   const rows = await sql<NeighbourPair[]>`
-    select cell_id, neighbour_id from private.grid_cell_neighbours(${snapshotId}, ${cityId})
+    select cell_id, neighbour_id from private.grid_cell_neighbours(${cityId}, ${cellSizeM})
   `;
   return [...rows];
 }

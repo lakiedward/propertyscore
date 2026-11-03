@@ -201,7 +201,7 @@ export const fifteenMinuteModule: ScoreModule = {
         listCellIds(sql, snapshotId, city.id),
         listWalkAccess(sql, snapshotId, city.id, poiCategories),
         listCityCategoryStats(sql, snapshotId, city.id, poiCategories),
-        listNeighbourPairs(sql, snapshotId, city.id),
+        listNeighbourPairs(sql, city.id, context.cellSizeM),
       ]);
       const rows = cellScoreRows(cellIds, records, stats, params, (scores) =>
         smoothScores(scores, pairs, {

@@ -3,8 +3,6 @@ alter table private.poi_features
 
 comment on column private.poi_features.area is 'Outline of a point of interest that is an area (a park); walking targets use its point closest to the origin.';
 
-create index grid_cells_center_idx on private.grid_cells using gist (center);
-
 create index poi_features_reach_idx on private.poi_features
   using gist ((coalesce(area, location)));
 
@@ -201,25 +199,6 @@ begin
   get diagnostics v_count = row_count;
   return v_count;
 end;
-$$;
-
-create function private.grid_cell_neighbours(p_snapshot_id uuid, p_city_id uuid)
-returns table (cell_id uuid, neighbour_id uuid)
-language sql
-stable
-set search_path = ''
-as $$
-  select a.id, b.id
-  from private.cell_scores csa
-  join private.grid_cells a on a.id = csa.cell_id
-  join private.cell_scores csb on csb.snapshot_id = csa.snapshot_id
-  join private.grid_cells b on b.id = csb.cell_id
-  where csa.snapshot_id = p_snapshot_id
-    and a.city_id = p_city_id
-    and b.city_id = p_city_id
-    and b.size_m = a.size_m
-    and b.id <> a.id
-    and extensions.st_dwithin(a.center, b.center, a.size_m * 1.9);
 $$;
 
 create function private.cell_score_percentile(p_snapshot_id uuid, p_city_id uuid, p_category text, p_score numeric)
