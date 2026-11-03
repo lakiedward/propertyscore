@@ -4,7 +4,6 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(12);
 
-
 select id as sibiu_id from public.cities where slug = 'sibiu' \gset
 
 select ok(
@@ -39,13 +38,13 @@ insert into private.cnas_providers (city_id, kind, name, location, list_date, so
 values
   (:'sibiu_id', 'pharmacy', 'Farmacia Veche', extensions.st_point(24.15, 45.79, 4326)::extensions.geography, '2026-06-30', 'cas-sibiu-2026-06.xlsx'),
   (:'sibiu_id', 'pharmacy', 'Farmacia Nouă', extensions.st_point(24.151, 45.791, 4326)::extensions.geography, '2026-09-30', 'cas-sibiu-2026-09.xlsx'),
-  (:'sibiu_id', 'family_doctor', 'Dr. Fără Adresă', null, '2026-09-30', 'cas-sibiu-2026-09.xlsx'),
+  (:'sibiu_id', 'family_doctor', 'Dr. Fără Adresă', null, '2026-03-31', 'cas-sibiu-medici-2026-03.xlsx'),
   (:'sibiu_id', 'pharmacy', 'Farmacia Viitoare', null, '2026-12-31', 'cas-sibiu-2026-12.xlsx');
 
 select results_eq(
   format($$ select name, longitude is null from private.list_cnas_providers(%L, '2026-11-01') $$, :'sibiu_id'),
   $$ values ('Farmacia Nouă'::text, false), ('Dr. Fără Adresă'::text, true) $$,
-  'Only the latest CNAS list published before the snapshot is read, ungeocoded rows included'
+  'Each provider kind reads its own latest list published before the snapshot, ungeocoded rows included'
 );
 
 set local role anon;

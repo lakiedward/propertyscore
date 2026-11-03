@@ -77,7 +77,7 @@ export async function listCnasProviders(sql: Sql, cityId: string, on: string): P
     from private.list_cnas_providers(${cityId}, ${on}::date)
   `;
   return {
-    listDate: rows[0]?.list_date ?? null,
+    listDate: rows.map((row) => row.list_date).sort()[0] ?? null,
     providers: rows.map((row) => ({
       id: row.id,
       kind: row.kind,
