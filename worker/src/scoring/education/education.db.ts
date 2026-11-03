@@ -88,7 +88,10 @@ export async function writeEducationStats(
 ): Promise<void> {
   await sql`
     update public.score_snapshots
-    set stats = stats || jsonb_build_object('education', ${sql.json(stats)}::jsonb)
+    set stats = stats || jsonb_build_object(
+      'education',
+      coalesce(stats -> 'education', '{}'::jsonb) || ${sql.json(stats)}::jsonb
+    )
     where id = ${snapshotId}
   `;
 }

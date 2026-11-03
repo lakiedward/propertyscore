@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(24);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -81,6 +81,53 @@ select is(
   'A manual review decision survives the next import'
 );
 
+select private.upsert_education_institutions(
+  :'sibiu_id',
+  '2026-11-01',
+  $$[{"siiir_code": "3261100004", "osm_ref": "osm:way/10", "name": "Școala Gimnazială nr. 4", "levels": ["primary", "lower_secondary"], "lng": 24.1500, "lat": 45.7970, "location_precision": "osm", "match_status": "matched"}]$$::jsonb
+);
+
+select is(
+  (select siiir_code from private.education_institutions where osm_ref = 'osm:way/10'),
+  '3261100004',
+  'An OSM unit matched to another register code moves to it instead of failing the import'
+);
+
+select is(
+  (select match_status || ':' || coalesce(osm_ref, '-') from private.education_institutions where siiir_code = '3261100001'),
+  'siiir_only:-',
+  'The previous holder of the OSM unit becomes a register-only unit'
+);
+
+select private.upsert_education_institutions(
+  :'sibiu_id',
+  '2026-11-01',
+  $$[{"siiir_code": "3261100005", "osm_ref": "osm:node/20", "name": "Liceul Teoretic Y", "levels": ["upper_secondary"], "lng": 24.1550, "lat": 45.7990, "location_precision": "osm", "match_status": "matched"}]$$::jsonb
+);
+
+select is(
+  (select coalesce(n.osm_ref, '-') || ':' || o.siiir_code
+   from private.education_institutions n, private.education_institutions o
+   where n.siiir_code = '3261100005' and o.osm_ref = 'osm:node/20'),
+  '-:3261100003',
+  'A reviewed unit keeps its OSM unit and the newcomer stays register-only'
+);
+
+insert into private.education_institutions (city_id, osm_ref, name, levels, location, location_precision, match_status, last_seen_on, reviewed_at)
+values (:'sibiu_id', 'osm:node/30', 'Grădinița Z', '{kindergarten}', extensions.st_point(24.151, 45.798, 4326)::extensions.geography, 'osm', 'manual', '2026-10-01', now());
+
+select private.upsert_education_institutions(
+  :'sibiu_id',
+  '2026-10-01',
+  $$[{"siiir_code": "3261100006", "osm_ref": "osm:node/30", "name": "Grădinița PP 6", "levels": ["kindergarten"], "lng": 24.151, "lat": 45.798, "location_precision": "osm", "match_status": "matched"}]$$::jsonb
+);
+
+select is(
+  (select siiir_code || ':' || match_status from private.education_institutions where osm_ref = 'osm:node/30'),
+  '3261100006:manual',
+  'A reviewed OSM unit gets the register code once it is matched'
+);
+
 select throws_ok(
   $$ select private.upsert_education_institutions('00000000-0000-4000-8000-000000000000', '2026-11-01', '[]') $$,
   'P0001',
@@ -129,12 +176,12 @@ select private.seed_cell_scores(:'snapshot_id', :'sibiu_id');
 
 select is(
   private.copy_education_pois(:'snapshot_id', :'sibiu_id', '2026-11-01'),
-  1,
-  'Only placed, not excluded units reach the points of interest, once per category'
+  3,
+  'Placed, not excluded units seen in this import or reviewed reach the points of interest, once per category'
 );
 
 select is(
-  (select category from private.poi_features where snapshot_id = :'snapshot_id' and source_ref = 'siiir:3261100001'),
+  (select category from private.poi_features where snapshot_id = :'snapshot_id' and source_ref = 'siiir:3261100004'),
   'education_school',
   'Primary and lower secondary levels share the school category'
 );

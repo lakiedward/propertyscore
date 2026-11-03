@@ -52,6 +52,8 @@ declare
   v_row record;
   v_existing private.education_institutions%rowtype;
   v_location extensions.geography;
+  v_osm_ref text;
+  v_match_status text;
   v_count integer := 0;
 begin
   if not exists (select 1 from public.cities c where c.id = p_city_id) then
@@ -90,12 +92,36 @@ begin
       where i.osm_ref = v_row.osm_ref and (i.siiir_code is null or v_row.siiir_code is null);
     end if;
 
-    if v_row.osm_ref is not null then
+    v_osm_ref := v_row.osm_ref;
+    v_match_status := v_row.match_status;
+
+    if v_osm_ref is not null then
       delete from private.education_institutions i
-      where i.osm_ref = v_row.osm_ref
+      where i.osm_ref = v_osm_ref
         and i.id is distinct from v_existing.id
         and i.siiir_code is null
         and i.reviewed_at is null;
+
+      update private.education_institutions i
+      set osm_ref = null, location = null, location_precision = null, match_status = 'siiir_only'
+      where i.osm_ref = v_osm_ref
+        and i.id is distinct from v_existing.id
+        and i.siiir_code is not null
+        and i.reviewed_at is null;
+
+      if exists (
+        select 1 from private.education_institutions i
+        where i.osm_ref = v_osm_ref and i.id is distinct from v_existing.id
+      ) then
+        v_osm_ref := null;
+        if v_match_status = 'matched' then
+          v_match_status := 'siiir_only';
+        end if;
+      end if;
+    end if;
+
+    if v_osm_ref is null and v_row.siiir_code is null then
+      continue;
     end if;
 
     if v_existing.id is null then
@@ -105,14 +131,15 @@ begin
         source_date, last_seen_on
       )
       values (
-        p_city_id, v_row.siiir_code, v_row.parent_siiir_code, v_row.osm_ref, v_row.name,
+        p_city_id, v_row.siiir_code, v_row.parent_siiir_code, v_osm_ref, v_row.name,
         v_row.levels, coalesce(v_row.ownership, 'unknown'), v_row.teaching_languages,
-        v_row.address_text, v_location, v_row.location_precision, v_row.match_status,
+        v_row.address_text, v_location, v_row.location_precision, v_match_status,
         v_row.source_date, p_seen_on
       );
     elsif v_existing.reviewed_at is not null then
       update private.education_institutions i
       set
+        siiir_code = coalesce(i.siiir_code, v_row.siiir_code),
         name = coalesce(v_row.name, i.name),
         parent_siiir_code = coalesce(v_row.parent_siiir_code, i.parent_siiir_code),
         levels = v_row.levels,
@@ -128,7 +155,7 @@ begin
         city_id = p_city_id,
         siiir_code = coalesce(v_row.siiir_code, i.siiir_code),
         parent_siiir_code = v_row.parent_siiir_code,
-        osm_ref = v_row.osm_ref,
+        osm_ref = v_osm_ref,
         name = v_row.name,
         levels = v_row.levels,
         ownership = coalesce(v_row.ownership, 'unknown'),
@@ -136,7 +163,7 @@ begin
         address_text = v_row.address_text,
         location = v_location,
         location_precision = v_row.location_precision,
-        match_status = v_row.match_status,
+        match_status = v_match_status,
         source_date = v_row.source_date,
         last_seen_on = p_seen_on
       where i.id = v_existing.id;
@@ -192,7 +219,7 @@ begin
   from private.education_institutions i
   cross join lateral unnest(i.levels) as level (value)
   where i.city_id = p_city_id
-    and i.last_seen_on = p_seen_on
+    and (i.last_seen_on = p_seen_on or i.reviewed_at is not null)
     and i.location is not null
     and i.match_status <> 'excluded'
   on conflict (snapshot_id, source_ref, category) do nothing;
