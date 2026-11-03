@@ -75,6 +75,7 @@ export const educationReportSection: ReportSection = {
       schema_version: 1,
       status: 'scored',
       distance_method: inputs.data.distance_method,
+      institutions_distance_method: 'straight_line',
       levels: SCORED_LEVELS.map((level) => ({
         key: level,
         nearest_min: inputs.data.levels[level].t1,

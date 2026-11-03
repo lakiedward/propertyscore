@@ -49,6 +49,8 @@ function areaFeatures(geometry: SectionGeometry, properties: Record<string, stri
   return [];
 }
 
+const NOISE_RING_M = 500;
+
 const NOISE_FILL_OPACITY = [0.12, 0.2, 0.3, 0.42, 0.55] as const;
 
 export function noiseBandIndex(dbLow: number, bands: readonly number[]): number {
@@ -100,7 +102,7 @@ export function noiseOverlays(
       colorToken: '--info',
       width: 1.5,
       isVisible: true,
-      data: ringOverlay('noise-ring', position, 500),
+      data: ringOverlay('noise-ring', position, NOISE_RING_M),
     },
   ];
 }

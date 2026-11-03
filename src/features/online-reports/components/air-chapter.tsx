@@ -70,35 +70,40 @@ export function AirChapter({ section }: AirChapterProps) {
         lead={t('air.months.lead', { count: overLimit, limit: micrograms(section.limits.pm25) })}
       >
         <figure className="flex flex-col gap-2">
-          <ol
-            aria-label={t('air.months.chartLabel')}
-            className="relative grid h-40 grid-flow-col items-end gap-1.5"
-          >
+          <div className="relative h-40">
             <span
               aria-hidden
               style={{ bottom: `${String((section.limits.pm25 / chartMax) * 100)}%` }}
               className="absolute inset-x-0 border-t-2 border-dashed border-category-safety"
             />
-            {section.months.map((month, index) => {
-              const value = section.pm25_monthly[index] ?? null;
-              const isOver = value !== null && value > section.limits.pm25;
-              return (
-                <li key={month} className="flex h-full flex-col justify-end">
-                  <span
-                    aria-label={t('air.months.bar', {
-                      month: monthName(month),
-                      value: value === null ? t('air.months.noValue') : micrograms(value),
-                    })}
-                    style={{ height: `${String(((value ?? 0) / chartMax) * 100)}%` }}
-                    className={cn(
-                      'block min-h-0.5 rounded-t-sm',
-                      value === null ? 'bg-border' : isOver ? 'bg-category-safety' : hue.fill,
-                    )}
-                  />
-                </li>
-              );
-            })}
-          </ol>
+            <ol
+              aria-label={t('air.months.chartLabel')}
+              className="grid h-full grid-flow-col items-end gap-1.5"
+            >
+              {section.months.map((month, index) => {
+                const value = section.pm25_monthly[index] ?? null;
+                const isOver = value !== null && value > section.limits.pm25;
+                return (
+                  <li key={month} className="flex h-full flex-col justify-end">
+                    <span className="sr-only">
+                      {t('air.months.bar', {
+                        month: monthName(month),
+                        value: value === null ? t('air.months.noValue') : micrograms(value),
+                      })}
+                    </span>
+                    <span
+                      aria-hidden
+                      style={{ height: `${String(((value ?? 0) / chartMax) * 100)}%` }}
+                      className={cn(
+                        'block min-h-0.5 rounded-t-sm',
+                        value === null ? 'bg-border' : isOver ? 'bg-category-safety' : hue.fill,
+                      )}
+                    />
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
           <figcaption className="flex justify-between text-meta text-muted-foreground">
             <span>{firstMonth ? shortMonth(firstMonth) : ''}</span>
             <span>{t('air.months.limitLegend', { limit: micrograms(section.limits.pm25) })}</span>

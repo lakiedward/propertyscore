@@ -1,6 +1,6 @@
 import { buildFifteenMinuteSection } from '@/test/factories/online-report';
 import { extremeMonths } from './air-section.utils';
-import { lineFeatures, noiseBandIndex } from './chapter-layers';
+import { lineFeatures, noiseBandIndex } from './chapter-layers.utils';
 import { nearestPerGroup, placesWithin } from './fifteen-minute-section.utils';
 import { fifteenMinuteSectionSchema } from './online-report.schemas';
 

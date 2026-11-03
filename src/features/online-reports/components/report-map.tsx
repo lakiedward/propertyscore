@@ -5,7 +5,7 @@ import type { MapMarkerItem, MapOverlay } from '@/components/map/map-canvas';
 import type { LngLat, LngLatBounds } from '@/components/map/map.config';
 import { cn } from '@/lib/utils';
 import { useRadiusLabel } from '../hooks/use-radius-label';
-import { ringOverlay } from '../chapter-layers';
+import { ringOverlay } from '../chapter-layers.utils';
 import { circleRing } from '../online-report.utils';
 import type { GreenPark, ScoredGreenSection } from '../online-report.types';
 import type { CategoryKey } from '../online-report.utils';

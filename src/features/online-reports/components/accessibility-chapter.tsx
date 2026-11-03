@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { formatNumber } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import type { ScoredAccessibilitySection } from '../online-report.types';
+import { isDarkColour } from '../online-report.utils';
 import { categoryClasses } from './category-style';
 import { ChapterFacts } from './chapter-facts';
 import { ChapterLimits } from './chapter-limits';
@@ -138,7 +139,13 @@ export function AccessibilityChapter({ section, selectedId, onSelect }: Accessib
                 <span
                   className={cn(
                     'rounded-sm px-1.5 py-0.5 text-meta font-extrabold',
-                    route.colour ? undefined : hue.tile,
+                    route.colour === null
+                      ? hue.tile
+                      : route.text_colour === null
+                        ? isDarkColour(route.colour)
+                          ? 'text-on-inverse'
+                          : 'text-foreground'
+                        : undefined,
                   )}
                   style={
                     route.colour

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { LngLat } from '@/components/map/map.config';
-import { isochroneOverlays, noiseOverlays } from '../chapter-layers';
+import { isochroneOverlays, noiseOverlays } from '../chapter-layers.utils';
 import { nearestPerGroup } from '../fifteen-minute-section.utils';
 import type { ReportMapLayer } from '../components/report-map';
 import type { ReportResult } from '../online-report.types';
@@ -9,7 +9,7 @@ import type { ChapterId } from '../online-report.utils';
 type ChapterMapLayerInput = {
   chapter: ChapterId;
   result: ReportResult;
-  position: LngLat;
+  position: LngLat | null;
   selectedId: string | null;
   onSelect: (id: string) => void;
   isNight: boolean;
@@ -25,6 +25,8 @@ export function useChapterMapLayer({
 }: ChapterMapLayerInput): ReportMapLayer | undefined {
   const { t, i18n } = useTranslation('onlineReports');
   const common = { selectedId, onSelect };
+
+  if (position === null) return undefined;
 
   if (chapter === 'noise' && result.noise?.status === 'scored') {
     return {

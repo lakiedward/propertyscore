@@ -91,7 +91,7 @@ function ReadyReport({ report, result, chapter, onChapterChange }: ReadyReportPr
   const chapterLayer = useChapterMapLayer({
     chapter,
     result,
-    position: position ?? [0, 0],
+    position,
     selectedId,
     onSelect: selectPlace,
     isNight: moment === 'night',

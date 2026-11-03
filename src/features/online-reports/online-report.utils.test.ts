@@ -5,6 +5,7 @@ import {
   chapterOfCategory,
   circleRing,
   histogramBin,
+  isDarkColour,
   nextChapter,
   reportCode,
   reportHighlights,
@@ -133,5 +134,13 @@ describe('online report utils', () => {
     const north = ring[0] ?? center;
     const metresNorth = ((north[1] - center[1]) * Math.PI * 6_371_008.8) / 180;
     expect(metresNorth).toBeCloseTo(500, 0);
+  });
+});
+
+describe('isDarkColour', () => {
+  it('tells dark route colours from light ones', () => {
+    expect(isDarkColour('#C0392B')).toBe(true);
+    expect(isDarkColour('#F6C93E')).toBe(false);
+    expect(isDarkColour('red')).toBe(false);
   });
 });
