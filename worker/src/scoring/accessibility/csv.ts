@@ -1,7 +1,7 @@
 import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
 
-export function splitCsvLine(line: string): { fields: string[]; isOpen: boolean } {
+function splitCsvLine(line: string): { fields: string[]; isOpen: boolean } {
   const fields: string[] = [];
   let field = '';
   let isQuoted = false;

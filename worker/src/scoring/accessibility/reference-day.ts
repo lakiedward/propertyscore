@@ -46,7 +46,7 @@ export function romanianPublicHolidays(year: number): Set<string> {
   ]);
 }
 
-export function isoWeekday(date: Date): number {
+function isoWeekday(date: Date): number {
   const day = date.getUTCDay();
   return day === 0 ? 7 : day;
 }

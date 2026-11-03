@@ -11,7 +11,7 @@ export type StopRouteLink = {
   departuresPerHour: number | null;
 };
 
-export const STOP_GROUP_RADIUS_M = 200;
+const STOP_GROUP_RADIUS_M = 200;
 
 function normaliseName(name: string): string {
   return name

@@ -22,10 +22,10 @@ import {
 
 const run = promisify(execFile);
 
-export type OplNode = LngLat & { id: string; tags: Record<string, string> };
-export type OplWay = { id: string; nodeIds: string[] };
-export type OplMember = { type: 'n' | 'w' | 'r'; id: string; role: string };
-export type OplRelation = { id: string; tags: Record<string, string>; members: OplMember[] };
+type OplNode = LngLat & { id: string; tags: Record<string, string> };
+type OplWay = { id: string; nodeIds: string[] };
+type OplMember = { type: 'n' | 'w' | 'r'; id: string; role: string };
+type OplRelation = { id: string; tags: Record<string, string>; members: OplMember[] };
 
 export type OplData = {
   nodes: Map<string, OplNode>;

@@ -18,7 +18,7 @@ export type StopService = {
   departuresPerHour: number | null;
 };
 
-export type RouteAccess = {
+type RouteAccess = {
   routeKey: string;
   stopKey: string;
   walkMinutes: number;

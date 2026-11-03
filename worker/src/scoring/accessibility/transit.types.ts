@@ -34,16 +34,7 @@ export type TransitNetwork = {
   patterns: TransitPattern[];
 };
 
-export const DESTINATION_KINDS = [
-  'center',
-  'station',
-  'university',
-  'hospital',
-  'mall',
-  'airport',
-] as const;
-
-export type DestinationKind = (typeof DESTINATION_KINDS)[number];
+export type DestinationKind = 'center' | 'station' | 'university' | 'hospital' | 'mall' | 'airport';
 
 export type KeyDestination = LngLat & {
   id: string;

@@ -13,7 +13,7 @@ const run = promisify(execFile);
 
 export const ROUTE_SCRIPT = fileURLToPath(new URL('../../../transit/route.py', import.meta.url));
 
-export type RoutingPoint = LngLat & { id: string };
+type RoutingPoint = LngLat & { id: string };
 
 export type RoutingJob = {
   osmPbf: string;
@@ -77,10 +77,7 @@ function nested<T>(map: Map<string, Map<string, T>>, outer: string): Map<string,
   return created;
 }
 
-export async function readRoutingOutputs(
-  outputDir: string,
-  withMatrix: boolean,
-): Promise<RoutingResult> {
+async function readRoutingOutputs(outputDir: string, withMatrix: boolean): Promise<RoutingResult> {
   const walkToStops = new Map<string, { stopId: string; minutes: number }[]>();
   for await (const row of readCsvRecords(join(outputDir, 'walk_stops.csv'))) {
     const minutes = optionalNumber(row.minutes);

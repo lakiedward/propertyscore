@@ -12,7 +12,7 @@ const modeSchema = z.object({
   osm_speed_kmh: z.number().positive().max(80),
 });
 
-export const accessibilityParamsSchema = z.object({
+const accessibilityParamsSchema = z.object({
   weights: z.object({
     access: z.number().min(0),
     travel: z.number().min(0),

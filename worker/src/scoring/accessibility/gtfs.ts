@@ -64,7 +64,7 @@ export function nonEmpty(value: string | undefined): string | null {
   return value === undefined || value === '' ? null : value;
 }
 
-export function gtfsDate(value: string): string | null {
+function gtfsDate(value: string): string | null {
   const match = /^(\d{4})(\d{2})(\d{2})$/.exec(value);
   return match ? `${match[1]}-${match[2]}-${match[3]}` : null;
 }
