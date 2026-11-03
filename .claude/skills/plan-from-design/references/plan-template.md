@@ -51,7 +51,7 @@ For each table: status (exists / extend / create), then
 Schema checkpoint after: <plan step>
 
 ## 6. Backend logic
-The table from `requirements-analysis.md` §5. Scheduled jobs and state transitions included.
+The table from `requirements-analysis.md` §5. Scheduled jobs, worker jobs and state transitions included, each with where it runs and why; work placed outside Supabase names its hand-off (the status or job row) and any new service, binary or variable it needs.
 
 ## 7. Auth and access
 The table from `requirements-analysis.md` §6, plus sign-in methods, redirects, email templates and `config.toml` changes.
@@ -99,7 +99,7 @@ Numbered; each with options and a recommendation. All are answered before approv
 One block per plan step, in order. Each block:
 
 ### P1 · <name>
-- Slices: database → schema checkpoint → Edge Functions → data access → translations → tokens and shared components → feature components → routes → tests
+- Slices: database → schema checkpoint → Edge Functions and worker jobs → data access → translations → tokens and shared components → feature components → routes → tests
 - Files: created and changed, grouped by layer
 - Done when: concrete checks for what this step builds (the screen renders its seeded data in RO and EN, a denied RLS case fails, …), plus the screen's design fidelity check
 

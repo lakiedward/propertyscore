@@ -54,7 +54,7 @@ Runs only when the user supplies a design and no step. It is read-only and ends 
 
 Launch two read-only subagents (`Explore`) in the same message. Each returns a compact report with `file:line` references, never file dumps.
 
-- **Code and schema subagent.** Follow `references/gap-analysis.md` §3 and §4: it reads the cheap indexes first, then only the files that matter for this step, and returns every item of the step labelled `implemented`, `partial`, `missing`, `extra` or `diverged`, plus reusable components, hooks, query factories, translation namespaces and existing tables.
+- **Code and schema subagent.** Follow `references/gap-analysis.md` §3 and §4: it reads the cheap indexes first, then only the files that matter for this step, and returns every item of the step labelled `implemented`, `partial`, `missing`, `extra` or `diverged`, plus reusable components, hooks, query factories, translation namespaces and existing tables, and the integration inventory of `.claude/rules/architecture.md` §1 confirmed against the code (Edge Functions, `pg_cron` jobs, worker commands and Railway services, providers) for what the step could use.
 - **Design subagent.** Follow `references/design-analysis.md`: it normalises the design input, reuses the cached spec when the hash matches, otherwise builds a design spec for this step's screens only, mapping every colour and element to the design system (`.claude/rules/design-system.md`) and every block of the export's HTML, CSS and JavaScript to the project stack (`references/design-analysis.md` §8), and returns the spec path plus the mapping and any design-system deviations.
 
 If §10.7 records a commit for this step or its dependencies, tell the code subagent to start from `git diff --stat <commit>..HEAD` and examine only what changed since.
@@ -66,7 +66,8 @@ Combine the two reports with the plan, using the source precedence in `reference
 1. The gap table for the step (plan vs code and schema).
 2. The design vs plan comparison, classified with the five cases in `references/design-analysis.md` §6, and the design vs design-system deviations from §5.
 3. The reuse list: existing components, hooks, queries, tables and translation keys to use as they are or extend.
-4. Conflicts and open questions. A `diverged` item or a design contradiction is always a question for the user, never a silent fix.
+4. The integration choice, following `.claude/rules/architecture.md`: for every behaviour of the step (read, write, rule, scheduled task, document, provider call), the integrated pieces that could serve it (Postgres and RPC, Auth, Storage, Edge Functions, `pg_cron`, the Railway worker and its services, the frontend, maps, monitoring), the one that fits best and why, and the existing code it reuses. Prefer what is integrated, then extending it (a new RPC, a worker command, a worker service from the same Dockerfile), and only then something new, which is a decision for the user. Where the plan places work differently (an Edge Function for a PDF the rule sends to the worker), the rule wins and the difference is a plan update.
+5. Conflicts and open questions. A `diverged` item or a design contradiction is always a question for the user, never a silent fix.
 
 Read source files yourself only where the reports leave a real doubt.
 

@@ -59,10 +59,11 @@ From the matrix, list every table the scope reads or writes and, for each one:
 
 For each server-side behaviour the scope needs:
 
-| Behaviour | Where | Trigger | Rules enforced | Errors (codes) | Design ref |
-| Search listings in view | RPC `search_listings` | map moved, toggle changed | published only, transaction filter | `invalid_bbox` | Home #proprietati |
+| Behaviour | Where | Why there | Trigger | Rules enforced | Errors (codes) | Design ref |
+| Search listings in view | RPC `search_listings` | read with filters, fits SQL | map moved, toggle changed | published only, transaction filter | `invalid_bbox` | Home #proprietati |
+| Download the report as PDF | worker on Railway | Chromium, images, can outrun Edge Function limits | RPC sets `pdf_status = 'generating'` | owner only | `pdf_failed` | Report header "Descarcă PDF" |
 
-Choose the place with `.claude/rules/supabase.md`: SQL functions for business rules and multi-table writes, Edge Functions only for third-party APIs with secrets, webhooks and secret-key work, `pg_cron` for timeouts. Frontend code never enforces a rule the database does not also enforce.
+Choose the place with `.claude/rules/architecture.md`: list the integrated pieces that could serve the behaviour, weigh them (§2) and write the options considered into "Why there". The defaults (§3): SQL functions for business rules and multi-table writes, `pg_cron` for timeouts, Edge Functions only for short third-party calls with secrets, webhooks and secret-key work, a command of the existing Railway worker for long or heavy jobs (document rendering, imports, system binaries, retries), handed off through a status or job row the frontend follows. Something not yet integrated is an open question with options, cost and a recommendation. Frontend code never enforces a rule the database does not also enforce.
 
 ## 6. Auth and access
 

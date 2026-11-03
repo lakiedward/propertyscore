@@ -557,7 +557,13 @@ Use an Edge Function for:
 - webhooks from external services;
 - work that needs the secret key or must not run with the user's privileges.
 
-Don't use one for plain CRUD or for logic that fits in a Postgres function; RLS and RPC cover that.
+Don't use one for plain CRUD or for logic that fits in a Postgres function; RLS and RPC cover that. Don't use one for long or heavy jobs either: they go to the worker (below).
+
+### Work outside Supabase (the worker on Railway)
+
+Edge Functions have wall-clock, CPU and memory limits, run Deno only and cannot start a headless browser or a system binary. Jobs that hit any of these (rendering PDFs with photos, building the scoring snapshot, importing large datasets, anything that must retry) run in the `worker/` package on Railway, which connects to Postgres directly and writes results through `private` functions. The database stays the system of record: an RPC records the request, the worker does the work, the frontend follows the status. `.claude/rules/architecture.md` lists what is integrated and how to choose among it for each behaviour: integrated pieces first, then extending them, and a new service only when the user approves it.
+
+Rejected: a custom API server in front of Supabase (it would duplicate Auth, RLS and Storage for no security gain), doing heavy jobs in Edge Functions (time limits, no Chromium), and scheduled GitHub Actions as the job runner (no queue, slow start, secrets spread across another platform).
 
 Rules:
 - One folder per function (`supabase/functions/<kebab-name>/index.ts`), with shared code in `_shared/`.

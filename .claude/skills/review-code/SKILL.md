@@ -57,7 +57,7 @@ Launch the reviewers below as `general-purpose` subagents **in one message** so 
 | Reviewer | Covers | Reference |
 | --- | --- | --- |
 | **Frontend rules** | `react.md`, `styling.md`, `design-system.md`, `i18n.md`, accessibility, routing, forms, feature boundaries, naming, the no-comments rule in `src/` | `rules-checklist.md` §2.1–2.5, §2.9 |
-| **Data and backend rules** | `data-api.md`, `supabase.md`: data-access shape, query factories, errors, auth, env, logging, migrations, RLS, Storage, Edge Functions, email templates, secrets | `rules-checklist.md` §2.6–2.7, §2.9 |
+| **Data and backend rules** | `data-api.md`, `supabase.md`, `architecture.md`: where each behaviour runs and reuse of integrated pieces, data-access shape, query factories, errors, auth, env, logging, migrations, RLS, Storage, Edge Functions, email templates, secrets | `rules-checklist.md` §2.6–2.7, §2.9 |
 | **Tests** | `testing.md`, `e2e.md`: missing tests the rules require, test quality, mocking rules, pgTAP coverage of every policy | `rules-checklist.md` §2.8 |
 | **Correctness and security** | logic bugs, edge cases, race conditions, error paths, broken callers, authorization gaps, data leaks | `quality-checklist.md` §1–2 |
 | **Performance** | rendering, data fetching, bundle size, images and maps, database queries, indexes and RLS cost | `quality-checklist.md` §3 |
