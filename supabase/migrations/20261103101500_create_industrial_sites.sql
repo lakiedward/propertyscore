@@ -24,10 +24,10 @@ create table private.industrial_sites (
   imported_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint industrial_sites_facility_year_key unique (source_facility_id, reporting_year)
+  constraint industrial_sites_facility_year_version_key unique (source_facility_id, reporting_year, source_version)
 );
 
-comment on table private.industrial_sites is 'Romanian facilities from the EEA industrial emissions register (IED / E-PRTR), one row per facility and reporting year; the Industry score input.';
+comment on table private.industrial_sites is 'Romanian facilities from the EEA industrial emissions register (IED / E-PRTR), one row per facility, reporting year and dataset version; the Industry score input.';
 
 create index industrial_sites_location_idx on private.industrial_sites using gist (location);
 create index industrial_sites_year_idx on private.industrial_sites (reporting_year, source_version);
@@ -53,7 +53,7 @@ create table private.industrial_site_overrides (
   constraint industrial_site_overrides_changes_something check (location is not null or name_override is not null)
 );
 
-comment on table private.industrial_site_overrides is 'Manual corrections of EEA facility positions and names, applied again after every import.';
+comment on table private.industrial_site_overrides is 'Manual corrections of EEA facility positions and names, applied again at every snapshot build.';
 
 create index industrial_site_overrides_created_by_idx on private.industrial_site_overrides (created_by);
 

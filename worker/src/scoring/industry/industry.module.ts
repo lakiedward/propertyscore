@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
 import type { JsonObject } from '../../db/sql.ts';
-import { errorCode, WorkerError } from '../../lib/errors.ts';
+import { WorkerError } from '../../lib/errors.ts';
 import { downloadOnce } from '../../sources/download.ts';
 import type { ScoreModule } from '../score-module.ts';
 import { writeCategoryScores, type CellCategoryScore } from '../write-category-scores.ts';
@@ -15,6 +15,7 @@ import {
   RELEASE_COLUMNS,
 } from './eea-register.ts';
 import {
+  finishRegisterImport,
   importedReportingYear,
   listCellSitePairs,
   listCityCells,
@@ -105,7 +106,20 @@ async function ensureRegister(
   const { sql, logger } = context;
   const { version, url, country } = params.dataset;
   const imported = await importedReportingYear(sql, version);
-  if (imported !== null) return imported;
+  if (imported !== null) {
+    const summary = await finishRegisterImport(sql, {
+      version,
+      reportingYear: imported,
+      radiusM: params.radius_m,
+      suspectCenterM: params.suspect_center_m,
+    });
+    logger.info('industrial register corrections applied', {
+      version,
+      reporting_year: imported,
+      ...summary,
+    });
+    return imported;
+  }
 
   const zipPath = await downloadOnce(
     url,
@@ -164,16 +178,8 @@ export const industryModule: ScoreModule = {
     const params = parseIndustryParams(context.params);
     const { version } = params.dataset;
 
-    let reportingYear: number | null;
-    let reason = 'no_source_data';
-    try {
-      reportingYear = await ensureRegister(context, params);
-    } catch (error) {
-      reason = errorCode(error);
-      if (reason === 'unknown' || reason === 'invalid_industry_params') throw error;
-      logger.warn('industrial register unavailable', { code: reason });
-      reportingYear = null;
-    }
+    const reportingYear = await ensureRegister(context, params);
+    const reason = 'no_source_data';
 
     const sites = reportingYear === null ? [] : await listStoredSites(sql, version, reportingYear);
     const siteMap = new Map(sites.map((site) => [site.id, site]));

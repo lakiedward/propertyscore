@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createSql, type Sql } from '../../db/sql.ts';
 import { createLogger } from '../../lib/logger.ts';
-import { failSnapshot, prepareCityCells, startSnapshot } from '../../snapshot/snapshot.db.ts';
+import { prepareCityCells } from '../../snapshot/snapshot.db.ts';
 import { storeRegisterSites } from './industry.db.ts';
 import { industryModule } from './industry.module.ts';
 import { buildIndustryReport } from './industry.report.ts';
@@ -15,8 +15,8 @@ describe.skipIf(!databaseUrl)('industryModule against the local database', () =>
   let sql: Sql;
   let params: Record<string, unknown>;
   let snapshotId = '';
-  let city = { id: '', slug: 'sibiu', name: 'Sibiu' };
-  let hadSibiuCells = false;
+  let city = { id: '', slug: 'craiova', name: 'Craiova' };
+  let hadCityCells = false;
 
   beforeAll(async () => {
     sql = createSql(databaseUrl ?? '');
@@ -29,32 +29,32 @@ describe.skipIf(!databaseUrl)('industryModule against the local database', () =>
         exists (select 1 from private.grid_cells g where g.city_id = c.id) as has_cells
       from public.scoring_versions v
       cross join public.cities c
-      where v.kind = 'online' and v.label = 'v1' and c.slug = 'sibiu'
+      where v.kind = 'online' and v.label = 'v1' and c.slug = 'craiova'
     `;
-    if (!row) throw new Error('v1 or Sibiu is missing from the local database');
-    hadSibiuCells = row.has_cells;
+    if (!row) throw new Error('v1 or Craiova is missing from the local database');
+    hadCityCells = row.has_cells;
     city = { ...city, id: row.city_id };
     params = {
       ...row.params,
       dataset: { ...(row.params.dataset as object), version: VERSION },
     };
-    await sql`
-      update public.score_snapshots
-      set status = 'failed', finished_at = now(), error_code = 'test_setup'
-      where status = 'building'
+    const [snapshot] = await sql<{ id: string }[]>`
+      insert into public.score_snapshots (scoring_version_id, period, status, finished_at, error_code)
+      select id, '2026-11-01', 'failed', now(), 'industry_test_fixture'
+      from public.scoring_versions
+      where kind = 'online' and label = 'v1'
+      returning id
     `;
-    const version = await startSnapshot(sql, '2026-11-01');
-    snapshotId = version.snapshotId;
+    snapshotId = snapshot?.id ?? '';
     await prepareCityCells(sql, snapshotId, city.id, 175);
   });
 
   afterAll(async () => {
     await sql`delete from private.industrial_sites where source_version = ${VERSION}`;
     if (snapshotId) {
-      await failSnapshot(sql, snapshotId, 'test_cleanup');
       await sql`delete from public.score_snapshots where id = ${snapshotId}`;
     }
-    if (!hadSibiuCells) {
+    if (!hadCityCells) {
       await sql`delete from private.grid_cells where city_id = ${city.id}`;
     }
     await sql.end({ timeout: 5 });
@@ -71,8 +71,8 @@ describe.skipIf(!databaseUrl)('industryModule against the local database', () =>
           sourceFacilityId: 'VITEST/PLANT',
           reportingYear: 2024,
           name: 'Uzina de test',
-          longitude: 24.17,
-          latitude: 45.8,
+          longitude: 23.82,
+          latitude: 44.33,
           sectorCode: 'metals',
           mainActivityCode: '2(b)',
           impactCodes: ['air'],
@@ -83,8 +83,8 @@ describe.skipIf(!databaseUrl)('industryModule against the local database', () =>
           sourceFacilityId: 'VITEST/FAR',
           reportingYear: 2024,
           name: 'Departe',
-          longitude: 26,
-          latitude: 44.5,
+          longitude: 25,
+          latitude: 46,
           sectorCode: 'energy',
           mainActivityCode: '1(c)',
           impactCodes: [],
@@ -124,11 +124,11 @@ describe.skipIf(!databaseUrl)('industryModule against the local database', () =>
     const [stats] = await sql<{ industry: Record<string, unknown> }[]>`
       select stats -> 'industry' as industry from public.score_snapshots where id = ${snapshotId}
     `;
-    expect(stats?.industry).toEqual({ sibiu: { sites_in_buffer: 1, suspect: 0, corrected: 0 } });
+    expect(stats?.industry).toEqual({ craiova: { sites_in_buffer: 1, suspect: 0, corrected: 0 } });
 
     const report = await buildIndustryReport(sql, {
-      longitude: 24.16,
-      latitude: 45.8,
+      longitude: 23.81,
+      latitude: 44.33,
       cellScore: 85,
       params,
     });

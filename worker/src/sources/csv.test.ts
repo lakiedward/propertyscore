@@ -21,7 +21,7 @@ describe('parseCsvRecords', () => {
   });
 
   it('handles a quote split across two chunks', async () => {
-    const records = await collect(parseCsvRecords(['a,"he said ""', '"hi""",b\n']));
+    const records = await collect(parseCsvRecords(['a,"he said "', '"hi""",b\n']));
     expect(records).toEqual([['a', 'he said "hi"', 'b']]);
   });
 

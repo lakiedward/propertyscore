@@ -45,7 +45,7 @@ export async function storeRegisterSites(
     suspectCenterM: number;
   },
 ): Promise<ImportSummary> {
-  return sql.begin(async (transaction) => {
+  await sql.begin(async (transaction) => {
     await transaction`
       delete from private.industrial_sites
       where source_version = ${options.version} and reporting_year = ${options.reportingYear}
@@ -92,29 +92,25 @@ export async function storeRegisterSites(
           air_releases jsonb,
           is_top_emitter boolean
         )
-        on conflict (source_facility_id, reporting_year) do update set
-          name = excluded.name,
-          location = excluded.location,
-          reported_location = excluded.reported_location,
-          sector_code = excluded.sector_code,
-          main_activity_code = excluded.main_activity_code,
-          impact_codes = excluded.impact_codes,
-          air_releases = excluded.air_releases,
-          is_top_emitter = excluded.is_top_emitter,
-          source_version = excluded.source_version,
-          imported_at = now()
       `;
     }
-    const [summary] = await transaction<{ summary: ImportSummary }[]>`
-      select private.finish_industrial_import(
-        ${options.reportingYear}::smallint,
-        ${options.version},
-        ${options.radiusM},
-        ${options.suspectCenterM}
-      ) as summary
-    `;
-    return summary?.summary ?? { sites: 0, in_city_buffers: 0, suspect: 0, corrected: 0 };
   });
+  return finishRegisterImport(sql, options);
+}
+
+export async function finishRegisterImport(
+  sql: Sql,
+  options: { version: string; reportingYear: number; radiusM: number; suspectCenterM: number },
+): Promise<ImportSummary> {
+  const [summary] = await sql<{ summary: ImportSummary }[]>`
+    select private.finish_industrial_import(
+      ${options.reportingYear}::smallint,
+      ${options.version},
+      ${options.radiusM},
+      ${options.suspectCenterM}
+    ) as summary
+  `;
+  return summary?.summary ?? { sites: 0, in_city_buffers: 0, suspect: 0, corrected: 0 };
 }
 
 export async function listStoredSites(

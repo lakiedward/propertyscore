@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(21);
 
 select results_eq(
   $$
@@ -158,6 +158,13 @@ select throws_ok(
   '23514',
   null,
   'The sector must be one of the nine codes'
+);
+
+select lives_ok(
+  $$ insert into private.industrial_sites (source_facility_id, reporting_year, name, location, reported_location, sector_code, main_activity_code, source_version)
+     select source_facility_id, reporting_year, name, location, reported_location, sector_code, main_activity_code, 'test-next'
+     from private.industrial_sites where source_version = 'test' $$,
+  'A newer dataset version stores the same facility and year next to the frozen older one'
 );
 
 select throws_ok(
