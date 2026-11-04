@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { errorCauseTail, errorCode, WorkerError } from './errors.ts';
+import { errorCauseExit, errorCauseTail, errorCode, WorkerError } from './errors.ts';
 
 describe('errorCode', () => {
   it('keeps the code of a worker error', () => {
@@ -32,5 +32,20 @@ describe('errorCauseTail', () => {
   it('returns nothing without an error cause', () => {
     expect(errorCauseTail(new WorkerError('osmium_failed', 'boom'))).toBeUndefined();
     expect(errorCauseTail('x')).toBeUndefined();
+  });
+});
+
+describe('errorCauseExit', () => {
+  it('names the signal that killed a subprocess, such as an out-of-memory kill', () => {
+    const cause = Object.assign(new Error('Command failed'), { code: null, signal: 'SIGKILL' });
+    expect(errorCauseExit(new WorkerError('transit_routing_failed', 'boom', { cause }))).toBe(
+      'signal SIGKILL',
+    );
+  });
+
+  it('gives the exit code of a subprocess that failed on its own', () => {
+    const cause = Object.assign(new Error('Command failed'), { code: 1, signal: null });
+    expect(errorCauseExit(new WorkerError('osmium_failed', 'boom', { cause }))).toBe('exit 1');
+    expect(errorCauseExit(new WorkerError('osmium_failed', 'boom'))).toBeUndefined();
   });
 });

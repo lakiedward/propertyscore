@@ -4,6 +4,7 @@ import datetime
 import json
 import math
 import pathlib
+import shutil
 import sys
 import zipfile
 
@@ -86,18 +87,36 @@ def encode_matrix(order, times):
     return cells.tobytes()
 
 
+def has_rows(handle):
+    handle.readline()
+    return any(line.strip() for line in handle)
+
+
+def gtfs_tables(source):
+    if source.is_dir():
+        for file in sorted(source.glob("*.txt")):
+            yield file.name, lambda file=file: open(file, "rb")
+        return
+    with zipfile.ZipFile(source) as archive:
+        for entry in sorted(archive.infolist(), key=lambda item: item.filename):
+            name = pathlib.PurePosixPath(entry.filename).name
+            if entry.is_dir() or not name.endswith(".txt"):
+                continue
+            yield name, lambda entry=entry: archive.open(entry)
+
+
 def prepare_gtfs(paths, output_dir):
     prepared = []
     for index, path in enumerate(paths):
-        source = pathlib.Path(path)
-        if source.is_dir():
-            archive = output_dir / f"gtfs-{index}.zip"
-            with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as bundle:
-                for file in sorted(source.glob("*.txt")):
-                    bundle.write(file, file.name)
-            prepared.append(str(archive))
-        else:
-            prepared.append(str(source))
+        archive = output_dir / f"gtfs-{index}.zip"
+        with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as bundle:
+            for name, open_table in gtfs_tables(pathlib.Path(path)):
+                with open_table() as table:
+                    if not has_rows(table):
+                        continue
+                with open_table() as table, bundle.open(name, "w") as target:
+                    shutil.copyfileobj(table, target)
+        prepared.append(str(archive))
     return prepared
 
 

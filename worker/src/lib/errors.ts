@@ -24,3 +24,11 @@ export function errorCauseTail(error: unknown): string | undefined {
   if (!(error instanceof Error) || !(error.cause instanceof Error)) return undefined;
   return error.cause.message.slice(-CAUSE_TAIL_LENGTH);
 }
+
+export function errorCauseExit(error: unknown): string | undefined {
+  if (!(error instanceof Error) || !(error.cause instanceof Error)) return undefined;
+  const { signal, code } = error.cause as { signal?: unknown; code?: unknown };
+  if (typeof signal === 'string') return `signal ${signal}`;
+  if (typeof code === 'number') return `exit ${String(code)}`;
+  return undefined;
+}

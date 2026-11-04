@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { parseCommand, type WorkerCommand } from './cli.ts';
 import { type Env, readEnv } from './config/env.ts';
 import { createSql, type Sql } from './db/sql.ts';
-import { errorCauseTail, errorCode } from './lib/errors.ts';
+import { errorCauseExit, errorCauseTail, errorCode } from './lib/errors.ts';
 import { createLogger, type Logger } from './lib/logger.ts';
 import { generateReport } from './report/generate-report.ts';
 import { insertReport } from './report/report.db.ts';
@@ -127,6 +127,7 @@ main().catch((error: unknown) => {
     code: errorCode(error),
     error: error instanceof Error ? error.message : String(error),
     cause: errorCauseTail(error),
+    cause_exit: errorCauseExit(error),
   });
   process.exitCode = 1;
 });

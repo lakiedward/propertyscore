@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
@@ -107,12 +107,8 @@ function nested<T>(map: Map<string, Map<string, T>>, outer: string): Map<string,
   return created;
 }
 
-async function routedGtfsArchives(gtfs: readonly string[], outputDir: string): Promise<string[]> {
-  return Promise.all(
-    gtfs.map(async (path, index) =>
-      (await stat(path)).isDirectory() ? join(outputDir, `gtfs-${index}.zip`) : path,
-    ),
-  );
+function routedGtfsArchives(gtfs: readonly string[], outputDir: string): string[] {
+  return gtfs.map((_, index) => join(outputDir, `gtfs-${index}.zip`));
 }
 
 async function readRoutingOutputs(
@@ -202,11 +198,7 @@ export async function runTransitRouting(
       cause: error,
     });
   }
-  return readRoutingOutputs(
-    outputDir,
-    job.withMatrix,
-    await routedGtfsArchives(job.gtfs, outputDir),
-  );
+  return readRoutingOutputs(outputDir, job.withMatrix, routedGtfsArchives(job.gtfs, outputDir));
 }
 
 export async function readMatrixRows(path: string, size: number): Promise<Buffer[]> {
