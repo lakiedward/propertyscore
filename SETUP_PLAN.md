@@ -546,7 +546,7 @@ Columns the client must never set (e.g. a computed `score`) are protected with c
 - **Buckets are private by default.** A bucket is public only if its contents really are public (e.g. marketing images).
 - **Path convention**: `<bucket>/<owner_id>/<entity_id>/<filename>`. This lets RLS on `storage.objects` check `(storage.foldername(name))[1] = (select auth.uid())::text`.
 - **Storage policies live in migrations and have pgTAP tests**, like table policies.
-- **Server-only buckets have no policies.** Files that only the worker reads (the monthly OSM extract in `source-extracts`) sit in a private bucket without any `storage.objects` policy, so only a secret key reaches them; the pgTAP test proves `anon` and `authenticated` see nothing and change nothing, like a server-only table. Chosen because Geofabrik refuses Railway's IPs and a cron container has no running volume to upload to.
+- **Server-only buckets have no policies.** Files that only the worker reads (the monthly OSM extract and the SIIIR register and schooling plan in `source-extracts`) sit in a private bucket without any `storage.objects` policy, so only a secret key reaches them; the pgTAP test proves `anon` and `authenticated` see nothing and change nothing, like a server-only table. Chosen because Geofabrik and data.gov.ro refuse Railway's IPs and a cron container has no running volume to upload to.
 - Private files are displayed through **signed URLs** (`createSignedUrl`, short expiry) fetched by a query hook, so they are cached.
 - Set the size limit and allowed MIME types on the bucket. The client also validates them, for UX.
 - Upload and download code lives in `features/*/api/*.storage.ts`, behind the same "throw `AppError`" contract.

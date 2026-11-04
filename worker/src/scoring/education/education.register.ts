@@ -1,7 +1,7 @@
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { downloadOnce } from '../../sources/download.ts';
+import { downloadOnce, SourceUnavailableError } from '../../sources/download.ts';
 import { mirroredSource, type SourceMirror } from '../../sources/mirror.ts';
 import { readXlsxRows, streamXlsxRows } from '../../sources/xlsx.ts';
 import type { EducationParams } from './education.params.ts';
@@ -25,13 +25,31 @@ async function isPresent(path: string): Promise<boolean> {
   }
 }
 
+async function fetchMirroredPlan(
+  mirror: SourceMirror,
+  schoolYear: string,
+  path: string,
+): Promise<boolean> {
+  const source = mirroredSource(mirror, `education/siiir-plan-${schoolYear}.xlsx`);
+  try {
+    await downloadOnce(source.url, path, { headers: source.headers });
+    return true;
+  } catch (error) {
+    if (error instanceof SourceUnavailableError) return false;
+    throw error;
+  }
+}
+
 async function loadPlan(
   sourcesDir: string,
   register: EducationParams['register'],
+  mirror: SourceMirror | undefined,
 ): Promise<SchoolingPlan> {
   const path = planPath(sourcesDir, register.school_year);
   if (register.plan_url) await downloadOnce(register.plan_url, path);
-  else if (!(await isPresent(path))) return new Map();
+  else if (!(await isPresent(path))) {
+    if (!mirror || !(await fetchMirroredPlan(mirror, register.school_year, path))) return new Map();
+  }
   return readSchoolingPlan(streamXlsxRows(path));
 }
 
@@ -52,6 +70,6 @@ export async function loadRegister(
   const path = await downloadOnce(source.url, registerPath(sourcesDir, register.school_year), {
     headers: source.headers,
   });
-  const plan = await loadPlan(sourcesDir, register);
+  const plan = await loadPlan(sourcesDir, register, mirror);
   return convertSiiirRows(await readXlsxRows(path), register.cities, plan);
 }

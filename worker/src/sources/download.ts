@@ -32,6 +32,18 @@ function isRetryableStatus(status: number): boolean {
 
 class RetryableDownloadError extends WorkerError {}
 
+export class SourceUnavailableError extends WorkerError {}
+
+function isUnavailableStatus(status: number): boolean {
+  return status === 400 || status === 404;
+}
+
+function statusErrorType(status: number): typeof WorkerError {
+  if (isRetryableStatus(status)) return RetryableDownloadError;
+  if (isUnavailableStatus(status)) return SourceUnavailableError;
+  return WorkerError;
+}
+
 async function downloadAttempt(
   url: string,
   destination: string,
@@ -53,7 +65,7 @@ async function downloadAttempt(
   }
   if (!response.ok || !response.body) {
     await response.body?.cancel();
-    const ErrorType = isRetryableStatus(response.status) ? RetryableDownloadError : WorkerError;
+    const ErrorType = statusErrorType(response.status);
     throw new ErrorType(
       'source_download_failed',
       `Download failed with ${response.status}: ${url}`,
