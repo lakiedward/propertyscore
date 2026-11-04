@@ -1,3 +1,6 @@
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -8,7 +11,14 @@ import {
   groupCnasLists,
   normalizePlace,
   placeEmergencyRows,
+  readProviderTable,
 } from './health.import.ts';
+
+const PIVOT_FIXTURE = fileURLToPath(new URL('./fixtures/cas-pivot.xlsx', import.meta.url));
+
+function hasUnzip(): boolean {
+  return spawnSync('unzip', ['-v'], { stdio: 'ignore' }).error === undefined;
+}
 
 const COUNTY_LIST = [
   ['Casa de Asigurări de Sănătate Timiș'],
@@ -329,6 +339,34 @@ describe('extractCnasProviders on county lists', () => {
     expect(extractCnasProviders(list, columns, 'Sibiu').rows).toEqual([
       { name: 'Farmacia Unu', address: 'Sibiu, Str. Mare nr. 1' },
       { name: 'Farmacia Unu', address: 'Sibiu, Str. Mică nr. 2' },
+    ]);
+  });
+});
+
+describe('extractCnasProviders on sections', () => {
+  it('switches to the columns of each section header', () => {
+    const list = [
+      ['Nr. crt.', 'Denumire furnizor - Laboratoare', 'Adresa', 'Telefon'],
+      ['1', 'Lab Unu', 'Iași, Str. Păcurari nr. 1', '0232 000 001'],
+      ['Nr. crt.', 'Denumire furnizor - Radiologie', 'RMN / CT', 'Adresa'],
+      ['2', 'Imagistica Doi', 'RMN, CT', 'Iași, Bd. Carol I nr. 2'],
+      ['3', 'Imagistica Trei', 'CT', 'Pașcani, Str. Gării nr. 3'],
+    ];
+    const columns = findTableColumns(list);
+    if (columns === null) throw new Error('columns not found');
+    expect(extractCnasProviders(list, columns, 'Iași').rows).toEqual([
+      { name: 'Lab Unu', address: 'Iași, Str. Păcurari nr. 1' },
+      { name: 'Imagistica Doi', address: 'Iași, Bd. Carol I nr. 2' },
+    ]);
+  });
+});
+
+describe.skipIf(!hasUnzip())('readProviderTable', () => {
+  it('reads the first sheet with a provider table', async () => {
+    const table = await readProviderTable(PIVOT_FIXTURE);
+    expect(table?.rows).toEqual([
+      ['Denumire furnizor', 'Adresa'],
+      ['Farmacia Ana, Sibiu', 'Sibiu, Str. Mică nr. 2'],
     ]);
   });
 });

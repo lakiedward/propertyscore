@@ -5,9 +5,13 @@ import { parseCsvRecords } from './csv.ts';
 
 async function* firstSheet(path: string): AsyncGenerator<string> {
   const child = spawn('xls2csv', ['-d', 'utf-8', path], { stdio: ['ignore', 'pipe', 'ignore'] });
-  const exited = new Promise<number | null>((resolve) => {
-    child.once('error', () => resolve(-1));
-    child.once('close', resolve);
+  const exited = new Promise<{ code: number | null; isMissing: boolean }>((resolve) => {
+    child.once('error', (error: NodeJS.ErrnoException) => {
+      resolve({ code: -1, isMissing: error.code === 'ENOENT' });
+    });
+    child.once('close', (code) => {
+      resolve({ code, isMissing: false });
+    });
   });
   child.stdout.setEncoding('utf8');
   try {
@@ -24,7 +28,8 @@ async function* firstSheet(path: string): AsyncGenerator<string> {
   } finally {
     if (child.exitCode === null) child.kill();
   }
-  const code = await exited;
+  const { code, isMissing } = await exited;
+  if (isMissing) throw new WorkerError('xls2csv_missing', 'xls2csv is not installed');
   if (code !== 0) throw new WorkerError('xls_invalid', `${path} is not a readable XLS workbook`);
 }
 

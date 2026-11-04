@@ -225,6 +225,10 @@ function rowAddress(row: readonly string[], columns: TableColumns): string | nul
   return address === '' ? null : address.slice(0, 500);
 }
 
+function isSectionHeader(row: readonly string[]): boolean {
+  return !row.some((value) => /\d/.test(value));
+}
+
 export function extractCnasProviders(
   rows: readonly (readonly string[])[],
   columns: TableColumns,
@@ -232,17 +236,33 @@ export function extractCnasProviders(
   seen = new Set<string>(),
 ): ProviderExtraction {
   const city = normalizePlace(cityName);
+  const filterOf = (section: TableColumns): LocalityFilter => {
+    if (section.locality !== null) return 'column';
+    return city === CAPITAL ? 'none' : 'address';
+  };
+  let section = columns;
   let previousName = '';
-  const body = rows
-    .slice(columns.headerIndex + 1)
-    .map((row) => {
-      const address = rowAddress(row, columns);
-      const ownName = cell(row, columns.name).slice(0, 300);
-      const name = ownName === '' && address !== null ? previousName : ownName;
-      if (ownName !== '') previousName = ownName;
-      return { name, address, locality: normalizePlace(cell(row, columns.locality)) };
-    })
-    .filter((row) => row.name !== '' && !/^\d+$/.test(row.name));
+  const body: { name: string; address: string | null; locality: string; filter: LocalityFilter }[] =
+    [];
+  for (const row of rows.slice(columns.headerIndex + 1)) {
+    const header = isSectionHeader(row) ? findTableColumns([row]) : null;
+    if (header !== null) {
+      section = header;
+      previousName = '';
+      continue;
+    }
+    const address = rowAddress(row, section);
+    const ownName = cell(row, section.name).slice(0, 300);
+    const name = ownName === '' && address !== null ? previousName : ownName;
+    if (ownName !== '') previousName = ownName;
+    if (name === '' || /^\d+$/.test(name)) continue;
+    body.push({
+      name,
+      address,
+      locality: normalizePlace(cell(row, section.locality)),
+      filter: filterOf(section),
+    });
+  }
 
   const mentionsCity = (address: string | null) =>
     address !== null &&
@@ -251,9 +271,7 @@ export function extractCnasProviders(
     locality === ''
       ? mentionsCity(address)
       : containsPhrase(locality, city) || (city === CAPITAL && SECTOR.test(locality));
-  let localityFilter: LocalityFilter = 'none';
-  if (columns.locality !== null) localityFilter = 'column';
-  else if (city !== CAPITAL) localityFilter = 'address';
+  const localityFilter = filterOf(columns);
 
   const result: ProviderExtraction = {
     rows: [],
@@ -263,9 +281,9 @@ export function extractCnasProviders(
   };
   for (const row of body) {
     const isInCity =
-      localityFilter === 'column'
+      row.filter === 'column'
         ? isCityLocality(row.locality, row.address)
-        : localityFilter === 'address'
+        : row.filter === 'address'
           ? mentionsCity(row.address)
           : true;
     if (!isInCity) {
@@ -446,7 +464,6 @@ async function readTableFile(path: string, sheet = 1): Promise<string[][]> {
   const extension = extname(path).toLowerCase();
   if (extension === '.xlsx') return readXlsxRows(path, sheet);
   if (extension === '.xls') return readXlsRows(path);
-  if (extension === '.pdf') return layoutTableRows(await readPdfText(path));
   if (extension === '.html' || extension === '.htm') return readHtmlTableRows(path);
   if (extension === '.csv') {
     const rows: string[][] = [];
