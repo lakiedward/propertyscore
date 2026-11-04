@@ -227,10 +227,10 @@ describe('SignUpForm', () => {
   it('explains that a social provider is not turned on yet', async () => {
     const { user } = await renderWithProviders(<SignUpForm onConfirmationNeeded={vi.fn()} />);
 
-    await user.click(screen.getByRole('button', { name: roAuth.social.facebook }));
+    await user.click(screen.getByRole('button', { name: roAuth.social.google }));
 
     expect(await screen.findByRole('status')).toHaveTextContent(
-      roAuth.social.unavailable.replace('{{provider}}', roAuth.social.providers.facebook),
+      roAuth.social.unavailable.replace('{{provider}}', roAuth.social.providers.google),
     );
   });
 

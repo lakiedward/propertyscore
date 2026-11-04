@@ -13,7 +13,7 @@ export function authErrorResponse(code: string, status = 400) {
 
 function authSettingsResponse(external: Record<string, boolean> = {}) {
   return HttpResponse.json(
-    { external: { email: true, google: false, facebook: false, ...external } },
+    { external: { email: true, google: false, ...external } },
     { headers: API_VERSION_HEADERS },
   );
 }

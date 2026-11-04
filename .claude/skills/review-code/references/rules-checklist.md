@@ -59,7 +59,7 @@ The rule files are the source; this checklist is the index a reviewer works thro
 - Usage rules in `design-system.md` §5: one `cta` button per screen; forest = physical, blue = online; `TrustBadge` on every property; `DataLabel` on report values with `missing` instead of empty or zero; `StatusPill` with text and icon; card styling; focus ring; touch targets ≥ `--touch-min`; text on forest and lime; density from the shell only; `marker-*` highlights; gradients only from system colours; logos only through brand components; category hues only for categories.
 - A new token or shared component updates `design-system.md` and `globals.css` together, both themes.
 - Layout: mobile first, only the standard and the design's breakpoints, no `max-*` beyond a single undo, no horizontal scroll at 360px, no fixed widths on text, `truncate` + `Tooltip`.
-- Icons only `lucide-react` (Google/Facebook marks excepted), `size-4` / `size-5`; no emoji, inline SVG copies or second icon set. Fonts self-hosted with `latin-ext`. No `outline-none` without replacement.
+- Icons only `lucide-react` (the Google mark excepted), `size-4` / `size-5`; no emoji, inline SVG copies or second icon set. Fonts self-hosted with `latin-ext`. No `outline-none` without replacement.
 
 ### 2.5 i18n.md
 

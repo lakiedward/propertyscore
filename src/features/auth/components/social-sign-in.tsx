@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FacebookMark } from '@/components/brand/facebook-mark';
 import { GoogleMark } from '@/components/brand/google-mark';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -12,12 +11,6 @@ const PROVIDERS: readonly { id: SocialProvider; mark: ReactNode; className: stri
     mark: <GoogleMark />,
     className:
       'border-border bg-card text-foreground hover:border-border-control hover:bg-secondary',
-  },
-  {
-    id: 'facebook',
-    mark: <FacebookMark />,
-    className:
-      'border-social-facebook bg-social-facebook text-on-inverse hover:bg-social-facebook-hover',
   },
 ];
 

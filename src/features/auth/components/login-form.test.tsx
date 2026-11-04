@@ -135,18 +135,18 @@ describe('LoginForm', () => {
     );
     const { user } = await renderWithProviders(<LoginForm />);
 
-    await user.click(screen.getByRole('button', { name: roAuth.social.facebook }));
+    await user.click(screen.getByRole('button', { name: roAuth.social.google }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      roAuth.social.failed.replace('{{provider}}', roAuth.social.providers.facebook),
+      roAuth.social.failed.replace('{{provider}}', roAuth.social.providers.google),
     );
   });
 
-  it('offers only Google and Facebook, and a way to reset the password', async () => {
+  it('offers only Google, and a way to reset the password', async () => {
     await renderWithProviders(<LoginForm />);
 
     expect(screen.getByRole('button', { name: roAuth.social.google })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: roAuth.social.facebook })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /facebook/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /apple/i })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: roAuth.login.forgotPassword })).toHaveAttribute(
       'href',

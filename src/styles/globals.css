@@ -215,8 +215,6 @@
   --color-on-cta-soft: var(--on-cta-soft);
   --color-zone-chip: var(--zone-chip);
   --color-border-declared: var(--border-declared);
-  --color-social-facebook: var(--social-facebook);
-  --color-social-facebook-hover: var(--social-facebook-hover);
   --color-google-red: var(--google-red);
   --color-google-blue: var(--google-blue);
   --color-google-yellow: var(--google-yellow);
@@ -492,8 +490,6 @@
   --ps-green-declared: #b9c9bd;
   --ps-slate-mist: #dce7ee;
   --ps-slate-chip: #e2eaf0;
-  --ps-facebook: #1877f2;
-  --ps-facebook-hover: #166fe0;
   --ps-google-red: #ea4335;
   --ps-google-blue: #4285f4;
   --ps-google-yellow: #fbbc05;
@@ -748,8 +744,6 @@
   --on-cta-soft: var(--ps-green-on-lime);
   --zone-chip: var(--ps-slate-chip);
   --border-declared: var(--ps-green-declared);
-  --social-facebook: var(--ps-facebook);
-  --social-facebook-hover: var(--ps-facebook-hover);
   --google-red: var(--ps-google-red);
   --google-blue: var(--ps-google-blue);
   --google-yellow: var(--ps-google-yellow);
