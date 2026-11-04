@@ -84,7 +84,16 @@ async function importCnasLists(
         locality_filter: extraction.localityFilter,
       });
     }
-    if (counts.files_read === 0) continue;
+    if (counts.files_read < group.files.length) {
+      input.logger.warn('cnas list incomplete, previous import kept', {
+        city: city.slug,
+        kind: group.kind,
+        list_date: group.listDate,
+        files: group.files.length,
+        files_read: counts.files_read,
+      });
+      continue;
+    }
     const written = await replaceCnasProviders(input.sql, {
       cityId: city.id,
       kind: group.kind,
