@@ -118,7 +118,7 @@ subject = "Confirmă noua adresă de email · Confirm your new email address"
 content_path = "./supabase/templates/email-change.html"
 
 [auth.captcha]
-enabled = true
+enabled = false
 provider = "turnstile"
 secret = "1x0000000000000000000000000000000AA"
 

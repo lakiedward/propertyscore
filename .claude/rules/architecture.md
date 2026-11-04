@@ -28,7 +28,7 @@ The table is a starting point, not the truth. Confirm it before relying on it: t
 | Frontend SPA | Netlify, static with SPA fallback and security headers | every screen | UI, UX checks | secrets, authorization, server code (no Netlify Functions) |
 | MapLibre with OpenFreeMap tiles | browser | listings map, report map | maps without a key | server-side map rendering |
 | Sentry | browser | errors and monitoring | errors | logs with personal data |
-| Cloudflare Turnstile | browser widget + Supabase Auth check | CAPTCHA on sign-up, sign-in, password reset and resend | stopping scripted sign-ups and email floods | anything that is not an auth form |
+| Cloudflare Turnstile | browser widget + Supabase Auth check | CAPTCHA on sign-up, sign-in, password reset and resend (switched off for now: no site key, `[auth.captcha] enabled = false`) | stopping scripted sign-ups and email floods | anything that is not an auth form |
 | GitHub Actions | GitHub | CI, `deploy-db.yml` | checks, migrations on a tag | jobs the product runs |
 
 ## 2. How to choose

@@ -69,7 +69,6 @@ jobs:
             > .env.local
           echo 'VITE_APP_ENV=local' >> .env.local
           echo 'VITE_SITE_URL=http://127.0.0.1:5173' >> .env.local
-          echo 'VITE_TURNSTILE_SITE_KEY=1x00000000000000000000AA' >> .env.local
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4
