@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { Sql } from '../../db/sql.ts';
+import { type Sql, withLongStatements } from '../../db/sql.ts';
 import { mapWithConcurrency } from '../../lib/concurrency.ts';
 import type { Leg, LngLat, ValhallaClient } from '../../routing/valhalla.ts';
 import type { WalkAccessTarget } from '../../routing/walk-access.ts';
@@ -98,23 +98,25 @@ export async function computeCarAccess(options: {
     max_candidates: target.maxCandidates,
   }));
   const byCell = new Map<string, Map<string, NearestByCar>>();
-  const cursor = sql`
-    select cell_id, lng, lat, candidates
-    from private.walk_access_candidates(${snapshotId}, ${cityId}, ${sql.json(targets)}::jsonb)
-  `.cursor(CELL_BATCH);
-  for await (const batch of cursor) {
-    const cells = z.array(cellSchema).parse(batch);
-    await mapWithConcurrency(cells, options.concurrency ?? 4, async (cell) => {
-      const legs = await carLegs(
-        options.router,
-        { lng: cell.lng, lat: cell.lat },
-        cell.candidates,
-        options.carSpeedKmh,
-        options.carDetourFactor,
-      );
-      byCell.set(cell.cell_id, nearestByCar(cell.candidates, legs));
-    });
-  }
+  await withLongStatements(sql, async (transaction) => {
+    const cursor = transaction`
+      select cell_id, lng, lat, candidates
+      from private.walk_access_candidates(${snapshotId}, ${cityId}, ${transaction.json(targets)}::jsonb)
+    `.cursor(CELL_BATCH);
+    for await (const batch of cursor) {
+      const cells = z.array(cellSchema).parse(batch);
+      await mapWithConcurrency(cells, options.concurrency ?? 4, async (cell) => {
+        const legs = await carLegs(
+          options.router,
+          { lng: cell.lng, lat: cell.lat },
+          cell.candidates,
+          options.carSpeedKmh,
+          options.carDetourFactor,
+        );
+        byCell.set(cell.cell_id, nearestByCar(cell.candidates, legs));
+      });
+    }
+  });
   return byCell;
 }
 
