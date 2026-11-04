@@ -1,8 +1,8 @@
 import { Trans, useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
 import { useResendConfirmation } from '../api/auth.queries';
 import { AuthNotice } from './auth-notice';
 import { AuthStatusCard } from './auth-status-card';
+import { OtherEmailPrompt } from './other-email-prompt';
 import { ResendLink } from './resend-link';
 
 type ConfirmEmailCardProps = {
@@ -22,40 +22,33 @@ export function ConfirmEmailCard({
   const resendConfirmation = useResendConfirmation();
 
   return (
-    <AuthStatusCard
-      eyebrow={isRepeat ? t('confirmEmail.repeatEyebrow') : t('confirmEmail.eyebrow')}
-      title={t('confirmEmail.title')}
-    >
-      <p className="text-body leading-copy text-muted-foreground">
-        <Trans
-          t={t}
-          i18nKey={isRepeat ? 'confirmEmail.repeatText' : 'confirmEmail.text'}
-          values={{ email }}
-          components={{ strong: <strong className="font-bold wrap-anywhere text-foreground" /> }}
+    <>
+      <AuthStatusCard
+        eyebrow={isRepeat ? t('confirmEmail.repeatEyebrow') : t('confirmEmail.eyebrow')}
+        title={t('confirmEmail.title')}
+      >
+        <p className="text-body leading-copy text-muted-foreground">
+          <Trans
+            t={t}
+            i18nKey={isRepeat ? 'confirmEmail.repeatText' : 'confirmEmail.text'}
+            values={{ email }}
+            components={{ strong: <strong className="font-bold wrap-anywhere text-foreground" /> }}
+          />
+        </p>
+        {isRepeat ? (
+          <AuthNotice tone="info" title={t('confirmEmail.repeatTitle')}>
+            {t('confirmEmail.repeat')}
+          </AuthNotice>
+        ) : null}
+        <AuthNotice tone="info">{t('confirmEmail.notFound')}</AuthNotice>
+        <ResendLink
+          isCoolingDownAtStart
+          onResend={async (captchaToken) => {
+            await resendConfirmation.mutateAsync({ email, redirect, captchaToken });
+          }}
         />
-      </p>
-      {isRepeat ? (
-        <AuthNotice tone="info" title={t('confirmEmail.repeatTitle')}>
-          {t('confirmEmail.repeat')}
-        </AuthNotice>
-      ) : null}
-      <AuthNotice tone="info">{t('confirmEmail.notFound')}</AuthNotice>
-      <ResendLink
-        isCoolingDownAtStart
-        onResend={async (captchaToken) => {
-          await resendConfirmation.mutateAsync({ email, redirect, captchaToken });
-        }}
-        secondaryAction={
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onUseOtherEmail}
-            className="h-11 px-4.5 text-body font-bold"
-          >
-            {t('confirmEmail.otherEmail')}
-          </Button>
-        }
-      />
-    </AuthStatusCard>
+      </AuthStatusCard>
+      <OtherEmailPrompt onUseOtherEmail={onUseOtherEmail} />
+    </>
   );
 }

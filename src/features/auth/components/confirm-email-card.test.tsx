@@ -7,6 +7,10 @@ import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderWithProviders } from '@/test/render';
 import { ConfirmEmailCard } from './confirm-email-card';
 
+function otherEmailAction(): string {
+  return roAuth.otherEmail.replace(/^.*<action>(.*)<\/action>.*$/, '$1');
+}
+
 function waitText(count: number): string {
   return roAuth.resend.wait.replace('{{count}}', String(count));
 }
@@ -94,7 +98,7 @@ describe('ConfirmEmailCard', { timeout: 20_000 }, () => {
     expect(screen.getByText(roAuth.confirmEmail.repeatTitle)).toBeInTheDocument();
     expect(screen.getByText(roAuth.confirmEmail.repeat)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: roAuth.confirmEmail.otherEmail }));
+    await user.click(screen.getByRole('button', { name: otherEmailAction() }));
 
     expect(onUseOtherEmail).toHaveBeenCalledOnce();
   });

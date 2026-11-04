@@ -6,6 +6,10 @@ import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
 
+function otherEmailAction(): string {
+  return roAuth.otherEmail.replace(/^.*<action>(.*)<\/action>.*$/, '$1');
+}
+
 const signedIn = signedInAs();
 
 describe('SignUpPage', { timeout: 20_000 }, () => {
@@ -54,7 +58,7 @@ describe('SignUpPage', { timeout: 20_000 }, () => {
     expect(heading).toHaveFocus();
     expect(screen.getByText('nou@example.test')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: roAuth.confirmEmail.otherEmail }));
+    await user.click(screen.getByRole('button', { name: otherEmailAction() }));
 
     expect(await screen.findByRole('button', { name: roAuth.signUp.submit })).toBeInTheDocument();
   });

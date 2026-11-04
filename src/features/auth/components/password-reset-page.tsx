@@ -14,6 +14,7 @@ import { useCaptcha } from '../hooks/use-captcha';
 import { AuthNotice } from './auth-notice';
 import { AuthPageHeading } from './auth-page-heading';
 import { AuthStatusCard } from './auth-status-card';
+import { OtherEmailPrompt } from './other-email-prompt';
 import { AuthTextField } from './auth-text-field';
 import { Captcha } from './captcha';
 import { ResendLink } from './resend-link';
@@ -50,39 +51,34 @@ export function PasswordResetPage() {
 
   if (sentTo) {
     return (
-      <AuthStatusCard
-        eyebrow={t('passwordReset.sent.eyebrow')}
-        title={t('passwordReset.sent.title')}
-      >
-        <p className="text-body leading-copy text-muted-foreground">
-          <Trans
-            t={t}
-            i18nKey="passwordReset.sent.text"
-            values={{ email: sentTo }}
-            components={{ strong: <strong className="font-bold text-foreground" /> }}
+      <>
+        <AuthStatusCard
+          eyebrow={t('passwordReset.sent.eyebrow')}
+          title={t('passwordReset.sent.title')}
+        >
+          <p className="text-body leading-copy text-muted-foreground">
+            <Trans
+              t={t}
+              i18nKey="passwordReset.sent.text"
+              values={{ email: sentTo }}
+              components={{ strong: <strong className="font-bold text-foreground" /> }}
+            />
+          </p>
+          <AuthNotice tone="info">{t('passwordReset.sent.spam')}</AuthNotice>
+          <ResendLink
+            isCoolingDownAtStart
+            onResend={async (captchaToken) => {
+              await requestReset.mutateAsync({ email: sentTo, captchaToken });
+            }}
           />
-        </p>
-        <AuthNotice tone="info">{t('passwordReset.sent.spam')}</AuthNotice>
-        <ResendLink
-          isCoolingDownAtStart
-          onResend={async (captchaToken) => {
-            await requestReset.mutateAsync({ email: sentTo, captchaToken });
+        </AuthStatusCard>
+        <OtherEmailPrompt
+          onUseOtherEmail={() => {
+            requestReset.reset();
+            setSentTo(undefined);
           }}
-          secondaryAction={
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                requestReset.reset();
-                setSentTo(undefined);
-              }}
-              className="h-11 px-4.5 text-body font-bold"
-            >
-              {t('passwordReset.sent.otherEmail')}
-            </Button>
-          }
         />
-      </AuthStatusCard>
+      </>
     );
   }
 
