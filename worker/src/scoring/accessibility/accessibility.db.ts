@@ -1,4 +1,6 @@
 import type { JsonObject, Sql } from '../../db/sql.ts';
+import { WorkerError } from '../../lib/errors.ts';
+import type { BoundingBox } from '../../sources/osm.ts';
 import type { StopRouteLink } from './transit-network.ts';
 import type { DestinationKind, KeyDestination, TransitNetwork } from './transit.types.ts';
 
@@ -119,6 +121,31 @@ export async function listKeyDestinations(sql: Sql, cityId: string): Promise<Key
     order by kind, id
   `;
   return [...rows];
+}
+
+export async function transitBoundingBox(sql: Sql, cityId: string): Promise<BoundingBox> {
+  const [row] = await sql<BoundingBox[]>`
+    select
+      extensions.st_xmin(box) as west,
+      extensions.st_ymin(box) as south,
+      extensions.st_xmax(box) as east,
+      extensions.st_ymax(box) as north
+    from (
+      select extensions.st_expand(extensions.st_collect(shape), 0.01) as box
+      from (
+        select boundary::extensions.geometry as shape
+        from public.cities
+        where id = ${cityId}
+        union all
+        select location::extensions.geometry
+        from private.key_destinations
+        where city_id = ${cityId} and is_active
+      ) as shapes
+    ) as area
+    where box is not null
+  `;
+  if (!row) throw new WorkerError('city_not_found', `City ${cityId} not found`);
+  return row;
 }
 
 export async function listDestinationLabels(sql: Sql, cityId: string): Promise<JsonObject[]> {
@@ -353,4 +380,61 @@ export async function writeCityStats(
     from figures
     where s.id = ${snapshotId}
   `;
+}
+
+export type RoutingBundle = {
+  referenceDate: string;
+  osmPbf: Buffer;
+  gtfsArchives: Buffer[];
+};
+
+const BYTEA_TYPE = 17;
+
+export async function saveRoutingBundle(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+  bundle: RoutingBundle,
+): Promise<void> {
+  await sql.begin(async (transaction) => {
+    await transaction`
+      delete from private.transit_routing_bundles b
+      using public.score_snapshots s
+      where b.snapshot_id = s.id
+        and b.city_id = ${cityId}
+        and s.status in ('failed', 'superseded')
+    `;
+    await transaction`
+      insert into private.transit_routing_bundles (snapshot_id, city_id, reference_date, osm_pbf, gtfs_archives)
+      values (
+        ${snapshotId},
+        ${cityId},
+        ${bundle.referenceDate},
+        ${bundle.osmPbf},
+        ${transaction.array(bundle.gtfsArchives, BYTEA_TYPE)}
+      )
+      on conflict (snapshot_id, city_id) do update
+      set reference_date = excluded.reference_date,
+        osm_pbf = excluded.osm_pbf,
+        gtfs_archives = excluded.gtfs_archives
+    `;
+  });
+}
+
+export async function readRoutingBundle(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+): Promise<RoutingBundle | null> {
+  const [row] = await sql<{ reference_date: string; osm_pbf: Buffer; gtfs_archives: Buffer[] }[]>`
+    select reference_date::text as reference_date, osm_pbf, gtfs_archives
+    from private.transit_routing_bundles
+    where snapshot_id = ${snapshotId} and city_id = ${cityId}
+  `;
+  if (!row) return null;
+  return {
+    referenceDate: row.reference_date,
+    osmPbf: row.osm_pbf,
+    gtfsArchives: row.gtfs_archives,
+  };
 }

@@ -565,6 +565,8 @@ Edge Functions have wall-clock, CPU and memory limits, run Deno only and cannot 
 
 Rejected: a custom API server in front of Supabase (it would duplicate Auth, RLS and Storage for no security gain), doing heavy jobs in Edge Functions (time limits, no Chromium), and scheduled GitHub Actions as the job runner (no queue, slow start, secrets spread across another platform).
 
+The report reruns transit routing from the exact address on the network the snapshot scored with, but does not see the snapshot's `SOURCES_DIR` volume, so each snapshot keeps its OSM clip and GTFS archives as `bytea` in `private.transit_routing_bundles` (about 70 MB per snapshot), deleted with the snapshot. Rejected: a private Storage bucket (policies and a second client for files that live and die with a snapshot), kept as the fallback if the size outgrows the database.
+
 Rules:
 - One folder per function (`supabase/functions/<kebab-name>/index.ts`), with shared code in `_shared/`.
 - **Validate the request body with Zod** inside the function. Verify the caller's JWT (the default) unless it is a webhook, which checks a signature instead.

@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -15,9 +15,13 @@ afterAll(async () => {
 async function job(): Promise<RoutingJob> {
   const workDir = await mkdtemp(join(tmpdir(), 'routing-'));
   directories.push(workDir);
+  const archive = join(workDir, 'tursib.zip');
+  const folder = join(workDir, 'osm-gtfs');
+  await writeFile(archive, 'zip');
+  await mkdir(folder);
   return {
     osmPbf: '/data/sibiu.osm.pbf',
-    gtfs: ['/data/tursib.zip'],
+    gtfs: [archive, folder],
     date: '2026-11-03',
     windowStart: '07:45',
     windowMinutes: 30,
@@ -33,6 +37,7 @@ async function job(): Promise<RoutingJob> {
     stops: [{ id: 'g0:A', lng: 24.151, lat: 45.791 }],
     destinations: [{ id: 'center', lng: 24.152, lat: 45.797 }],
     withMatrix: true,
+    withItineraries: true,
     workDir,
   };
 }
@@ -50,6 +55,7 @@ describe('runTransitRouting', () => {
         max_rides: 3,
         transport_modes: ['TRAM', 'SUBWAY', 'BUS'],
         matrix: true,
+        itineraries: true,
         r5py_arguments: ['--max-memory', '60%'],
       });
       expect(await readFile(String(config.origins), 'utf8')).toBe(
@@ -88,6 +94,10 @@ describe('runTransitRouting', () => {
       transfers: 0,
       routeId: 'T1',
     });
+    expect(result.gtfsArchives).toEqual([
+      join(input.workDir, 'tursib.zip'),
+      join(input.workDir, 'routing', 'gtfs-1.zip'),
+    ]);
     const rows = await readMatrixRows(result.matrixPath ?? '', 2);
     expect(rows.map((row) => [...row])).toEqual([
       [0, 0, 0, 17],

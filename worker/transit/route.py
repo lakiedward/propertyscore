@@ -119,6 +119,52 @@ def frame(points):
     )
 
 
+def detailed_itineraries(network, origins, destinations, job, transit_modes, max_time, speed):
+    import r5py
+
+    rows = []
+    detailed = r5py.DetailedItineraries(
+        network,
+        origins=frame(origins),
+        destinations=frame(destinations),
+        departure=departure_at(job["date"], job["detail_departure"]),
+        transport_modes=[*transit_modes, r5py.TransportMode.WALK],
+        max_time=max_time,
+        speed_walking=speed,
+        max_public_transport_rides=job["max_rides"],
+        force_all_to_all=True,
+    )
+    options = {}
+    for row in detailed.itertuples():
+        if row.transport_mode is None:
+            continue
+        key = (row.from_id, row.to_id)
+        options.setdefault(key, {}).setdefault(row.option, []).append(
+            {
+                "transport_mode": row.transport_mode,
+                "travel_time": row.travel_time,
+                "wait_time": row.wait_time,
+                "route_id": row.route_id,
+            }
+        )
+    for (origin, destination), by_option in options.items():
+        summary = best_itinerary(by_option.values())
+        if summary is None:
+            continue
+        rows.append(
+            (
+                origin,
+                destination,
+                summary["walk_minutes"],
+                summary["wait_minutes"],
+                summary["ride_minutes"],
+                summary["transfers"],
+                summary["route_id"],
+            )
+        )
+    return rows
+
+
 def run(job):
     import r5py
 
@@ -191,44 +237,9 @@ def run(job):
                     "" if math.isnan(walked) else round(walked, 1),
                 )
             )
-        detailed = r5py.DetailedItineraries(
-            network,
-            origins=frame(origins),
-            destinations=frame(destinations),
-            departure=departure_at(job["date"], job["detail_departure"]),
-            transport_modes=[*transit_modes, r5py.TransportMode.WALK],
-            max_time=max_time,
-            speed_walking=speed,
-            max_public_transport_rides=job["max_rides"],
-            force_all_to_all=True,
-        )
-        options = {}
-        for row in detailed.itertuples():
-            if row.transport_mode is None:
-                continue
-            key = (row.from_id, row.to_id)
-            options.setdefault(key, {}).setdefault(row.option, []).append(
-                {
-                    "transport_mode": row.transport_mode,
-                    "travel_time": row.travel_time,
-                    "wait_time": row.wait_time,
-                    "route_id": row.route_id,
-                }
-            )
-        for (origin, destination), by_option in options.items():
-            summary = best_itinerary(by_option.values())
-            if summary is None:
-                continue
-            itinerary_rows.append(
-                (
-                    origin,
-                    destination,
-                    summary["walk_minutes"],
-                    summary["wait_minutes"],
-                    summary["ride_minutes"],
-                    summary["transfers"],
-                    summary["route_id"],
-                )
+        if job["itineraries"]:
+            itinerary_rows = detailed_itineraries(
+                network, origins, destinations, job, transit_modes, max_time, speed
             )
     write_rows(
         output_dir / "destinations.csv",

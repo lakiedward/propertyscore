@@ -17,7 +17,7 @@ The table is a starting point, not the truth. Confirm it before relying on it: t
 
 | Piece | Runs | Used today for | Fits | Does not fit |
 | --- | --- | --- | --- | --- |
-| Postgres (Supabase) with PostGIS and `unaccent` | Supabase | every table, RLS, the scoring grid, zone scores, report freezing (`private.*`) | data, rules, state transitions, geographic queries, search | long loops, files, calls to other services |
+| Postgres (Supabase) with PostGIS and `unaccent` | Supabase | every table, RLS, the scoring grid, zone scores, report freezing (`private.*`), the transit network each snapshot routed on (`private.transit_routing_bundles`) | data, rules, state transitions, geographic queries, search | long loops, user and document files (Storage), calls to other services |
 | RPC (Postgres functions) | Supabase | share links, snapshot lifecycle, report begin/complete/fail | business rules, multi-table and atomic writes, anything the browser must not bypass | work over seconds, side effects outside the database |
 | Supabase Auth | Supabase | sign-in, sign-up, sessions, bilingual email templates | identity, sessions, auth emails | roles (they live in tables or JWT claims, never `user_metadata`) |
 | Supabase Storage | Supabase | `listing-photos` bucket | files with RLS, signed URLs | image transformation (paid feature, not used) |
