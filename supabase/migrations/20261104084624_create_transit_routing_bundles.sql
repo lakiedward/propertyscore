@@ -15,6 +15,8 @@ create index transit_routing_bundles_city_id_idx on private.transit_routing_bund
 
 alter table private.transit_routing_bundles enable row level security;
 
+revoke all on private.transit_routing_bundles from anon, authenticated;
+
 create trigger transit_routing_bundles_set_updated_at
   before update on private.transit_routing_bundles
   for each row execute function private.set_updated_at();
