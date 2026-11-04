@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(25);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -102,6 +102,17 @@ select throws_ok(
   'Key destinations use the six known kinds'
 );
 
+select is(
+  (
+    select count(distinct city.slug)
+    from private.key_destinations destination
+    join public.cities city on city.id = destination.city_id
+    where destination.kind in ('center', 'station')
+  ),
+  9::bigint,
+  'Every city starts with a centre and a railway station among its key destinations'
+);
+
 select throws_ok(
   format($$
     insert into private.transit_feeds (snapshot_id, city_id, source, source_url, status)
@@ -196,6 +207,24 @@ select throws_ok(
   'A matrix row holds whole two-byte values'
 );
 
+select lives_ok(
+  format($$
+    insert into private.transit_routing_bundles (snapshot_id, city_id, reference_date, osm_pbf, gtfs_archives)
+    values (%L, %L, '2026-11-04', '\x01'::bytea, array['\x02'::bytea])
+  $$, :'snapshot_id', :'sibiu_id'),
+  'The network a city was routed on is kept with its snapshot'
+);
+
+select throws_ok(
+  format($$
+    insert into private.transit_routing_bundles (snapshot_id, city_id, reference_date, osm_pbf, gtfs_archives)
+    values (%L, (select id from public.cities where slug = 'cluj-napoca'), '2026-11-04', '\x01'::bytea, array[]::bytea[])
+  $$, :'snapshot_id'),
+  '23514',
+  null,
+  'A routing network needs at least one GTFS archive'
+);
+
 set local role anon;
 set local request.jwt.claims = '{"role": "anon"}';
 
@@ -228,6 +257,24 @@ select throws_ok(
   '42501',
   null,
   'A signed-in user cannot read the key destinations'
+);
+
+select throws_ok(
+  $$ select count(*) from private.transit_routing_bundles $$,
+  '42501',
+  null,
+  'A signed-in user cannot read the routing networks'
+);
+
+reset role;
+set local role anon;
+set local request.jwt.claims = '{"role": "anon"}';
+
+select throws_ok(
+  $$ select count(*) from private.transit_routing_bundles $$,
+  '42501',
+  null,
+  'A visitor cannot read the routing networks'
 );
 
 select * from finish();
