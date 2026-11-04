@@ -2,6 +2,7 @@ import { join } from 'node:path';
 
 import type { JsonObject } from '../../db/sql.ts';
 import { WorkerError } from '../../lib/errors.ts';
+import { type DistanceMethod, walkCellCandidates } from '../../routing/walk-access.ts';
 import {
   cityBoundingBox,
   downloadOsmExtract,
@@ -14,12 +15,15 @@ import type { ScoreModule } from '../score-module.ts';
 import { writeCategoryScores } from '../write-category-scores.ts';
 import {
   calibrate,
+  type CellDistances,
   type CellSafety,
   type CityCoverage,
   groupCellInputs,
   lightingExcludedCities,
   reachByType,
   scoreCells,
+  walkedCellDistances,
+  walkingTypes,
 } from './safety.cells.ts';
 import {
   classifySafetyFeature,
@@ -32,6 +36,7 @@ import {
   insertSafetyFeatures,
   listCellInputs,
   listCellNeighbours,
+  listSafetyWalkCandidates,
   type SafetyFeatureRow,
   writeSafetyLayers,
   writeSafetyStats,
@@ -40,6 +45,8 @@ import { lineLengthKm } from './safety.geometry.ts';
 import { type SafetyParams, safetyParamsSchema, type SafetyType } from './safety.params.ts';
 
 const INSERT_BATCH = 1000;
+
+const WALK_CANDIDATES = 8;
 
 type CityImport = CityCoverage & {
   cityId: string;
@@ -54,6 +61,37 @@ function parseParams(value: unknown): SafetyParams {
     throw new WorkerError('invalid_safety_params', `Invalid params.safety: ${fields}`);
   }
   return parsed.data;
+}
+
+async function cellDistances(
+  context: Parameters<ScoreModule['run']>[0],
+  cityId: string,
+  params: SafetyParams,
+  reach: Record<string, number>,
+): Promise<CellDistances[]> {
+  const { sql, snapshotId, router } = context;
+  const walked = router ? walkingTypes(params) : [];
+  const straightReach = Object.fromEntries(
+    Object.entries(reach).filter(([type]) => !walked.some((walkedType) => walkedType === type)),
+  );
+  const straight = (await listCellInputs(sql, snapshotId, cityId, straightReach)).map((row) => ({
+    cellId: row.cell_id,
+    type: row.feature_type,
+    distances: row.distances,
+    nightStates: row.night_states,
+  }));
+  if (!router || walked.length === 0) return straight;
+  const candidates = await listSafetyWalkCandidates(
+    sql,
+    snapshotId,
+    cityId,
+    walked.map((type) => ({
+      type,
+      searchRadiusM: reach[type] ?? params.types[type].radius_m,
+      maxCandidates: WALK_CANDIDATES,
+    })),
+  );
+  return [...straight, ...walkedCellDistances(await walkCellCandidates(router, candidates))];
 }
 
 export const safetyModule: ScoreModule = {
@@ -140,21 +178,14 @@ export const safetyModule: ScoreModule = {
               neighbourIds: row.neighbour_ids,
               isResidential: row.is_residential,
             })),
-            groupCellInputs(
-              (await listCellInputs(sql, snapshotId, city.cityId, reach)).map((row) => ({
-                cellId: row.cell_id,
-                type: row.feature_type,
-                distances: row.distances,
-                nightStates: row.night_states,
-              })),
-              params,
-            ),
+            groupCellInputs(await cellDistances(context, city.cityId, params, reach), params),
             params,
             excluded,
           );
       scored.push(...cells);
 
-      const distanceMethod = 'straight_line';
+      const distanceMethod: DistanceMethod =
+        context.router && walkingTypes(params).length > 0 ? 'pedestrian_routing' : 'straight_line';
       await writeCategoryScores(
         sql,
         snapshotId,

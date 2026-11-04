@@ -39,7 +39,7 @@ export type ComputeWalkAccessOptions = {
   concurrency?: number;
 };
 
-const candidateSchema = z.object({
+export const candidateSchema = z.object({
   key: z.string(),
   poi_id: z.string(),
   lng: z.number(),
@@ -55,6 +55,44 @@ const cellSchema = z.object({
 });
 
 const CELL_BATCH = 200;
+
+export type CellCandidates<T extends Candidate> = {
+  cell_id: string;
+  lng: number;
+  lat: number;
+  candidates: T[];
+};
+
+type RoutedCandidate<T extends Candidate> = T & { leg: Leg | null };
+
+export type RoutedCell<T extends Candidate> = {
+  cellId: string;
+  routed: RoutedCandidate<T>[];
+};
+
+export async function walkCellCandidates<T extends Candidate>(
+  router: ValhallaClient,
+  cells: readonly CellCandidates<T>[],
+  options: { walkSpeedKmh?: number; concurrency?: number } = {},
+): Promise<RoutedCell<T>[]> {
+  const { walkSpeedKmh, concurrency = 4 } = options;
+  return mapWithConcurrency(cells, concurrency, async (cell) => {
+    if (cell.candidates.length === 0) return { cellId: cell.cell_id, routed: [] };
+    const [row] = await router.matrix({
+      costing: 'pedestrian',
+      sources: [{ lng: cell.lng, lat: cell.lat }],
+      targets: cell.candidates,
+      ...(walkSpeedKmh === undefined ? {} : { walkSpeedKmh }),
+    });
+    return {
+      cellId: cell.cell_id,
+      routed: cell.candidates.map((candidate, index) => ({
+        ...candidate,
+        leg: row?.[index] ?? null,
+      })),
+    };
+  });
+}
 
 export function straightLineLeg(meters: number, walkSpeedKmh: number, detourFactor: number): Leg {
   const walked = meters * detourFactor;

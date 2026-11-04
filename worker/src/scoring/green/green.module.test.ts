@@ -6,7 +6,7 @@ import { createSql, type Sql } from '../../db/sql.ts';
 import { createLogger } from '../../lib/logger.ts';
 import { buildSnapshot } from '../../snapshot/build-snapshot.ts';
 import { hasOsmium, prepareSourcesDir } from '../../test/osm-fixture.ts';
-import { greenModule, scoreGreenCell } from './green.module.ts';
+import { greenModule, routedWalks, scoreGreenCell } from './green.module.ts';
 import { greenReportSection } from './green.report.ts';
 
 const params = {
@@ -46,6 +46,81 @@ describe('scoreGreenCell', () => {
       nearest_small: { green_area_id: 'park', walk_m: 720 },
       distance_method: 'straight_line',
       components: { c4: 1, c5: null },
+    });
+  });
+});
+
+describe('routedWalks', () => {
+  const leg = (meters: number) => ({ seconds: Math.round(meters / 1.25), meters });
+  const park = (key: 'small' | 'large', id: string, meters: number | null) => ({
+    key,
+    poi_id: id,
+    lng: 24.1,
+    lat: 45.8,
+    straight_m: 100,
+    leg: meters === null ? null : leg(meters),
+  });
+
+  it('keeps the shortest walk to each park size and ignores parks without a route', () => {
+    const walks = routedWalks({
+      cellId: 'cell',
+      routed: [
+        park('small', 'near-by-air', null),
+        park('small', 'square', 640.4),
+        park('small', 'garden', 410.6),
+        park('large', 'forest', 2350),
+      ],
+    });
+
+    expect(walks).toEqual({
+      small: { green_area_id: 'garden', walk_m: 411 },
+      large: { green_area_id: 'forest', walk_m: 2350 },
+      distanceMethod: 'pedestrian_routing',
+    });
+  });
+
+  it('scores the walked distance and records the routing method', () => {
+    const measure = {
+      cell_id: 'cell',
+      shares: { '300': 0.121, '500': 0.184, '1000': 0.241 },
+      nearest_small_id: 'park',
+      nearest_small_m: 553.8,
+      nearest_large_id: 'park',
+      nearest_large_m: 553.8,
+    };
+    const walks = routedWalks({
+      cellId: 'cell',
+      routed: [park('small', 'park', 300), park('large', 'park', 1000)],
+    });
+
+    const row = scoreGreenCell(measure, params, walks);
+
+    expect(row.inputs).toMatchObject({
+      nearest_small: { green_area_id: 'park', walk_m: 300 },
+      nearest_large: { green_area_id: 'park', walk_m: 1000 },
+      distance_method: 'pedestrian_routing',
+      components: { c3: 1, c4: 1 },
+    });
+    expect(row.score).toBeGreaterThan(scoreGreenCell(measure, params).score ?? 0);
+  });
+
+  it('gives no walking points when no park of that size can be reached', () => {
+    const row = scoreGreenCell(
+      {
+        cell_id: 'cell',
+        shares: { '500': 0, '1000': 0 },
+        nearest_small_id: 'park',
+        nearest_small_m: 900,
+        nearest_large_id: null,
+        nearest_large_m: null,
+      },
+      params,
+      routedWalks({ cellId: 'cell', routed: [park('small', 'park', null)] }),
+    );
+
+    expect(row.inputs).toMatchObject({
+      nearest_small: { green_area_id: null, walk_m: null },
+      components: { c3: 0, c4: 0 },
     });
   });
 });

@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(24);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -101,6 +101,52 @@ select results_eq(
 select ok(
   (select bool_and((shares ->> '500')::numeric between 0 and 1) from measured),
   'Every share is between 0 and 1'
+);
+
+create temporary table park_walks on commit drop as
+select * from private.green_park_walk_candidates(
+  :'snapshot_id', :'sibiu_id',
+  '[{"key": "small", "min_ha": 0.5, "search_radius_m": 1200, "max_candidates": 1},
+    {"key": "large", "min_ha": 5, "search_radius_m": 3000, "max_candidates": 5}]'
+);
+
+select is(
+  (select count(*)::integer from park_walks),
+  (select count(*)::integer from private.cell_scores where snapshot_id = :'snapshot_id'),
+  'Every cell of the city gets its list of parks to walk to'
+);
+
+select results_eq(
+  format(
+    $$ select c ->> 'poi_id' = m.nearest_large_id::text, (c ->> 'straight_m')::numeric,
+         abs(extensions.st_x(g.center::extensions.geometry) - (c ->> 'lng')::float8) < 1e-9
+       from park_walks w
+       join measured m on m.cell_id = w.cell_id
+       join private.grid_cells g on g.id = w.cell_id
+       cross join lateral jsonb_array_elements(w.candidates) as c
+       where w.cell_id = %L and c ->> 'key' = 'large' $$,
+    :'park_cell'
+  ),
+  $$ values (true, 0::numeric, true) $$,
+  'A cell inside a large park walks to that park from where it stands'
+);
+
+select ok(
+  (select bool_and(
+     (select count(*) from jsonb_array_elements(w.candidates) as c where c ->> 'key' = 'small') <= 1
+     and not exists (
+       select 1 from jsonb_array_elements(w.candidates) as c
+       where (c ->> 'key' = 'small' and (c ->> 'straight_m')::numeric > 1200)
+          or (c ->> 'key' = 'large' and (c ->> 'straight_m')::numeric > 3000)
+     ))
+   from park_walks w),
+  'Each size keeps only its nearest parks within its search radius'
+);
+
+select is(
+  (select candidates from park_walks where cell_id = :'far_cell'),
+  '[]'::jsonb,
+  'A cell with no park within reach has nothing to walk to'
 );
 
 create temporary table surroundings on commit drop as
