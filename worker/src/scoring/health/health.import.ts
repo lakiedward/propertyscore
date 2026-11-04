@@ -186,6 +186,7 @@ export function extractCnasProviders(
   rows: readonly (readonly string[])[],
   columns: TableColumns,
   cityName: string,
+  seen = new Set<string>(),
 ): ProviderExtraction {
   const city = normalizePlace(cityName);
   const body = rows
@@ -203,7 +204,6 @@ export function extractCnasProviders(
   if (columns.locality !== null) localityFilter = 'column';
   else if (body.some((row) => mentionsCity(row.address))) localityFilter = 'address';
 
-  const seen = new Set<string>();
   const result: ProviderExtraction = {
     rows: [],
     skippedOutsideCity: 0,
@@ -250,6 +250,34 @@ export function cnasListEntries(
     entries.push({ file: row.fisier, kind, listDate: row.data_listei, sourceRef });
   }
   return { entries, skipped };
+}
+
+export type CnasListGroup = {
+  kind: CnasProviderKind;
+  listDate: string;
+  files: string[];
+  sourceRef: string;
+};
+
+export function groupCnasLists(entries: readonly CnasListEntry[]): CnasListGroup[] {
+  const groups = new Map<string, CnasListGroup & { refs: string[] }>();
+  for (const entry of entries) {
+    const key = `${entry.kind}|${entry.listDate}`;
+    const group = groups.get(key) ?? {
+      kind: entry.kind,
+      listDate: entry.listDate,
+      files: [],
+      refs: [],
+      sourceRef: '',
+    };
+    group.files.push(entry.file);
+    group.refs.push(entry.sourceRef);
+    groups.set(key, group);
+  }
+  return [...groups.values()].map(({ refs, ...group }) => ({
+    ...group,
+    sourceRef: refs.join(' | ').slice(0, 500),
+  }));
 }
 
 function parseCoordinate(value: string, min: number, max: number): number | null {

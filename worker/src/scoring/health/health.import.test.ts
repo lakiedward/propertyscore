@@ -5,6 +5,7 @@ import {
   emergencyRow,
   extractCnasProviders,
   findTableColumns,
+  groupCnasLists,
   normalizePlace,
 } from './health.import.ts';
 
@@ -194,5 +195,52 @@ describe('emergencyRow', () => {
     expect(emergencyRow({ ...base, nume: ' ' })).toBeNull();
     expect(emergencyRow({ ...base, sursa_act: '', sursa_url: '' })).toBeNull();
     expect(emergencyRow({ ...base, lat: '91' })?.location).toBeNull();
+  });
+});
+
+describe('groupCnasLists', () => {
+  it('reads the files of one kind and date as one list, deduplicated across files', () => {
+    const groups = groupCnasLists([
+      {
+        file: 'ambulatoriu-clinic.xlsx',
+        kind: 'specialist_outpatient',
+        listDate: '2026-10-01',
+        sourceRef: 'a.xlsx',
+      },
+      { file: 'farmacii.xlsx', kind: 'pharmacy', listDate: '2026-10-01', sourceRef: 'f.xlsx' },
+      {
+        file: 'ambulatoriu-paraclinic.xlsx',
+        kind: 'specialist_outpatient',
+        listDate: '2026-10-01',
+        sourceRef: 'p.xlsx',
+      },
+    ]);
+    expect(groups).toEqual([
+      {
+        kind: 'specialist_outpatient',
+        listDate: '2026-10-01',
+        files: ['ambulatoriu-clinic.xlsx', 'ambulatoriu-paraclinic.xlsx'],
+        sourceRef: 'a.xlsx | p.xlsx',
+      },
+      { kind: 'pharmacy', listDate: '2026-10-01', files: ['farmacii.xlsx'], sourceRef: 'f.xlsx' },
+    ]);
+
+    const clinic = [
+      ['Denumire', 'Adresa'],
+      ['Clinica Unu', 'Str. A nr. 1'],
+      ['Lab Doi', 'Str. B nr. 2'],
+    ];
+    const lab = [
+      ['Denumire', 'Adresa'],
+      ['Lab Doi', 'Str. B nr. 2'],
+      ['Lab Trei', 'Str. C nr. 3'],
+    ];
+    const seen = new Set<string>();
+    const rows = [clinic, lab].flatMap((table) => {
+      const columns = findTableColumns(table);
+      if (columns === null) throw new Error('columns not found');
+      return extractCnasProviders(table, columns, 'Sibiu', seen).rows.map((row) => row.name);
+    });
+    expect(rows).toEqual(['Clinica Unu', 'Lab Doi', 'Lab Trei']);
   });
 });

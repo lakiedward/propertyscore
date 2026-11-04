@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(10);
+select plan(12);
 
 select id as oradea_id from public.cities where slug = 'oradea' \gset
 
@@ -80,6 +80,22 @@ select is(
   (select count(*)::integer from private.emergency_hospitals where city_id = :'oradea_id' and name = 'Spitalul de Copii'),
   0,
   'The removed unit leaves no empty validity range behind'
+);
+
+select is(
+  private.sync_emergency_hospitals(:'oradea_id', '2026-11-01', '[
+    {"name": "Spitalul Județean", "level": "upu", "is_pediatric": false, "source_ref": "OMS nou", "lng": 21.9301, "lat": 47.0601},
+    {"name": "Spitalul Județean", "level": "upu", "is_pediatric": true, "source_ref": "OMS nou", "lng": 21.9302, "lat": 47.0602},
+    {"name": "Spitalul Municipal", "level": "cpu", "is_pediatric": false, "source_ref": "OMS nou", "lng": 21.92, "lat": 47.05}
+  ]'::jsonb),
+  '{"kept": 2, "closed": 0, "inserted": 1}'::jsonb,
+  'A new unit with the name of a kept one is still opened'
+);
+
+select results_eq(
+  format($$ select is_pediatric from private.emergency_hospitals where city_id = %L and name = 'Spitalul Județean' and valid_to is null order by is_pediatric $$, :'oradea_id'),
+  $$ values (false), (true) $$,
+  'The adult and the pediatric unit of the same hospital are both open'
 );
 
 set local role authenticated;

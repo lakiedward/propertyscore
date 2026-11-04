@@ -15,6 +15,7 @@ import {
   emergencyRow,
   extractCnasProviders,
   findTableColumns,
+  groupCnasLists,
   readCsvFile,
   readTableFile,
   type EmergencyRow,
@@ -53,37 +54,52 @@ async function importCnasLists(
 
   let lists = 0;
   let providers = 0;
-  for (const entry of entries) {
-    const file = basename(entry.file);
-    const log = { city: city.slug, file, kind: entry.kind, list_date: entry.listDate };
-    let table: string[][];
-    try {
-      table = await readTableFile(join(cityDir, file));
-    } catch (error) {
-      input.logger.warn('cnas list unreadable', { ...log, code: errorCode(error) });
-      continue;
+  for (const group of groupCnasLists(entries)) {
+    const seen = new Set<string>();
+    const rows: { name: string; address: string | null }[] = [];
+    const counts = { skipped_outside_city: 0, skipped_duplicate: 0, files_read: 0 };
+    for (const entry of group.files) {
+      const file = basename(entry);
+      const log = { city: city.slug, file, kind: group.kind, list_date: group.listDate };
+      let table: string[][];
+      try {
+        table = await readTableFile(join(cityDir, file));
+      } catch (error) {
+        input.logger.warn('cnas list unreadable', { ...log, code: errorCode(error) });
+        continue;
+      }
+      const columns = findTableColumns(table);
+      if (columns === null) {
+        input.logger.warn('cnas list columns not found', log);
+        continue;
+      }
+      const extraction = extractCnasProviders(table, columns, city.name, seen);
+      rows.push(...extraction.rows);
+      counts.files_read += 1;
+      counts.skipped_outside_city += extraction.skippedOutsideCity;
+      counts.skipped_duplicate += extraction.skippedDuplicate;
+      input.logger.info('cnas file read', {
+        ...log,
+        providers: extraction.rows.length,
+        locality_filter: extraction.localityFilter,
+      });
     }
-    const columns = findTableColumns(table);
-    if (columns === null) {
-      input.logger.warn('cnas list columns not found', log);
-      continue;
-    }
-    const extraction = extractCnasProviders(table, columns, city.name);
+    if (counts.files_read === 0) continue;
     const written = await replaceCnasProviders(input.sql, {
       cityId: city.id,
-      kind: entry.kind,
-      listDate: entry.listDate,
-      sourceRef: entry.sourceRef,
-      rows: extraction.rows,
+      kind: group.kind,
+      listDate: group.listDate,
+      sourceRef: group.sourceRef,
+      rows,
     });
     lists += 1;
     providers += written;
     input.logger.info('cnas list imported', {
-      ...log,
+      city: city.slug,
+      kind: group.kind,
+      list_date: group.listDate,
       providers: written,
-      skipped_outside_city: extraction.skippedOutsideCity,
-      skipped_duplicate: extraction.skippedDuplicate,
-      locality_filter: extraction.localityFilter,
+      ...counts,
     });
   }
   return { lists, providers };
@@ -140,6 +156,10 @@ async function importEmergencyHospitals(
       continue;
     }
     const placed = await placeHospitals(input, city, cityRows);
+    if (placed.length === 0) {
+      input.logger.warn('emergency units none placed, city kept as is', { city: city.slug });
+      continue;
+    }
     const result = await syncEmergencyHospitals(input.sql, city.id, input.validFrom, placed);
     synced += 1;
     input.logger.info('emergency units imported', {

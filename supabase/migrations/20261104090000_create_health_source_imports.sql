@@ -37,7 +37,6 @@ set search_path = ''
 as $$
 declare
   v_unchanged uuid[];
-  v_kept_names text[];
   v_removed integer;
   v_closed integer;
   v_inserted integer;
@@ -63,10 +62,10 @@ begin
       and i.level = h.level
       and i.is_pediatric = h.is_pediatric
       and extensions.st_dwithin(i.location, h.location, 100)
-    returning h.id, h.name
+    returning h.id
   )
-  select coalesce(array_agg(u.id), '{}'), coalesce(array_agg(u.name), '{}')
-  into v_unchanged, v_kept_names
+  select coalesce(array_agg(u.id), '{}')
+  into v_unchanged
   from unchanged u;
 
   delete from private.emergency_hospitals h
@@ -89,7 +88,15 @@ begin
   from jsonb_to_recordset(coalesce(p_rows, '[]'::jsonb)) as r (
     name text, level text, is_pediatric boolean, source_ref text, lng double precision, lat double precision
   )
-  where r.name <> all (v_kept_names);
+  where not exists (
+    select 1
+    from private.emergency_hospitals h
+    where h.id = any (v_unchanged)
+      and h.name = r.name
+      and h.level = r.level::private.emergency_level
+      and h.is_pediatric = r.is_pediatric
+      and extensions.st_dwithin(h.location, extensions.st_point(r.lng, r.lat, 4326)::extensions.geography, 100)
+  );
   get diagnostics v_inserted = row_count;
 
   return jsonb_build_object('kept', cardinality(v_unchanged), 'closed', v_removed + v_closed, 'inserted', v_inserted);
