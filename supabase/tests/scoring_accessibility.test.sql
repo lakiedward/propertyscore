@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(25);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -100,6 +100,17 @@ select throws_ok(
   '23514',
   null,
   'Key destinations use the six known kinds'
+);
+
+select is(
+  (
+    select count(distinct city.slug)
+    from private.key_destinations destination
+    join public.cities city on city.id = destination.city_id
+    where destination.kind in ('center', 'station')
+  ),
+  9::bigint,
+  'Every city starts with a centre and a railway station among its key destinations'
 );
 
 select throws_ok(
