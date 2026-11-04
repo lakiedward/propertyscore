@@ -54,7 +54,7 @@ const seismicParamsSchema = z.object({
   levels: levelsSchema,
   top_level: levelSchema,
   question_codes: z.array(codeSchema),
-  building_periods: buildingPeriodsSchema,
+  building_periods: buildingPeriodsSchema.optional(),
   source: z.object({
     dataset: z.string().min(1).max(80),
     digitized_by: z.string().min(1).max(80),

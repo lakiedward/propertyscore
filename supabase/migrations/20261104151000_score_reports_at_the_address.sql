@@ -253,7 +253,7 @@ begin
 
   if p_scores is not null and (
     jsonb_typeof(p_scores -> 'categories') is distinct from 'object'
-    or jsonb_typeof(p_scores -> 'overall') not in ('number', 'null')
+    or coalesce(jsonb_typeof(p_scores -> 'overall') in ('number', 'null'), false) is false
   ) then
     raise exception using errcode = 'P0001', message = 'report_scores_invalid';
   end if;

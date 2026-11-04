@@ -12,10 +12,20 @@ export type AddressScores = {
   categories: Record<CategoryKey, number | null>;
 };
 
+function inverseDistanceWeights(point: Point, corners: readonly Point[]): number[] {
+  const distances = corners.map((corner) => Math.hypot(corner.x - point.x, corner.y - point.y));
+  const exact = distances.findIndex((distance) => distance === 0);
+  if (exact >= 0) return distances.map((_, index) => (index === exact ? 1 : 0));
+  const inverse = distances.map((distance) => 1 / distance);
+  const total = inverse.reduce((sum, value) => sum + value, 0);
+  return inverse.map((value) => value / total);
+}
+
 export function barycentricWeights(point: Point, corners: readonly Point[]): number[] {
   const [a, b, c] = corners;
   if (!a) return [];
-  if (!b || !c) return corners.map(() => 1 / corners.length);
+  if (!b) return [1];
+  if (!c) return inverseDistanceWeights(point, [a, b]);
   const determinant = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y);
   if (Math.abs(determinant) < 1e-9) return [1, 0, 0];
   const wa = ((b.y - c.y) * (point.x - c.x) + (c.x - b.x) * (point.y - c.y)) / determinant;

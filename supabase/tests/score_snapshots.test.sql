@@ -6,12 +6,12 @@ select plan(19);
 
 select results_eq(
   $$ select label, (select sum(value::numeric) from jsonb_each_text(weights)), params ->> 'cell_size_m' from public.scoring_versions where kind = 'online' and is_active $$,
-  $$ values ('v1'::text, 100::numeric, '175'::text) $$,
-  'The active online formula v1 has weights summing to 100 and a 175 m cell'
+  $$ values ('v2'::text, 100::numeric, '175'::text) $$,
+  'The active online formula v2 has weights summing to 100 and a 175 m cell'
 );
 
 select throws_ok(
-  $$ insert into public.scoring_versions (kind, label, is_active, activated_at) values ('online', 'v2', true, now()) $$,
+  $$ insert into public.scoring_versions (kind, label, is_active, activated_at) values ('online', 'v9', true, now()) $$,
   '23505',
   null,
   'Only one formula version is active per kind'
@@ -25,7 +25,7 @@ select throws_ok(
 );
 
 select lives_ok(
-  $$ update public.scoring_versions set params = params || '{"green": {"share_cap": 0.3}}' where label = 'v1' $$,
+  $$ update public.scoring_versions set params = params || '{"green": {"share_cap": 0.3}}' where label = 'v2' $$,
   'A formula version no snapshot uses can still change'
 );
 
@@ -48,14 +48,14 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$ update public.scoring_versions set weights = weights || '{"green": 20}' where label = 'v1' $$,
+  $$ update public.scoring_versions set weights = weights || '{"green": 20}' where label = 'v2' $$,
   'P0001',
   'scoring_version_in_use',
   'A formula version used by a snapshot is frozen'
 );
 
 select lives_ok(
-  $$ update public.scoring_versions set is_active = is_active where label = 'v1' $$,
+  $$ update public.scoring_versions set is_active = is_active where label = 'v2' $$,
   'A used formula version can still be touched without changing its formula'
 );
 

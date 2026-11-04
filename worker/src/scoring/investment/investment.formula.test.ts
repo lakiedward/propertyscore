@@ -225,6 +225,27 @@ describe('buildInvestmentReport', () => {
     expect(report.declared).toEqual({ area_m2: 60, rooms: 3, floor: 4, construction_year: 1982 });
   });
 
+  it('does not narrow by floor or period on a formula without those filters', () => {
+    const sale = [
+      ...Array.from({ length: 12 }, (_, index) => listing(index, { eurM2: 2000, floor: 0 })),
+      ...Array.from({ length: 12 }, (_, index) => listing(30 + index, { eurM2: 2000, floor: 3 })),
+    ];
+    const v1 = parseInvestmentParams({
+      ...PARAMS,
+      detail_filter_min_count: undefined,
+      building_period_bounds: undefined,
+    });
+    const report = buildInvestmentReport(
+      designInputs({
+        params: v1,
+        sale,
+        declared: { areaM2: 60, rooms: 3, floor: 0, constructionYear: 1975 },
+      }),
+    );
+
+    expect(report.sale).toMatchObject({ floor_filter: null, period_filter: null, count: 24 });
+  });
+
   it('keeps the wider set when too few listings match the declared floor', () => {
     const sale = [
       ...Array.from({ length: 20 }, (_, index) => listing(index, { eurM2: 2000, floor: 3 })),

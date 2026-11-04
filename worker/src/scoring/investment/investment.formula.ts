@@ -270,13 +270,22 @@ function narrowComparables(
 ): { listings: MarketListing[]; filters: SaleFilters } {
   let kept = listings;
   const filters: SaleFilters = { ...NO_FILTERS };
+  const detailMin = params.detail_filter_min_count;
+  const bounds = params.building_period_bounds;
   const steps = [
     { key: 'rooms', value: roomsWindow(declared.rooms), min: params.rooms_filter_min_count },
-    { key: 'floor', value: floorGroup(declared.floor), min: params.detail_filter_min_count },
+    {
+      key: 'floor',
+      value: detailMin === undefined ? null : floorGroup(declared.floor),
+      min: detailMin ?? 0,
+    },
     {
       key: 'period',
-      value: periodRange(declared.constructionYear, params.building_period_bounds),
-      min: params.detail_filter_min_count,
+      value:
+        detailMin === undefined || bounds === undefined
+          ? null
+          : periodRange(declared.constructionYear, bounds),
+      min: detailMin ?? 0,
     },
   ] as const;
   for (const step of steps) {

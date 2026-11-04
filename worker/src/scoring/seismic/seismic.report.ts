@@ -39,7 +39,8 @@ export function seismicReportFromHazards(input: {
 }): SeismicReport {
   const { params } = input;
   const year = input.constructionYear ?? null;
-  const period = year === null ? undefined : buildingPeriod(year, params.building_periods);
+  const periods = params.building_periods ?? [];
+  const period = year === null ? undefined : buildingPeriod(year, periods);
   const building =
     year === null || period === undefined
       ? null

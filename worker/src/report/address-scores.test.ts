@@ -25,8 +25,12 @@ describe('barycentricWeights', () => {
     for (const weight of barycentricWeights(corner, [A, B, C])) expect(weight).toBeCloseTo(1 / 3);
   });
 
-  it('falls back to equal weights with fewer than three cells', () => {
-    expect(barycentricWeights(A, [A, B])).toEqual([0.5, 0.5]);
+  it('weights two cells by inverse distance at the edge of the coverage', () => {
+    const [a, b] = barycentricWeights({ x: WIDTH / 4, y: 0 }, [A, B]);
+    expect(a).toBeCloseTo(0.75);
+    expect(b).toBeCloseTo(0.25);
+    expect(barycentricWeights(A, [A, B])).toEqual([1, 0]);
+    expect(barycentricWeights(B, [A])).toEqual([1]);
   });
 });
 

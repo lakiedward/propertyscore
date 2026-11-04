@@ -94,30 +94,42 @@ as $$
 $$;
 
 update public.scoring_versions
-set params = jsonb_set(
+set is_active = false
+where kind = 'online' and label = 'v1' and is_active;
+
+insert into public.scoring_versions (kind, label, weights, params, is_active, activated_at, created_by)
+select
+  'online',
+  'v2',
+  v.weights,
   jsonb_set(
-    params,
-    '{investment}',
-    params -> 'investment' || '{"detail_filter_min_count": 12, "building_period_bounds": [1990, 2010]}'::jsonb
+    jsonb_set(
+      v.params,
+      '{investment}',
+      v.params -> 'investment' || '{"detail_filter_min_count": 12, "building_period_bounds": [1990, 2010]}'::jsonb
+    ),
+    '{seismic}',
+    v.params -> 'seismic' || '{
+      "building_periods": [
+        {"key": "before_1963", "until_year": 1962, "codes": [], "question_codes": ["seismic_risk_class"]},
+        {"key": "p13", "until_year": 1977, "codes": ["P13-63", "P13-70"], "question_codes": ["seismic_risk_class"]},
+        {"key": "p100_1978", "until_year": 1991, "codes": ["P100-78", "P100-81", "P100-90"], "question_codes": []},
+        {"key": "p100_1992", "until_year": 2006, "codes": ["P100-92"], "question_codes": []},
+        {"key": "p100_2006", "until_year": null, "codes": ["P100-1/2006", "P100-1/2013"], "question_codes": []}
+      ]
+    }'::jsonb
+  ) || jsonb_build_object(
+    'questions',
+    '{
+      "always": ["bedroom_facade_side"],
+      "unknown_construction_year": "construction_year",
+      "stairs": {"min_floor": 3, "code": "stairs_without_elevator"},
+      "ground_floor": "ground_floor_damp_and_security",
+      "top_floor": "top_floor_roof_and_insulation"
+    }'::jsonb
   ),
-  '{seismic}',
-  params -> 'seismic' || '{
-    "building_periods": [
-      {"key": "before_1963", "until_year": 1962, "codes": [], "question_codes": ["seismic_risk_class"]},
-      {"key": "p13", "until_year": 1977, "codes": ["P13-63", "P13-70"], "question_codes": ["seismic_risk_class"]},
-      {"key": "p100_1978", "until_year": 1991, "codes": ["P100-78", "P100-81", "P100-90"], "question_codes": []},
-      {"key": "p100_1992", "until_year": 2006, "codes": ["P100-92"], "question_codes": []},
-      {"key": "p100_2006", "until_year": null, "codes": ["P100-1/2006", "P100-1/2013"], "question_codes": []}
-    ]
-  }'::jsonb
-) || jsonb_build_object(
-  'questions',
-  '{
-    "always": ["bedroom_facade_side"],
-    "unknown_construction_year": "construction_year",
-    "stairs": {"min_floor": 3, "code": "stairs_without_elevator"},
-    "ground_floor": "ground_floor_damp_and_security",
-    "top_floor": "top_floor_roof_and_insulation"
-  }'::jsonb
-)
-where kind = 'online' and label = 'v1';
+  true,
+  now(),
+  null
+from public.scoring_versions v
+where v.kind = 'online' and v.label = 'v1';

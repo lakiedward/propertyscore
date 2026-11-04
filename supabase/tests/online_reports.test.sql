@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(28);
+select plan(30);
 
 insert into auth.users (id, email)
 values
@@ -178,7 +178,7 @@ select results_eq(
       result -> 'green' -> 'parks'
     from public.online_reports where id = 'd0000000-0000-4000-8000-000000000002'
   $$,
-  $$ values ('sibiu'::text, '2026-10-31'::text, 'v1'::text, 69, 51, true, 50, 60, 60, 40, 80, 40, 20, '[]'::jsonb) $$,
+  $$ values ('sibiu'::text, '2026-10-31'::text, 'v2'::text, 69, 51, true, 50, 60, 60, 40, 80, 40, 20, '[]'::jsonb) $$,
   'The frozen result holds the city, the sources, the percentiles with ties at the middle rank, the city ranges and averages and the score sections'
 );
 
@@ -226,6 +226,27 @@ select results_eq(
   ),
   $$ values (55, 69, 'address'::text, 50, 80, 100) $$,
   'Address scores replace the cell scores and are ranked against the cells of the city, while the cell scores stay in the summary'
+);
+
+select results_eq(
+  format(
+    $$ select count(*)::integer from private.report_cell_neighbours(%L, %L) $$,
+    :'snapshot_id',
+    :'report_cell'
+  ),
+  format(
+    $$ select count(*)::integer from private.grid_cell_neighbours(%L, 175) where cell_id = %L $$,
+    :'sibiu_id',
+    :'report_cell'
+  ),
+  'The neighbours of a report cell are the same as the grid neighbours used by the snapshot'
+);
+
+select throws_ok(
+  format($$ select private.complete_online_report('d0000000-0000-4000-8000-000000000002', %L, %L, '{}', '{"categories": {}}') $$, :'snapshot_id', :'report_cell'),
+  'P0001',
+  'report_scores_invalid',
+  'Address scores without an overall score are refused'
 );
 
 select throws_ok(

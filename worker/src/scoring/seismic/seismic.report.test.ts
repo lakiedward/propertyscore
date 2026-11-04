@@ -109,6 +109,18 @@ describe('seismicReportFromHazards', () => {
     expect(report.question_codes).toEqual(['consolidation_and_expertise']);
   });
 
+  it('leaves the building out on a formula without design periods', () => {
+    const report = seismicReportFromHazards({
+      citySlug: 'bucuresti',
+      address: { ag_g: 0.3, distance_m: 0 },
+      cities: CITIES,
+      params: parseSeismicParams({ ...RAW_PARAMS, building_periods: undefined }),
+      constructionYear: 1972,
+    });
+    expect(report.building).toBeNull();
+    expect(report.question_codes).toEqual(['consolidation_and_expertise']);
+  });
+
   it('refuses building periods that do not end open', () => {
     expect(() =>
       parseSeismicParams({
