@@ -23,6 +23,7 @@ export async function generateReport(options: GenerateReportOptions): Promise<vo
     for (const section of options.sections) {
       const payload = await section.build({
         ...started,
+        reportId,
         sql,
         logger,
         router: options.router ?? null,
