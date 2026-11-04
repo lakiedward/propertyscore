@@ -196,7 +196,7 @@ export const accessibilityModule: ScoreModule = {
     const params = parseAccessibilityParams(context.params);
     const { sql, snapshotId, logger } = context;
     const extract = await downloadOsmExtract(
-      context.osmExtractUrl,
+      context.osmExtract,
       context.sourcesDir,
       context.period,
     );
@@ -236,7 +236,7 @@ export const accessibilityModule: ScoreModule = {
         feeds.push({
           source: 'osm',
           operator: null,
-          sourceUrl: context.osmExtractUrl,
+          sourceUrl: context.osmExtract.url,
           license: 'ODbL-1.0',
           feedVersion: osmDate,
           validFrom: null,

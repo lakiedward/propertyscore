@@ -189,7 +189,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('greenModule against the local dat
       citySlugs: ['sibiu'],
       scoreKeys: [],
       sourcesDir,
-      osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
       router: null,
       logger: createLogger('error', () => undefined),
     });

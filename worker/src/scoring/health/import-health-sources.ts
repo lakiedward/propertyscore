@@ -6,7 +6,7 @@ import { createLazyGeocoder, loadCityGeocoder } from '../../geocoding/city-geoco
 import { errorCode } from '../../lib/errors.ts';
 import type { Logger } from '../../lib/logger.ts';
 import { listCoveredCities, type CoveredCity } from '../../snapshot/snapshot.db.ts';
-import { downloadOsmExtract } from '../../sources/osm.ts';
+import { downloadOsmExtract, type OsmExtractSource } from '../../sources/osm.ts';
 import { replaceCnasProviders, syncEmergencyHospitals } from './health.db.ts';
 import {
   CNAS_LIST_COLUMNS,
@@ -29,7 +29,7 @@ export type ImportHealthSourcesInput = {
   validFrom: string;
   period: string;
   sourcesDir: string;
-  osmExtractUrl: string;
+  osmExtract: OsmExtractSource;
   logger: Logger;
 };
 
@@ -122,7 +122,7 @@ async function placeHospitals(
     loadCityGeocoder(
       input,
       city,
-      await downloadOsmExtract(input.osmExtractUrl, input.sourcesDir, input.period),
+      await downloadOsmExtract(input.osmExtract, input.sourcesDir, input.period),
     ),
   );
   const { placed, unplaced } = await placeEmergencyRows(rows, geocoder.geocode);

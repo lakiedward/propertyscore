@@ -10,6 +10,7 @@ import { WorkerError } from '../lib/errors.ts';
 export type DownloadOptions = {
   attempts?: number;
   backoffMs?: number;
+  headers?: Readonly<Record<string, string>>;
 };
 
 const DEFAULT_ATTEMPTS = 4;
@@ -31,14 +32,18 @@ function isRetryableStatus(status: number): boolean {
 
 class RetryableDownloadError extends WorkerError {}
 
-async function downloadAttempt(url: string, destination: string): Promise<void> {
+async function downloadAttempt(
+  url: string,
+  destination: string,
+  headers: Readonly<Record<string, string>>,
+): Promise<void> {
   let response: Response;
   const controller = new AbortController();
   const timer = setTimeout(() => {
     controller.abort();
   }, RESPONSE_TIMEOUT_MS);
   try {
-    response = await fetch(url, { signal: controller.signal });
+    response = await fetch(url, { headers, signal: controller.signal });
   } catch (error) {
     throw new RetryableDownloadError('source_download_failed', `Download unreachable: ${url}`, {
       cause: error,
@@ -77,7 +82,7 @@ export async function downloadOnce(
   const backoffMs = options.backoffMs ?? DEFAULT_BACKOFF_MS;
   for (let attempt = 1; ; attempt += 1) {
     try {
-      await downloadAttempt(url, destination);
+      await downloadAttempt(url, destination, options.headers ?? {});
       return destination;
     } catch (error) {
       if (!(error instanceof RetryableDownloadError) || attempt >= attempts) throw error;

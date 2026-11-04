@@ -104,7 +104,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('air module against the local data
       citySlugs: ['sibiu'],
       scoreKeys: [],
       sourcesDir,
-      osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
       router: null,
       logger: silentLogger,
     });

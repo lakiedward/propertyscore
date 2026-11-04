@@ -14,6 +14,11 @@ import { readActiveInvestmentParams } from './scoring/investment/investment.db.t
 import { importMarketListings } from './scoring/investment/market-import.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
 import { buildSnapshot } from './snapshot/build-snapshot.ts';
+import type { OsmExtractSource } from './sources/osm.ts';
+
+function osmExtractSource(env: Env): OsmExtractSource {
+  return { url: env.OSM_EXTRACT_URL, apiKey: env.OSM_EXTRACT_API_KEY ?? null };
+}
 
 function reportRouter(env: Env): ValhallaClient | null {
   return env.VALHALLA_URL ? createValhallaClient(env.VALHALLA_URL) : null;
@@ -34,7 +39,7 @@ async function runCommand(
         citySlugs: command.citySlugs,
         scoreKeys: command.scoreKeys,
         sourcesDir: env.SOURCES_DIR,
-        osmExtractUrl: env.OSM_EXTRACT_URL,
+        osmExtract: osmExtractSource(env),
         router: reportRouter(env),
         logger,
       });
@@ -75,7 +80,7 @@ async function runCommand(
         validFrom: command.validFrom,
         period: command.period,
         sourcesDir: env.SOURCES_DIR,
-        osmExtractUrl: env.OSM_EXTRACT_URL,
+        osmExtract: osmExtractSource(env),
         logger,
       });
       logger.info('import-health-sources done', {
