@@ -46,7 +46,7 @@ import { type SafetyParams, safetyParamsSchema, type SafetyType } from './safety
 
 const INSERT_BATCH = 1000;
 
-const WALK_CANDIDATES = 8;
+export const WALK_CANDIDATES = 8;
 
 type CityImport = CityCoverage & {
   cityId: string;
