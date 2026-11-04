@@ -53,21 +53,8 @@ export function PasswordResetPage() {
       <AuthStatusCard
         eyebrow={t('passwordReset.sent.eyebrow')}
         title={t('passwordReset.sent.title')}
-        actions={
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => {
-              requestReset.reset();
-              setSentTo(undefined);
-            }}
-            className="h-11 border-[1.5px] px-4.5 text-body font-bold"
-          >
-            {t('passwordReset.sent.otherEmail')}
-          </Button>
-        }
       >
-        <p className="text-body text-muted-foreground">
+        <p className="text-body leading-copy text-muted-foreground">
           <Trans
             t={t}
             i18nKey="passwordReset.sent.text"
@@ -81,6 +68,19 @@ export function PasswordResetPage() {
           onResend={async (captchaToken) => {
             await requestReset.mutateAsync({ email: sentTo, captchaToken });
           }}
+          secondaryAction={
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                requestReset.reset();
+                setSentTo(undefined);
+              }}
+              className="h-11 px-4.5 text-body font-bold"
+            >
+              {t('passwordReset.sent.otherEmail')}
+            </Button>
+          }
         />
       </AuthStatusCard>
     );

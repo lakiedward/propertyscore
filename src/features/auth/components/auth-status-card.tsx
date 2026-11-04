@@ -4,10 +4,9 @@ type AuthStatusCardProps = {
   eyebrow: string;
   title: string;
   children: ReactNode;
-  actions?: ReactNode;
 };
 
-export function AuthStatusCard({ eyebrow, title, children, actions }: AuthStatusCardProps) {
+export function AuthStatusCard({ eyebrow, title, children }: AuthStatusCardProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -28,7 +27,6 @@ export function AuthStatusCard({ eyebrow, title, children, actions }: AuthStatus
         {title}
       </h2>
       {children}
-      {actions ? <div className="flex flex-wrap gap-2.5">{actions}</div> : null}
     </div>
   );
 }

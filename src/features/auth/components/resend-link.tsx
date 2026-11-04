@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { MailIcon } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useErrorMessage } from '@/i18n/error-message';
@@ -14,9 +15,14 @@ type ResendState = { status: 'idle' | 'pending' | 'sent' } | { status: 'error'; 
 type ResendLinkProps = {
   onResend: (captchaToken: string | undefined) => Promise<void>;
   isCoolingDownAtStart?: boolean;
+  secondaryAction?: ReactNode;
 };
 
-export function ResendLink({ onResend, isCoolingDownAtStart = false }: ResendLinkProps) {
+export function ResendLink({
+  onResend,
+  isCoolingDownAtStart = false,
+  secondaryAction,
+}: ResendLinkProps) {
   const { t } = useTranslation('auth');
   const errorMessage = useErrorMessage();
   const captcha = useCaptcha();
@@ -49,19 +55,23 @@ export function ResendLink({ onResend, isCoolingDownAtStart = false }: ResendLin
         </AuthNotice>
       ) : null}
       {cooldown.isActive ? null : <Captcha key={captcha.widgetKey} onToken={captcha.setToken} />}
-      <Button
-        type="button"
-        variant="outline"
-        disabled={cooldown.isActive || state.status === 'pending'}
-        onClick={() => void handleResend()}
-        className="h-11 self-start border-[1.5px] px-4.5 text-body font-bold"
-      >
-        {cooldown.isActive
-          ? t('resend.wait', { count: cooldown.remaining })
-          : state.status === 'pending'
-            ? t('resend.pending')
-            : t('resend.action')}
-      </Button>
+      <div className="flex flex-wrap gap-2.5">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={cooldown.isActive || state.status === 'pending'}
+          onClick={() => void handleResend()}
+          className="h-11 border-[1.5px] px-4.5 text-body font-bold tabular-nums"
+        >
+          <MailIcon aria-hidden />
+          {cooldown.isActive
+            ? t('resend.wait', { count: cooldown.remaining })
+            : state.status === 'pending'
+              ? t('resend.pending')
+              : t('resend.action')}
+        </Button>
+        {secondaryAction}
+      </div>
     </div>
   );
 }

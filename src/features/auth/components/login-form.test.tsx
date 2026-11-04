@@ -113,7 +113,7 @@ describe('LoginForm', () => {
       expect.objectContaining({ type: 'signup', email: 'ana.ro@example.test' }),
     ]);
     expect(
-      screen.getByRole('button', { name: roAuth.resend.wait_other.replace('{{count}}', '60') }),
+      screen.getByRole('button', { name: roAuth.resend.wait.replace('{{count}}', '60') }),
     ).toBeDisabled();
   });
 

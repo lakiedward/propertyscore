@@ -8,8 +8,7 @@ import { renderWithProviders } from '@/test/render';
 import { ConfirmEmailCard } from './confirm-email-card';
 
 function waitText(count: number): string {
-  const template = count === 1 ? roAuth.resend.wait_one : roAuth.resend.wait_other;
-  return template.replace('{{count}}', String(count));
+  return roAuth.resend.wait.replace('{{count}}', String(count));
 }
 
 async function renderCard(isRepeat = false) {
@@ -92,6 +91,7 @@ describe('ConfirmEmailCard', { timeout: 20_000 }, () => {
   it('explains a repeated sign-up and lets the visitor use another address', async () => {
     const { user, onUseOtherEmail } = await renderCard(true);
 
+    expect(screen.getByText(roAuth.confirmEmail.repeatTitle)).toBeInTheDocument();
     expect(screen.getByText(roAuth.confirmEmail.repeat)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: roAuth.confirmEmail.otherEmail }));
