@@ -15,6 +15,7 @@ import {
   emergencyRow,
   extractCnasProviders,
   findTableColumns,
+  placeEmergencyRows,
   groupCnasLists,
   readCsvFile,
   readTableFile,
@@ -126,15 +127,9 @@ async function placeHospitals(
       await downloadOsmExtract(input.osmExtractUrl, input.sourcesDir, input.period),
     ),
   );
-  const placed: (EmergencyRow & { location: Point })[] = [];
-  for (const row of rows) {
-    const location =
-      row.location ?? (row.address === null ? null : await geocoder.geocode(row.address));
-    if (location === null) {
-      input.logger.warn('emergency unit not placed', { city: city.slug });
-      continue;
-    }
-    placed.push({ ...row, location });
+  const { placed, unplaced } = await placeEmergencyRows(rows, geocoder.geocode);
+  for (const name of unplaced) {
+    input.logger.warn('emergency unit not placed', { city: city.slug, name });
   }
   return placed;
 }
@@ -165,8 +160,12 @@ async function importEmergencyHospitals(
       continue;
     }
     const placed = await placeHospitals(input, city, cityRows);
-    if (placed.length === 0) {
-      input.logger.warn('emergency units none placed, city kept as is', { city: city.slug });
+    if (placed.length < cityRows.length) {
+      input.logger.warn('emergency list incomplete, city kept as is', {
+        city: city.slug,
+        listed: cityRows.length,
+        placed: placed.length,
+      });
       continue;
     }
     const result = await syncEmergencyHospitals(input.sql, city.id, input.validFrom, placed);

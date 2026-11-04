@@ -7,6 +7,7 @@ import {
   findTableColumns,
   groupCnasLists,
   normalizePlace,
+  placeEmergencyRows,
 } from './health.import.ts';
 
 const COUNTY_LIST = [
@@ -82,7 +83,7 @@ describe('extractCnasProviders', () => {
     const county = [
       ['Denumire', 'Adresa'],
       ['Farmacia A', 'Târgu Mureș, Str. Gheorghe Doja nr. 2'],
-      ['Farmacia B', 'Reghin, Str. Pandurilor nr. 3'],
+      ['Farmacia B', 'Loc. Reghin, Str. Pandurilor nr. 3'],
       ['Farmacia C', 'Tg. Mures, Bd. 1 Decembrie 1918 nr. 10'],
     ];
     const columns = findTableColumns(county);
@@ -242,5 +243,60 @@ describe('groupCnasLists', () => {
       return extractCnasProviders(table, columns, 'Sibiu', seen).rows.map((row) => row.name);
     });
     expect(rows).toEqual(['Clinica Unu', 'Lab Doi', 'Lab Trei']);
+  });
+});
+
+describe('extractCnasProviders for one city', () => {
+  it('reads the sectors of a Bucharest locality column as the city', () => {
+    const list = [
+      ['Denumire furnizor', 'Localitate', 'Adresa'],
+      ['Farmacia Unu', 'București Sector 3', 'Str. Matei Basarab nr. 1'],
+      ['Farmacia Doi', 'Sector 6', 'Bd. Iuliu Maniu nr. 2'],
+      ['Farmacia Trei', 'Voluntari', 'Str. Erou Iancu Nicolae nr. 3'],
+    ];
+    const columns = findTableColumns(list);
+    if (columns === null) throw new Error('columns not found');
+    expect(extractCnasProviders(list, columns, 'București').rows.map((row) => row.name)).toEqual([
+      'Farmacia Unu',
+      'Farmacia Doi',
+    ]);
+  });
+
+  it('keeps a list whose addresses name the city only sometimes', () => {
+    const list = [
+      ['Denumire', 'Adresa'],
+      ['Farmacia A', 'Str. Avram Iancu nr. 1, Cluj-Napoca'],
+      ['Farmacia B', 'Str. Horea nr. 2'],
+    ];
+    const columns = findTableColumns(list);
+    if (columns === null) throw new Error('columns not found');
+    expect(extractCnasProviders(list, columns, 'Cluj-Napoca')).toMatchObject({
+      localityFilter: 'none',
+      rows: [{ name: 'Farmacia A' }, { name: 'Farmacia B' }],
+    });
+  });
+});
+
+describe('placeEmergencyRows', () => {
+  it('geocodes rows without coordinates and names the ones it cannot place', async () => {
+    const row = {
+      citySlug: 'sibiu',
+      level: 'upu' as const,
+      isPediatric: false,
+      sourceRef: 'OMS',
+    };
+    const result = await placeEmergencyRows(
+      [
+        { ...row, name: 'Cu coordonate', address: null, location: { lng: 24.1, lat: 45.8 } },
+        { ...row, name: 'Geocodat', address: 'Bd. Corneliu Coposu nr. 2', location: null },
+        { ...row, name: 'Negăsit', address: 'Strada Inexistentă nr. 9', location: null },
+      ],
+      (address) => Promise.resolve(address.startsWith('Bd.') ? { lng: 24.15, lat: 45.79 } : null),
+    );
+    expect(result.placed.map((placed) => [placed.name, placed.location])).toEqual([
+      ['Cu coordonate', { lng: 24.1, lat: 45.8 }],
+      ['Geocodat', { lng: 24.15, lat: 45.79 }],
+    ]);
+    expect(result.unplaced).toEqual(['Negăsit']);
   });
 });

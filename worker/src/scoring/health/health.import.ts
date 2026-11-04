@@ -102,6 +102,28 @@ export function normalizePlace(text: string): string {
     .join(' ');
 }
 
+const CAPITAL = 'bucuresti';
+
+const SECTOR = /^(bucuresti )?sector(ul)? [1-6]$/;
+
+const LOCALITY_MARKERS = [
+  'loc',
+  'localitatea',
+  'com',
+  'comuna',
+  'sat',
+  'oras',
+  'orasul',
+  'mun',
+  'municipiul',
+];
+
+function namesOtherLocality(address: string | null): boolean {
+  if (address === null) return false;
+  const tokens = normalizeText(address).split(' ');
+  return tokens.some((token) => LOCALITY_MARKERS.includes(token));
+}
+
 function containsPhrase(haystack: string, phrase: string): boolean {
   return ` ${haystack} `.includes(` ${phrase} `);
 }
@@ -200,9 +222,16 @@ export function extractCnasProviders(
 
   const mentionsCity = (address: string | null) =>
     address !== null && containsPhrase(normalizePlace(address), city);
+  const isCityLocality = (locality: string) =>
+    containsPhrase(locality, city) || (city === CAPITAL && SECTOR.test(locality));
   let localityFilter: LocalityFilter = 'none';
   if (columns.locality !== null) localityFilter = 'column';
-  else if (body.some((row) => mentionsCity(row.address))) localityFilter = 'address';
+  else if (
+    body.some((row) => mentionsCity(row.address)) &&
+    body.some((row) => !mentionsCity(row.address) && namesOtherLocality(row.address))
+  ) {
+    localityFilter = 'address';
+  }
 
   const result: ProviderExtraction = {
     rows: [],
@@ -213,7 +242,7 @@ export function extractCnasProviders(
   for (const row of body) {
     const isInCity =
       localityFilter === 'column'
-        ? row.locality === city
+        ? isCityLocality(row.locality)
         : localityFilter === 'address'
           ? mentionsCity(row.address)
           : true;
@@ -305,6 +334,22 @@ export function emergencyRow(
     location: lat === null || lng === null ? null : { lng, lat },
     sourceRef: sourceRef.slice(0, 500),
   };
+}
+
+export type PlacedEmergencyRow = EmergencyRow & { location: Point };
+
+export async function placeEmergencyRows(
+  rows: readonly EmergencyRow[],
+  geocode: (address: string) => Promise<Point | null>,
+): Promise<{ placed: PlacedEmergencyRow[]; unplaced: string[] }> {
+  const placed: PlacedEmergencyRow[] = [];
+  const unplaced: string[] = [];
+  for (const row of rows) {
+    const location = row.location ?? (row.address === null ? null : await geocode(row.address));
+    if (location === null) unplaced.push(row.name);
+    else placed.push({ ...row, location });
+  }
+  return { placed, unplaced };
 }
 
 export async function readCsvFile<Column extends string>(
