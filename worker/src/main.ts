@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 import { parseCommand, type WorkerCommand } from './cli.ts';
 import { type Env, readEnv } from './config/env.ts';
 import { createSql, type Sql } from './db/sql.ts';
@@ -6,6 +8,7 @@ import { createLogger, type Logger } from './lib/logger.ts';
 import { generateReport } from './report/generate-report.ts';
 import { insertReport } from './report/report.db.ts';
 import { REPORT_SECTIONS } from './report/sections.ts';
+import { importHealthSources } from './scoring/health/import-health-sources.ts';
 import { createValhallaClient, type ValhallaClient } from './routing/valhalla.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
 import { buildSnapshot } from './snapshot/build-snapshot.ts';
@@ -59,6 +62,24 @@ async function runCommand(
         sections: REPORT_SECTIONS,
         router: reportRouter(env),
         logger,
+      });
+      return;
+    }
+    case 'import-health-sources': {
+      const result = await importHealthSources({
+        sql,
+        dir: command.dir ?? join(env.SOURCES_DIR, 'health'),
+        citySlugs: command.citySlugs,
+        validFrom: command.validFrom,
+        period: command.period,
+        sourcesDir: env.SOURCES_DIR,
+        osmExtractUrl: env.OSM_EXTRACT_URL,
+        logger,
+      });
+      logger.info('import-health-sources done', {
+        cnas_lists: result.cnasLists,
+        cnas_providers: result.cnasProviders,
+        emergency_cities: result.emergencyCities,
       });
       return;
     }

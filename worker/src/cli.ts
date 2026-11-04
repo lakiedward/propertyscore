@@ -26,9 +26,20 @@ export type CreateReportCommand = {
   locale: 'ro' | 'en';
 };
 
-export type WorkerCommand = BuildSnapshotCommand | GenerateReportCommand | CreateReportCommand;
+export type ImportHealthSourcesCommand = {
+  command: 'import-health-sources';
+  dir: string | null;
+  citySlugs: string[];
+  validFrom: string;
+  period: string;
+};
+
+export type WorkerCommand =
+  BuildSnapshotCommand | GenerateReportCommand | CreateReportCommand | ImportHealthSourcesCommand;
 
 const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+const ISO_DATE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
 const reportIdSchema = z.uuid();
 
@@ -112,6 +123,32 @@ function parseCreateReport(argv: readonly string[]): CreateReportCommand {
   };
 }
 
+function parseImportHealthSources(argv: readonly string[], now: Date): ImportHealthSourcesCommand {
+  const { values } = parseArgs({
+    args: [...argv],
+    options: {
+      dir: { type: 'string' },
+      city: { type: 'string', multiple: true },
+      'valid-from': { type: 'string' },
+    },
+  });
+  const period = `${currentPeriod(now)}-01`;
+  const validFrom = values['valid-from'] ?? period;
+  if (!ISO_DATE.test(validFrom)) {
+    throw new WorkerError(
+      'invalid_valid_from',
+      `--valid-from must be YYYY-MM-DD, got ${validFrom}`,
+    );
+  }
+  return {
+    command: 'import-health-sources',
+    dir: values.dir ?? null,
+    citySlugs: values.city ?? [],
+    validFrom,
+    period,
+  };
+}
+
 export function parseCommand(argv: readonly string[], now: Date): WorkerCommand {
   const [command, ...rest] = argv;
   switch (command) {
@@ -121,6 +158,8 @@ export function parseCommand(argv: readonly string[], now: Date): WorkerCommand 
       return parseGenerateReport(rest);
     case 'create-report':
       return parseCreateReport(rest);
+    case 'import-health-sources':
+      return parseImportHealthSources(rest, now);
     default:
       throw new WorkerError('unknown_command', `Unknown command: ${command ?? '(none)'}`);
   }
