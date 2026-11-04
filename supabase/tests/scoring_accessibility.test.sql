@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(24);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -196,6 +196,24 @@ select throws_ok(
   'A matrix row holds whole two-byte values'
 );
 
+select lives_ok(
+  format($$
+    insert into private.transit_routing_bundles (snapshot_id, city_id, reference_date, osm_pbf, gtfs_archives)
+    values (%L, %L, '2026-11-04', '\x01'::bytea, array['\x02'::bytea])
+  $$, :'snapshot_id', :'sibiu_id'),
+  'The network a city was routed on is kept with its snapshot'
+);
+
+select throws_ok(
+  format($$
+    insert into private.transit_routing_bundles (snapshot_id, city_id, reference_date, osm_pbf, gtfs_archives)
+    values (%L, (select id from public.cities where slug = 'cluj-napoca'), '2026-11-04', '\x01'::bytea, array[]::bytea[])
+  $$, :'snapshot_id'),
+  '23514',
+  null,
+  'A routing network needs at least one GTFS archive'
+);
+
 set local role anon;
 set local request.jwt.claims = '{"role": "anon"}';
 
@@ -228,6 +246,24 @@ select throws_ok(
   '42501',
   null,
   'A signed-in user cannot read the key destinations'
+);
+
+select throws_ok(
+  $$ select count(*) from private.transit_routing_bundles $$,
+  '42501',
+  null,
+  'A signed-in user cannot read the routing networks'
+);
+
+reset role;
+set local role anon;
+set local request.jwt.claims = '{"role": "anon"}';
+
+select throws_ok(
+  $$ select count(*) from private.transit_routing_bundles $$,
+  '42501',
+  null,
+  'A visitor cannot read the routing networks'
 );
 
 select * from finish();

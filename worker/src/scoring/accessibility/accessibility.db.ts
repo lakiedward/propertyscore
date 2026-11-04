@@ -354,3 +354,60 @@ export async function writeCityStats(
     where s.id = ${snapshotId}
   `;
 }
+
+export type RoutingBundle = {
+  referenceDate: string;
+  osmPbf: Buffer;
+  gtfsArchives: Buffer[];
+};
+
+const BYTEA_TYPE = 17;
+
+export async function saveRoutingBundle(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+  bundle: RoutingBundle,
+): Promise<void> {
+  await sql.begin(async (transaction) => {
+    await transaction`
+      delete from private.transit_routing_bundles b
+      using public.score_snapshots s
+      where b.snapshot_id = s.id
+        and b.city_id = ${cityId}
+        and s.status in ('failed', 'superseded')
+    `;
+    await transaction`
+      insert into private.transit_routing_bundles (snapshot_id, city_id, reference_date, osm_pbf, gtfs_archives)
+      values (
+        ${snapshotId},
+        ${cityId},
+        ${bundle.referenceDate},
+        ${bundle.osmPbf},
+        ${transaction.array(bundle.gtfsArchives, BYTEA_TYPE)}
+      )
+      on conflict (snapshot_id, city_id) do update
+      set reference_date = excluded.reference_date,
+        osm_pbf = excluded.osm_pbf,
+        gtfs_archives = excluded.gtfs_archives
+    `;
+  });
+}
+
+export async function readRoutingBundle(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+): Promise<RoutingBundle | null> {
+  const [row] = await sql<{ reference_date: string; osm_pbf: Buffer; gtfs_archives: Buffer[] }[]>`
+    select reference_date::text as reference_date, osm_pbf, gtfs_archives
+    from private.transit_routing_bundles
+    where snapshot_id = ${snapshotId} and city_id = ${cityId}
+  `;
+  if (!row) return null;
+  return {
+    referenceDate: row.reference_date,
+    osmPbf: row.osm_pbf,
+    gtfsArchives: row.gtfs_archives,
+  };
+}

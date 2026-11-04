@@ -9,6 +9,8 @@ import {
   insertTravelMatrix,
   listCellNeighbours,
   listCityCells,
+  readRoutingBundle,
+  saveRoutingBundle,
   writeCityStats,
 } from './accessibility.db.ts';
 import { stopRouteLinks } from './transit-network.ts';
@@ -180,5 +182,24 @@ describe.skipIf(!databaseUrl)('accessibility storage against the local database'
       )::integer as count
     `;
     expect(left?.count).toBe(0);
+  });
+
+  it('keeps the network a city was routed on and replaces it on a rerun', async () => {
+    expect(await readRoutingBundle(sql, snapshotId, cityId)).toBeNull();
+    await saveRoutingBundle(sql, snapshotId, cityId, {
+      referenceDate: '2026-11-03',
+      osmPbf: Buffer.from('first'),
+      gtfsArchives: [Buffer.from('a')],
+    });
+    await saveRoutingBundle(sql, snapshotId, cityId, {
+      referenceDate: '2026-11-04',
+      osmPbf: Buffer.from('second'),
+      gtfsArchives: [Buffer.from('b'), Buffer.from('c')],
+    });
+
+    const bundle = await readRoutingBundle(sql, snapshotId, cityId);
+    expect(bundle?.referenceDate).toBe('2026-11-04');
+    expect(bundle?.osmPbf.toString()).toBe('second');
+    expect(bundle?.gtfsArchives.map((archive) => archive.toString())).toEqual(['b', 'c']);
   });
 });

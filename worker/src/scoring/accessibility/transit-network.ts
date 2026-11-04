@@ -106,3 +106,15 @@ export function mergeNetworks(networks: readonly TransitNetwork[]): TransitNetwo
     patterns: networks.flatMap((network) => network.patterns),
   };
 }
+
+export function routeKeyResolver(
+  routeKeys: Iterable<string>,
+): (routeId: string | null) => string | null {
+  const keys = new Set(routeKeys);
+  return (routeId) => {
+    if (!routeId) return null;
+    if (keys.has(routeId)) return routeId;
+    for (const key of keys) if (key.endsWith(`:${routeId}`)) return key;
+    return null;
+  };
+}

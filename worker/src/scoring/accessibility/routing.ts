@@ -1,12 +1,13 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { WorkerError } from '../../lib/errors.ts';
 import { readCsvRecords } from './csv.ts';
-import { nonEmpty } from './gtfs.ts';
+import type { AccessibilityParams } from './accessibility.params.ts';
+import { clockSeconds, nonEmpty } from './gtfs.ts';
 import type { LngLat } from './transit.types.ts';
 
 const run = promisify(execFile);
@@ -36,6 +37,31 @@ export type RoutingJob = {
   workDir: string;
 };
 
+export type RoutingSettings = Pick<
+  RoutingJob,
+  | 'windowStart'
+  | 'windowMinutes'
+  | 'detailDeparture'
+  | 'walkSpeedKmh'
+  | 'maxMinutes'
+  | 'maxRides'
+  | 'stopWalkMaxMinutes'
+>;
+
+export function routingSettings(params: AccessibilityParams): RoutingSettings {
+  const { reference } = params;
+  const maxRadius = Math.max(...Object.values(params.modes).map((mode) => mode.radius_m));
+  return {
+    windowStart: reference.window_start,
+    windowMinutes: (clockSeconds(reference.window_end) - clockSeconds(reference.window_start)) / 60,
+    detailDeparture: reference.detail_departure,
+    walkSpeedKmh: params.walk_speed_kmh,
+    maxMinutes: params.travel.max_minutes,
+    maxRides: params.travel.max_transfers + 1,
+    stopWalkMaxMinutes: Math.ceil(maxRadius / ((params.walk_speed_kmh * 1000) / 60)) + 1,
+  };
+}
+
 export type DestinationTiming = {
   transitMinutes: number | null;
   walkMinutes: number | null;
@@ -54,6 +80,7 @@ export type RoutingResult = {
   destinations: Map<string, Map<string, DestinationTiming>>;
   itineraries: Map<string, Map<string, Itinerary>>;
   matrixPath: string | null;
+  gtfsArchives: string[];
 };
 
 export type RoutingRunner = (command: string, args: readonly string[]) => Promise<void>;
@@ -80,7 +107,19 @@ function nested<T>(map: Map<string, Map<string, T>>, outer: string): Map<string,
   return created;
 }
 
-async function readRoutingOutputs(outputDir: string, withMatrix: boolean): Promise<RoutingResult> {
+async function routedGtfsArchives(gtfs: readonly string[], outputDir: string): Promise<string[]> {
+  return Promise.all(
+    gtfs.map(async (path, index) =>
+      (await stat(path)).isDirectory() ? join(outputDir, `gtfs-${index}.zip`) : path,
+    ),
+  );
+}
+
+async function readRoutingOutputs(
+  outputDir: string,
+  withMatrix: boolean,
+  gtfsArchives: string[],
+): Promise<RoutingResult> {
   const walkToStops = new Map<string, { stopId: string; minutes: number }[]>();
   for await (const row of readCsvRecords(join(outputDir, 'walk_stops.csv'))) {
     const minutes = optionalNumber(row.minutes);
@@ -113,6 +152,7 @@ async function readRoutingOutputs(outputDir: string, withMatrix: boolean): Promi
     destinations,
     itineraries,
     matrixPath: withMatrix ? join(outputDir, 'matrix.bin') : null,
+    gtfsArchives,
   };
 }
 
@@ -162,7 +202,11 @@ export async function runTransitRouting(
       cause: error,
     });
   }
-  return readRoutingOutputs(outputDir, job.withMatrix);
+  return readRoutingOutputs(
+    outputDir,
+    job.withMatrix,
+    await routedGtfsArchives(job.gtfs, outputDir),
+  );
 }
 
 export async function readMatrixRows(path: string, size: number): Promise<Buffer[]> {
