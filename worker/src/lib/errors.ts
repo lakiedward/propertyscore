@@ -17,3 +17,10 @@ export function errorCode(error: unknown): string {
   }
   return 'unknown';
 }
+
+const CAUSE_TAIL_LENGTH = 4000;
+
+export function errorCauseTail(error: unknown): string | undefined {
+  if (!(error instanceof Error) || !(error.cause instanceof Error)) return undefined;
+  return error.cause.message.slice(-CAUSE_TAIL_LENGTH);
+}
