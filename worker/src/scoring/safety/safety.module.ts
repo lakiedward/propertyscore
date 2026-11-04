@@ -21,7 +21,9 @@ import {
   groupCellInputs,
   lightingExcludedCities,
   reachByType,
+  reachOf,
   scoreCells,
+  WALK_CANDIDATES,
   walkedCellDistances,
   walkingTypes,
 } from './safety.cells.ts';
@@ -46,8 +48,6 @@ import { type SafetyParams, safetyParamsSchema, type SafetyType } from './safety
 
 const INSERT_BATCH = 1000;
 
-export const WALK_CANDIDATES = 8;
-
 type CityImport = CityCoverage & {
   cityId: string;
   features: Partial<Record<SafetyType, number>>;
@@ -71,9 +71,7 @@ async function cellDistances(
 ): Promise<CellDistances[]> {
   const { sql, snapshotId, router } = context;
   const walked = router ? walkingTypes(params) : [];
-  const straightReach = Object.fromEntries(
-    Object.entries(reach).filter(([type]) => !walked.some((walkedType) => walkedType === type)),
-  );
+  const straightReach = reachOf(reach, walked, false);
   const straight = (await listCellInputs(sql, snapshotId, cityId, straightReach)).map((row) => ({
     cellId: row.cell_id,
     type: row.feature_type,

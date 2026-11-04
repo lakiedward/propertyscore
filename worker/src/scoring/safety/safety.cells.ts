@@ -47,6 +47,18 @@ export function reachByType(params: SafetyParams): Record<string, number> {
   );
 }
 
+export const WALK_CANDIDATES = 8;
+
+export function reachOf(
+  reach: Record<string, number>,
+  walkedTypes: readonly string[],
+  isWalked: boolean,
+): Record<string, number> {
+  return Object.fromEntries(
+    Object.entries(reach).filter(([type]) => walkedTypes.includes(type) === isWalked),
+  );
+}
+
 export function walkingTypes(params: SafetyParams): SafetyType[] {
   return SAFETY_TYPES.filter((type) => params.types[type].walking);
 }

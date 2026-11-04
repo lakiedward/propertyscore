@@ -14,11 +14,12 @@ import {
   type CellDistances,
   groupCellInputs,
   reachByType,
+  reachOf,
+  WALK_CANDIDATES,
   walkedCellDistances,
   walkingTypes,
 } from './safety.cells.ts';
 import { scoreAtPoint, type PointSafety } from './safety.formula.ts';
-import { WALK_CANDIDATES } from './safety.module.ts';
 import {
   safetyParamsSchema,
   SAFETY_TYPES,
@@ -314,16 +315,12 @@ export const safetyReportSection: ReportSection = {
     const position = { longitude, latitude };
     const reach = reachByType(safetyParams);
     const walkedTypes: readonly string[] = router ? walkingTypes(safetyParams) : [];
-    const splitReach = (isWalked: boolean) =>
-      Object.fromEntries(
-        Object.entries(reach).filter(([type]) => walkedTypes.includes(type) === isWalked),
-      );
     const rows = await readPointDistances(
       sql,
       snapshotId,
       cell.cityId,
       position,
-      splitReach(false),
+      reachOf(reach, walkedTypes, false),
     );
     const walked =
       router && walkedTypes.length > 0
@@ -331,7 +328,7 @@ export const safetyReportSection: ReportSection = {
             snapshotId,
             cityId: cell.cityId,
             position,
-            reachM: splitReach(true),
+            reachM: reachOf(reach, walkedTypes, true),
           })
         : null;
     const excluded = new Set(inputs.data.excluded_types);
@@ -352,7 +349,9 @@ export const safetyReportSection: ReportSection = {
       point,
       landmarks: walkedLandmarks(landmarks, walked, safetyParams),
       params: safetyParams,
-      distanceMethod: walked ? 'pedestrian_routing' : 'straight_line',
+      distanceMethod: walked?.routed.some((candidate) => candidate.leg)
+        ? 'pedestrian_routing'
+        : 'straight_line',
     });
   },
 };

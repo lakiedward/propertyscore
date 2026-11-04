@@ -216,7 +216,9 @@ export const greenReportSection: ReportSection = {
     const legs = router
       ? await walkToParks(sql, router, snapshotId, { latitude, longitude }, surroundings.parks)
       : new Map<string, Leg | null>();
-    const distanceMethod: DistanceMethod = router ? 'pedestrian_routing' : 'straight_line';
+    const distanceMethod: DistanceMethod = [...legs.values()].some(Boolean)
+      ? 'pedestrian_routing'
+      : 'straight_line';
 
     const section: JsonObject = {
       schema_version: 1,
