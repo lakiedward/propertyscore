@@ -128,8 +128,14 @@ async function main(): Promise<void> {
   }
 }
 
+function exitAfterOutput(code: number): void {
+  process.stdout.write('', () => process.exit(code));
+}
+
 main().then(
-  () => process.exit(0),
+  () => {
+    exitAfterOutput(0);
+  },
   (error: unknown) => {
     const logger = createLogger('error', undefined, { service: 'worker' });
     logger.error('worker failed', {
@@ -138,6 +144,6 @@ main().then(
       cause: errorCauseTail(error),
       cause_exit: errorCauseExit(error),
     });
-    process.exit(1);
+    exitAfterOutput(1);
   },
 );
