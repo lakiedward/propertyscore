@@ -12,4 +12,4 @@ export const CATEGORY_KEYS = [
 
 export type CategoryKey = (typeof CATEGORY_KEYS)[number];
 
-export type ContextKey = 'seismic' | 'investment';
+export type ContextKey = 'seismic' | 'investment' | 'questions';

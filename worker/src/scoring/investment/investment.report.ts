@@ -1,12 +1,12 @@
 import type { JsonObject, Sql } from '../../db/sql.ts';
 import { sectionParams } from '../../report/cell-category.ts';
+import { readDeclaredDetails } from '../../report/declared.ts';
 import type { ReportSection } from '../../report/report-section.ts';
 import {
   listComparables,
   listMarketSources,
   marketReferenceDate,
   readCityMarketSummary,
-  readDeclaredDetails,
   readMarketContext,
   type MarketContext,
 } from './investment.db.ts';
@@ -14,6 +14,7 @@ import {
   buildInvestmentReport,
   EMPTY_CITY_SUMMARY,
   shiftDate,
+  type DeclaredHome,
   type InvestmentReport,
 } from './investment.formula.ts';
 import { parseInvestmentParams, type InvestmentParams } from './investment.params.ts';
@@ -27,7 +28,7 @@ export async function assessInvestmentAtAddress(
     params: InvestmentParams;
     longitude: number;
     latitude: number;
-    declared: { areaM2: number | null; rooms: number | null };
+    declared: DeclaredHome;
   },
 ): Promise<InvestmentReport> {
   const { params } = input;

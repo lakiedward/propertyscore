@@ -8,6 +8,8 @@ export type MarketListing = {
   distanceM: number;
   areaM2: number;
   rooms: number | null;
+  floor: number | null;
+  constructionYear: number | null;
   priceEur: number;
   firstSeenOn: string;
   lastSeenOn: string;
@@ -39,10 +41,21 @@ export const EMPTY_CITY_SUMMARY: CityMarketSummary = {
 
 export type MarketSourcePeriod = { source: string; period: string };
 
+export type DeclaredHome = {
+  areaM2: number | null;
+  rooms: number | null;
+  floor: number | null;
+  constructionYear: number | null;
+};
+
+type FloorGroup = 'ground' | 'upper';
+
+type PeriodRange = [number | null, number | null];
+
 export type InvestmentInputs = {
   params: InvestmentParams;
   referenceDate: string | null;
-  declared: { areaM2: number | null; rooms: number | null };
+  declared: DeclaredHome;
   sale: readonly MarketListing[];
   salePreviousYear: readonly MarketListing[];
   rent: readonly MarketListing[];
@@ -60,6 +73,8 @@ type SaleBlock = {
   radius_m: number | null;
   count: number;
   rooms_filter: [number, number] | null;
+  floor_filter: FloorGroup | null;
+  period_filter: PeriodRange | null;
   median_eur_m2: number;
   p25_eur_m2: number;
   p75_eur_m2: number;
@@ -86,7 +101,12 @@ export type InvestmentReport = {
   reason: NoDataReason | null;
   reference_date: string | null;
   window_days: number;
-  declared: { area_m2: number | null; rooms: number | null };
+  declared: {
+    area_m2: number | null;
+    rooms: number | null;
+    floor: number | null;
+    construction_year: number | null;
+  };
   sale: SaleBlock | null;
   rent: RentBlock | null;
   yield: { gross_pct: number | null; city_gross_pct: number | null };
@@ -207,6 +227,78 @@ function inRooms(listing: MarketListing, window: [number, number]): boolean {
   return listing.rooms !== null && listing.rooms >= window[0] && listing.rooms <= window[1];
 }
 
+function floorGroup(floor: number | null): FloorGroup | null {
+  if (floor === null) return null;
+  return floor <= 0 ? 'ground' : 'upper';
+}
+
+function periodRange(year: number | null, bounds: readonly number[]): PeriodRange | null {
+  if (year === null) return null;
+  let from: number | null = null;
+  for (const bound of bounds) {
+    if (year < bound) return [from, bound - 1];
+    from = bound;
+  }
+  return [from, null];
+}
+
+function inPeriod(listing: MarketListing, range: PeriodRange): boolean {
+  const year = listing.constructionYear;
+  if (year === null) return false;
+  return (range[0] === null || year >= range[0]) && (range[1] === null || year <= range[1]);
+}
+
+type SaleFilters = {
+  rooms: [number, number] | null;
+  floor: FloorGroup | null;
+  period: PeriodRange | null;
+};
+
+const NO_FILTERS: SaleFilters = { rooms: null, floor: null, period: null };
+
+function matchesFilters(listing: MarketListing, filters: SaleFilters): boolean {
+  if (filters.rooms && !inRooms(listing, filters.rooms)) return false;
+  if (filters.floor && floorGroup(listing.floor) !== filters.floor) return false;
+  if (filters.period && !inPeriod(listing, filters.period)) return false;
+  return true;
+}
+
+function narrowComparables(
+  listings: MarketListing[],
+  declared: DeclaredHome,
+  params: InvestmentParams,
+): { listings: MarketListing[]; filters: SaleFilters } {
+  let kept = listings;
+  const filters: SaleFilters = { ...NO_FILTERS };
+  const detailMin = params.detail_filter_min_count;
+  const bounds = params.building_period_bounds;
+  const steps = [
+    { key: 'rooms', value: roomsWindow(declared.rooms), min: params.rooms_filter_min_count },
+    {
+      key: 'floor',
+      value: detailMin === undefined ? null : floorGroup(declared.floor),
+      min: detailMin ?? 0,
+    },
+    {
+      key: 'period',
+      value:
+        detailMin === undefined || bounds === undefined
+          ? null
+          : periodRange(declared.constructionYear, bounds),
+      min: detailMin ?? 0,
+    },
+  ] as const;
+  for (const step of steps) {
+    if (step.value === null) continue;
+    const candidate = { ...filters, [step.key]: step.value };
+    const narrowed = kept.filter((listing) => matchesFilters(listing, candidate));
+    if (narrowed.length < step.min) continue;
+    kept = narrowed;
+    Object.assign(filters, candidate);
+  }
+  return { listings: kept, filters };
+}
+
 function roundTo(value: number, step: number): number {
   return Math.round(value / step) * step;
 }
@@ -239,7 +331,7 @@ type SaleSelection = {
   precision: Precision;
   radiusM: number | null;
   listings: MarketListing[];
-  roomsFilter: [number, number] | null;
+  filters: SaleFilters;
   p25: number;
   p50: number;
   p75: number;
@@ -253,16 +345,13 @@ function selectSale(inputs: InvestmentInputs): SaleSelection | null {
     params.sale_min_count,
   );
   if (picked) {
-    const window = roomsWindow(inputs.declared.rooms);
-    const sameRooms = window ? picked.listings.filter((listing) => inRooms(listing, window)) : [];
-    const useRooms = window !== null && sameRooms.length >= params.rooms_filter_min_count;
-    const listings = useRooms ? sameRooms : picked.listings;
+    const { listings, filters } = narrowComparables(picked.listings, inputs.declared, params);
     const values = listings.map(eurPerM2).sort((a, b) => a - b);
     return {
       precision: 'radius',
       radiusM: picked.radiusM,
       listings,
-      roomsFilter: useRooms ? window : null,
+      filters,
       p25: quantile(values, 0.25) ?? 0,
       p50: quantile(values, 0.5) ?? 0,
       p75: quantile(values, 0.75) ?? 0,
@@ -281,7 +370,7 @@ function selectSale(inputs: InvestmentInputs): SaleSelection | null {
     precision: 'city',
     radiusM: null,
     listings: [],
-    roomsFilter: null,
+    filters: NO_FILTERS,
     p25: city.p25EurM2,
     p50: city.p50EurM2,
     p75: city.p75EurM2,
@@ -292,11 +381,10 @@ function changeOverYear(inputs: InvestmentInputs, selection: SaleSelection): num
   if (selection.precision !== 'radius' || selection.radiusM === null) return null;
   const { params } = inputs;
   const radiusM = selection.radiusM;
-  const window = selection.roomsFilter;
   const previous = cleanComparables(
     inputs.salePreviousYear.filter((listing) => listing.distanceM <= radiusM),
     params,
-  ).filter((listing) => (window ? inRooms(listing, window) : true));
+  ).filter((listing) => matchesFilters(listing, selection.filters));
   if (selection.listings.length < params.change_min_count) return null;
   if (previous.length < params.change_min_count) return null;
   const before = median(previous.map(eurPerM2));
@@ -316,7 +404,9 @@ function buildSaleBlock(
     precision: selection.precision,
     radius_m: selection.radiusM,
     count: selection.precision === 'radius' ? selection.listings.length : inputs.city.sale.count,
-    rooms_filter: selection.roomsFilter,
+    rooms_filter: selection.filters.rooms,
+    floor_filter: selection.filters.floor,
+    period_filter: selection.filters.period,
     median_eur_m2: roundTo(selection.p50, 10),
     p25_eur_m2: roundTo(selection.p25, 10),
     p75_eur_m2: roundTo(selection.p75, 10),
@@ -441,13 +531,22 @@ export function histogramBins(
   return { bin_eur_m2: bin, bins };
 }
 
+function declaredJson(declared: DeclaredHome): InvestmentReport['declared'] {
+  return {
+    area_m2: declared.areaM2,
+    rooms: declared.rooms,
+    floor: declared.floor,
+    construction_year: declared.constructionYear,
+  };
+}
+
 function emptyReport(inputs: InvestmentInputs, reason: NoDataReason): InvestmentReport {
   return {
     status: 'no_data',
     reason,
     reference_date: inputs.referenceDate,
     window_days: inputs.params.window_days,
-    declared: { area_m2: inputs.declared.areaM2, rooms: inputs.declared.rooms },
+    declared: declaredJson(inputs.declared),
     sale: null,
     rent: null,
     yield: { gross_pct: null, city_gross_pct: null },
@@ -490,7 +589,7 @@ export function buildInvestmentReport(inputs: InvestmentInputs): InvestmentRepor
     reason: null,
     reference_date: referenceDate,
     window_days: inputs.params.window_days,
-    declared: { area_m2: inputs.declared.areaM2, rooms: inputs.declared.rooms },
+    declared: declaredJson(inputs.declared),
     sale,
     rent: rent?.block ?? null,
     yield: { gross_pct: grossYield(sale, selection.p50, rent), city_gross_pct: cityYield(inputs) },

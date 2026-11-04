@@ -17,6 +17,33 @@ const RAW_PARAMS = {
   ],
   top_level: 'very_high',
   question_codes: ['consolidation_and_expertise'],
+  building_periods: [
+    {
+      key: 'before_1963',
+      until_year: 1962,
+      codes: [],
+      question_codes: ['seismic_risk_class'],
+    },
+    {
+      key: 'p13',
+      until_year: 1977,
+      codes: ['P13-63', 'P13-70'],
+      question_codes: ['seismic_risk_class'],
+    },
+    {
+      key: 'p100_1978',
+      until_year: 1991,
+      codes: ['P100-78', 'P100-81', 'P100-90'],
+      question_codes: [],
+    },
+    { key: 'p100_1992', until_year: 2006, codes: ['P100-92'], question_codes: [] },
+    {
+      key: 'p100_2006',
+      until_year: null,
+      codes: ['P100-1/2006', 'P100-1/2013'],
+      question_codes: [],
+    },
+  ],
   source: { dataset: 'p100_1_2013_ag_zoning', digitized_by: 'ccers_utcb' },
 };
 
@@ -54,6 +81,55 @@ describe('parseSeismicParams', () => {
 });
 
 describe('seismicReportFromHazards', () => {
+  it('names the design code of the building from the declared construction year', () => {
+    const report = seismicReportFromHazards({
+      citySlug: 'bucuresti',
+      address: { ag_g: 0.3, distance_m: 0 },
+      cities: CITIES,
+      params: PARAMS,
+      constructionYear: 1972,
+    });
+    expect(report.building).toEqual({
+      construction_year: 1972,
+      period: 'p13',
+      codes: ['P13-63', 'P13-70'],
+    });
+    expect(report.question_codes).toEqual(['consolidation_and_expertise', 'seismic_risk_class']);
+  });
+
+  it('puts the last year of a period inside that period', () => {
+    const report = seismicReportFromHazards({
+      citySlug: 'bucuresti',
+      address: { ag_g: 0.3, distance_m: 0 },
+      cities: CITIES,
+      params: PARAMS,
+      constructionYear: 2006,
+    });
+    expect(report.building?.period).toBe('p100_1992');
+    expect(report.question_codes).toEqual(['consolidation_and_expertise']);
+  });
+
+  it('leaves the building out on a formula without design periods', () => {
+    const report = seismicReportFromHazards({
+      citySlug: 'bucuresti',
+      address: { ag_g: 0.3, distance_m: 0 },
+      cities: CITIES,
+      params: parseSeismicParams({ ...RAW_PARAMS, building_periods: undefined }),
+      constructionYear: 1972,
+    });
+    expect(report.building).toBeNull();
+    expect(report.question_codes).toEqual(['consolidation_and_expertise']);
+  });
+
+  it('refuses building periods that do not end open', () => {
+    expect(() =>
+      parseSeismicParams({
+        ...RAW_PARAMS,
+        building_periods: [{ key: 'old', until_year: 1977, codes: [], question_codes: [] }],
+      }),
+    ).toThrow(expect.objectContaining({ code: 'invalid_seismic_params' }));
+  });
+
   it('reproduces the design example for Timișoara', () => {
     const report = seismicReportFromHazards({
       citySlug: 'timisoara',
@@ -80,6 +156,7 @@ describe('seismicReportFromHazards', () => {
         { slug: 'cluj-napoca', ag_g: 0.1 },
       ],
       question_codes: ['consolidation_and_expertise'],
+      building: null,
       source: { dataset: 'p100_1_2013_ag_zoning', digitized_by: 'ccers_utcb' },
     });
   });

@@ -20,6 +20,8 @@ const PARAMS = parseInvestmentParams({
   rent_min_count: 12,
   city_min_count: 5,
   rooms_filter_min_count: 12,
+  detail_filter_min_count: 12,
+  building_period_bounds: [1990, 2010],
   rent_same_rooms_min_count: 8,
   change_min_count: 20,
   outlier_iqr_factor: 1.5,
@@ -56,6 +58,8 @@ function listing(
     distanceM: values.distanceM ?? 500,
     areaM2,
     rooms: values.rooms === undefined ? 3 : values.rooms,
+    floor: values.floor === undefined ? 2 : values.floor,
+    constructionYear: values.constructionYear === undefined ? 1980 : values.constructionYear,
     priceEur,
     firstSeenOn: values.firstSeenOn ?? '2026-07-15',
     lastSeenOn: values.lastSeenOn ?? '2026-09-28',
@@ -70,7 +74,7 @@ function designInputs(overrides: Partial<InvestmentInputs> = {}): InvestmentInpu
   return {
     params: PARAMS,
     referenceDate: '2026-09-30',
-    declared: { areaM2: 84, rooms: 3 },
+    declared: { areaM2: 84, rooms: 3, floor: null, constructionYear: null },
     sale: DESIGN_SALE_EUR_M2.map((eurM2, index) => listing(index, { eurM2 })),
     salePreviousYear: [],
     rent: Array.from({ length: 12 }, (_, index) =>
@@ -170,7 +174,11 @@ describe('buildInvestmentReport', () => {
   });
 
   it('shows only the price per square metre without a declared area', () => {
-    const report = buildInvestmentReport(designInputs({ declared: { areaM2: null, rooms: null } }));
+    const report = buildInvestmentReport(
+      designInputs({
+        declared: { areaM2: null, rooms: null, floor: null, constructionYear: null },
+      }),
+    );
 
     expect(report.sale?.estimate_eur).toBeNull();
     expect(report.rent?.basis).toBe('all');
@@ -183,10 +191,71 @@ describe('buildInvestmentReport', () => {
       ...Array.from({ length: 12 }, (_, index) => listing(50 + index, { eurM2: 3000, rooms: 6 })),
     ];
     const report = buildInvestmentReport(
-      designInputs({ sale, declared: { areaM2: 50, rooms: 2 } }),
+      designInputs({
+        sale,
+        declared: { areaM2: 50, rooms: 2, floor: null, constructionYear: null },
+      }),
     );
 
     expect(report.sale).toMatchObject({ rooms_filter: [1, 3], count: 12, median_eur_m2: 2000 });
+  });
+
+  it('narrows to the same floor group and building period when there are enough', () => {
+    const sale = [
+      ...Array.from({ length: 12 }, (_, index) =>
+        listing(index, { eurM2: 1500, floor: 0, constructionYear: 1975 }),
+      ),
+      ...Array.from({ length: 12 }, (_, index) =>
+        listing(30 + index, { eurM2: 1800, floor: 3, constructionYear: 1978 }),
+      ),
+      ...Array.from({ length: 12 }, (_, index) =>
+        listing(60 + index, { eurM2: 2600, floor: 3, constructionYear: 2018 }),
+      ),
+    ];
+    const report = buildInvestmentReport(
+      designInputs({ sale, declared: { areaM2: 60, rooms: 3, floor: 4, constructionYear: 1982 } }),
+    );
+
+    expect(report.sale).toMatchObject({
+      floor_filter: 'upper',
+      period_filter: [null, 1989],
+      count: 12,
+      median_eur_m2: 1800,
+    });
+    expect(report.declared).toEqual({ area_m2: 60, rooms: 3, floor: 4, construction_year: 1982 });
+  });
+
+  it('does not narrow by floor or period on a formula without those filters', () => {
+    const sale = [
+      ...Array.from({ length: 12 }, (_, index) => listing(index, { eurM2: 2000, floor: 0 })),
+      ...Array.from({ length: 12 }, (_, index) => listing(30 + index, { eurM2: 2000, floor: 3 })),
+    ];
+    const v1 = parseInvestmentParams({
+      ...PARAMS,
+      detail_filter_min_count: undefined,
+      building_period_bounds: undefined,
+    });
+    const report = buildInvestmentReport(
+      designInputs({
+        params: v1,
+        sale,
+        declared: { areaM2: 60, rooms: 3, floor: 0, constructionYear: 1975 },
+      }),
+    );
+
+    expect(report.sale).toMatchObject({ floor_filter: null, period_filter: null, count: 24 });
+  });
+
+  it('keeps the wider set when too few listings match the declared floor', () => {
+    const sale = [
+      ...Array.from({ length: 20 }, (_, index) => listing(index, { eurM2: 2000, floor: 3 })),
+      ...Array.from({ length: 4 }, (_, index) => listing(40 + index, { eurM2: 2000, floor: 0 })),
+    ];
+    const report = buildInvestmentReport(
+      designInputs({ sale, declared: { areaM2: 60, rooms: 3, floor: 0, constructionYear: null } }),
+    );
+
+    expect(report.sale).toMatchObject({ floor_filter: null, period_filter: null, count: 24 });
   });
 
   it('compares the median with the same area a year earlier', () => {

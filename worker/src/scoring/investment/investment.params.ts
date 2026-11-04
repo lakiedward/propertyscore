@@ -13,6 +13,8 @@ const investmentParamsSchema = z.object({
   rent_min_count: z.int().positive(),
   city_min_count: z.int().positive(),
   rooms_filter_min_count: z.int().positive(),
+  detail_filter_min_count: z.int().positive().optional(),
+  building_period_bounds: z.array(z.int().min(1800).max(2100)).optional(),
   rent_same_rooms_min_count: z.int().positive(),
   change_min_count: z.int().positive(),
   outlier_iqr_factor: z.number().positive(),
@@ -41,6 +43,13 @@ export function parseInvestmentParams(value: unknown): InvestmentParams {
   if (!parsed.success) {
     const fields = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
     throw new WorkerError('invalid_investment_params', `Invalid params.investment: ${fields}`);
+  }
+  const bounds = parsed.data.building_period_bounds ?? [];
+  if (bounds.some((bound, index) => index > 0 && bound <= (bounds[index - 1] ?? 0))) {
+    throw new WorkerError(
+      'invalid_investment_params',
+      'params.investment.building_period_bounds must grow',
+    );
   }
   const radii = parsed.data.radii_m;
   if (radii.some((radius, index) => index > 0 && radius <= (radii[index - 1] ?? 0))) {

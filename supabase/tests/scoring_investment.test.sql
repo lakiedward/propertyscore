@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(15);
+select plan(16);
 
 select results_eq(
   $$
@@ -15,6 +15,20 @@ select results_eq(
   $$,
   $$ values ('90'::text, '800'::text, '20'::text) $$,
   'The v1 formula carries the Investment parameters: 90-day window, 800 m first radius, 20 sale listings'
+);
+
+select results_eq(
+  $$
+    select
+      params -> 'investment' ->> 'detail_filter_min_count',
+      params -> 'investment' -> 'building_period_bounds' ->> 0,
+      params -> 'seismic' -> 'building_periods' -> 1 ->> 'until_year',
+      params -> 'questions' -> 'always' ->> 0
+    from public.scoring_versions
+    where kind = 'online' and label = 'v2' and is_active
+  $$,
+  $$ values ('12'::text, '1990'::text, '1977'::text, 'bedroom_facade_side'::text) $$,
+  'The v2 formula carries the floor and building-period filters, the seismic design periods and the viewing questions'
 );
 
 select ok(
@@ -49,7 +63,7 @@ select is(
     'a0000000-0000-4000-8000-000000000002',
     2000,
     '[
-      {"source_listing_id": "A", "transaction": "sale", "property_type": "apartment", "longitude": 21.2303, "latitude": 45.7546, "area_m2": 80, "rooms": 3, "price": 168000, "currency": "EUR", "price_eur": 168000, "first_seen_on": "2026-07-01", "last_seen_on": "2026-09-25"},
+      {"source_listing_id": "A", "transaction": "sale", "property_type": "apartment", "longitude": 21.2303, "latitude": 45.7546, "area_m2": 80, "rooms": 3, "price": 168000, "currency": "EUR", "price_eur": 168000, "first_seen_on": "2026-07-01", "last_seen_on": "2026-09-25", "construction_year": 1978, "floor": 4},
       {"source_listing_id": "B", "transaction": "sale", "property_type": "apartment", "longitude": 21.2400, "latitude": 45.7600, "area_m2": 60, "rooms": 2, "price": 600000, "currency": "RON", "price_eur": 120000, "first_seen_on": "2026-08-01", "last_seen_on": "2026-09-28"},
       {"source_listing_id": "R", "transaction": "rent", "property_type": "apartment", "longitude": 21.2310, "latitude": 45.7550, "area_m2": 70, "rooms": 3, "price": 600, "currency": "EUR", "price_eur": 600, "first_seen_on": "2026-08-01", "last_seen_on": "2026-09-28"},
       {"source_listing_id": "H", "transaction": "sale", "property_type": "house", "longitude": 21.2310, "latitude": 45.7550, "area_m2": 150, "rooms": 5, "price": 300000, "currency": "EUR", "price_eur": 300000, "first_seen_on": "2026-08-01", "last_seen_on": "2026-09-28"}
@@ -121,13 +135,13 @@ select is(
 select results_eq(
   format(
     $$
-      select round(distance_m)::integer, rooms
+      select round(distance_m)::integer, rooms, floor, construction_year
       from private.market_comparables(%L, '2026-10-02 00:00:00+00', 'sale', '2026-07-01', '2026-09-30', 21.2303, 45.7546, 300)
     $$,
     :'timisoara_id'
   ),
-  $$ values (0, 3::smallint) $$,
-  'Comparables are limited to the radius around the address'
+  $$ values (0, 3::smallint, 4::smallint, 1978::smallint) $$,
+  'Comparables are limited to the radius around the address and carry the floor and construction year'
 );
 
 select results_eq(

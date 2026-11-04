@@ -91,22 +91,6 @@ export async function readMarketContext(
   return { cityId: row.city_id, cutoff: row.finished_at };
 }
 
-export async function readDeclaredDetails(
-  sql: Sql,
-  reportId: string | undefined,
-): Promise<{ areaM2: number | null; rooms: number | null }> {
-  if (reportId === undefined) return { areaM2: null, rooms: null };
-  const [row] = await sql<{ area_m2: string | null; rooms: number | null }[]>`
-    select declared_area_m2 as area_m2, declared_rooms as rooms
-    from public.online_reports
-    where id = ${reportId}
-  `;
-  return {
-    areaM2: row?.area_m2 === null || row?.area_m2 === undefined ? null : Number(row.area_m2),
-    rooms: row?.rooms ?? null,
-  };
-}
-
 export async function marketReferenceDate(
   sql: Sql,
   context: MarketContext,
@@ -138,13 +122,16 @@ export async function listComparables(
       distance_m: number;
       area_m2: string;
       rooms: number | null;
+      floor: number | null;
+      construction_year: number | null;
       price_eur: string;
       first_seen_on: string;
       last_seen_on: string;
     }[]
   >`
-    select listing_id, source, longitude, latitude, distance_m, area_m2, rooms, price_eur,
-      first_seen_on::text as first_seen_on, last_seen_on::text as last_seen_on
+    select listing_id, source, longitude, latitude, distance_m, area_m2, rooms, floor,
+      construction_year, price_eur, first_seen_on::text as first_seen_on,
+      last_seen_on::text as last_seen_on
     from private.market_comparables(
       ${context.cityId}, ${context.cutoff}, ${query.transaction}::private.market_transaction,
       ${query.from}::date, ${query.to}::date, ${query.longitude}, ${query.latitude}, ${query.radiusM}
@@ -158,6 +145,8 @@ export async function listComparables(
     distanceM: row.distance_m,
     areaM2: Number(row.area_m2),
     rooms: row.rooms,
+    floor: row.floor,
+    constructionYear: row.construction_year,
     priceEur: Number(row.price_eur),
     firstSeenOn: row.first_seen_on,
     lastSeenOn: row.last_seen_on,

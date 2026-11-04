@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(25);
+select plan(30);
 
 insert into auth.users (id, email)
 values
@@ -178,7 +178,7 @@ select results_eq(
       result -> 'green' -> 'parks'
     from public.online_reports where id = 'd0000000-0000-4000-8000-000000000002'
   $$,
-  $$ values ('sibiu'::text, '2026-10-31'::text, 'v1'::text, 69, 51, true, 50, 60, 60, 40, 80, 40, 20, '[]'::jsonb) $$,
+  $$ values ('sibiu'::text, '2026-10-31'::text, 'v2'::text, 69, 51, true, 50, 60, 60, 40, 80, 40, 20, '[]'::jsonb) $$,
   'The frozen result holds the city, the sources, the percentiles with ties at the middle rank, the city ranges and averages and the score sections'
 );
 
@@ -194,6 +194,66 @@ select throws_ok(
   'P0001',
   'report_not_generating',
   'Only a report being generated can be completed'
+);
+
+select results_eq(
+  format(
+    $$
+      select count(*)::integer, (array_agg(cell_id))[1]
+      from private.report_nearest_cells(%L, %L, extensions.st_point(24.1520, 45.7983, 4326)::extensions.geography)
+    $$,
+    :'snapshot_id',
+    :'report_cell'
+  ),
+  format($$ values (3, %L::uuid) $$, :'report_cell'),
+  'The three nearest scored cells start with the cell under the address'
+);
+
+select results_eq(
+  format(
+    $$
+      select
+        (summary -> 'zone' ->> 'score')::integer,
+        (summary -> 'zone' ->> 'cell_score')::integer,
+        summary -> 'zone' ->> 'precision',
+        (summary -> 'categories' -> 'green' ->> 'score')::integer,
+        (summary -> 'categories' -> 'green' ->> 'cell_score')::integer,
+        (summary -> 'categories' -> 'green' ->> 'percentile')::integer
+      from private.summarize_report_zone(%L, %L, '{"overall": 55, "categories": {"green": 50, "noise": 60}}') as summary
+    $$,
+    :'snapshot_id',
+    :'report_cell'
+  ),
+  $$ values (55, 69, 'address'::text, 50, 80, 100) $$,
+  'Address scores replace the cell scores and are ranked against the cells of the city, while the cell scores stay in the summary'
+);
+
+select results_eq(
+  format(
+    $$ select count(*)::integer from private.report_cell_neighbours(%L, %L) $$,
+    :'snapshot_id',
+    :'report_cell'
+  ),
+  format(
+    $$ select count(*)::integer from private.grid_cell_neighbours(%L, 175) where cell_id = %L $$,
+    :'sibiu_id',
+    :'report_cell'
+  ),
+  'The neighbours of a report cell are the same as the grid neighbours used by the snapshot'
+);
+
+select throws_ok(
+  format($$ select private.complete_online_report('d0000000-0000-4000-8000-000000000002', %L, %L, '{}', '{"categories": {}}') $$, :'snapshot_id', :'report_cell'),
+  'P0001',
+  'report_scores_invalid',
+  'Address scores without an overall score are refused'
+);
+
+select throws_ok(
+  format($$ select private.complete_online_report('d0000000-0000-4000-8000-000000000002', %L, %L, '{}', '{"overall": "high"}') $$, :'snapshot_id', :'report_cell'),
+  'P0001',
+  'report_scores_invalid',
+  'Address scores must hold a numeric overall score and an object of category scores'
 );
 
 select private.fail_online_report('d0000000-0000-4000-8000-000000000003', 'outside_coverage');

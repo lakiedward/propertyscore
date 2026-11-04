@@ -1,7 +1,11 @@
 import { z } from 'zod';
 
 import type { JsonObject, Sql } from '../../db/sql.ts';
-import { readCellCategory, sectionParams } from '../../report/cell-category.ts';
+import {
+  readCellCategory,
+  readNeighbourInputs,
+  sectionParams,
+} from '../../report/cell-category.ts';
 import type { ReportSection } from '../../report/report-section.ts';
 import type { ValhallaClient } from '../../routing/valhalla.ts';
 import {
@@ -19,7 +23,7 @@ import {
   walkedCellDistances,
   walkingTypes,
 } from './safety.cells.ts';
-import { scoreAtPoint, type PointSafety } from './safety.formula.ts';
+import { finalScore, scoreAtPoint, smooth, type PointSafety } from './safety.formula.ts';
 import {
   safetyParamsSchema,
   SAFETY_TYPES,
@@ -271,9 +275,38 @@ function momentJson(moment: PointSafety['day']): JsonObject {
   };
 }
 
+const neighbourRawSchema = z.object({ day_unsmoothed: z.number(), night_unsmoothed: z.number() });
+
+export function smoothedAddressScore(
+  point: PointSafety,
+  neighbours: readonly unknown[],
+  params: SafetyParams,
+): number {
+  const raw = neighbours.flatMap((value) => {
+    const parsed = neighbourRawSchema.safeParse(value);
+    return parsed.success ? [parsed.data] : [];
+  });
+  const day = Math.round(
+    smooth(
+      point.day.rawScore,
+      raw.map((cell) => cell.day_unsmoothed),
+      params.smoothing,
+    ),
+  );
+  const night = Math.round(
+    smooth(
+      point.night.rawScore,
+      raw.map((cell) => cell.night_unsmoothed),
+      params.smoothing,
+    ),
+  );
+  return finalScore(day, night, params.moment_weights);
+}
+
 function safetySection(input: {
   cell: z.infer<typeof cellInputsSchema>;
   point: PointSafety;
+  addressScore: number;
   landmarks: readonly Landmark[];
   params: SafetyParams;
   distanceMethod: DistanceMethod;
@@ -282,6 +315,7 @@ function safetySection(input: {
   return {
     schema_version: 1,
     status: 'scored',
+    address_score: input.addressScore,
     day: cell.day,
     night: cell.night,
     moment_weights: params.moment_weights,
@@ -306,6 +340,8 @@ function safetySection(input: {
 
 export const safetyReportSection: ReportSection = {
   key: 'safety',
+  addressScore: (section) =>
+    typeof section.address_score === 'number' ? section.address_score : null,
   build: async ({ sql, router, snapshotId, cellId, latitude, longitude, params }) => {
     const safetyParams = safetyParamsSchema.parse(sectionParams(params, 'safety'));
     const cell = await readCellCategory(sql, snapshotId, cellId, 'safety');
@@ -337,6 +373,7 @@ export const safetyReportSection: ReportSection = {
       safetyParams,
       excluded,
     );
+    const neighbours = await readNeighbourInputs(sql, snapshotId, cellId, 'safety');
     const landmarks = await readLandmarks(
       sql,
       snapshotId,
@@ -347,6 +384,7 @@ export const safetyReportSection: ReportSection = {
     return safetySection({
       cell: inputs.data,
       point,
+      addressScore: smoothedAddressScore(point, neighbours, safetyParams),
       landmarks: walkedLandmarks(landmarks, walked, safetyParams),
       params: safetyParams,
       distanceMethod: walked?.routed.some((candidate) => candidate.leg)
