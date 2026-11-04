@@ -128,13 +128,16 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((error: unknown) => {
-  const logger = createLogger('error', undefined, { service: 'worker' });
-  logger.error('worker failed', {
-    code: errorCode(error),
-    error: error instanceof Error ? error.message : String(error),
-    cause: errorCauseTail(error),
-    cause_exit: errorCauseExit(error),
-  });
-  process.exitCode = 1;
-});
+main().then(
+  () => process.exit(0),
+  (error: unknown) => {
+    const logger = createLogger('error', undefined, { service: 'worker' });
+    logger.error('worker failed', {
+      code: errorCode(error),
+      error: error instanceof Error ? error.message : String(error),
+      cause: errorCauseTail(error),
+      cause_exit: errorCauseExit(error),
+    });
+    process.exit(1);
+  },
+);
