@@ -141,8 +141,8 @@ One Railway project `propertyscore`, environment `production`, region `europe-we
 
 | Service | Source | Build and start | Schedule and restart | Volume | Size |
 | --- | --- | --- | --- | --- | --- |
-| `snapshot` | GitHub `lakiedward/propertyscore`, branch `main` | Root Directory empty (the lockfile lives at the repository root), Dockerfile path `worker/Dockerfile`, Watch Paths `worker/**`, `supabase/migrations/**`, `pnpm-lock.yaml`; start command is the image default (`node src/main.ts build-snapshot`) | cron `0 2 2 * *` (02:00 UTC on the 2nd of each month), restart policy `NEVER` | `snapshot-sources` at `/data`, 20 GB | 8 GB memory, 4 vCPU |
-| `valhalla` | image `ghcr.io/valhalla/valhalla-scripted:3.9.1` | the image entrypoint: builds the tiles on the first start, then serves on port 8002 | always on, restart policy `ON_FAILURE` | `valhalla-tiles` at `/custom_files`, 10 GB | 4 GB memory, 2 vCPU |
+| `snapshot` | GitHub `lakiedward/propertyscore`, branch `main` | Root Directory empty (the lockfile lives at the repository root), Dockerfile path `worker/Dockerfile`, Watch Paths `worker/**`, `supabase/migrations/**`, `pnpm-lock.yaml`; start command is the image default (`node src/main.ts build-snapshot`) | cron `0 2 2 * *` (02:00 UTC on the 2nd of each month), restart policy `NEVER` | `snapshot-sources` at `/data`, 5 GB (the Hobby plan maximum) | 8 GB memory, 4 vCPU |
+| `valhalla` | image `ghcr.io/valhalla/valhalla-scripted:3.9.1` | start command `/valhalla/scripts/docker-entrypoint.sh build_tiles` (a Railway start command replaces the image `ENTRYPOINT`): builds the tiles from the `.pbf` in `/custom_files` when they are missing or the file changed, then serves on port 8002 | always on, restart policy `ON_FAILURE` | `valhalla-tiles` at `/custom_files`, 5 GB (the Romanian tiles, their tar and the extract use about 1.5 GB) | 4 GB memory, 2 vCPU |
 
 | Service | Variable | Value |
 | --- | --- | --- |
@@ -152,14 +152,16 @@ One Railway project `propertyscore`, environment `production`, region `europe-we
 | `snapshot` | `VALHALLA_URL` | `http://${{valhalla.RAILWAY_PRIVATE_DOMAIN}}:8002` |
 | `snapshot` | `RAILWAY_RUN_UID` | `0`: the image runs as `node` and a Railway volume is owned by root |
 | `snapshot` | `LOG_LEVEL`, `OSM_EXTRACT_URL`, `ADS_API_URL`, `AIR_EEA_*` | unset (the defaults of `readEnv`) unless a source changes |
-| `valhalla` | `tile_urls` | `https://download.geofabrik.de/europe/romania-latest.osm.pbf` |
+| `valhalla` | `tile_urls` | `https://download.geofabrik.de/europe/romania-latest.osm.pbf`, used only when no `.pbf` is on the volume |
+| `valhalla` | `use_tiles_ignore_pbf` | `False`, so a restart rebuilds the tiles only when the extract's hash changed |
 | `valhalla` | `server_threads` | `2`, so the tile build fits in the memory limit |
 | `valhalla` | `build_elevation`, `build_transit` | `False` (the image defaults) |
 
 - Railway starts `snapshot` only on its schedule (UTC) and skips a run while the previous one is still active, so the command must exit when done (it closes postgres.js in `main`). `railway cron run` starts one outside the schedule.
 - `snapshot` is created only once the migrations it needs are live in production through `deploy-db.yml`, and its first run is checked in the logs and in `score_snapshots`.
 - The volume keeps the downloaded sources between runs and holds the files the worker reads but does not download (the SIIIR schooling plan under `/data/sources/education/`, the EEA 1 km maps under `/data/sources/air/eea-maps/`), uploaded with `railway volume files` or `railway ssh`. Each month adds an OSM extract and work folders: delete the periods older than the last two before the volume fills.
-- Valhalla keeps its tiles on its volume and does not rebuild them on a restart (`use_tiles_ignore_pbf`). Before the monthly snapshot, refresh them with `force_rebuild=True` and a redeploy, then set it back to `False`; the snapshot records `tilesetDate()` so a stale tileset is visible.
+- Geofabrik refuses connections from Railway (and from other cloud hosts), so neither service can download the extract there. The user downloads `romania-latest.osm.pbf` on their own machine and uploads it with `railway volume files --volume valhalla-tiles upload <file> /romania-latest.osm.pbf --overwrite`; the upload goes through the running container. Before the monthly snapshot, upload the new extract and restart `valhalla`: it rebuilds the tiles in a few minutes because the hash changed. The snapshot records `tilesetDate()` so a stale tileset is visible.
+- `snapshot` is not created yet: a cron container is not running between runs, so files cannot be uploaded to its volume, and it cannot download the extract from Geofabrik either. How it gets the extract is decided with the user when it is created.
 - Report and document jobs (`generate-report` after a payment, PDFs later) get their own service from the same image, with its own start command, once the hand-off from the order flow exists (`.claude/rules/architecture.md` §3).
 - Generated documents are stored in Supabase Storage (a private bucket created by a migration, served through signed URLs), never on a Railway volume or bucket: their access follows the owner's RLS like every other file.
 - System tools the worker shells out to (`osmium-tool`, `unzip`, `python3`, `gdal-bin`, later Chromium) are installed in the `Dockerfile`, pinned by the base image's Debian release.
