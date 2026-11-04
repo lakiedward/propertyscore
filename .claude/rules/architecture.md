@@ -23,7 +23,7 @@ The table is a starting point, not the truth. Confirm it before relying on it: t
 | Supabase Storage | Supabase | `listing-photos` bucket | files with RLS, signed URLs | image transformation (paid feature, not used) |
 | Edge Functions | Supabase | none yet | short calls with a secret, webhooks, secret-key work finishing in seconds | rendering, binaries, heavy loops, waiting for other jobs |
 | `pg_cron` | Supabase | not enabled yet | small periodic SQL: expiries, timeouts, enqueueing | the work itself when it is heavy |
-| Worker `@propertyscore/worker` | Railway, one service per long-running role from `worker/Dockerfile` | `build-snapshot`, `generate-report`, `create-report`; Node 24, postgres.js, osmium, GDAL, Python r5py on Java 21 | long, CPU- or memory-heavy jobs, system binaries, imports, document rendering, retries | anything a user waits on synchronously, rules that belong in an RPC |
+| Worker `@propertyscore/worker` | Railway, one service per long-running role from `worker/Dockerfile` | `build-snapshot`, `generate-report`, `create-report`, `import-market-listings`, `import-health-sources`; Node 24, postgres.js, osmium, GDAL, Python r5py on Java 21 | long, CPU- or memory-heavy jobs, system binaries, imports, document rendering, retries | anything a user waits on synchronously, rules that belong in an RPC |
 | Valhalla | Railway, its own service | walking times for the scores | routing on the OSM network | anything else |
 | Frontend SPA | Netlify, static with SPA fallback and security headers | every screen | UI, UX checks | secrets, authorization, server code (no Netlify Functions) |
 | MapLibre with OpenFreeMap tiles | browser | listings map, report map | maps without a key | server-side map rendering |

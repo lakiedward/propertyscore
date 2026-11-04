@@ -205,3 +205,50 @@ export async function writeHealthCityStats(
     where id = ${snapshotId}
   `;
 }
+
+export async function replaceCnasProviders(
+  sql: Sql,
+  list: {
+    cityId: string;
+    kind: CnasProviderKind;
+    listDate: string;
+    sourceRef: string;
+    rows: readonly { name: string; address: string | null }[];
+  },
+): Promise<number> {
+  const [row] = await sql<{ count: number }[]>`
+    select private.replace_cnas_providers(
+      ${list.cityId}, ${list.kind}::private.cnas_provider_kind, ${list.listDate}::date,
+      ${list.sourceRef}, ${sql.json(list.rows.map((provider) => ({ ...provider })))}::jsonb
+    ) as count
+  `;
+  return row?.count ?? 0;
+}
+
+export type EmergencySync = { kept: number; closed: number; inserted: number };
+
+export async function syncEmergencyHospitals(
+  sql: Sql,
+  cityId: string,
+  validFrom: string,
+  hospitals: readonly {
+    name: string;
+    level: 'upu' | 'cpu';
+    isPediatric: boolean;
+    sourceRef: string;
+    location: Point;
+  }[],
+): Promise<EmergencySync> {
+  const rows = hospitals.map((hospital) => ({
+    name: hospital.name,
+    level: hospital.level,
+    is_pediatric: hospital.isPediatric,
+    source_ref: hospital.sourceRef,
+    lng: hospital.location.lng,
+    lat: hospital.location.lat,
+  }));
+  const [row] = await sql<{ result: EmergencySync }[]>`
+    select private.sync_emergency_hospitals(${cityId}, ${validFrom}::date, ${sql.json(rows)}::jsonb) as result
+  `;
+  return row?.result ?? { kept: 0, closed: 0, inserted: 0 };
+}

@@ -104,3 +104,35 @@ describe('currentPeriod', () => {
     expect(currentPeriod(new Date('2026-01-31T23:30:00Z'))).toBe('2026-01');
   });
 });
+
+describe('parseCommand for the Health sources import', () => {
+  it('defaults to every city, the sources folder and the first day of the month', () => {
+    expect(parseCommand(['import-health-sources'], NOW)).toEqual({
+      command: 'import-health-sources',
+      dir: null,
+      citySlugs: [],
+      validFrom: '2026-11-01',
+      period: '2026-11-01',
+    });
+  });
+
+  it('reads the folder, cities and the date the emergency list takes effect', () => {
+    expect(
+      parseCommand(
+        [
+          'import-health-sources',
+          '--dir',
+          '/data/health',
+          '--city',
+          'sibiu',
+          '--valid-from',
+          '2026-10-15',
+        ],
+        NOW,
+      ),
+    ).toMatchObject({ dir: '/data/health', citySlugs: ['sibiu'], validFrom: '2026-10-15' });
+    expect(() =>
+      parseCommand(['import-health-sources', '--valid-from', '2026-13-01'], NOW),
+    ).toThrow(expect.objectContaining({ code: 'invalid_valid_from' }));
+  });
+});
