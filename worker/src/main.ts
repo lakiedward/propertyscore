@@ -14,10 +14,16 @@ import { readActiveInvestmentParams } from './scoring/investment/investment.db.t
 import { importMarketListings } from './scoring/investment/market-import.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
 import { buildSnapshot } from './snapshot/build-snapshot.ts';
+import type { SourceMirror } from './sources/mirror.ts';
 import type { OsmExtractSource } from './sources/osm.ts';
 
 function osmExtractSource(env: Env): OsmExtractSource {
   return { url: env.OSM_EXTRACT_URL, apiKey: env.OSM_EXTRACT_API_KEY ?? null };
+}
+
+function sourceMirror(env: Env): SourceMirror | undefined {
+  if (!env.SOURCE_MIRROR_URL) return undefined;
+  return { url: env.SOURCE_MIRROR_URL, apiKey: env.OSM_EXTRACT_API_KEY ?? null };
 }
 
 function reportRouter(env: Env): ValhallaClient | null {
@@ -40,6 +46,7 @@ async function runCommand(
         scoreKeys: command.scoreKeys,
         sourcesDir: env.SOURCES_DIR,
         osmExtract: osmExtractSource(env),
+        sourceMirror: sourceMirror(env),
         router: reportRouter(env),
         logger,
       });

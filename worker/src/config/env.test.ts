@@ -15,6 +15,21 @@ describe('readEnv', () => {
     });
   });
 
+  it('needs the bucket key when a source mirror is set', () => {
+    expect(() =>
+      readEnv({
+        DATABASE_URL: 'postgresql://postgres:secret@db.example.test:5432/postgres',
+        SOURCE_MIRROR_URL:
+          'https://example.supabase.co/storage/v1/object/authenticated/source-extracts',
+      }),
+    ).toThrow(
+      expect.objectContaining({
+        code: 'invalid_environment',
+        message: 'Invalid worker environment: OSM_EXTRACT_API_KEY',
+      }),
+    );
+  });
+
   it('names the invalid fields without echoing their values', () => {
     expect(() => readEnv({ DATABASE_URL: 'https://secret.example.test' })).toThrow(
       expect.objectContaining({

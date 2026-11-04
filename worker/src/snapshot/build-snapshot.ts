@@ -9,6 +9,7 @@ import type { Logger } from '../lib/logger.ts';
 import type { ValhallaClient } from '../routing/valhalla.ts';
 import type { CategoryKey } from '../scoring/categories.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
+import type { SourceMirror } from '../sources/mirror.ts';
 import { downloadOsmExtract, type OsmExtractSource } from '../sources/osm.ts';
 import { markResidentialCells } from './residential.ts';
 import {
@@ -27,6 +28,7 @@ export type BuildSnapshotOptions = {
   scoreKeys: readonly CategoryKey[];
   sourcesDir: string;
   osmExtract: OsmExtractSource;
+  sourceMirror?: SourceMirror;
   router: ValhallaClient | null;
   logger: Logger;
 };
@@ -110,6 +112,7 @@ export async function buildSnapshot(options: BuildSnapshotOptions): Promise<Buil
         params: version.params[module.key],
         sourcesDir: options.sourcesDir,
         osmExtract: options.osmExtract,
+        sourceMirror: options.sourceMirror,
         router: options.router,
         logger,
       });

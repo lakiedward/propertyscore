@@ -5,6 +5,7 @@ import { join } from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { SourceUnavailableError } from './download.ts';
 import { downloadOsmExtract } from './osm.ts';
 
 describe('downloadOsmExtract', () => {
@@ -73,7 +74,7 @@ describe('downloadOsmExtract', () => {
         sourcesDir,
         '2026-12-01',
       ),
-    ).rejects.toMatchObject({ code: 'source_download_failed' });
+    ).rejects.toBeInstanceOf(SourceUnavailableError);
     await expect(stat(join(sourcesDir, 'osm', 'romania-2026-12.osm.pbf.part'))).rejects.toThrow();
   });
 });

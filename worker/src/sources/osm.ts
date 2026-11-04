@@ -10,6 +10,7 @@ import { z } from 'zod';
 import type { Sql } from '../db/sql.ts';
 import { WorkerError } from '../lib/errors.ts';
 import { downloadOnce } from './download.ts';
+import { privateSourceHeaders } from './mirror.ts';
 
 const run = promisify(execFile);
 
@@ -41,11 +42,6 @@ export type OsmExtractSource = {
   apiKey: string | null;
 };
 
-function osmExtractHeaders(source: OsmExtractSource): Record<string, string> {
-  if (!source.apiKey) return {};
-  return { apikey: source.apiKey, Authorization: `Bearer ${source.apiKey}` };
-}
-
 export async function downloadOsmExtract(
   source: OsmExtractSource,
   sourcesDir: string,
@@ -54,7 +50,7 @@ export async function downloadOsmExtract(
   return downloadOnce(
     source.url,
     join(sourcesDir, 'osm', `romania-${period.slice(0, 7)}.osm.pbf`),
-    { headers: osmExtractHeaders(source) },
+    { headers: privateSourceHeaders(source.apiKey) },
   );
 }
 

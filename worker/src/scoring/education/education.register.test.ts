@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { loadRegister, planPath, registerPath } from './education.register.ts';
+import { loadRegister, planPath, registerPath, registerSource } from './education.register.ts';
 
 const FIXTURE = fileURLToPath(new URL('../../sources/fixtures/siiir-sample.xlsx', import.meta.url));
 const PLAN_FIXTURE = fileURLToPath(
@@ -75,5 +75,23 @@ describe('loadRegister', () => {
       ['3261100005', ['upper_secondary'], null, true],
     ]);
     expect(result.levelSources).toEqual({ plan: 3, name: 1 });
+  });
+});
+
+describe('registerSource', () => {
+  it('downloads from the register URL without a mirror', () => {
+    expect(registerSource(REGISTER, undefined)).toEqual({ url: REGISTER.url, headers: {} });
+  });
+
+  it('downloads the school year file from the private mirror with its key', () => {
+    expect(
+      registerSource(REGISTER, {
+        url: 'https://example.supabase.co/storage/v1/object/authenticated/source-extracts/',
+        apiKey: 'sb_secret_test',
+      }),
+    ).toEqual({
+      url: 'https://example.supabase.co/storage/v1/object/authenticated/source-extracts/education/siiir-2025-2026.xlsx',
+      headers: { apikey: 'sb_secret_test', Authorization: 'Bearer sb_secret_test' },
+    });
   });
 });
