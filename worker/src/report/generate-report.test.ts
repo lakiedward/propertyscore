@@ -139,6 +139,7 @@ describe.skipIf(!databaseUrl)('generateReport against the local database', () =>
       'industry',
       'education',
       'health',
+      'investment',
     ]) {
       expect(report?.result[key]).toMatchObject({ schema_version: 1, status: 'no_data' });
     }

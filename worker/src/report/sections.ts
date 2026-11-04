@@ -5,6 +5,7 @@ import { fifteenMinuteReportSection } from '../scoring/fifteen-minute/fifteen-mi
 import { greenReportSection } from '../scoring/green/green.report.ts';
 import { healthReportSection } from '../scoring/health/health.report.ts';
 import { industryReportSection } from '../scoring/industry/industry.report.ts';
+import { investmentReportSection } from '../scoring/investment/investment.report.ts';
 import { noiseReportSection } from '../scoring/noise/noise.report.ts';
 import { safetyReportSection } from '../scoring/safety/safety.report.ts';
 import { seismicReportSection } from '../scoring/seismic/seismic.report.ts';
@@ -21,4 +22,5 @@ export const REPORT_SECTIONS: readonly ReportSection[] = [
   educationReportSection,
   healthReportSection,
   seismicReportSection,
+  investmentReportSection,
 ];

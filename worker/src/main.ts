@@ -10,6 +10,8 @@ import { insertReport } from './report/report.db.ts';
 import { REPORT_SECTIONS } from './report/sections.ts';
 import { importHealthSources } from './scoring/health/import-health-sources.ts';
 import { createValhallaClient, type ValhallaClient } from './routing/valhalla.ts';
+import { readActiveInvestmentParams } from './scoring/investment/investment.db.ts';
+import { importMarketListings } from './scoring/investment/market-import.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
 import { buildSnapshot } from './snapshot/build-snapshot.ts';
 
@@ -80,6 +82,22 @@ async function runCommand(
         cnas_lists: result.cnasLists,
         cnas_providers: result.cnasProviders,
         emergency_cities: result.emergencyCities,
+      });
+      return;
+    }
+    case 'import-market-listings': {
+      const result = await importMarketListings({
+        sql,
+        source: command.source,
+        period: command.period,
+        filePath: command.filePath,
+        eurRonRate: command.eurRonRate,
+        params: await readActiveInvestmentParams(sql),
+        logger,
+      });
+      logger.info('import-market-listings done', {
+        import_id: result.importId,
+        accepted: result.accepted,
       });
       return;
     }
