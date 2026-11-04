@@ -37,6 +37,11 @@ Built from the spec's markup mapping (`design-analysis.md` §8); nothing from th
 Functions (RPC), Edge Functions, Storage buckets, cron jobs, secrets: …
 Schema checkpoint: yes / no
 
+### Integration choice (`.claude/rules/architecture.md`)
+| Behaviour | Options considered (integrated first) | Chosen | Why | Reuses | Hand-off and status the frontend follows | Plan says |
+| Render the inspection book PDF | Edge Function · worker command · external PDF API | worker command `generate-book`, in its own Railway service from `worker/Dockerfile` | Chromium and photos, can outrun Edge Function limits; the worker already freezes reports | report sections, `private` function pattern | `approve_inspection` sets `generating`; the worker writes the file and calls `private.publish_book` | Edge Function `generate-inspection-book` → plan update |
+New technology outside `architecture.md` §1: none / <service> with alternatives, cost, secrets, local setup, failure behaviour (needs your yes)
+
 ## 5. Frontend
 - Feature module(s) and files: api, queries, schemas, types, utils, hooks, components, routes
 - Routes and guards, search params (Zod), loaders, pending and error components

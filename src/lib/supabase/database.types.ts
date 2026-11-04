@@ -37,6 +37,20 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"listings": {
+                  Row: {
+                    "area_m2": number,"city": string,"created_at": string,"currency": string,"id": string,"latitude": number,"longitude": number,"owner_id": string,"photo_path": string | null,"price": number,"published_at": string | null,"rooms": number,"smartcheck_score": number | null,"status": Database["public"]['Enums']["listing_status"],"street_label": string,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at": string,"verification": Database["public"]['Enums']["listing_verification"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "area_m2": number,"city": string,"created_at"?: string,"currency": string,"id"?: string,"latitude": number,"longitude": number,"owner_id"?: string,"photo_path"?: string | null,"price": number,"published_at"?: string | null,"rooms": number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label": string,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"verification"?: Database["public"]['Enums']["listing_verification"]
+                  }
+                  Update: {
+                    "area_m2"?: number,"city"?: string,"created_at"?: string,"currency"?: string,"id"?: string,"latitude"?: number,"longitude"?: number,"owner_id"?: string,"photo_path"?: string | null,"price"?: number,"published_at"?: string | null,"rooms"?: number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label"?: string,"title"?: string,"transaction"?: Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"verification"?: Database["public"]['Enums']["listing_verification"]
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"online_reports": {
                   Row: {
                     "address_text": string,"category_scores": NonNullable<Json>,"city_id": string,"created_at": string,"declared_area_m2": number | null,"declared_building_floors": number | null,"declared_construction_year": number | null,"declared_floor": number | null,"declared_has_elevator": boolean | null,"declared_rooms": number | null,"error_code": string | null,"generated_at": string | null,"id": string,"latitude": number | null,"locale": string,"location": unknown,"longitude": number | null,"number": number,"overall_score": number | null,"owner_id": string,"pdf_path": string | null,"result": NonNullable<Json>,"scoring_version_id": string | null,"snapshot_id": string | null,"source_listing_url": string | null,"status": Database["public"]['Enums']["online_report_status"],"updated_at": string,"version": number
@@ -71,14 +85,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "created_at": string,"id": string,"locale": string,"updated_at": string
+                    "created_at": string,"full_name": string | null,"id": string,"locale": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id": string,"locale"?: string,"updated_at"?: string
+                    "created_at"?: string,"full_name"?: string | null,"id": string,"locale"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"locale"?: string,"updated_at"?: string
+                    "created_at"?: string,"full_name"?: string | null,"id"?: string,"locale"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -156,7 +170,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
+            "listing_status": "draft"|"published","listing_transaction": "sale"|"rent","listing_verification": "physical"|"smartcheck"|"none","online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -276,7 +290,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
+            "listing_status": ["draft", "published"],"listing_transaction": ["sale", "rent"],"listing_verification": ["physical", "smartcheck", "none"],"online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
           }
         }
 } as const

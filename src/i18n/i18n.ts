@@ -13,12 +13,19 @@ const DEFAULT_LOCALE: Locale = 'ro';
 const LOCALE_STORAGE_KEY = 'locale';
 
 export const resources = {
-  ro: { common: roCommon, auth: roAuth },
-  en: { common: enCommon, auth: enAuth },
+  ro: {
+    common: roCommon,
+    auth: roAuth,
+  },
+  en: {
+    common: enCommon,
+    auth: enAuth,
+  },
 } as const;
 
 const BUNDLED_NAMESPACES = ['common', 'auth'] as const;
-export type FeatureNamespace = 'onlineReports';
+export const FEATURE_NAMESPACES = ['home', 'listings', 'publish', 'onlineReports'] as const;
+export type FeatureNamespace = (typeof FEATURE_NAMESPACES)[number];
 
 const featureBundles = import.meta.glob<ResourceKey>(
   ['./locales/*/*.json', '!./locales/*/common.json', '!./locales/*/auth.json'],
@@ -70,18 +77,8 @@ function storeLocale(locale: Locale) {
   }
 }
 
-function detectBrowserLocale(): Locale | undefined {
-  for (const language of navigator.languages) {
-    const prefix = language.toLowerCase().split('-')[0];
-    if (isLocale(prefix)) {
-      return prefix;
-    }
-  }
-  return undefined;
-}
-
 function detectInitialLocale(): Locale {
-  return readStoredLocale() ?? detectBrowserLocale() ?? DEFAULT_LOCALE;
+  return readStoredLocale() ?? DEFAULT_LOCALE;
 }
 
 export function currentLocale(): Locale {

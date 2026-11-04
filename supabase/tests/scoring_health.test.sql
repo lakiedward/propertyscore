@@ -34,17 +34,17 @@ select throws_ok(
   'An emergency unit cannot close before it opens'
 );
 
-insert into private.cnas_providers (city_id, kind, name, location, list_date, source_ref)
+insert into private.cnas_providers (city_id, kind, name, address, location, list_date, source_ref)
 values
-  (:'sibiu_id', 'pharmacy', 'Farmacia Veche', extensions.st_point(24.15, 45.79, 4326)::extensions.geography, '2026-06-30', 'cas-sibiu-2026-06.xlsx'),
-  (:'sibiu_id', 'pharmacy', 'Farmacia Nouă', extensions.st_point(24.151, 45.791, 4326)::extensions.geography, '2026-09-30', 'cas-sibiu-2026-09.xlsx'),
-  (:'sibiu_id', 'family_doctor', 'Dr. Fără Adresă', null, '2026-03-31', 'cas-sibiu-medici-2026-03.xlsx'),
-  (:'sibiu_id', 'pharmacy', 'Farmacia Viitoare', null, '2026-12-31', 'cas-sibiu-2026-12.xlsx');
+  (:'sibiu_id', 'pharmacy', 'Farmacia Veche', null, extensions.st_point(24.15, 45.79, 4326)::extensions.geography, '2026-06-30', 'cas-sibiu-2026-06.xlsx'),
+  (:'sibiu_id', 'pharmacy', 'Farmacia Nouă', 'Str. Nicolae Bălcescu nr. 5', extensions.st_point(24.151, 45.791, 4326)::extensions.geography, '2026-09-30', 'cas-sibiu-2026-09.xlsx'),
+  (:'sibiu_id', 'family_doctor', 'Dr. Fără Adresă', null, null, '2026-03-31', 'cas-sibiu-medici-2026-03.xlsx'),
+  (:'sibiu_id', 'pharmacy', 'Farmacia Viitoare', null, null, '2026-12-31', 'cas-sibiu-2026-12.xlsx');
 
 select results_eq(
-  format($$ select name, longitude is null from private.list_cnas_providers(%L, '2026-11-01') $$, :'sibiu_id'),
-  $$ values ('Farmacia Nouă'::text, false), ('Dr. Fără Adresă'::text, true) $$,
-  'Each provider kind reads its own latest list published before the snapshot, ungeocoded rows included'
+  format($$ select name, address, longitude is null from private.list_cnas_providers(%L, '2026-11-01') $$, :'sibiu_id'),
+  $$ values ('Farmacia Nouă'::text, 'Str. Nicolae Bălcescu nr. 5'::text, false), ('Dr. Fără Adresă'::text, null::text, true) $$,
+  'Each provider kind reads its own latest list published before the snapshot, with its address for geocoding, ungeocoded rows included'
 );
 
 set local role anon;

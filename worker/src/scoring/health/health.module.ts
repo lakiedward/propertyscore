@@ -11,6 +11,7 @@ import {
   readOsmFeatures,
 } from '../../sources/osm.ts';
 import { computeWalkAccess, type WalkAccessTarget } from '../../routing/walk-access.ts';
+import { createLazyGeocoder, loadCityGeocoder } from '../../geocoding/city-geocoder.ts';
 import type { ScoreModule } from '../score-module.ts';
 import { writeCategoryScores } from '../write-category-scores.ts';
 import { computeCarAccess, readWalkAccess } from './health.access.ts';
@@ -34,6 +35,7 @@ import {
 import { healthParamsSchema, type HealthParams } from './health.params.ts';
 import {
   EMERGENCY_CATEGORY,
+  geocodeProviders,
   HEALTH_OSM_FILTERS,
   mergeCnasProviders,
   NIGHT_PHARMACY_CATEGORY,
@@ -112,7 +114,9 @@ export const healthModule: ScoreModule = {
 
       const cnas = await listCnasProviders(sql, city.id, context.period);
       if (cnas.listDate) cnasDates.push(cnas.listDate);
-      const merged = mergeCnasProviders(osmPois, cnas.providers, params.osm_cnas_match_radius_m);
+      const geocoder = createLazyGeocoder(() => loadCityGeocoder(context, city, extractPath));
+      const providers = await geocodeProviders(cnas.providers, geocoder.geocode);
+      const merged = mergeCnasProviders(osmPois, providers, params.osm_cnas_match_radius_m);
 
       const hospitals = await listEmergencyHospitals(sql, city.id, context.period);
       for (const hospital of hospitals) emergencyDates.push(hospital.validFrom);
@@ -191,6 +195,7 @@ export const healthModule: ScoreModule = {
         cnas_matched: merged.cnasMatched,
         cnas_added: merged.cnasAdded,
         cnas_without_location: merged.cnasWithoutLocation,
+        cnas_geocoding: geocoder.tally,
         emergency_hospitals: hospitals.length,
         distance_method: methods.walk,
         car_distance_method: methods.car,

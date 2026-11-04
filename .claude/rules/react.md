@@ -56,8 +56,8 @@ Pick the first that fits:
 
 ## Loading, errors, suspense
 
-- Route loaders prefetch with `context.queryClient.ensureQueryData(<entity>Queries.detail(id))`; components read with `useSuspenseQuery`. The route's `pendingComponent` and `errorComponent` handle loading and failure, so components have no `if (isLoading)` branches.
-- Non-suspense queries (background panels, optional widgets) render an inline skeleton and an inline error state.
+- Route loaders prefetch with `context.queryClient.query({ ...<entity>Queries.detail(id), staleTime: 'static' })` (TanStack Query's replacement for the deprecated `ensureQueryData`: cached data is returned as it is, otherwise it fetches); components read with `useSuspenseQuery`. `fetchQuery`, `prefetchQuery` and `ensureQueryData` are deprecated and rejected by `@typescript-eslint/no-deprecated`. The route's `pendingComponent` and `errorComponent` handle loading and failure, so components have no `if (isLoading)` branches.
+- Non-suspense queries (background panels, optional widgets) render an inline skeleton and an inline error state. On a public page whose first paint must not wait for such a widget (the listings board on the home page), the loader warms the cache without awaiting, `void context.queryClient.query(<entity>Queries.list(…)).catch(() => undefined)` (the replacement for the deprecated `prefetchQuery`; the widget shows its own error), and the widget reads with `useQuery`; the error state shows only when there is no data to keep (`query.isError && !query.data`).
 - Loading placeholders are shadcn `Skeleton`s shaped like the content, not spinners, except inside buttons.
 
 ## Forms
@@ -108,7 +108,7 @@ export function PropertyForm({ onSaved }: PropertyFormProps) {
 ```
 
 - One Zod schema per form in `<entity>.schemas.ts`; the form type is `z.infer` of it. Messages in schemas are translation keys (`'validation.minLength'`), translated by `useValidationMessage` from `@/i18n/validation` inside `FieldError`; never English text.
-- Always React Hook Form's `Controller` with the shadcn `Field` components from `@/components/ui/field` (`FieldGroup`, `FieldSet`, `FieldLegend`, `Field`, `FieldLabel`, `FieldDescription`, `FieldError`), so labels, errors and ARIA are wired the same way everywhere. Every input has a visible `FieldLabel` tied to it with `htmlFor` and a `useId` id; the control gets `aria-invalid` and the `Field` gets `data-invalid` from `fieldState.invalid`. Radio and checkbox groups use `FieldSet` with a `FieldLegend`. There is no shadcn `Form` wrapper in the project; do not add it.
+- Always React Hook Form's `Controller` with the shadcn `Field` components from `@/components/ui/field` (`FieldGroup`, `FieldSet`, `FieldLegend`, `Field`, `FieldLabel`, `FieldDescription`, `FieldError`), so labels, errors and ARIA are wired the same way everywhere. Every input has a visible `FieldLabel` tied to it with `htmlFor` and a `useId` id; where a Claude Design export shows a field without a label (the placeholder-only login and sign-up fields), the `FieldLabel` stays in the DOM with `sr-only` and the placeholder repeats its text; the control gets `aria-invalid` and the `Field` gets `data-invalid` from `fieldState.invalid`. Radio and checkbox groups use `FieldSet` with a `FieldLegend`. There is no shadcn `Form` wrapper in the project; do not add it.
 - Submit goes through a mutation hook: `mutateAsync` with `applyServerErrors` when server errors map to fields, or `mutate` with the mutation's error in a form-level `Alert` when they never do (the sign-in form); the submit button is disabled only while the mutation is pending, never because the form is invalid, so pressing it reveals every error.
 - Server errors map back to fields through the shared `applyServerErrors(form, error)` helper (an `AppError` with `field` becomes `setError(field, …)`); other errors show a form-level `Alert`. Mutations whose form handles the error set `meta: { silent: true }` so the global toast is skipped.
 - Number inputs parse with `parseLocaleNumber` from `@/i18n/format`, never a bare `Number()` or `z.coerce.number()`, because Romanian input uses `,` as the decimal separator.
@@ -118,7 +118,7 @@ export function PropertyForm({ onSaved }: PropertyFormProps) {
 ## Routing
 
 - File-based TanStack Router routes; `routeTree.gen.ts` is generated and committed.
-- `_public/` for logged-out pages (authenticated users are redirected into the app), `_authenticated/` for everything behind login; its `route.tsx` holds the guard (`beforeLoad` → `redirect({ to: '/login', search: { redirect: location.href } })`) and the app shell.
+- `_site/` for public pages everyone may see, signed in or not (home and marketing), inside the site layout (`SiteHeader`, `SiteFooter`); `_public/` for logged-out pages (authenticated users are redirected into the app), `_authenticated/` for everything behind login; its `route.tsx` holds the guard (`beforeLoad` → `redirect({ to: '/login', search: { redirect: location.href } })`) and the app shell.
 - Router context carries `queryClient` and `auth`; loaders and guards use them, never module imports of singletons.
 - Every route that fetches data has a `loader`, a `pendingComponent`, and an `errorComponent` or the root default. Loaders throw `notFound()` when a record does not exist or RLS hides it.
 - Search params are validated with Zod in `validateSearch`; navigate with `<Link to search>` / `useNavigate`, never by building URL strings.

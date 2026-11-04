@@ -7,6 +7,7 @@ import { healthReportSection } from '../scoring/health/health.report.ts';
 import { industryReportSection } from '../scoring/industry/industry.report.ts';
 import { noiseReportSection } from '../scoring/noise/noise.report.ts';
 import { safetyReportSection } from '../scoring/safety/safety.report.ts';
+import { seismicReportSection } from '../scoring/seismic/seismic.report.ts';
 import type { ReportSection } from './report-section.ts';
 
 export const REPORT_SECTIONS: readonly ReportSection[] = [
@@ -19,4 +20,5 @@ export const REPORT_SECTIONS: readonly ReportSection[] = [
   industryReportSection,
   educationReportSection,
   healthReportSection,
+  seismicReportSection,
 ];

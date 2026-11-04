@@ -7,6 +7,7 @@ import {
   straightLineLeg,
   summarizeLegs,
   walkAccessRowsForCell,
+  walkCellCandidates,
 } from './walk-access.ts';
 
 const candidates: Candidate[] = [
@@ -98,5 +99,48 @@ describe('legsFromOrigin', () => {
     expect(legs).toHaveLength(3);
     expect(legs[0]).toEqual({ seconds: 60, meters: 75 });
     expect(await legsFromOrigin(router, { lng: 21.2, lat: 45.7 }, [], 4.5, 1.3)).toEqual([]);
+  });
+});
+
+describe('walkCellCandidates', () => {
+  it('routes each cell on foot to its own candidates and keeps a missing route as null', async () => {
+    const requests: {
+      costing: string;
+      sources: number;
+      targets: number;
+      walkSpeedKmh: number | undefined;
+    }[] = [];
+    const router: ValhallaClient = {
+      matrix: ({ costing, sources, targets, walkSpeedKmh }) => {
+        requests.push({ costing, sources: sources.length, targets: targets.length, walkSpeedKmh });
+        return Promise.resolve([
+          targets.map((_, index) => (index === 1 ? null : { seconds: 100, meters: 120 + index })),
+        ]);
+      },
+      isochrones: () => Promise.resolve([]),
+      route: () => Promise.resolve(null),
+      tilesetDate: () => Promise.resolve(null),
+    };
+
+    const routed = await walkCellCandidates(
+      router,
+      [
+        { cell_id: 'c1', lng: 21.2, lat: 45.7, candidates },
+        { cell_id: 'c2', lng: 21.3, lat: 45.7, candidates: [] },
+      ],
+      { walkSpeedKmh: 4.5 },
+    );
+
+    expect(requests).toEqual([
+      { costing: 'pedestrian', sources: 1, targets: 3, walkSpeedKmh: 4.5 },
+    ]);
+    expect(routed[0]?.cellId).toBe('c1');
+    expect(routed[0]?.routed.map((candidate) => candidate.leg)).toEqual([
+      { seconds: 100, meters: 120 },
+      null,
+      { seconds: 100, meters: 122 },
+    ]);
+    expect(routed[0]?.routed[2]).toMatchObject({ poi_id: 'p3', key: 'b' });
+    expect(routed[1]).toEqual({ cellId: 'c2', routed: [] });
   });
 });

@@ -69,7 +69,7 @@ create policy "Owners can update their properties"
 
 ## Edge Functions
 
-- Only for third-party APIs that need secrets, webhooks, and work that needs the secret key. Plain CRUD and logic that fits in SQL do not belong here.
+- Only for short third-party API calls that need secrets, webhooks, and work that needs the secret key (placement in `.claude/rules/architecture.md`). Plain CRUD and logic that fits in SQL do not belong here; long or heavy jobs go to the worker.
 - One folder per function (`supabase/functions/<kebab-name>/index.ts`), shared code and the request/response types in `_shared/`.
 - Validate the body with Zod. Verify the caller's JWT (the default) unless the function is a webhook, which verifies the sender's signature instead.
 - Create the Supabase client with the caller's `Authorization` header so RLS applies; use the secret key only for the one operation that needs it.

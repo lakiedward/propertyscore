@@ -24,6 +24,11 @@ const AUTH_REASONS: Readonly<Record<string, AppErrorReason>> = {
   over_email_send_rate_limit: 'rate_limited',
 };
 
+const AUTH_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
+  user_already_exists: 'email',
+  weak_password: 'password',
+};
+
 const AUTH_UNAUTHENTICATED = new Set([
   'session_not_found',
   'session_expired',
@@ -64,7 +69,11 @@ function fromAuthError(error: {
   const reason = AUTH_REASONS[code];
   if (reason) {
     const appCode: AppErrorCode = reason === 'rate_limited' ? 'unknown' : 'validation';
-    return new AppError(appCode, error.message, { cause: error, reason });
+    return new AppError(appCode, error.message, {
+      cause: error,
+      reason,
+      field: AUTH_FIELDS[reason],
+    });
   }
   if (AUTH_UNAUTHENTICATED.has(code) || error.status === 401) {
     return new AppError('unauthenticated', error.message, { cause: error });

@@ -6,11 +6,18 @@ import { scoreBand } from '../online-report.utils';
 type ZoneScoreCardProps = {
   score: number | null;
   percentile: number | null;
+  isCityUniform: boolean;
   cityName: string;
   scoredCount: number;
 };
 
-export function ZoneScoreCard({ score, percentile, cityName, scoredCount }: ZoneScoreCardProps) {
+export function ZoneScoreCard({
+  score,
+  percentile,
+  isCityUniform,
+  cityName,
+  scoredCount,
+}: ZoneScoreCardProps) {
   const { t } = useTranslation('onlineReports');
 
   return (
@@ -33,7 +40,9 @@ export function ZoneScoreCard({ score, percentile, cityName, scoredCount }: Zone
         </strong>
         {percentile === null ? null : (
           <span className="text-small text-muted-foreground">
-            {t('zone.percentile', { percent: formatPercent(percentile / 100), city: cityName })}
+            {isCityUniform
+              ? t('zone.uniform', { city: cityName })
+              : t('zone.percentile', { percent: formatPercent(percentile / 100), city: cityName })}
           </span>
         )}
         <span className="text-small text-muted-foreground">{t('zone.describesZone')}</span>

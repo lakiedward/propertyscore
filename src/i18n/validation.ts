@@ -1,4 +1,4 @@
-import type { TFunction } from 'i18next';
+import type { i18n as I18nInstance, ParseKeys } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
@@ -13,9 +13,20 @@ const VALIDATION_KEYS = [
   'max',
 ] as const;
 
+const MESSAGE_NAMESPACES = ['common', 'auth'] as const;
+
 type ValidationKey = (typeof VALIDATION_KEYS)[number];
+type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 type ValidationParams = { count?: number; min?: number; max?: number };
 type ZodIssue = Parameters<NonNullable<z.core.$ZodConfig['customError']>>[0];
+
+export type MessageKey = {
+  [Namespace in MessageNamespace]: `${Namespace}:${ParseKeys<Namespace>}`;
+}[MessageNamespace];
+
+type ParsedMessage =
+  | { kind: 'validation'; key: ValidationKey; params: ValidationParams }
+  | { kind: 'key'; key: string; params: ValidationParams };
 
 const PREFIX = 'validation.';
 const PARAMS_SEPARATOR = '|';
@@ -24,8 +35,16 @@ function isValidationKey(value: string): value is ValidationKey {
   return VALIDATION_KEYS.some((key) => key === value);
 }
 
+function withParams(key: string, params: ValidationParams | undefined): string {
+  return params ? `${key}${PARAMS_SEPARATOR}${JSON.stringify(params)}` : key;
+}
+
 export function validationMessage(key: ValidationKey, params?: ValidationParams): string {
-  return params ? `${PREFIX}${key}${PARAMS_SEPARATOR}${JSON.stringify(params)}` : `${PREFIX}${key}`;
+  return withParams(`${PREFIX}${key}`, params);
+}
+
+export function messageKey(key: MessageKey, params?: ValidationParams): string {
+  return withParams(key, params);
 }
 
 function parseParams(raw: string | undefined): ValidationParams {
@@ -39,16 +58,17 @@ function parseParams(raw: string | undefined): ValidationParams {
   return parsed.success ? parsed.data : {};
 }
 
-export function parseValidationMessage(message: string): {
-  key: ValidationKey;
-  params: ValidationParams;
-} {
+export function parseValidationMessage(message: string): ParsedMessage {
   const [rawKey = '', rawParams] = message.split(PARAMS_SEPARATOR, 2);
+  const params = parseParams(rawParams);
+  if (MESSAGE_NAMESPACES.some((namespace) => rawKey.startsWith(`${namespace}:`))) {
+    return { kind: 'key', key: rawKey, params };
+  }
   const key = rawKey.startsWith(PREFIX) ? rawKey.slice(PREFIX.length) : '';
   if (!isValidationKey(key)) {
-    return { key: 'invalid', params: {} };
+    return { kind: 'validation', key: 'invalid', params: {} };
   }
-  return { key, params: parseParams(rawParams) };
+  return { kind: 'validation', key, params };
 }
 
 function messageForIssue(issue: ZodIssue): string {
@@ -85,13 +105,26 @@ export function configureValidationMessages() {
   z.config({ customError: messageForIssue });
 }
 
-export function translateValidationMessage(t: TFunction, message: string): string {
-  const { key, params } = parseValidationMessage(message);
-  return t(`validation.${key}`, params);
+function isMessageKey(
+  instance: I18nInstance,
+  value: string,
+  params: ValidationParams,
+): value is MessageKey {
+  return instance.exists(value, params);
+}
+
+export function translateValidationMessage(instance: I18nInstance, message: string): string {
+  const parsed = parseValidationMessage(message);
+  if (parsed.kind === 'key') {
+    return isMessageKey(instance, parsed.key, parsed.params)
+      ? instance.t(parsed.key, parsed.params)
+      : instance.t('common:validation.invalid');
+  }
+  return instance.t(`common:validation.${parsed.key}`, parsed.params);
 }
 
 export function useValidationMessage() {
-  const { t } = useTranslation('common');
+  const { i18n } = useTranslation('common');
   return (message: string | undefined) =>
-    message ? translateValidationMessage(t, message) : undefined;
+    message ? translateValidationMessage(i18n, message) : undefined;
 }
