@@ -7,7 +7,7 @@ import type { JsonObject } from '../../db/sql.ts';
 import { errorCode } from '../../lib/errors.ts';
 import type { CoveredCity } from '../../snapshot/snapshot.db.ts';
 import { downloadOnce } from '../../sources/download.ts';
-import { cityBoundingBox, downloadOsmExtract, osmExtractDate } from '../../sources/osm.ts';
+import { downloadOsmExtract, osmExtractDate } from '../../sources/osm.ts';
 import type { ScoreModule } from '../score-module.ts';
 import { writeCategoryScores, type CellCategoryScore } from '../write-category-scores.ts';
 import { evaluateCell, type CityTransitContext } from './accessibility.cell.ts';
@@ -23,6 +23,7 @@ import {
   listFeedSources,
   listKeyDestinations,
   saveRoutingBundle,
+  transitBoundingBox,
   writeCityStats,
   type CellTransitRow,
   type FeedRecord,
@@ -207,7 +208,7 @@ export const accessibilityModule: ScoreModule = {
       await clearCityTransit(sql, snapshotId, city.id);
       const clipped = await clipOsmExtract({
         extractPath: extract,
-        bbox: await cityBoundingBox(sql, city.id),
+        bbox: await transitBoundingBox(sql, city.id),
         workDir,
         name: city.slug,
       });

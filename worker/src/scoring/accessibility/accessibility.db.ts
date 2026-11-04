@@ -1,4 +1,6 @@
 import type { JsonObject, Sql } from '../../db/sql.ts';
+import { WorkerError } from '../../lib/errors.ts';
+import type { BoundingBox } from '../../sources/osm.ts';
 import type { StopRouteLink } from './transit-network.ts';
 import type { DestinationKind, KeyDestination, TransitNetwork } from './transit.types.ts';
 
@@ -119,6 +121,31 @@ export async function listKeyDestinations(sql: Sql, cityId: string): Promise<Key
     order by kind, id
   `;
   return [...rows];
+}
+
+export async function transitBoundingBox(sql: Sql, cityId: string): Promise<BoundingBox> {
+  const [row] = await sql<BoundingBox[]>`
+    select
+      extensions.st_xmin(box) as west,
+      extensions.st_ymin(box) as south,
+      extensions.st_xmax(box) as east,
+      extensions.st_ymax(box) as north
+    from (
+      select extensions.st_expand(extensions.st_collect(shape), 0.01) as box
+      from (
+        select boundary::extensions.geometry as shape
+        from public.cities
+        where id = ${cityId}
+        union all
+        select location::extensions.geometry
+        from private.key_destinations
+        where city_id = ${cityId} and is_active
+      ) as shapes
+    ) as area
+    where box is not null
+  `;
+  if (!row) throw new WorkerError('city_not_found', `City ${cityId} not found`);
+  return row;
 }
 
 export async function listDestinationLabels(sql: Sql, cityId: string): Promise<JsonObject[]> {

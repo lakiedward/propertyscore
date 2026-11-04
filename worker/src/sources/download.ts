@@ -14,6 +14,7 @@ export type DownloadOptions = {
 
 const DEFAULT_ATTEMPTS = 4;
 const DEFAULT_BACKOFF_MS = 2000;
+const RESPONSE_TIMEOUT_MS = 60_000;
 
 async function fileExists(path: string): Promise<boolean> {
   try {
@@ -32,14 +33,21 @@ class RetryableDownloadError extends WorkerError {}
 
 async function downloadAttempt(url: string, destination: string): Promise<void> {
   let response: Response;
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, RESPONSE_TIMEOUT_MS);
   try {
-    response = await fetch(url);
+    response = await fetch(url, { signal: controller.signal });
   } catch (error) {
     throw new RetryableDownloadError('source_download_failed', `Download unreachable: ${url}`, {
       cause: error,
     });
+  } finally {
+    clearTimeout(timer);
   }
   if (!response.ok || !response.body) {
+    await response.body?.cancel();
     const ErrorType = isRetryableStatus(response.status) ? RetryableDownloadError : WorkerError;
     throw new ErrorType(
       'source_download_failed',

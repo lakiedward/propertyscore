@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createSql, type Sql } from '../../db/sql.ts';
+import { cityBoundingBox } from '../../sources/osm.ts';
 import {
   clearCityTransit,
   insertCellTransit,
@@ -11,6 +12,7 @@ import {
   listCityCells,
   readRoutingBundle,
   saveRoutingBundle,
+  transitBoundingBox,
   writeCityStats,
 } from './accessibility.db.ts';
 import { stopRouteLinks } from './transit-network.ts';
@@ -201,5 +203,29 @@ describe.skipIf(!databaseUrl)('accessibility storage against the local database'
     expect(bundle?.referenceDate).toBe('2026-11-04');
     expect(bundle?.osmPbf.toString()).toBe('second');
     expect(bundle?.gtfsArchives.map((archive) => archive.toString())).toEqual(['b', 'c']);
+  });
+
+  it('clips the transit network wide enough to reach every key destination of every city', async () => {
+    const cities = await sql<{ id: string; slug: string }[]>`select id, slug from public.cities`;
+    for (const city of cities) {
+      const box = await transitBoundingBox(sql, city.id);
+      const coverage = await cityBoundingBox(sql, city.id);
+      expect(box.west).toBeLessThanOrEqual(coverage.west);
+      expect(box.north).toBeGreaterThanOrEqual(coverage.north);
+      const outside = await sql<{ count: number }[]>`
+        select count(*)::int as count
+        from private.key_destinations
+        where city_id = ${city.id}
+          and is_active
+          and not extensions.st_contains(
+            extensions.st_makeenvelope(${box.west}, ${box.south}, ${box.east}, ${box.north}, 4326),
+            location::extensions.geometry
+          )
+      `;
+      expect({ slug: city.slug, outside: outside[0]?.count }).toEqual({
+        slug: city.slug,
+        outside: 0,
+      });
+    }
   });
 });
