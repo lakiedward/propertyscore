@@ -275,7 +275,7 @@ export const educationModule: ScoreModule = {
   async run(context) {
     const params = parseParams(context.params);
     const extractPath = await downloadOsmExtract(
-      context.osmExtractUrl,
+      context.osmExtract,
       context.sourcesDir,
       context.period,
     );

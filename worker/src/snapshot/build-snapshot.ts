@@ -9,7 +9,7 @@ import type { Logger } from '../lib/logger.ts';
 import type { ValhallaClient } from '../routing/valhalla.ts';
 import type { CategoryKey } from '../scoring/categories.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
-import { downloadOsmExtract } from '../sources/osm.ts';
+import { downloadOsmExtract, type OsmExtractSource } from '../sources/osm.ts';
 import { markResidentialCells } from './residential.ts';
 import {
   failSnapshot,
@@ -26,7 +26,7 @@ export type BuildSnapshotOptions = {
   citySlugs: readonly string[];
   scoreKeys: readonly CategoryKey[];
   sourcesDir: string;
-  osmExtractUrl: string;
+  osmExtract: OsmExtractSource;
   router: ValhallaClient | null;
   logger: Logger;
 };
@@ -78,7 +78,7 @@ export async function buildSnapshot(options: BuildSnapshotOptions): Promise<Buil
     }
     const cellSizeM = params.data.cell_size_m;
     const extractPath = await downloadOsmExtract(
-      options.osmExtractUrl,
+      options.osmExtract,
       options.sourcesDir,
       version.period,
     );
@@ -109,7 +109,7 @@ export async function buildSnapshot(options: BuildSnapshotOptions): Promise<Buil
         cities,
         params: version.params[module.key],
         sourcesDir: options.sourcesDir,
-        osmExtractUrl: options.osmExtractUrl,
+        osmExtract: options.osmExtract,
         router: options.router,
         logger,
       });

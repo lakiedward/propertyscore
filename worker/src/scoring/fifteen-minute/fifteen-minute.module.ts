@@ -178,7 +178,7 @@ export const fifteenMinuteModule: ScoreModule = {
     const params = parseFifteenMinuteParams(context.params);
     const { sql, snapshotId, logger, router } = context;
     const extractPath = await downloadOsmExtract(
-      context.osmExtractUrl,
+      context.osmExtract,
       context.sourcesDir,
       context.period,
     );

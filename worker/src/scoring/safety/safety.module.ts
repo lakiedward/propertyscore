@@ -98,7 +98,7 @@ export const safetyModule: ScoreModule = {
     const { sql, snapshotId, logger } = context;
     const params = parseParams(context.params);
     const extract = await downloadOsmExtract(
-      context.osmExtractUrl,
+      context.osmExtract,
       context.sourcesDir,
       context.period,
     );

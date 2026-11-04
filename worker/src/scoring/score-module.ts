@@ -2,6 +2,7 @@ import type { Sql } from '../db/sql.ts';
 import type { Logger } from '../lib/logger.ts';
 import type { ValhallaClient } from '../routing/valhalla.ts';
 import type { CoveredCity } from '../snapshot/snapshot.db.ts';
+import type { OsmExtractSource } from '../sources/osm.ts';
 import type { CategoryKey } from './categories.ts';
 
 export type ScoreContext = {
@@ -12,7 +13,7 @@ export type ScoreContext = {
   cities: readonly CoveredCity[];
   params: unknown;
   sourcesDir: string;
-  osmExtractUrl: string;
+  osmExtract: OsmExtractSource;
   router: ValhallaClient | null;
   logger: Logger;
 };

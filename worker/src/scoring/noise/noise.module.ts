@@ -123,7 +123,7 @@ export const noiseModule: ScoreModule = {
     const { sql, snapshotId, logger } = context;
     await pruneNoiseBuildings(sql);
     const extractPath = await downloadOsmExtract(
-      context.osmExtractUrl,
+      context.osmExtract,
       context.sourcesDir,
       context.period,
     );

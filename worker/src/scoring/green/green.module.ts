@@ -239,7 +239,7 @@ export const greenModule: ScoreModule = {
   run: async (context) => {
     const params = parseGreenParams(context.params);
     const extractPath = await downloadOsmExtract(
-      context.osmExtractUrl,
+      context.osmExtract,
       context.sourcesDir,
       context.period,
     );

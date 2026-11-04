@@ -102,7 +102,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       citySlugs: ['sibiu'],
       scoreKeys: [],
       sourcesDir,
-      osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
       router: null,
       logger: silentLogger,
     });
@@ -161,7 +161,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         citySlugs: ['sibiu'],
         scoreKeys: [],
         sourcesDir,
-        osmExtractUrl: 'https://example.test/romania.osm.pbf',
+        osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
         router: null,
         logger: silentLogger,
       }),

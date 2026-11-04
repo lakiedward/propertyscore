@@ -36,12 +36,26 @@ const featureSchema = z.object({
   properties: z.record(z.string(), z.unknown()).nullish(),
 });
 
+export type OsmExtractSource = {
+  url: string;
+  apiKey: string | null;
+};
+
+export function osmExtractHeaders(source: OsmExtractSource): Record<string, string> {
+  if (!source.apiKey) return {};
+  return { apikey: source.apiKey, Authorization: `Bearer ${source.apiKey}` };
+}
+
 export async function downloadOsmExtract(
-  url: string,
+  source: OsmExtractSource,
   sourcesDir: string,
   period: string,
 ): Promise<string> {
-  return downloadOnce(url, join(sourcesDir, 'osm', `romania-${period.slice(0, 7)}.osm.pbf`));
+  return downloadOnce(
+    source.url,
+    join(sourcesDir, 'osm', `romania-${period.slice(0, 7)}.osm.pbf`),
+    { headers: osmExtractHeaders(source) },
+  );
 }
 
 export async function osmExtractDate(extractPath: string, fallback: string): Promise<string> {

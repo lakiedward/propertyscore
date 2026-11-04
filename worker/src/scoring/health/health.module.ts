@@ -89,7 +89,7 @@ export const healthModule: ScoreModule = {
     const params = parsed.data;
     const { sql, snapshotId, logger } = context;
     const extractPath = await downloadOsmExtract(
-      context.osmExtractUrl,
+      context.osmExtract,
       context.sourcesDir,
       context.period,
     );
