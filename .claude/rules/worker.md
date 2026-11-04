@@ -33,7 +33,7 @@ paths:
 
 ## Walking routing
 
-- Walking times come from a self-hosted Valhalla service (`VALHALLA_URL`), built from the same Geofabrik extract. It runs as its own Railway service from the official Valhalla image, never inside `worker/Dockerfile`; the worker only calls its HTTP API. Locally: `docker run -p 8002:8002 -v $PWD/valhalla:/custom_files -e tile_urls=https://download.geofabrik.de/europe/romania-latest.osm.pbf ghcr.io/valhalla/valhalla-scripted:<pinned tag>`, then `VALHALLA_URL=http://localhost:8002`.
+- Walking times come from a self-hosted Valhalla service (`VALHALLA_URL`), built from the same Geofabrik extract. It runs as its own Railway service from the official Valhalla image, never inside `worker/Dockerfile`; the worker only calls its HTTP API. Locally: `docker run -p 8002:8002 -v $PWD/valhalla:/custom_files -e tile_urls=https://download.geofabrik.de/europe/romania-latest.osm.pbf ghcr.io/valhalla/valhalla-scripted:3.9.1`, then `VALHALLA_URL=http://localhost:8002`.
 - Modules receive the client as `context.router` (`null` when `VALHALLA_URL` is unset). A module that walks calls `computeWalkAccess` with its own targets (`key`, `poiCategories`, `searchRadiusM`, `maxCandidates`) instead of routing itself. A module whose targets are not points of `poi_features` (park outlines, Safety elements) lists its own candidates with a `private` function returning the same `cell_id, lng, lat, candidates` shape and routes them with `walkCellCandidates`; without a router it records `distance_method: 'straight_line'` and the straight line times `walk_detour_factor`.
 - Walking speed is `params.<key>.walk_speed_kmh`, passed to Valhalla as the pedestrian `walking_speed`; car times use `costing: 'auto'` on the same client.
 - Neighbour smoothing uses `smoothScores` and `listNeighbourPairs` from `src/scoring/smoothing.ts` (backed by `private.grid_cell_neighbours`); percentiles against the city use `private.cell_score_percentile`.
@@ -127,8 +127,33 @@ pnpm test:worker          # worker Vitest suite; the database tests run when DAT
 
 ## Deploy (Railway)
 
-- One Railway service per long-running role, all from this folder's `Dockerfile`, built from the **repository root** (the lockfile lives there): Root Directory empty, `RAILWAY_DOCKERFILE_PATH=worker/Dockerfile`, Watch Paths `worker/**`, `supabase/migrations/**`, `pnpm-lock.yaml`.
-- The snapshot builder is a cron service whose start command is the image default (`node src/main.ts build-snapshot`), scheduled monthly. Later document jobs get their own command and service.
+The services are created and changed through the Railway connector or the dashboard, only after the user approves the exact list, and the settings below are their source of truth: a change on Railway lands here in the same PR. Railway Config as Code (`railway.json`, `railway.toml`) is deprecated and new services cannot use it; Railway Infrastructure as Code (`.railway/railway.ts`) needs the `railway` npm package, a dependency not added yet.
+
+One Railway project `propertyscore`, environment `production`, region `europe-west4` (next to the Supabase project in `eu-central-1`). Nothing has a public domain: the worker reaches Valhalla over the private network.
+
+| Service | Source | Build and start | Schedule and restart | Volume | Size |
+| --- | --- | --- | --- | --- | --- |
+| `snapshot` | GitHub `lakiedward/propertyscore`, branch `main` | Root Directory empty (the lockfile lives at the repository root), Dockerfile path `worker/Dockerfile`, Watch Paths `worker/**`, `supabase/migrations/**`, `pnpm-lock.yaml`; start command is the image default (`node src/main.ts build-snapshot`) | cron `0 2 2 * *` (02:00 UTC on the 2nd of each month), restart policy `NEVER` | `snapshot-sources` at `/data`, 20 GB | 8 GB memory, 4 vCPU |
+| `valhalla` | image `ghcr.io/valhalla/valhalla-scripted:3.9.1` | the image entrypoint: builds the tiles on the first start, then serves on port 8002 | always on, restart policy `ON_FAILURE` | `valhalla-tiles` at `/custom_files`, 10 GB | 4 GB memory, 2 vCPU |
+
+| Service | Variable | Value |
+| --- | --- | --- |
+| `snapshot` | `DATABASE_URL` | set by the user: the session pooler URL of the production Supabase project (IPv4; the direct connection is IPv6 only and Railway's outbound IPv6 is off by default) |
+| `snapshot` | `ADS_API_KEY` | set by the user |
+| `snapshot` | `SOURCES_DIR` | `/data/sources` |
+| `snapshot` | `VALHALLA_URL` | `http://${{valhalla.RAILWAY_PRIVATE_DOMAIN}}:8002` |
+| `snapshot` | `RAILWAY_RUN_UID` | `0`: the image runs as `node` and a Railway volume is owned by root |
+| `snapshot` | `LOG_LEVEL`, `OSM_EXTRACT_URL`, `ADS_API_URL`, `AIR_EEA_*` | unset (the defaults of `readEnv`) unless a source changes |
+| `valhalla` | `tile_urls` | `https://download.geofabrik.de/europe/romania-latest.osm.pbf` |
+| `valhalla` | `server_threads` | `2`, so the tile build fits in the memory limit |
+| `valhalla` | `build_elevation`, `build_transit` | `False` (the image defaults) |
+
+- Railway starts `snapshot` only on its schedule (UTC) and skips a run while the previous one is still active, so the command must exit when done (it closes postgres.js in `main`). `railway cron run` starts one outside the schedule.
+- `snapshot` is created only once the migrations it needs are live in production through `deploy-db.yml`, and its first run is checked in the logs and in `score_snapshots`.
+- The volume keeps the downloaded sources between runs and holds the files the worker reads but does not download (the SIIIR schooling plan under `/data/sources/education/`, the EEA 1 km maps under `/data/sources/air/eea-maps/`), uploaded with `railway volume files` or `railway ssh`. Each month adds an OSM extract and work folders: delete the periods older than the last two before the volume fills.
+- Valhalla keeps its tiles on its volume and does not rebuild them on a restart (`use_tiles_ignore_pbf`). Before the monthly snapshot, refresh them with `force_rebuild=True` and a redeploy, then set it back to `False`; the snapshot records `tilesetDate()` so a stale tileset is visible.
+- Report and document jobs (`generate-report` after a payment, PDFs later) get their own service from the same image, with its own start command, once the hand-off from the order flow exists (`.claude/rules/architecture.md` §3).
+- Generated documents are stored in Supabase Storage (a private bucket created by a migration, served through signed URLs), never on a Railway volume or bucket: their access follows the owner's RLS like every other file.
 - System tools the worker shells out to (`osmium-tool`, `unzip`, `python3`, `gdal-bin`, later Chromium) are installed in the `Dockerfile`, pinned by the base image's Debian release.
 - The transit routing stack is also in the image: Java 21 copied from `eclipse-temurin:21.0.12_8-jre-noble`, the `/opt/transit` venv with `r5py` 1.1.7 from `worker/transit/requirements.txt`, and the R5 jar r5py downloads and checksum-verifies during the build (cached under `XDG_CACHE_HOME=/opt/cache`). The Temurin JRE runs on the bookworm base (glibc 2.36); the first Railway build is the check that the jar download works.
 - Migrations reach production only through `deploy-db.yml`; deploy the worker after the migrations it needs are live.
