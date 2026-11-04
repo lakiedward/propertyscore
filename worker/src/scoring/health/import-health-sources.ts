@@ -14,11 +14,10 @@ import {
   EMERGENCY_COLUMNS,
   emergencyRow,
   extractCnasProviders,
-  findTableColumns,
   placeEmergencyRows,
   groupCnasLists,
   readCsvFile,
-  readTableFile,
+  readProviderTable,
   type EmergencyRow,
 } from './health.import.ts';
 import type { Point } from './health.sources.ts';
@@ -62,19 +61,18 @@ async function importCnasLists(
     for (const entry of group.files) {
       const file = basename(entry);
       const log = { city: city.slug, file, kind: group.kind, list_date: group.listDate };
-      let table: string[][];
+      let table: Awaited<ReturnType<typeof readProviderTable>>;
       try {
-        table = await readTableFile(join(cityDir, file));
+        table = await readProviderTable(join(cityDir, file));
       } catch (error) {
         input.logger.warn('cnas list unreadable', { ...log, code: errorCode(error) });
         continue;
       }
-      const columns = findTableColumns(table);
-      if (columns === null) {
+      if (table === null) {
         input.logger.warn('cnas list columns not found', log);
         continue;
       }
-      const extraction = extractCnasProviders(table, columns, city.name, seen);
+      const extraction = extractCnasProviders(table.rows, table.columns, city.name, seen);
       rows.push(...extraction.rows);
       counts.files_read += 1;
       counts.skipped_outside_city += extraction.skippedOutsideCity;

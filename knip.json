@@ -19,7 +19,7 @@
       ]
     },
     "worker": {
-      "ignoreBinaries": ["osmium", "gdalinfo", "gdal_translate", "gdallocationinfo"]
+      "ignoreBinaries": ["osmium", "gdalinfo", "gdal_translate", "gdallocationinfo", "xls2csv"]
     }
   }
 }
