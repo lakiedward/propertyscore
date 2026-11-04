@@ -96,7 +96,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('safetyModule against the local da
       cities,
       params: version?.params.safety,
       sourcesDir,
-      osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
       router: null,
       logger: silentLogger,
     });

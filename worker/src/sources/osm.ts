@@ -10,6 +10,7 @@ import { z } from 'zod';
 import type { Sql } from '../db/sql.ts';
 import { WorkerError } from '../lib/errors.ts';
 import { downloadOnce } from './download.ts';
+import { privateSourceHeaders } from './mirror.ts';
 
 const run = promisify(execFile);
 
@@ -36,12 +37,21 @@ const featureSchema = z.object({
   properties: z.record(z.string(), z.unknown()).nullish(),
 });
 
+export type OsmExtractSource = {
+  url: string;
+  apiKey: string | null;
+};
+
 export async function downloadOsmExtract(
-  url: string,
+  source: OsmExtractSource,
   sourcesDir: string,
   period: string,
 ): Promise<string> {
-  return downloadOnce(url, join(sourcesDir, 'osm', `romania-${period.slice(0, 7)}.osm.pbf`));
+  return downloadOnce(
+    source.url,
+    join(sourcesDir, 'osm', `romania-${period.slice(0, 7)}.osm.pbf`),
+    { headers: privateSourceHeaders(source.apiKey) },
+  );
 }
 
 export async function osmExtractDate(extractPath: string, fallback: string): Promise<string> {

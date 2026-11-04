@@ -546,6 +546,7 @@ Columns the client must never set (e.g. a computed `score`) are protected with c
 - **Buckets are private by default.** A bucket is public only if its contents really are public (e.g. marketing images).
 - **Path convention**: `<bucket>/<owner_id>/<entity_id>/<filename>`. This lets RLS on `storage.objects` check `(storage.foldername(name))[1] = (select auth.uid())::text`.
 - **Storage policies live in migrations and have pgTAP tests**, like table policies.
+- **Server-only buckets have no policies.** Files that only the worker reads (the monthly OSM extract and the SIIIR register and schooling plan in `source-extracts`) sit in a private bucket without any `storage.objects` policy, so only a secret key reaches them; the pgTAP test proves `anon` and `authenticated` see nothing and change nothing, like a server-only table. Chosen because Geofabrik and data.gov.ro refuse Railway's IPs and a cron container has no running volume to upload to.
 - Private files are displayed through **signed URLs** (`createSignedUrl`, short expiry) fetched by a query hook, so they are cached.
 - Set the size limit and allowed MIME types on the bucket. The client also validates them, for UX.
 - Upload and download code lives in `features/*/api/*.storage.ts`, behind the same "throw `AppError`" contract.
@@ -564,6 +565,8 @@ Don't use one for plain CRUD or for logic that fits in a Postgres function; RLS 
 Edge Functions have wall-clock, CPU and memory limits, run Deno only and cannot start a headless browser or a system binary. Jobs that hit any of these (rendering PDFs with photos, building the scoring snapshot, importing large datasets, anything that must retry) run in the `worker/` package on Railway, which connects to Postgres directly and writes results through `private` functions. The database stays the system of record: an RPC records the request, the worker does the work, the frontend follows the status. `.claude/rules/architecture.md` lists what is integrated and how to choose among it for each behaviour: integrated pieces first, then extending them, and a new service only when the user approves it.
 
 Rejected: a custom API server in front of Supabase (it would duplicate Auth, RLS and Storage for no security gain), doing heavy jobs in Edge Functions (time limits, no Chromium), and scheduled GitHub Actions as the job runner (no queue, slow start, secrets spread across another platform).
+
+The report reruns transit routing from the exact address on the network the snapshot scored with, but does not see the snapshot's `SOURCES_DIR` volume, so each snapshot keeps its OSM clip and GTFS archives as `bytea` in `private.transit_routing_bundles` (about 70 MB per snapshot), deleted with the snapshot. Rejected: a private Storage bucket (policies and a second client for files that live and die with a snapshot), kept as the fallback if the size outgrows the database.
 
 Rules:
 - One folder per function (`supabase/functions/<kebab-name>/index.ts`), with shared code in `_shared/`.

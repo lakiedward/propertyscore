@@ -1,4 +1,6 @@
-import type { JsonObject, Sql } from '../../db/sql.ts';
+import { type JsonObject, type Sql, withLongStatements } from '../../db/sql.ts';
+import { WorkerError } from '../../lib/errors.ts';
+import type { BoundingBox } from '../../sources/osm.ts';
 import type { StopRouteLink } from './transit-network.ts';
 import type { DestinationKind, KeyDestination, TransitNetwork } from './transit.types.ts';
 
@@ -82,19 +84,21 @@ export async function listCellNeighbours(
   cityId: string,
   cellSizeM: number,
 ): Promise<Map<string, string[]>> {
-  const rows = await sql<{ cell_id: string; neighbours: string[] }[]>`
-    select a.id as cell_id, array_agg(b.id) as neighbours
-    from private.cell_scores cs
-    join private.grid_cells a on a.id = cs.cell_id
-    join private.grid_cells b
-      on b.city_id = a.city_id
-      and b.size_m = a.size_m
-      and b.id <> a.id
-      and extensions.st_dwithin(a.center, b.center, ${1.2 * Math.sqrt(3) * cellSizeM})
-    where cs.snapshot_id = ${snapshotId} and a.city_id = ${cityId}
-    group by a.id
-  `;
-  return new Map(rows.map((row) => [row.cell_id, row.neighbours]));
+  return withLongStatements(sql, async (transaction) => {
+    const rows = await transaction<{ cell_id: string; neighbours: string[] }[]>`
+      select a.id as cell_id, array_agg(b.id) as neighbours
+      from private.cell_scores cs
+      join private.grid_cells a on a.id = cs.cell_id
+      join private.grid_cells b
+        on b.city_id = a.city_id
+        and b.size_m = a.size_m
+        and b.id <> a.id
+        and extensions.st_dwithin(a.center, b.center, ${1.2 * Math.sqrt(3) * cellSizeM})
+      where cs.snapshot_id = ${snapshotId} and a.city_id = ${cityId}
+      group by a.id
+    `;
+    return new Map(rows.map((row) => [row.cell_id, row.neighbours]));
+  });
 }
 
 export async function listFeedSources(sql: Sql, cityId: string): Promise<FeedSource[]> {
@@ -121,6 +125,31 @@ export async function listKeyDestinations(sql: Sql, cityId: string): Promise<Key
   return [...rows];
 }
 
+export async function transitBoundingBox(sql: Sql, cityId: string): Promise<BoundingBox> {
+  const [row] = await sql<BoundingBox[]>`
+    select
+      extensions.st_xmin(box) as west,
+      extensions.st_ymin(box) as south,
+      extensions.st_xmax(box) as east,
+      extensions.st_ymax(box) as north
+    from (
+      select extensions.st_expand(extensions.st_collect(shape), 0.01) as box
+      from (
+        select boundary::extensions.geometry as shape
+        from public.cities
+        where id = ${cityId}
+        union all
+        select location::extensions.geometry
+        from private.key_destinations
+        where city_id = ${cityId} and is_active
+      ) as shapes
+    ) as area
+    where box is not null
+  `;
+  if (!row) throw new WorkerError('city_not_found', `City ${cityId} not found`);
+  return row;
+}
+
 export async function listDestinationLabels(sql: Sql, cityId: string): Promise<JsonObject[]> {
   const rows = await sql<{ entry: JsonObject }[]>`
     select jsonb_build_object(
@@ -143,7 +172,7 @@ export async function clearCityTransit(
   snapshotId: string,
   cityId: string,
 ): Promise<void> {
-  await sql.begin(async (transaction) => {
+  await withLongStatements(sql, async (transaction) => {
     await transaction`delete from private.cell_travel_matrix where snapshot_id = ${snapshotId} and city_id = ${cityId}`;
     await transaction`
       delete from private.cell_transit ct
@@ -353,4 +382,61 @@ export async function writeCityStats(
     from figures
     where s.id = ${snapshotId}
   `;
+}
+
+export type RoutingBundle = {
+  referenceDate: string;
+  osmPbf: Buffer;
+  gtfsArchives: Buffer[];
+};
+
+const BYTEA_TYPE = 17;
+
+export async function saveRoutingBundle(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+  bundle: RoutingBundle,
+): Promise<void> {
+  await sql.begin(async (transaction) => {
+    await transaction`
+      delete from private.transit_routing_bundles b
+      using public.score_snapshots s
+      where b.snapshot_id = s.id
+        and b.city_id = ${cityId}
+        and s.status in ('failed', 'superseded')
+    `;
+    await transaction`
+      insert into private.transit_routing_bundles (snapshot_id, city_id, reference_date, osm_pbf, gtfs_archives)
+      values (
+        ${snapshotId},
+        ${cityId},
+        ${bundle.referenceDate},
+        ${bundle.osmPbf},
+        ${transaction.array(bundle.gtfsArchives, BYTEA_TYPE)}
+      )
+      on conflict (snapshot_id, city_id) do update
+      set reference_date = excluded.reference_date,
+        osm_pbf = excluded.osm_pbf,
+        gtfs_archives = excluded.gtfs_archives
+    `;
+  });
+}
+
+export async function readRoutingBundle(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+): Promise<RoutingBundle | null> {
+  const [row] = await sql<{ reference_date: string; osm_pbf: Buffer; gtfs_archives: Buffer[] }[]>`
+    select reference_date::text as reference_date, osm_pbf, gtfs_archives
+    from private.transit_routing_bundles
+    where snapshot_id = ${snapshotId} and city_id = ${cityId}
+  `;
+  if (!row) return null;
+  return {
+    referenceDate: row.reference_date,
+    osmPbf: row.osm_pbf,
+    gtfsArchives: row.gtfs_archives,
+  };
 }

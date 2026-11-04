@@ -1,4 +1,4 @@
-import type { JsonObject, Sql } from '../../db/sql.ts';
+import { type JsonObject, type Sql, withLongStatements } from '../../db/sql.ts';
 import type { NoiseIndicator, NoiseSample } from './noise.formula.ts';
 import type { NoiseKind } from './noise.params.ts';
 import type { NoiseSourceFeature } from './noise.osm.ts';
@@ -47,8 +47,12 @@ export type NearestNoiseSource = {
 };
 
 export async function pruneNoiseBuildings(sql: Sql): Promise<number> {
-  const [row] = await sql<{ pruned: number }[]>`select private.prune_noise_buildings() as pruned`;
-  return row?.pruned ?? 0;
+  return withLongStatements(sql, async (transaction) => {
+    const [row] = await transaction<
+      { pruned: number }[]
+    >`select private.prune_noise_buildings() as pruned`;
+    return row?.pruned ?? 0;
+  });
 }
 
 export async function replaceNoiseSources(
@@ -210,10 +214,12 @@ export async function cellNoiseSamples(
     where cs.snapshot_id = ${snapshotId} and g.city_id = ${cityId}
     order by cs.cell_id
   `;
-  const rows = await sql<SampleRow[]>`
-    select cell_id, point_index, kind, measure, indicator, dataset_id, db_low, source_class, distance_m, buildings_crossed
-    from private.noise_cell_samples(${snapshotId}, ${cityId}, ${offsetM}, ${radiusM})
-  `;
+  const rows = await withLongStatements(sql, async (transaction) => [
+    ...(await transaction<SampleRow[]>`
+      select cell_id, point_index, kind, measure, indicator, dataset_id, db_low, source_class, distance_m, buildings_crossed
+      from private.noise_cell_samples(${snapshotId}, ${cityId}, ${offsetM}, ${radiusM})
+    `),
+  ]);
   const samples = rows.flatMap((row) => {
     const sample = toSample(row);
     if (sample === null || row.cell_id === undefined || row.point_index === undefined) return [];

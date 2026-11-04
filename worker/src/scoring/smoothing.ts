@@ -1,4 +1,4 @@
-import type { Sql } from '../db/sql.ts';
+import { type Sql, withLongStatements } from '../db/sql.ts';
 
 export type NeighbourPair = { cell_id: string; neighbour_id: string };
 
@@ -40,8 +40,10 @@ export async function listNeighbourPairs(
   cityId: string,
   cellSizeM: number,
 ): Promise<NeighbourPair[]> {
-  const rows = await sql<NeighbourPair[]>`
-    select cell_id, neighbour_id from private.grid_cell_neighbours(${cityId}, ${cellSizeM})
-  `;
-  return [...rows];
+  return withLongStatements(sql, async (transaction) => {
+    const rows = await transaction<NeighbourPair[]>`
+      select cell_id, neighbour_id from private.grid_cell_neighbours(${cityId}, ${cellSizeM})
+    `;
+    return [...rows];
+  });
 }

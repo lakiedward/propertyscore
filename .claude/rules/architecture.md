@@ -17,13 +17,13 @@ The table is a starting point, not the truth. Confirm it before relying on it: t
 
 | Piece | Runs | Used today for | Fits | Does not fit |
 | --- | --- | --- | --- | --- |
-| Postgres (Supabase) with PostGIS and `unaccent` | Supabase | every table, RLS, the scoring grid, zone scores, report freezing (`private.*`) | data, rules, state transitions, geographic queries, search | long loops, files, calls to other services |
+| Postgres (Supabase) with PostGIS and `unaccent` | Supabase | every table, RLS, the scoring grid, zone scores, report freezing (`private.*`), the transit network each snapshot routed on (`private.transit_routing_bundles`) | data, rules, state transitions, geographic queries, search | long loops, user and document files (Storage), calls to other services |
 | RPC (Postgres functions) | Supabase | share links, snapshot lifecycle, report begin/complete/fail | business rules, multi-table and atomic writes, anything the browser must not bypass | work over seconds, side effects outside the database |
 | Supabase Auth | Supabase | email and password, Google and Facebook OAuth (PKCE, `/auth/callback`), password reset, the custom access token hook (`user_roles` claim), bilingual email templates | identity, sessions, auth emails, roles in the token | role assignment itself (rows in `user_roles`, never `user_metadata`) |
 | Supabase Storage | Supabase | `listing-photos` bucket | files with RLS, signed URLs | image transformation (paid feature, not used) |
 | Edge Functions | Supabase | none yet | short calls with a secret, webhooks, secret-key work finishing in seconds | rendering, binaries, heavy loops, waiting for other jobs |
 | `pg_cron` | Supabase | not enabled yet | small periodic SQL: expiries, timeouts, enqueueing | the work itself when it is heavy |
-| Worker `@propertyscore/worker` | Railway, one service per long-running role from `worker/Dockerfile` | `build-snapshot`, `generate-report`, `create-report`; Node 24, postgres.js, osmium, GDAL, Python r5py on Java 21 | long, CPU- or memory-heavy jobs, system binaries, imports, document rendering, retries | anything a user waits on synchronously, rules that belong in an RPC |
+| Worker `@propertyscore/worker` | Railway, one service per long-running role from `worker/Dockerfile` | `build-snapshot`, `generate-report`, `create-report`, `import-market-listings`, `import-health-sources`; Node 24, postgres.js, osmium, GDAL, `catdoc` (`xls2csv`) and `poppler-utils` (`pdftotext`) for the CAS lists, Python r5py on Java 21 | long, CPU- or memory-heavy jobs, system binaries, imports, document rendering, retries | anything a user waits on synchronously, rules that belong in an RPC |
 | Valhalla | Railway, its own service | walking times for the scores | routing on the OSM network | anything else |
 | Frontend SPA | Netlify, static with SPA fallback and security headers | every screen | UI, UX checks | secrets, authorization, server code (no Netlify Functions) |
 | MapLibre with OpenFreeMap tiles | browser | listings map, report map | maps without a key | server-side map rendering |

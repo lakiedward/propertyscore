@@ -1,5 +1,8 @@
-import type { JsonObject, Sql } from '../../db/sql.ts';
-import type { NightState, SafetyType } from './safety.params.ts';
+import { z } from 'zod';
+
+import { type JsonObject, type Sql, withLongStatements } from '../../db/sql.ts';
+import { candidateSchema, type CellCandidates } from '../../routing/walk-access.ts';
+import { type NightState, SAFETY_TYPES, type SafetyType } from './safety.params.ts';
 
 export type SafetyFeatureRow = {
   sourceRef: string;
@@ -27,7 +30,47 @@ export type SafetyLayersRow = {
   layers: JsonObject;
 };
 
+export type SafetyWalkTarget = {
+  type: SafetyType;
+  searchRadiusM: number;
+  maxCandidates: number;
+};
+
+const safetyCandidateSchema = candidateSchema.extend({
+  key: z.enum(SAFETY_TYPES),
+  night_state: z.enum(['open', 'closed', 'unknown']),
+});
+
+export type SafetyCandidate = z.infer<typeof safetyCandidateSchema>;
+
+const safetyCellSchema = z.object({
+  cell_id: z.string(),
+  lng: z.number(),
+  lat: z.number(),
+  candidates: z.array(safetyCandidateSchema),
+});
+
 const BATCH_SIZE = 1000;
+
+export async function listSafetyWalkCandidates(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+  targets: readonly SafetyWalkTarget[],
+): Promise<CellCandidates<SafetyCandidate>[]> {
+  const payload = targets.map((target) => ({
+    key: target.type,
+    search_radius_m: target.searchRadiusM,
+    max_candidates: target.maxCandidates,
+  }));
+  const rows = await withLongStatements(sql, async (transaction) => [
+    ...(await transaction`
+      select cell_id, lng, lat, candidates
+      from private.safety_walk_candidates(${snapshotId}, ${cityId}, ${transaction.json(payload)}::jsonb)
+    `),
+  ]);
+  return z.array(safetyCellSchema).parse(rows);
+}
 
 export async function clearSafetyFeatures(
   sql: Sql,
@@ -77,11 +120,13 @@ export async function listCellInputs(
   cityId: string,
   reachM: Partial<Record<SafetyType, number>>,
 ): Promise<CellInputRow[]> {
-  const rows = await sql<CellInputRow[]>`
-    select cell_id, feature_type, distances, night_states
-    from private.safety_cell_inputs(${snapshotId}, ${cityId}, ${sql.json(reachM)}::jsonb)
-  `;
-  return [...rows];
+  return withLongStatements(sql, async (transaction) => {
+    const rows = await transaction<CellInputRow[]>`
+      select cell_id, feature_type, distances, night_states
+      from private.safety_cell_inputs(${snapshotId}, ${cityId}, ${transaction.json(reachM)}::jsonb)
+    `;
+    return [...rows];
+  });
 }
 
 export async function listCellNeighbours(
@@ -89,13 +134,15 @@ export async function listCellNeighbours(
   snapshotId: string,
   cityId: string,
 ): Promise<CellNeighbours[]> {
-  const rows = await sql<CellNeighbours[]>`
-    select n.cell_id, n.neighbour_ids, cs.is_residential
-    from private.safety_cell_neighbours(${snapshotId}, ${cityId}) as n
-    join private.cell_scores cs on cs.cell_id = n.cell_id and cs.snapshot_id = ${snapshotId}
-    order by n.cell_id
-  `;
-  return [...rows];
+  return withLongStatements(sql, async (transaction) => {
+    const rows = await transaction<CellNeighbours[]>`
+      select n.cell_id, n.neighbour_ids, cs.is_residential
+      from private.safety_cell_neighbours(${snapshotId}, ${cityId}) as n
+      join private.cell_scores cs on cs.cell_id = n.cell_id and cs.snapshot_id = ${snapshotId}
+      order by n.cell_id
+    `;
+    return [...rows];
+  });
 }
 
 export async function writeSafetyLayers(

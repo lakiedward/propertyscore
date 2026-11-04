@@ -3,8 +3,19 @@ import { mkdir, rename, rm, stat } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import { WorkerError } from '../lib/errors.ts';
+
+export type DownloadOptions = {
+  attempts?: number;
+  backoffMs?: number;
+  headers?: Readonly<Record<string, string>>;
+};
+
+const DEFAULT_ATTEMPTS = 4;
+const DEFAULT_BACKOFF_MS = 2000;
+const RESPONSE_TIMEOUT_MS = 60_000;
 
 async function fileExists(path: string): Promise<boolean> {
   try {
@@ -15,12 +26,47 @@ async function fileExists(path: string): Promise<boolean> {
   }
 }
 
-export async function downloadOnce(url: string, destination: string): Promise<string> {
-  if (await fileExists(destination)) return destination;
-  await mkdir(dirname(destination), { recursive: true });
-  const response = await fetch(url);
+function isRetryableStatus(status: number): boolean {
+  return status === 408 || status === 429 || status >= 500;
+}
+
+class RetryableDownloadError extends WorkerError {}
+
+export class SourceUnavailableError extends WorkerError {}
+
+function isUnavailableStatus(status: number): boolean {
+  return status === 400 || status === 404;
+}
+
+function statusErrorType(status: number): typeof WorkerError {
+  if (isRetryableStatus(status)) return RetryableDownloadError;
+  if (isUnavailableStatus(status)) return SourceUnavailableError;
+  return WorkerError;
+}
+
+async function downloadAttempt(
+  url: string,
+  destination: string,
+  headers: Readonly<Record<string, string>>,
+): Promise<void> {
+  let response: Response;
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, RESPONSE_TIMEOUT_MS);
+  try {
+    response = await fetch(url, { headers, signal: controller.signal });
+  } catch (error) {
+    throw new RetryableDownloadError('source_download_failed', `Download unreachable: ${url}`, {
+      cause: error,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
   if (!response.ok || !response.body) {
-    throw new WorkerError(
+    await response.body?.cancel();
+    const ErrorType = statusErrorType(response.status);
+    throw new ErrorType(
       'source_download_failed',
       `Download failed with ${response.status}: ${url}`,
     );
@@ -31,9 +77,28 @@ export async function downloadOnce(url: string, destination: string): Promise<st
     await rename(partial, destination);
   } catch (error) {
     await rm(partial, { force: true });
-    throw new WorkerError('source_download_failed', `Download interrupted: ${url}`, {
+    throw new RetryableDownloadError('source_download_failed', `Download interrupted: ${url}`, {
       cause: error,
     });
   }
-  return destination;
+}
+
+export async function downloadOnce(
+  url: string,
+  destination: string,
+  options: DownloadOptions = {},
+): Promise<string> {
+  if (await fileExists(destination)) return destination;
+  await mkdir(dirname(destination), { recursive: true });
+  const attempts = options.attempts ?? DEFAULT_ATTEMPTS;
+  const backoffMs = options.backoffMs ?? DEFAULT_BACKOFF_MS;
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      await downloadAttempt(url, destination, options.headers ?? {});
+      return destination;
+    } catch (error) {
+      if (!(error instanceof RetryableDownloadError) || attempt >= attempts) throw error;
+      await delay(backoffMs * 2 ** (attempt - 1));
+    }
+  }
 }

@@ -1,14 +1,30 @@
+import { join } from 'node:path';
+
 import { parseCommand, type WorkerCommand } from './cli.ts';
 import { type Env, readEnv } from './config/env.ts';
 import { createSql, type Sql } from './db/sql.ts';
-import { errorCode } from './lib/errors.ts';
+import { errorCauseExit, errorCauseTail, errorCode } from './lib/errors.ts';
 import { createLogger, type Logger } from './lib/logger.ts';
 import { generateReport } from './report/generate-report.ts';
 import { insertReport } from './report/report.db.ts';
 import { REPORT_SECTIONS } from './report/sections.ts';
+import { importHealthSources } from './scoring/health/import-health-sources.ts';
 import { createValhallaClient, type ValhallaClient } from './routing/valhalla.ts';
+import { readActiveInvestmentParams } from './scoring/investment/investment.db.ts';
+import { importMarketListings } from './scoring/investment/market-import.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
 import { buildSnapshot } from './snapshot/build-snapshot.ts';
+import type { SourceMirror } from './sources/mirror.ts';
+import type { OsmExtractSource } from './sources/osm.ts';
+
+function osmExtractSource(env: Env): OsmExtractSource {
+  return { url: env.OSM_EXTRACT_URL, apiKey: env.OSM_EXTRACT_API_KEY ?? null };
+}
+
+function sourceMirror(env: Env): SourceMirror | undefined {
+  if (!env.SOURCE_MIRROR_URL) return undefined;
+  return { url: env.SOURCE_MIRROR_URL, apiKey: env.OSM_EXTRACT_API_KEY ?? null };
+}
 
 function reportRouter(env: Env): ValhallaClient | null {
   return env.VALHALLA_URL ? createValhallaClient(env.VALHALLA_URL) : null;
@@ -29,7 +45,8 @@ async function runCommand(
         citySlugs: command.citySlugs,
         scoreKeys: command.scoreKeys,
         sourcesDir: env.SOURCES_DIR,
-        osmExtractUrl: env.OSM_EXTRACT_URL,
+        osmExtract: osmExtractSource(env),
+        sourceMirror: sourceMirror(env),
         router: reportRouter(env),
         logger,
       });
@@ -62,6 +79,40 @@ async function runCommand(
       });
       return;
     }
+    case 'import-health-sources': {
+      const result = await importHealthSources({
+        sql,
+        dir: command.dir ?? join(env.SOURCES_DIR, 'health'),
+        citySlugs: command.citySlugs,
+        validFrom: command.validFrom,
+        period: command.period,
+        sourcesDir: env.SOURCES_DIR,
+        osmExtract: osmExtractSource(env),
+        logger,
+      });
+      logger.info('import-health-sources done', {
+        cnas_lists: result.cnasLists,
+        cnas_providers: result.cnasProviders,
+        emergency_cities: result.emergencyCities,
+      });
+      return;
+    }
+    case 'import-market-listings': {
+      const result = await importMarketListings({
+        sql,
+        source: command.source,
+        period: command.period,
+        filePath: command.filePath,
+        eurRonRate: command.eurRonRate,
+        params: await readActiveInvestmentParams(sql),
+        logger,
+      });
+      logger.info('import-market-listings done', {
+        import_id: result.importId,
+        accepted: result.accepted,
+      });
+      return;
+    }
   }
 }
 
@@ -82,6 +133,8 @@ main().catch((error: unknown) => {
   logger.error('worker failed', {
     code: errorCode(error),
     error: error instanceof Error ? error.message : String(error),
+    cause: errorCauseTail(error),
+    cause_exit: errorCauseExit(error),
   });
   process.exitCode = 1;
 });

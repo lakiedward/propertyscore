@@ -1,4 +1,4 @@
-import type { JsonObject, Sql } from '../../db/sql.ts';
+import { type JsonObject, type Sql, withLongStatements } from '../../db/sql.ts';
 import type { GeoPoint } from '../../sources/gdal.ts';
 import type { CalibrationResult, MonthlySeries, VerdictCode } from './air.formula.ts';
 import type { Pollutant } from './air.params.ts';
@@ -144,9 +144,11 @@ export async function listCellNeighbours(
   cityId: string,
   cellSizeM: number,
 ): Promise<Map<string, string[]>> {
-  const rows = await sql<{ cell_id: string; neighbour_id: string }[]>`
-    select cell_id, neighbour_id from private.grid_cell_neighbours(${cityId}, ${cellSizeM})
-  `;
+  const rows = await withLongStatements(sql, async (transaction) => [
+    ...(await transaction<{ cell_id: string; neighbour_id: string }[]>`
+      select cell_id, neighbour_id from private.grid_cell_neighbours(${cityId}, ${cellSizeM})
+    `),
+  ]);
   const neighbours = new Map<string, string[]>();
   for (const row of rows)
     neighbours.set(row.cell_id, [...(neighbours.get(row.cell_id) ?? []), row.neighbour_id]);

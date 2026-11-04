@@ -103,7 +103,7 @@ describe.skipIf(!databaseUrl)('industryModule against the local database', () =>
       cities: [city],
       params,
       sourcesDir: '/tmp/propertyscore-sources',
-      osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
       router: null,
       logger: silentLogger,
     });

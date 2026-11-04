@@ -4,6 +4,12 @@ import { z } from 'zod';
 
 import type { JsonObject } from '../../db/sql.ts';
 import { WorkerError } from '../../lib/errors.ts';
+import type { ValhallaClient } from '../../routing/valhalla.ts';
+import {
+  type DistanceMethod,
+  type RoutedCell,
+  walkCellCandidates,
+} from '../../routing/walk-access.ts';
 import {
   cityBoundingBox,
   downloadOsmExtract,
@@ -15,8 +21,11 @@ import {
 import type { ScoreModule } from '../score-module.ts';
 import { writeCategoryScores, type CellCategoryScore } from '../write-category-scores.ts';
 import {
+  listParkWalkCandidates,
   measureGreenCells,
   mergeGreenAreas,
+  type ParkCandidate,
+  type ParkSize,
   saveGreenAmenities,
   saveGreenSources,
   writeGreenCityStats,
@@ -50,6 +59,16 @@ type GreenParams = z.infer<typeof greenParamsSchema>;
 
 const BATCH_SIZE = 500;
 
+const PARK_WALK_CANDIDATES = 5;
+
+type ParkWalk = { green_area_id: string | null; walk_m: number | null };
+
+type GreenCellWalks = {
+  small: ParkWalk;
+  large: ParkWalk;
+  distanceMethod: DistanceMethod;
+};
+
 export function parseGreenParams(value: unknown): GreenParams {
   const parsed = greenParamsSchema.safeParse(value);
   if (!parsed.success) {
@@ -80,16 +99,75 @@ function walkMeters(distanceM: number | null, detour: number): number | null {
   return distanceM === null ? null : Math.round(distanceM * detour);
 }
 
-export function scoreGreenCell(measure: GreenCellMeasure, params: GreenParams): CellCategoryScore {
+function straightLineWalks(measure: GreenCellMeasure, params: GreenParams): GreenCellWalks {
+  return {
+    small: {
+      green_area_id: measure.nearest_small_id,
+      walk_m: walkMeters(measure.nearest_small_m, params.walk_detour_factor),
+    },
+    large: {
+      green_area_id: measure.nearest_large_id,
+      walk_m: walkMeters(measure.nearest_large_m, params.walk_detour_factor),
+    },
+    distanceMethod: 'straight_line',
+  };
+}
+
+function nearestWalkedPark(cell: RoutedCell<ParkCandidate>, size: ParkSize): ParkWalk {
+  let nearest: ParkWalk = { green_area_id: null, walk_m: null };
+  for (const candidate of cell.routed) {
+    if (candidate.key !== size || !candidate.leg) continue;
+    if (nearest.walk_m === null || candidate.leg.meters < nearest.walk_m) {
+      nearest = { green_area_id: candidate.poi_id, walk_m: Math.round(candidate.leg.meters) };
+    }
+  }
+  return nearest;
+}
+
+export function routedWalks(cell: RoutedCell<ParkCandidate>): GreenCellWalks {
+  return {
+    small: nearestWalkedPark(cell, 'small'),
+    large: nearestWalkedPark(cell, 'large'),
+    distanceMethod: 'pedestrian_routing',
+  };
+}
+
+async function walkToParks(
+  context: Parameters<ScoreModule['run']>[0],
+  router: ValhallaClient,
+  cityId: string,
+  params: GreenParams,
+): Promise<Map<string, GreenCellWalks>> {
+  const cells = await listParkWalkCandidates(context.sql, context.snapshotId, cityId, [
+    {
+      key: 'small',
+      minHa: params.small_min_ha,
+      searchRadiusM: params.small_zero_m,
+      maxCandidates: PARK_WALK_CANDIDATES,
+    },
+    {
+      key: 'large',
+      minHa: params.large_min_ha,
+      searchRadiusM: params.large_zero_m,
+      maxCandidates: PARK_WALK_CANDIDATES,
+    },
+  ]);
+  const routed = await walkCellCandidates(router, cells);
+  return new Map(routed.map((cell) => [cell.cellId, routedWalks(cell)]));
+}
+
+export function scoreGreenCell(
+  measure: GreenCellMeasure,
+  params: GreenParams,
+  walks: GreenCellWalks = straightLineWalks(measure, params),
+): CellCategoryScore {
   const share = (radius: number) => measure.shares[String(radius)] ?? null;
-  const smallWalkM = walkMeters(measure.nearest_small_m, params.walk_detour_factor);
-  const largeWalkM = walkMeters(measure.nearest_large_m, params.walk_detour_factor);
   const result = scoreGreen(
     {
       shareNear: share(params.near_radius_m),
       shareWide: share(params.wide_radius_m),
-      smallWalkM,
-      largeWalkM,
+      smallWalkM: walks.small.walk_m,
+      largeWalkM: walks.large.walk_m,
       canopy: null,
     },
     formulaParams(params),
@@ -101,9 +179,9 @@ export function scoreGreenCell(measure: GreenCellMeasure, params: GreenParams): 
     score: result.score,
     inputs: {
       share: measure.shares,
-      nearest_small: { green_area_id: measure.nearest_small_id, walk_m: smallWalkM },
-      nearest_large: { green_area_id: measure.nearest_large_id, walk_m: largeWalkM },
-      distance_method: 'straight_line',
+      nearest_small: walks.small,
+      nearest_large: walks.large,
+      distance_method: walks.distanceMethod,
       canopy: null,
       components,
     },
@@ -161,7 +239,7 @@ export const greenModule: ScoreModule = {
   run: async (context) => {
     const params = parseGreenParams(context.params);
     const extractPath = await downloadOsmExtract(
-      context.osmExtractUrl,
+      context.osmExtract,
       context.sourcesDir,
       context.period,
     );
@@ -179,6 +257,10 @@ export const greenModule: ScoreModule = {
         smallMinHa: params.small_min_ha,
         largeMinHa: params.large_min_ha,
       });
+      const walks =
+        publicAreas > 0 && context.router
+          ? await walkToParks(context, context.router, city.id, params)
+          : null;
       const rows =
         publicAreas === 0
           ? measures.map((measure) => ({
@@ -186,7 +268,7 @@ export const greenModule: ScoreModule = {
               score: null,
               inputs: { reason: 'no_source_data' },
             }))
-          : measures.map((measure) => scoreGreenCell(measure, params));
+          : measures.map((measure) => scoreGreenCell(measure, params, walks?.get(measure.cell_id)));
       await writeCategoryScores(context.sql, context.snapshotId, 'green', rows);
       await writeGreenCityStats(context.sql, context.snapshotId, city, params.near_radius_m);
       context.logger.info('green city scored', {
@@ -194,6 +276,7 @@ export const greenModule: ScoreModule = {
         city: city.slug,
         green_areas: merged,
         cells: rows.length,
+        distance_method: walks ? 'pedestrian_routing' : 'straight_line',
       });
     }
 

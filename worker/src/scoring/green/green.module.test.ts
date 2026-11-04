@@ -4,10 +4,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createSql, type Sql } from '../../db/sql.ts';
 import { createLogger } from '../../lib/logger.ts';
+import type { ValhallaClient } from '../../routing/valhalla.ts';
 import { buildSnapshot } from '../../snapshot/build-snapshot.ts';
 import { hasOsmium, prepareSourcesDir } from '../../test/osm-fixture.ts';
-import { greenModule, scoreGreenCell } from './green.module.ts';
-import { greenReportSection } from './green.report.ts';
+import { greenModule, routedWalks, scoreGreenCell } from './green.module.ts';
+import { greenReportSection, walkedParks } from './green.report.ts';
 
 const params = {
   radii_m: [300, 500, 1000],
@@ -50,6 +51,112 @@ describe('scoreGreenCell', () => {
   });
 });
 
+describe('routedWalks', () => {
+  const leg = (meters: number) => ({ seconds: Math.round(meters / 1.25), meters });
+  const park = (key: 'small' | 'large', id: string, meters: number | null) => ({
+    key,
+    poi_id: id,
+    lng: 24.1,
+    lat: 45.8,
+    straight_m: 100,
+    leg: meters === null ? null : leg(meters),
+  });
+
+  it('keeps the shortest walk to each park size and ignores parks without a route', () => {
+    const walks = routedWalks({
+      cellId: 'cell',
+      routed: [
+        park('small', 'near-by-air', null),
+        park('small', 'square', 640.4),
+        park('small', 'garden', 410.6),
+        park('large', 'forest', 2350),
+      ],
+    });
+
+    expect(walks).toEqual({
+      small: { green_area_id: 'garden', walk_m: 411 },
+      large: { green_area_id: 'forest', walk_m: 2350 },
+      distanceMethod: 'pedestrian_routing',
+    });
+  });
+
+  it('scores the walked distance and records the routing method', () => {
+    const measure = {
+      cell_id: 'cell',
+      shares: { '300': 0.121, '500': 0.184, '1000': 0.241 },
+      nearest_small_id: 'park',
+      nearest_small_m: 553.8,
+      nearest_large_id: 'park',
+      nearest_large_m: 553.8,
+    };
+    const walks = routedWalks({
+      cellId: 'cell',
+      routed: [park('small', 'park', 300), park('large', 'park', 1000)],
+    });
+
+    const row = scoreGreenCell(measure, params, walks);
+
+    expect(row.inputs).toMatchObject({
+      nearest_small: { green_area_id: 'park', walk_m: 300 },
+      nearest_large: { green_area_id: 'park', walk_m: 1000 },
+      distance_method: 'pedestrian_routing',
+      components: { c3: 1, c4: 1 },
+    });
+    expect(row.score).toBeGreaterThan(scoreGreenCell(measure, params).score ?? 0);
+  });
+
+  it('gives no walking points when no park of that size can be reached', () => {
+    const row = scoreGreenCell(
+      {
+        cell_id: 'cell',
+        shares: { '500': 0, '1000': 0 },
+        nearest_small_id: 'park',
+        nearest_small_m: 900,
+        nearest_large_id: null,
+        nearest_large_m: null,
+      },
+      params,
+      routedWalks({ cellId: 'cell', routed: [park('small', 'park', null)] }),
+    );
+
+    expect(row.inputs).toMatchObject({
+      nearest_small: { green_area_id: null, walk_m: null },
+      components: { c3: 0, c4: 0 },
+    });
+  });
+});
+
+describe('walkedParks', () => {
+  const park = (id: string, distance: number) => ({
+    id,
+    name: id,
+    kind: 'park',
+    area_ha: 2,
+    amenities: [],
+    distance_m: distance,
+    center: [24.1, 45.8] as [number, number],
+  });
+
+  it('orders the parks by the walk from the address and keeps the straight line where no route exists', () => {
+    const parks = walkedParks(
+      [park('river', 100), park('square', 200), park('island', 300)],
+      new Map([
+        ['river', { seconds: 600, meters: 750.4 }],
+        ['square', { seconds: 240, meters: 290 }],
+        ['island', null],
+      ]),
+      1.3,
+    );
+
+    expect(parks.map(({ id, walk_m }) => ({ id, walk_m }))).toEqual([
+      { id: 'square', walk_m: 290 },
+      { id: 'island', walk_m: 390 },
+      { id: 'river', walk_m: 750 },
+    ]);
+    expect(parks[0]).not.toHaveProperty('distance_m');
+  });
+});
+
 const databaseUrl = process.env.DATABASE_URL;
 
 describe.skipIf(!databaseUrl || !hasOsmium())('greenModule against the local database', () => {
@@ -82,7 +189,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('greenModule against the local dat
       citySlugs: ['sibiu'],
       scoreKeys: [],
       sourcesDir,
-      osmExtractUrl: 'https://example.test/romania.osm.pbf',
+      osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
       router: null,
       logger: createLogger('error', () => undefined),
     });
@@ -186,6 +293,43 @@ describe.skipIf(!databaseUrl || !hasOsmium())('greenModule against the local dat
     const [nearest] = (section?.parks ?? []) as { walk_m: number }[];
     expect(nearest?.walk_m).toBeGreaterThan(50);
     expect(nearest?.walk_m).toBeLessThan(200);
+  });
+
+  it('walks from the exact address to the parks when a router is set', async () => {
+    const address = { latitude: 45.799, longitude: 24.129 };
+    const [cell] = await sql<{ cell_id: string; params: unknown }[]>`
+      select cs.cell_id, v.params
+      from private.cell_scores cs
+      join private.grid_cells g on g.id = cs.cell_id
+      join public.score_snapshots s on s.id = cs.snapshot_id
+      join public.scoring_versions v on v.id = s.scoring_version_id
+      where cs.snapshot_id = ${snapshotId}
+      order by g.center operator(extensions.<->) extensions.st_point(${address.longitude}, ${address.latitude}, 4326)::extensions.geography
+      limit 1
+    `;
+    const router: ValhallaClient = {
+      matrix: ({ targets }) =>
+        Promise.resolve([targets.map((_, index) => ({ seconds: 300, meters: 400 + index }))]),
+      isochrones: () => Promise.resolve([]),
+      route: () => Promise.resolve(null),
+      tilesetDate: () => Promise.resolve(null),
+    };
+
+    const section = await greenReportSection.build({
+      sql,
+      router,
+      snapshotId,
+      cellId: cell?.cell_id ?? '',
+      citySlug: 'sibiu',
+      ...address,
+      params: cell?.params,
+      logger: createLogger('error', () => undefined),
+    });
+
+    expect(section).toMatchObject({ distance_method: 'pedestrian_routing' });
+    const parks = (section?.parks ?? []) as { walk_m: number }[];
+    expect(parks.length).toBeGreaterThan(0);
+    expect(parks.map((park) => park.walk_m)).toEqual(parks.map((_, index) => 400 + index));
   });
 
   it('writes the city green figures and the OSM date', async () => {

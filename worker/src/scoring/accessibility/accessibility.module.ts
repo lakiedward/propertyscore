@@ -1,12 +1,13 @@
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { JsonObject } from '../../db/sql.ts';
 import { errorCode } from '../../lib/errors.ts';
 import type { CoveredCity } from '../../snapshot/snapshot.db.ts';
 import { downloadOnce } from '../../sources/download.ts';
-import { cityBoundingBox, downloadOsmExtract, osmExtractDate } from '../../sources/osm.ts';
+import { downloadOsmExtract, osmExtractDate } from '../../sources/osm.ts';
 import type { ScoreModule } from '../score-module.ts';
 import { writeCategoryScores, type CellCategoryScore } from '../write-category-scores.ts';
 import { evaluateCell, type CityTransitContext } from './accessibility.cell.ts';
@@ -21,6 +22,8 @@ import {
   listDestinationLabels,
   listFeedSources,
   listKeyDestinations,
+  saveRoutingBundle,
+  transitBoundingBox,
   writeCityStats,
   type CellTransitRow,
   type FeedRecord,
@@ -44,8 +47,13 @@ import {
   writeSyntheticGtfs,
 } from './osm-transit.ts';
 import { pickReferenceDate } from './reference-day.ts';
-import { readMatrixRows, runTransitRouting } from './routing.ts';
-import { mergeNetworks, stopRouteLinks, stopServices } from './transit-network.ts';
+import { readMatrixRows, routingSettings, runTransitRouting } from './routing.ts';
+import {
+  mergeNetworks,
+  routeKeyResolver,
+  stopRouteLinks,
+  stopServices,
+} from './transit-network.ts';
 import type { TransitMode, TransitNetwork } from './transit.types.ts';
 
 type CityNetwork = {
@@ -67,10 +75,6 @@ function urlTag(url: string): string {
 
 function addDays(date: string, days: number): string {
   return new Date(Date.parse(`${date}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
-}
-
-function minutesBetween(start: string, end: string): number {
-  return (clockSeconds(end) - clockSeconds(start)) / 60;
 }
 
 async function loadGtfsNetwork(options: {
@@ -186,23 +190,13 @@ async function loadOsmNetwork(options: {
   return { network, gtfs: [directory], referenceDate, dataQuality: 'osm_only' };
 }
 
-function routeKeyResolver(network: TransitNetwork): (routeId: string | null) => string | null {
-  const keys = new Set(network.routes.map((route) => route.key));
-  return (routeId) => {
-    if (!routeId) return null;
-    if (keys.has(routeId)) return routeId;
-    for (const key of keys) if (key.endsWith(`:${routeId}`)) return key;
-    return null;
-  };
-}
-
 export const accessibilityModule: ScoreModule = {
   key: 'accessibility',
   run: async (context) => {
     const params = parseAccessibilityParams(context.params);
     const { sql, snapshotId, logger } = context;
     const extract = await downloadOsmExtract(
-      context.osmExtractUrl,
+      context.osmExtract,
       context.sourcesDir,
       context.period,
     );
@@ -214,7 +208,7 @@ export const accessibilityModule: ScoreModule = {
       await clearCityTransit(sql, snapshotId, city.id);
       const clipped = await clipOsmExtract({
         extractPath: extract,
-        bbox: await cityBoundingBox(sql, city.id),
+        bbox: await transitBoundingBox(sql, city.id),
         workDir,
         name: city.slug,
       });
@@ -242,7 +236,7 @@ export const accessibilityModule: ScoreModule = {
         feeds.push({
           source: 'osm',
           operator: null,
-          sourceUrl: context.osmExtractUrl,
+          sourceUrl: context.osmExtract.url,
           license: 'ODbL-1.0',
           feedVersion: osmDate,
           validFrom: null,
@@ -285,23 +279,23 @@ export const accessibilityModule: ScoreModule = {
       const links = stopRouteLinks(network);
       await insertNetwork(sql, snapshotId, city.id, network, links);
       const destinations = await listKeyDestinations(sql, city.id);
-      const maxRadius = Math.max(...Object.values(params.modes).map((mode) => mode.radius_m));
       const routing = await runTransitRouting({
         osmPbf: clipped,
         gtfs: loaded.gtfs,
         date: loaded.referenceDate,
-        windowStart: params.reference.window_start,
-        windowMinutes: minutesBetween(params.reference.window_start, params.reference.window_end),
-        detailDeparture: params.reference.detail_departure,
-        walkSpeedKmh: params.walk_speed_kmh,
-        maxMinutes: params.travel.max_minutes,
-        maxRides: params.travel.max_transfers + 1,
-        stopWalkMaxMinutes: Math.ceil(maxRadius / ((params.walk_speed_kmh * 1000) / 60)) + 1,
+        ...routingSettings(params),
         origins: cells.map((cell) => ({ id: cell.cellId, lng: cell.lng, lat: cell.lat })),
         stops: network.stops.map((stop) => ({ id: stop.key, lng: stop.lng, lat: stop.lat })),
         destinations: destinations.map((item) => ({ id: item.id, lng: item.lng, lat: item.lat })),
         withMatrix: true,
+        withItineraries: false,
         workDir,
+      });
+
+      await saveRoutingBundle(sql, snapshotId, city.id, {
+        referenceDate: loaded.referenceDate,
+        osmPbf: await readFile(clipped),
+        gtfsArchives: await Promise.all(routing.gtfsArchives.map((path) => readFile(path))),
       });
 
       const cityContext: CityTransitContext = {
@@ -313,7 +307,7 @@ export const accessibilityModule: ScoreModule = {
           network.routes.map((route) => [route.key, route.mode]),
         ),
         destinations,
-        routeKeyOf: routeKeyResolver(network),
+        routeKeyOf: routeKeyResolver(network.routes.map((route) => route.key)),
       };
       const evaluations = new Map(
         cells.map((cell) => [

@@ -1,4 +1,6 @@
 import type { JsonObject } from '../../db/sql.ts';
+import type { RoutedCell } from '../../routing/walk-access.ts';
+import type { SafetyCandidate } from './safety.db.ts';
 import type { FeatureDistance, SafetyInputs } from './safety.formula.ts';
 import { finalScore, momentScore, smooth } from './safety.formula.ts';
 import type { NightState, SafetyParams, SafetyType } from './safety.params.ts';
@@ -9,6 +11,7 @@ export type CellDistances = {
   type: SafetyType;
   distances: readonly number[];
   nightStates: readonly NightState[];
+  isWalked?: boolean;
 };
 
 export type CellPlacement = {
@@ -44,13 +47,51 @@ export function reachByType(params: SafetyParams): Record<string, number> {
   );
 }
 
+export const WALK_CANDIDATES = 8;
+
+export function reachOf(
+  reach: Record<string, number>,
+  walkedTypes: readonly string[],
+  isWalked: boolean,
+): Record<string, number> {
+  return Object.fromEntries(
+    Object.entries(reach).filter(([type]) => walkedTypes.includes(type) === isWalked),
+  );
+}
+
+export function walkingTypes(params: SafetyParams): SafetyType[] {
+  return SAFETY_TYPES.filter((type) => params.types[type].walking);
+}
+
+export function walkedCellDistances(
+  cells: readonly RoutedCell<SafetyCandidate>[],
+): CellDistances[] {
+  return cells.flatMap((cell) => {
+    const byType = new Map<SafetyType, { distances: number[]; nightStates: NightState[] }>();
+    for (const candidate of cell.routed) {
+      if (!candidate.leg) continue;
+      const row = byType.get(candidate.key) ?? { distances: [], nightStates: [] };
+      row.distances.push(candidate.leg.meters);
+      row.nightStates.push(candidate.night_state);
+      byType.set(candidate.key, row);
+    }
+    return [...byType].map(([type, row]) => ({
+      cellId: cell.cellId,
+      type,
+      distances: row.distances,
+      nightStates: row.nightStates,
+      isWalked: true,
+    }));
+  });
+}
+
 export function groupCellInputs(
   rows: readonly CellDistances[],
   params: SafetyParams,
 ): Map<string, SafetyInputs> {
   const byCell = new Map<string, SafetyInputs>();
   for (const row of rows) {
-    const factor = params.types[row.type].walking ? params.walk_detour_factor : 1;
+    const factor = !row.isWalked && params.types[row.type].walking ? params.walk_detour_factor : 1;
     const features: FeatureDistance[] = row.distances.map((distance, index) => ({
       distanceM: distance * factor,
       nightState: row.nightStates[index] ?? 'unknown',

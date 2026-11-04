@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { Sql } from '../db/sql.ts';
+import { type Sql, withLongStatements } from '../db/sql.ts';
 import { mapWithConcurrency } from '../lib/concurrency.ts';
 import type { Leg, LngLat, ValhallaClient } from './valhalla.ts';
 
@@ -39,7 +39,7 @@ export type ComputeWalkAccessOptions = {
   concurrency?: number;
 };
 
-const candidateSchema = z.object({
+export const candidateSchema = z.object({
   key: z.string(),
   poi_id: z.string(),
   lng: z.number(),
@@ -55,6 +55,44 @@ const cellSchema = z.object({
 });
 
 const CELL_BATCH = 200;
+
+export type CellCandidates<T extends Candidate> = {
+  cell_id: string;
+  lng: number;
+  lat: number;
+  candidates: T[];
+};
+
+type RoutedCandidate<T extends Candidate> = T & { leg: Leg | null };
+
+export type RoutedCell<T extends Candidate> = {
+  cellId: string;
+  routed: RoutedCandidate<T>[];
+};
+
+export async function walkCellCandidates<T extends Candidate>(
+  router: ValhallaClient,
+  cells: readonly CellCandidates<T>[],
+  options: { walkSpeedKmh?: number; concurrency?: number } = {},
+): Promise<RoutedCell<T>[]> {
+  const { walkSpeedKmh, concurrency = 4 } = options;
+  return mapWithConcurrency(cells, concurrency, async (cell) => {
+    if (cell.candidates.length === 0) return { cellId: cell.cell_id, routed: [] };
+    const [row] = await router.matrix({
+      costing: 'pedestrian',
+      sources: [{ lng: cell.lng, lat: cell.lat }],
+      targets: cell.candidates,
+      ...(walkSpeedKmh === undefined ? {} : { walkSpeedKmh }),
+    });
+    return {
+      cellId: cell.cell_id,
+      routed: cell.candidates.map((candidate, index) => ({
+        ...candidate,
+        leg: row?.[index] ?? null,
+      })),
+    };
+  });
+}
 
 export function straightLineLeg(meters: number, walkSpeedKmh: number, detourFactor: number): Leg {
   const walked = meters * detourFactor;
@@ -146,29 +184,31 @@ export async function computeWalkAccess(options: ComputeWalkAccessOptions): Prom
   const { sql, router, snapshotId, cityId, targets } = options;
   if (targets.length === 0) return 0;
   const distanceMethod: DistanceMethod = router ? 'pedestrian_routing' : 'straight_line';
-  let written = 0;
-  const cursor = sql`
-    select cell_id, lng, lat, candidates
-    from private.walk_access_candidates(${snapshotId}, ${cityId}, ${sql.json(targetsJson(targets))}::jsonb)
-  `.cursor(CELL_BATCH);
-  for await (const batch of cursor) {
-    const cells = z.array(cellSchema).parse(batch);
-    const rows = await mapWithConcurrency(cells, options.concurrency ?? 4, async (cell) => {
-      const legs = await legsFromOrigin(
-        router,
-        { lng: cell.lng, lat: cell.lat },
-        cell.candidates,
-        options.walkSpeedKmh,
-        options.walkDetourFactor,
-      );
-      return walkAccessRowsForCell(cell.cell_id, targets, cell.candidates, legs, distanceMethod);
-    });
-    const [result] = await sql<{ written: number }[]>`
-      select private.write_cell_walk_access(${snapshotId}, ${sql.json(rows.flat())}::jsonb) as written
-    `;
-    written += result?.written ?? 0;
-  }
-  return written;
+  return withLongStatements(sql, async (transaction) => {
+    let written = 0;
+    const cursor = transaction`
+      select cell_id, lng, lat, candidates
+      from private.walk_access_candidates(${snapshotId}, ${cityId}, ${transaction.json(targetsJson(targets))}::jsonb)
+    `.cursor(CELL_BATCH);
+    for await (const batch of cursor) {
+      const cells = z.array(cellSchema).parse(batch);
+      const rows = await mapWithConcurrency(cells, options.concurrency ?? 4, async (cell) => {
+        const legs = await legsFromOrigin(
+          router,
+          { lng: cell.lng, lat: cell.lat },
+          cell.candidates,
+          options.walkSpeedKmh,
+          options.walkDetourFactor,
+        );
+        return walkAccessRowsForCell(cell.cell_id, targets, cell.candidates, legs, distanceMethod);
+      });
+      const [result] = await sql<{ written: number }[]>`
+        select private.write_cell_walk_access(${snapshotId}, ${sql.json(rows.flat())}::jsonb) as written
+      `;
+      written += result?.written ?? 0;
+    }
+    return written;
+  });
 }
 
 export async function refreshCityCategoryStats(
@@ -182,7 +222,9 @@ export async function refreshCityCategoryStats(
     poi_categories: [...target.poiCategories],
     min_poi_count: target.minPoiCount,
   }));
-  await sql`
-    select private.refresh_city_category_stats(${snapshotId}, ${cityId}, ${sql.json(payload)}::jsonb)
-  `;
+  await withLongStatements(sql, async (transaction) => {
+    await transaction`
+      select private.refresh_city_category_stats(${snapshotId}, ${cityId}, ${transaction.json(payload)}::jsonb)
+    `;
+  });
 }

@@ -1,4 +1,7 @@
-import type { Sql } from '../../db/sql.ts';
+import { z } from 'zod';
+
+import { type Sql, withLongStatements } from '../../db/sql.ts';
+import { candidateSchema, type CellCandidates } from '../../routing/walk-access.ts';
 import type { GreenAmenity, GreenAreaKind } from './green.osm.ts';
 
 export type GreenSourceRow = {
@@ -24,6 +27,47 @@ export type GreenCellMeasure = {
   nearest_large_id: string | null;
   nearest_large_m: number | null;
 };
+
+export type ParkSize = 'small' | 'large';
+
+export type ParkWalkTarget = {
+  key: ParkSize;
+  minHa: number;
+  searchRadiusM: number;
+  maxCandidates: number;
+};
+
+const parkCandidateSchema = candidateSchema.extend({ key: z.enum(['small', 'large']) });
+
+export type ParkCandidate = z.infer<typeof parkCandidateSchema>;
+
+const parkCellSchema = z.object({
+  cell_id: z.string(),
+  lng: z.number(),
+  lat: z.number(),
+  candidates: z.array(parkCandidateSchema),
+});
+
+export async function listParkWalkCandidates(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+  targets: readonly ParkWalkTarget[],
+): Promise<CellCandidates<ParkCandidate>[]> {
+  const payload = targets.map((target) => ({
+    key: target.key,
+    min_ha: target.minHa,
+    search_radius_m: target.searchRadiusM,
+    max_candidates: target.maxCandidates,
+  }));
+  const rows = await withLongStatements(sql, async (transaction) => [
+    ...(await transaction`
+      select cell_id, lng, lat, candidates
+      from private.green_park_walk_candidates(${snapshotId}, ${cityId}, ${transaction.json(payload)}::jsonb)
+    `),
+  ]);
+  return z.array(parkCellSchema).parse(rows);
+}
 
 export async function saveGreenSources(
   sql: Sql,
@@ -91,10 +135,12 @@ export async function mergeGreenAreas(
   cityId: string,
   minHa: number,
 ): Promise<number> {
-  const [row] = await sql<{ merged: number }[]>`
-    select private.merge_green_areas(${snapshotId}, ${cityId}, ${minHa}) as merged
-  `;
-  return row?.merged ?? 0;
+  return withLongStatements(sql, async (transaction) => {
+    const [row] = await transaction<{ merged: number }[]>`
+      select private.merge_green_areas(${snapshotId}, ${cityId}, ${minHa}) as merged
+    `;
+    return row?.merged ?? 0;
+  });
 }
 
 export async function measureGreenCells(
@@ -103,23 +149,25 @@ export async function measureGreenCells(
   cityId: string,
   options: { radiiM: readonly number[]; smallMinHa: number; largeMinHa: number },
 ): Promise<GreenCellMeasure[]> {
-  const rows = await sql<GreenCellMeasure[]>`
-    select
-      cell_id,
-      shares,
-      nearest_small_id,
-      nearest_small_m::float8 as nearest_small_m,
-      nearest_large_id,
-      nearest_large_m::float8 as nearest_large_m
-    from private.measure_green_cells(
-      ${snapshotId},
-      ${cityId},
-      (select array_agg(value::integer) from jsonb_array_elements_text(${sql.json([...options.radiiM])}::jsonb)),
-      ${options.smallMinHa},
-      ${options.largeMinHa}
-    )
-  `;
-  return [...rows];
+  return withLongStatements(sql, async (transaction) => {
+    const rows = await transaction<GreenCellMeasure[]>`
+      select
+        cell_id,
+        shares,
+        nearest_small_id,
+        nearest_small_m::float8 as nearest_small_m,
+        nearest_large_id,
+        nearest_large_m::float8 as nearest_large_m
+      from private.measure_green_cells(
+        ${snapshotId},
+        ${cityId},
+        (select array_agg(value::integer) from jsonb_array_elements_text(${transaction.json([...options.radiiM])}::jsonb)),
+        ${options.smallMinHa},
+        ${options.largeMinHa}
+      )
+    `;
+    return [...rows];
+  });
 }
 
 export async function writeGreenCityStats(

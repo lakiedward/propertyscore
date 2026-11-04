@@ -4,6 +4,7 @@ import datetime
 import json
 import math
 import pathlib
+import shutil
 import sys
 import zipfile
 
@@ -86,18 +87,36 @@ def encode_matrix(order, times):
     return cells.tobytes()
 
 
+def has_rows(handle):
+    handle.readline()
+    return any(line.strip() for line in handle)
+
+
+def gtfs_tables(source):
+    if source.is_dir():
+        for file in sorted(source.glob("*.txt")):
+            yield file.name, lambda file=file: open(file, "rb")
+        return
+    with zipfile.ZipFile(source) as archive:
+        for entry in sorted(archive.infolist(), key=lambda item: item.filename):
+            name = pathlib.PurePosixPath(entry.filename).name
+            if entry.is_dir() or not name.endswith(".txt"):
+                continue
+            yield name, lambda entry=entry: archive.open(entry)
+
+
 def prepare_gtfs(paths, output_dir):
     prepared = []
     for index, path in enumerate(paths):
-        source = pathlib.Path(path)
-        if source.is_dir():
-            archive = output_dir / f"gtfs-{index}.zip"
-            with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as bundle:
-                for file in sorted(source.glob("*.txt")):
-                    bundle.write(file, file.name)
-            prepared.append(str(archive))
-        else:
-            prepared.append(str(source))
+        archive = output_dir / f"gtfs-{index}.zip"
+        with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as bundle:
+            for name, open_table in gtfs_tables(pathlib.Path(path)):
+                with open_table() as table:
+                    if not has_rows(table):
+                        continue
+                with open_table() as table, bundle.open(name, "w") as target:
+                    shutil.copyfileobj(table, target)
+        prepared.append(str(archive))
     return prepared
 
 
@@ -117,6 +136,52 @@ def frame(points):
         geometry=[shapely.Point(point["lng"], point["lat"]) for point in points],
         crs="EPSG:4326",
     )
+
+
+def detailed_itineraries(network, origins, destinations, job, transit_modes, max_time, speed):
+    import r5py
+
+    rows = []
+    detailed = r5py.DetailedItineraries(
+        network,
+        origins=frame(origins),
+        destinations=frame(destinations),
+        departure=departure_at(job["date"], job["detail_departure"]),
+        transport_modes=[*transit_modes, r5py.TransportMode.WALK],
+        max_time=max_time,
+        speed_walking=speed,
+        max_public_transport_rides=job["max_rides"],
+        force_all_to_all=True,
+    )
+    options = {}
+    for row in detailed.itertuples():
+        if row.transport_mode is None:
+            continue
+        key = (row.from_id, row.to_id)
+        options.setdefault(key, {}).setdefault(row.option, []).append(
+            {
+                "transport_mode": row.transport_mode,
+                "travel_time": row.travel_time,
+                "wait_time": row.wait_time,
+                "route_id": row.route_id,
+            }
+        )
+    for (origin, destination), by_option in options.items():
+        summary = best_itinerary(by_option.values())
+        if summary is None:
+            continue
+        rows.append(
+            (
+                origin,
+                destination,
+                summary["walk_minutes"],
+                summary["wait_minutes"],
+                summary["ride_minutes"],
+                summary["transfers"],
+                summary["route_id"],
+            )
+        )
+    return rows
 
 
 def run(job):
@@ -191,44 +256,9 @@ def run(job):
                     "" if math.isnan(walked) else round(walked, 1),
                 )
             )
-        detailed = r5py.DetailedItineraries(
-            network,
-            origins=frame(origins),
-            destinations=frame(destinations),
-            departure=departure_at(job["date"], job["detail_departure"]),
-            transport_modes=[*transit_modes, r5py.TransportMode.WALK],
-            max_time=max_time,
-            speed_walking=speed,
-            max_public_transport_rides=job["max_rides"],
-            force_all_to_all=True,
-        )
-        options = {}
-        for row in detailed.itertuples():
-            if row.transport_mode is None:
-                continue
-            key = (row.from_id, row.to_id)
-            options.setdefault(key, {}).setdefault(row.option, []).append(
-                {
-                    "transport_mode": row.transport_mode,
-                    "travel_time": row.travel_time,
-                    "wait_time": row.wait_time,
-                    "route_id": row.route_id,
-                }
-            )
-        for (origin, destination), by_option in options.items():
-            summary = best_itinerary(by_option.values())
-            if summary is None:
-                continue
-            itinerary_rows.append(
-                (
-                    origin,
-                    destination,
-                    summary["walk_minutes"],
-                    summary["wait_minutes"],
-                    summary["ride_minutes"],
-                    summary["transfers"],
-                    summary["route_id"],
-                )
+        if job["itineraries"]:
+            itinerary_rows = detailed_itineraries(
+                network, origins, destinations, job, transit_modes, max_time, speed
             )
     write_rows(
         output_dir / "destinations.csv",
