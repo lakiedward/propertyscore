@@ -28,6 +28,19 @@ export async function readCellCategory(
   return { score: row.score, inputs: row.inputs, cityId: row.city_id };
 }
 
+export async function readNeighbourInputs(
+  sql: Sql,
+  snapshotId: string,
+  cellId: string,
+  key: CategoryKey,
+): Promise<unknown[]> {
+  const rows = await sql<{ inputs: unknown }[]>`
+    select inputs -> ${key} as inputs
+    from private.report_cell_neighbours(${snapshotId}, ${cellId})
+  `;
+  return rows.map((row) => row.inputs);
+}
+
 export function sectionParams(params: unknown, key: CategoryKey | ContextKey): unknown {
   const parsed = z.record(z.string(), z.unknown()).safeParse(params);
   return parsed.success ? parsed.data[key] : undefined;

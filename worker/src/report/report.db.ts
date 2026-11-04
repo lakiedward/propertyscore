@@ -1,5 +1,6 @@
 import type { JsonObject, Sql } from '../db/sql.ts';
 import { WorkerError } from '../lib/errors.ts';
+import type { AddressScores } from './address-scores.ts';
 
 export type StartedReport = {
   snapshotId: string;
@@ -8,6 +9,7 @@ export type StartedReport = {
   latitude: number;
   longitude: number;
   params: unknown;
+  weights: unknown;
 };
 
 export type ReportRequest = {
@@ -27,9 +29,10 @@ export async function beginReport(sql: Sql, reportId: string): Promise<StartedRe
       latitude: number;
       longitude: number;
       params: unknown;
+      weights: unknown;
     }[]
   >`
-    select started.*, v.params
+    select started.*, v.params, v.weights
     from private.begin_online_report(${reportId}) as started
     join public.score_snapshots s on s.id = started.snapshot_id
     join public.scoring_versions v on v.id = s.scoring_version_id
@@ -42,6 +45,7 @@ export async function beginReport(sql: Sql, reportId: string): Promise<StartedRe
     latitude: row.latitude,
     longitude: row.longitude,
     params: row.params,
+    weights: row.weights,
   };
 }
 
@@ -50,10 +54,12 @@ export async function completeReport(
   reportId: string,
   started: StartedReport,
   sections: JsonObject,
+  scores: AddressScores,
 ): Promise<void> {
   await sql`
     select private.complete_online_report(
-      ${reportId}, ${started.snapshotId}, ${started.cellId}, ${sql.json(sections)}::jsonb
+      ${reportId}, ${started.snapshotId}, ${started.cellId}, ${sql.json(sections)}::jsonb,
+      ${sql.json(scores)}::jsonb
     )
   `;
 }

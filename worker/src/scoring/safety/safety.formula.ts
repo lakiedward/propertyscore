@@ -165,6 +165,7 @@ export function waterfall(result: MomentResult, start: number): Waterfall {
 
 type MomentSummary = {
   score: number;
+  rawScore: number;
   waterfall: Waterfall;
   contributions: TypeContribution[];
 };
@@ -179,6 +180,7 @@ export type PointSafety = {
 function summarize(result: MomentResult, start: number): MomentSummary {
   return {
     score: Math.round(result.score),
+    rawScore: result.score,
     waterfall: waterfall(result, start),
     contributions: result.contributions,
   };
