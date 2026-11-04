@@ -58,7 +58,7 @@ select results_eq(
   'The month the list takes effect reads the imported units'
 );
 
-select results_eq(
+select set_eq(
   format($$ select name, level::text from private.list_emergency_hospitals(%L, '2026-10-01') $$, :'oradea_id'),
   $$ values
     ('Spitalul Județean'::text, 'upu'::text),
