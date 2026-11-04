@@ -52,18 +52,24 @@ class EncodeMatrixTest(unittest.TestCase):
 
 
 class PrepareGtfsTest(unittest.TestCase):
-    def test_zips_a_directory_and_keeps_an_archive(self):
+    def test_bundles_a_directory_and_an_archive_without_empty_tables(self):
         with tempfile.TemporaryDirectory() as folder:
             base = pathlib.Path(folder)
             feed = base / "feed"
             feed.mkdir()
-            (feed / "stops.txt").write_text("stop_id\n", encoding="utf-8")
-            archive = base / "official.zip"
-            archive.write_bytes(b"")
-            prepared = route.prepare_gtfs([str(feed), str(archive)], base)
+            (feed / "stops.txt").write_text("stop_id\ns1\n", encoding="utf-8")
+            (feed / "frequencies.txt").write_text("trip_id,start_time\n", encoding="utf-8")
+            official = base / "official.zip"
+            with zipfile.ZipFile(official, "w") as source:
+                source.writestr("routes.txt", "route_id\nr1\n")
+                source.writestr("frequencies.txt", "trip_id,start_time\n\n")
+            prepared = route.prepare_gtfs([str(feed), str(official)], base)
+            self.assertEqual(prepared, [str(base / "gtfs-0.zip"), str(base / "gtfs-1.zip")])
             with zipfile.ZipFile(prepared[0]) as bundle:
                 self.assertEqual(bundle.namelist(), ["stops.txt"])
-            self.assertEqual(prepared[1], str(archive))
+            with zipfile.ZipFile(prepared[1]) as bundle:
+                self.assertEqual(bundle.namelist(), ["routes.txt"])
+                self.assertEqual(bundle.read("routes.txt"), b"route_id\nr1\n")
 
 
 class DepartureTest(unittest.TestCase):

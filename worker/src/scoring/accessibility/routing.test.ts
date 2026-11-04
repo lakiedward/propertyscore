@@ -95,7 +95,7 @@ describe('runTransitRouting', () => {
       routeId: 'T1',
     });
     expect(result.gtfsArchives).toEqual([
-      join(input.workDir, 'tursib.zip'),
+      join(input.workDir, 'routing', 'gtfs-0.zip'),
       join(input.workDir, 'routing', 'gtfs-1.zip'),
     ]);
     const rows = await readMatrixRows(result.matrixPath ?? '', 2);
