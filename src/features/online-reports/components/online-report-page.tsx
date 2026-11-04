@@ -6,6 +6,7 @@ import {
   CATEGORY_KEYS,
   CHAPTER_IDS,
   chapterScore,
+  isCityUniform,
   isScoreChapter,
   nextChapter,
   reportCode,
@@ -191,6 +192,7 @@ function ReadyReport({ report, result, isShared, chapter, onChapterChange }: Rea
           <ZoneScoreCard
             score={zone.score}
             percentile={zone.percentile}
+            isCityUniform={isCityUniform(zone)}
             cityName={result.city.name}
             scoredCount={scoredCategories(categories).length}
           />

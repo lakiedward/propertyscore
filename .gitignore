@@ -12,6 +12,8 @@ supabase/.temp/
 supabase/.branches/
 supabase/functions/.env
 
+.netlify/
+
 playwright-report/
 test-results/
 blob-report/
@@ -27,4 +29,5 @@ e2e/.auth/
 !.vscode/extensions.json
 .DS_Store
 *.log
+.tanstack/
 __pycache__/

@@ -59,13 +59,27 @@ export const CATEGORY_GROUPS: readonly {
   { id: 'services', chapter: 'fifteen_minute', keys: ['education', 'health'] },
 ];
 
-export type CategorySummary = {
+export type CityRange = {
+  city_min?: number | null | undefined;
+  city_max?: number | null | undefined;
+};
+
+export type CategorySummary = CityRange & {
   score: number | null;
   percentile: number | null;
   city_avg: number | null;
   histogram: number[];
   weight: number;
 };
+
+const UNIFORM_CITY_SPREAD = 5;
+
+export function isCityUniform({ city_min: lowest, city_max: highest }: CityRange): boolean {
+  if (lowest === null || lowest === undefined || highest === null || highest === undefined) {
+    return false;
+  }
+  return highest - lowest < UNIFORM_CITY_SPREAD;
+}
 
 export type ScoreBand = 'excellent' | 'veryGood' | 'good' | 'average' | 'belowAverage';
 

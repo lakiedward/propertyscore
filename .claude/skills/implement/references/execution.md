@@ -1,6 +1,6 @@
 # Execution, verification and reporting
 
-Only after explicit approval of the proposal.
+Only after explicit approval of the proposal. `/plan-from-design` uses §1 to §5 for its approved plan, without slice 10, the §10.3 "Done when" walk-through (its plan has its own) and §6 recording.
 
 ## 1. Git
 
@@ -13,7 +13,7 @@ Only after explicit approval of the proposal.
 
 1. **Database.** `supabase migration new <verb>_<object>` per migration; SQL follows `.claude/rules/supabase.md` (RLS in the same migration, one policy per operation, `with check`, indexes on foreign keys and policy columns, column privileges for computed columns, no comments). Then `pnpm db:reset` and `pnpm db:types`. pgTAP tests in `supabase/tests/` for every policy: allowed and denied cases.
 2. **Schema checkpoint** (steps with migrations). Show the user the final tables, policies and functions in a short table and wait for an "ok" before building on them. Cheap to fix now, expensive after the UI exists.
-3. **Edge Functions** if any, under `supabase/functions/<kebab-name>/`, Zod-validated, shared types in `_shared/`.
+3. **Edge Functions and worker jobs** if any: Edge Functions under `supabase/functions/<kebab-name>/`, Zod-validated, shared types in `_shared/`; worker commands under `worker/src/` following `.claude/rules/worker.md`, with any new system package in `worker/Dockerfile` and new variables in its `env.ts`. Each placed as the approved integration choice says.
 4. **Data access.** `features/<feature>/api/*.api.ts` (throws `AppError`), `*.queries.ts` (query factory + mutation hooks), Zod schemas and types; `index.ts` exports only the public API.
 5. **Translations.** Keys in `src/i18n/locales/ro` and `en` together, plural forms for Romanian, no concatenation.
 6. **Tokens and shared components.** New tokens in `globals.css`; shadcn primitives via the CLI; shared components only if more than one feature needs them.

@@ -204,7 +204,7 @@ Also per density: table row 52 / 44 / 52px, stack gap 16 / 12 / 14px. Variables:
 
 Build each component the first time a step needs it, at the location below, with the listed variants. Check the original in `.claude/design-cache/design-system/` before building. Shared components (used by more than one feature) live in `src/components/<group>/`; components that only one feature uses live in that feature.
 
-A row's notes, including the variants marked built, describe the component as specified; whether it exists is decided by the file system. `Logo`, `TrustBadge`, `ListingCard`, `Price`, `SplitPrice`, `ServiceCard`, `MapPin`, `SiteFooter` and `SiteMenu` arrive with the public site, listing and auth pages and do not exist until those land, together with the home, publish and auth tokens already in `globals.css`; check the file before importing and build it from its row when a feature needs it.
+A row's notes, including the variants marked built, describe the component as specified; whether it exists is decided by the file system. Check the file before importing and build it from its row when a feature needs it.
 
 | Design system component | Our implementation | Variants and notes |
 | --- | --- | --- |

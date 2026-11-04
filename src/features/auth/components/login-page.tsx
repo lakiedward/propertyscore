@@ -1,38 +1,35 @@
-import { Link } from '@tanstack/react-router';
+import { getRouteApi } from '@tanstack/react-router';
 import { Trans, useTranslation } from 'react-i18next';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { TextLink } from '@/components/navigation/text-link';
+import { AuthHeading } from './auth-heading';
 import { LoginForm } from './login-form';
+
+const route = getRouteApi('/_public/login');
 
 export function LoginPage() {
   const { t } = useTranslation('auth');
+  const { redirect } = route.useSearch();
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <h1>{t('login.title')}</h1>
-        </CardTitle>
-        <CardDescription>{t('login.description')}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <LoginForm />
-      </CardContent>
-      <CardFooter className="text-sm text-muted-foreground">
-        <p>
-          <Trans
-            t={t}
-            i18nKey="login.noAccount"
-            components={{ link: <Link to="/sign-up" className="text-foreground underline" /> }}
-          />
-        </p>
-      </CardFooter>
-    </Card>
+    <>
+      <AuthHeading i18nKey="login.heading" />
+      <LoginForm />
+      <p className="text-center text-body-sm leading-copy text-muted-foreground">
+        <Trans
+          t={t}
+          i18nKey="login.noAccount"
+          components={{
+            link: (
+              <TextLink
+                to="/sign-up"
+                search={{ redirect }}
+                size="inherit"
+                className="px-0.5 py-1"
+              />
+            ),
+          }}
+        />
+      </p>
+    </>
   );
 }

@@ -137,6 +137,27 @@ describe('OnlineReportPage', () => {
     expect(screen.getByText(text.categoryChapter.leadMissing)).toBeInTheDocument();
   });
 
+  it('says the address is in line with the city instead of a percentile when the city is uniform', async () => {
+    const report = buildOnlineReport({
+      result: buildReportResult(
+        { air: { score: 70, percentile: 2, city_avg: 72, city_min: 70, city_max: 74 } },
+        { score: 61, percentile: 40, city_min: 59, city_max: 62 },
+      ),
+    });
+    serveReport(report);
+
+    await renderReport(report.id, 'air');
+
+    expect(
+      await screen.findByRole('heading', {
+        level: 2,
+        name: fill(text.categoryChapter.titleUniform, { city: 'Timișoara' }),
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(fill(text.zone.uniform, { city: 'Timișoara' }))).toBeInTheDocument();
+    expect(screen.queryByText(/Mai bun decât/)).not.toBeInTheDocument();
+  });
+
   it('shows the education and health scores inside the 15-minute chapter', async () => {
     const report = buildOnlineReport({
       result: buildReportResult({

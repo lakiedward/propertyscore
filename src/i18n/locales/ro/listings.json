@@ -1,0 +1,34 @@
+{
+  "transaction": {
+    "sale": "De cumpărat",
+    "rent": "De închiriat"
+  },
+  "board": {
+    "transactionLabel": "Tipul anunțurilor",
+    "count": {
+      "sale_one": "{{count}} anunț de vânzare · {{city}} · exemple",
+      "sale_few": "{{count}} anunțuri de vânzare · {{city}} · exemple",
+      "sale_other": "{{count}} de anunțuri de vânzare · {{city}} · exemple",
+      "rent_one": "{{count}} anunț de închiriat · {{city}} · exemple",
+      "rent_few": "{{count}} anunțuri de închiriat · {{city}} · exemple",
+      "rent_other": "{{count}} de anunțuri de închiriat · {{city}} · exemple"
+    },
+    "mapLabel": "Harta anunțurilor",
+    "listLabel": "Anunțuri",
+    "empty": {
+      "title": "Nu sunt anunțuri acum",
+      "description": "Revino curând sau publică tu primul anunț, gratuit."
+    },
+    "error": {
+      "title": "Anunțurile nu s-au încărcat",
+      "description": "Verifică conexiunea și încearcă din nou."
+    },
+    "mapError": "Harta nu s-a putut încărca. Lista anunțurilor rămâne disponibilă."
+  },
+  "card": {
+    "meta_one": "{{street}} · {{count}} cameră · {{area}} m²",
+    "meta_few": "{{street}} · {{count}} camere · {{area}} m²",
+    "meta_other": "{{street}} · {{count}} de camere · {{area}} m²",
+    "label": "{{title}}, {{price}}, {{badge}}"
+  }
+}

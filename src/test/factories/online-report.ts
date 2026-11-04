@@ -23,7 +23,16 @@ type CategorySummaryOverrides = {
   score?: number | null;
   percentile?: number | null;
   city_avg?: number | null;
+  city_min?: number | null;
+  city_max?: number | null;
   weight?: number;
+};
+
+type ZoneOverrides = {
+  score?: number | null;
+  percentile?: number | null;
+  city_min?: number | null;
+  city_max?: number | null;
 };
 
 const CATEGORY_WEIGHTS = {
@@ -60,6 +69,8 @@ function categorySummary(key: CategoryKey, overrides: CategorySummaryOverrides =
     score,
     percentile: overrides.percentile ?? (score === null ? null : 50),
     city_avg: overrides.city_avg ?? (score === null ? null : 50),
+    city_min: overrides.city_min ?? (score === null ? null : 10),
+    city_max: overrides.city_max ?? (score === null ? null : 95),
     histogram: score === null ? [] : HISTOGRAM,
     weight: overrides.weight ?? CATEGORY_WEIGHTS[key],
   };
@@ -67,7 +78,7 @@ function categorySummary(key: CategoryKey, overrides: CategorySummaryOverrides =
 
 export function buildReportResult(
   categories: Partial<Record<CategoryKey, CategorySummaryOverrides>> = {},
-  zone: { score?: number | null; percentile?: number | null } = {},
+  zone: ZoneOverrides = {},
 ) {
   return {
     schema_version: 1,
@@ -78,6 +89,8 @@ export function buildReportResult(
       score: zone.score === undefined ? 72 : zone.score,
       percentile: zone.percentile === undefined ? 81 : zone.percentile,
       city_avg: 55,
+      city_min: zone.city_min === undefined ? 12 : zone.city_min,
+      city_max: zone.city_max === undefined ? 94 : zone.city_max,
       histogram: HISTOGRAM,
     },
     categories: Object.fromEntries(

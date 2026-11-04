@@ -143,6 +143,14 @@ describe.skipIf(!databaseUrl)('generateReport against the local database', () =>
     ]) {
       expect(report?.result[key]).toMatchObject({ schema_version: 1, status: 'no_data' });
     }
+    expect(report?.result.seismic).toMatchObject({
+      schema_version: 1,
+      status: 'context',
+      code: 'P100-1/2013',
+      ag_g: 0.2,
+      level: 'moderate',
+      city: { slug: 'sibiu', ag_g: 0.2 },
+    });
   });
 
   it('marks the report failed with the code of the section that broke', async () => {

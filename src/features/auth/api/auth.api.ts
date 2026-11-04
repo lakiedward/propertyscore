@@ -1,8 +1,9 @@
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
-import type { Locale } from '@/i18n/i18n';
+import { env } from '@/config/env';
 import { supabase } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';
-import type { Credentials } from '../auth.schemas';
+import { safeRedirectPath } from '@/lib/url';
+import type { Credentials, SignUpPayload } from '../auth.schemas';
 
 export async function getSession(): Promise<Session | null> {
   const { data, error } = await supabase.auth.getSession();
@@ -25,13 +26,21 @@ export async function signInWithPassword({ email, password }: Credentials) {
   return data.session;
 }
 
-export async function signUp({ email, password, locale }: Credentials & { locale: Locale }) {
+function confirmationRedirectUrl(redirect: string | undefined): string {
+  const url = new URL('/login', env.siteUrl);
+  if (redirect) {
+    url.searchParams.set('redirect', safeRedirectPath(redirect));
+  }
+  return url.toString();
+}
+
+export async function signUp({ email, password, fullName, locale, redirect }: SignUpPayload) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { locale },
-      emailRedirectTo: window.location.origin,
+      data: { locale, full_name: fullName },
+      emailRedirectTo: confirmationRedirectUrl(redirect),
     },
   });
   if (error) throw toAppError(error);

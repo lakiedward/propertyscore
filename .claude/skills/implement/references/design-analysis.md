@@ -2,6 +2,8 @@
 
 The design is a visual and structural reference, never code to copy. Its job is to tell us how the step's screens look and behave in the UI; the plan stays the source for data and rules.
 
+`/plan-from-design` uses this file with its selection in place of a step and without `IMPLEMENTATION_PLAN.md`: there the design is also the source for data and rules, §6 and §7 do not apply, nothing is mirrored in `CLAUDE_DESIGN_PLAN.md`, and what this file sends to the proposal goes to the plan.
+
 ## 1. Normalise the input
 
 All inputs end up as files on disk outside the repository, so they can be hashed, cached and given to a subagent.
