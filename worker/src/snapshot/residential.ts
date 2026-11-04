@@ -1,4 +1,4 @@
-import type { Sql } from '../db/sql.ts';
+import { type Sql, withLongStatements } from '../db/sql.ts';
 import {
   cityBoundingBox,
   extractOsmFeatures,
@@ -66,8 +66,10 @@ export async function markResidentialCells(options: {
   }
   await saveResidentialAreas(sql, snapshotId, city.id, batch);
 
-  const [row] = await sql<{ marked: number }[]>`
-    select private.mark_residential_cells(${snapshotId}, ${city.id}, ${options.minShare}) as marked
-  `;
-  return row?.marked ?? 0;
+  return withLongStatements(sql, async (transaction) => {
+    const [row] = await transaction<{ marked: number }[]>`
+      select private.mark_residential_cells(${snapshotId}, ${city.id}, ${options.minShare}) as marked
+    `;
+    return row?.marked ?? 0;
+  });
 }

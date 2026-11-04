@@ -50,6 +50,7 @@ paths:
 - The worker connects with `DATABASE_URL` (the direct connection or the session pooler of the Supabase project, never the transaction pooler) as a role that can use the `private` schema. It is a secret: Railway variables only.
 - SQL lives in `*.db.ts` files or in the score module, as tagged postgres.js queries with parameters; never string concatenation. JSON goes in with `sql.json(value)` and is unpacked with `jsonb_to_recordset` for bulk writes.
 - Heavy geometry belongs in PostGIS functions in `private` (created by a migration, tested with pgTAP); TypeScript orchestrates and computes formulas that are easier to test in code.
+- Supabase caps every statement of the `postgres` role at 2 minutes, and the session pooler does not forward a `statement_timeout` sent at connection time. A query that works on a whole city (a `private` function over its cells, a cursor over cells whose batches wait for routing, a city-wide delete) runs through `withLongStatements(sql, (transaction) => …)` from `db/sql.ts`, which sets `statement_timeout` to `LONG_STATEMENT_TIMEOUT` (1 hour) for that transaction only. Use the transaction it passes for every query in the callback, including `transaction.json(...)`.
 - The engine schema is `private`, never exposed to PostgREST. Tables there still get RLS enabled, no client policies, and a pgTAP test proving `anon` and `authenticated` cannot read them.
 
 ## Data model the scores share

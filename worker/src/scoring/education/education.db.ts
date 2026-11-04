@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { JsonObject, Sql } from '../../db/sql.ts';
+import { type JsonObject, type Sql, withLongStatements } from '../../db/sql.ts';
 import type { InstitutionRow } from './education.match.ts';
 
 const candidateSchema = z.object({
@@ -46,10 +46,12 @@ export async function copyEducationPois(
   cityId: string,
   seenOn: string,
 ): Promise<number> {
-  const [result] = await sql<{ copied: number }[]>`
-    select private.copy_education_pois(${snapshotId}, ${cityId}, ${seenOn}::date) as copied
-  `;
-  return result?.copied ?? 0;
+  return withLongStatements(sql, async (transaction) => {
+    const [result] = await transaction<{ copied: number }[]>`
+      select private.copy_education_pois(${snapshotId}, ${cityId}, ${seenOn}::date) as copied
+    `;
+    return result?.copied ?? 0;
+  });
 }
 
 export async function listCandidates(
@@ -60,10 +62,12 @@ export async function listCandidates(
   radiusM: number,
   limit: number,
 ): Promise<EducationCandidate[]> {
-  const rows = await sql`
-    select cell_id, cell_lng, cell_lat, poi_id, poi_lng, poi_lat, institution_id, entity, straight_m
-    from private.education_candidates(${snapshotId}, ${cityId}, ${category}, ${radiusM}, ${limit})
-  `;
+  const rows = await withLongStatements(sql, async (transaction) => [
+    ...(await transaction`
+      select cell_id, cell_lng, cell_lat, poi_id, poi_lng, poi_lat, institution_id, entity, straight_m
+      from private.education_candidates(${snapshotId}, ${cityId}, ${category}, ${radiusM}, ${limit})
+    `),
+  ]);
   return z.array(candidateSchema).parse(rows);
 }
 

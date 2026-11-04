@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { Sql } from '../db/sql.ts';
+import { type Sql, withLongStatements } from '../db/sql.ts';
 import { mapWithConcurrency } from '../lib/concurrency.ts';
 import type { Leg, LngLat, ValhallaClient } from './valhalla.ts';
 
@@ -184,29 +184,31 @@ export async function computeWalkAccess(options: ComputeWalkAccessOptions): Prom
   const { sql, router, snapshotId, cityId, targets } = options;
   if (targets.length === 0) return 0;
   const distanceMethod: DistanceMethod = router ? 'pedestrian_routing' : 'straight_line';
-  let written = 0;
-  const cursor = sql`
-    select cell_id, lng, lat, candidates
-    from private.walk_access_candidates(${snapshotId}, ${cityId}, ${sql.json(targetsJson(targets))}::jsonb)
-  `.cursor(CELL_BATCH);
-  for await (const batch of cursor) {
-    const cells = z.array(cellSchema).parse(batch);
-    const rows = await mapWithConcurrency(cells, options.concurrency ?? 4, async (cell) => {
-      const legs = await legsFromOrigin(
-        router,
-        { lng: cell.lng, lat: cell.lat },
-        cell.candidates,
-        options.walkSpeedKmh,
-        options.walkDetourFactor,
-      );
-      return walkAccessRowsForCell(cell.cell_id, targets, cell.candidates, legs, distanceMethod);
-    });
-    const [result] = await sql<{ written: number }[]>`
-      select private.write_cell_walk_access(${snapshotId}, ${sql.json(rows.flat())}::jsonb) as written
-    `;
-    written += result?.written ?? 0;
-  }
-  return written;
+  return withLongStatements(sql, async (transaction) => {
+    let written = 0;
+    const cursor = transaction`
+      select cell_id, lng, lat, candidates
+      from private.walk_access_candidates(${snapshotId}, ${cityId}, ${transaction.json(targetsJson(targets))}::jsonb)
+    `.cursor(CELL_BATCH);
+    for await (const batch of cursor) {
+      const cells = z.array(cellSchema).parse(batch);
+      const rows = await mapWithConcurrency(cells, options.concurrency ?? 4, async (cell) => {
+        const legs = await legsFromOrigin(
+          router,
+          { lng: cell.lng, lat: cell.lat },
+          cell.candidates,
+          options.walkSpeedKmh,
+          options.walkDetourFactor,
+        );
+        return walkAccessRowsForCell(cell.cell_id, targets, cell.candidates, legs, distanceMethod);
+      });
+      const [result] = await transaction<{ written: number }[]>`
+        select private.write_cell_walk_access(${snapshotId}, ${transaction.json(rows.flat())}::jsonb) as written
+      `;
+      written += result?.written ?? 0;
+    }
+    return written;
+  });
 }
 
 export async function refreshCityCategoryStats(
@@ -220,7 +222,9 @@ export async function refreshCityCategoryStats(
     poi_categories: [...target.poiCategories],
     min_poi_count: target.minPoiCount,
   }));
-  await sql`
-    select private.refresh_city_category_stats(${snapshotId}, ${cityId}, ${sql.json(payload)}::jsonb)
-  `;
+  await withLongStatements(sql, async (transaction) => {
+    await transaction`
+      select private.refresh_city_category_stats(${snapshotId}, ${cityId}, ${transaction.json(payload)}::jsonb)
+    `;
+  });
 }

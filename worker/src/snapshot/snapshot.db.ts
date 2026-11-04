@@ -1,4 +1,4 @@
-import type { Sql } from '../db/sql.ts';
+import { type Sql, withLongStatements } from '../db/sql.ts';
 import { WorkerError } from '../lib/errors.ts';
 
 export type CoveredCity = {
@@ -58,11 +58,13 @@ export async function prepareCityCells(
   cityId: string,
   cellSizeM: number,
 ): Promise<number> {
-  await sql`select private.build_grid_cells(${cityId}, ${cellSizeM})`;
-  const [row] = await sql<{ seeded: number }[]>`
-    select private.seed_cell_scores(${snapshotId}, ${cityId}) as seeded
-  `;
-  return row?.seeded ?? 0;
+  return withLongStatements(sql, async (transaction) => {
+    await transaction`select private.build_grid_cells(${cityId}, ${cellSizeM})`;
+    const [row] = await transaction<{ seeded: number }[]>`
+      select private.seed_cell_scores(${snapshotId}, ${cityId}) as seeded
+    `;
+    return row?.seeded ?? 0;
+  });
 }
 
 export async function finishSnapshot(
@@ -70,7 +72,7 @@ export async function finishSnapshot(
   snapshotId: string,
   sourceDates: Record<string, string>,
 ): Promise<void> {
-  await sql.begin(async (transaction) => {
+  await withLongStatements(sql, async (transaction) => {
     await transaction`select private.compute_overall_scores(${snapshotId})`;
     await transaction`select private.compute_snapshot_stats(${snapshotId})`;
     await transaction`select private.publish_score_snapshot(${snapshotId}, ${transaction.json(sourceDates)}::jsonb)`;

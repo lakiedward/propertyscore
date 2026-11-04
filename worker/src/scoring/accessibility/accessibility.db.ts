@@ -1,4 +1,4 @@
-import type { JsonObject, Sql } from '../../db/sql.ts';
+import { type JsonObject, type Sql, withLongStatements } from '../../db/sql.ts';
 import { WorkerError } from '../../lib/errors.ts';
 import type { BoundingBox } from '../../sources/osm.ts';
 import type { StopRouteLink } from './transit-network.ts';
@@ -170,7 +170,7 @@ export async function clearCityTransit(
   snapshotId: string,
   cityId: string,
 ): Promise<void> {
-  await sql.begin(async (transaction) => {
+  await withLongStatements(sql, async (transaction) => {
     await transaction`delete from private.cell_travel_matrix where snapshot_id = ${snapshotId} and city_id = ${cityId}`;
     await transaction`
       delete from private.cell_transit ct

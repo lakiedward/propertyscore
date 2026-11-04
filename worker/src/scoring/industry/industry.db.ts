@@ -1,4 +1,4 @@
-import type { JsonObject, Sql } from '../../db/sql.ts';
+import { type JsonObject, type Sql, withLongStatements } from '../../db/sql.ts';
 import type { RegisterSite } from './eea-register.ts';
 import type { SectorCode } from './industry.formula.ts';
 
@@ -142,17 +142,19 @@ export async function listCellSitePairs(
     radiusM: number;
   },
 ): Promise<CellSitePair[]> {
-  const rows = await sql<CellSitePair[]>`
-    select cell_id, site_id, distance_m
-    from private.industrial_sites_near_cells(
-      ${options.snapshotId},
-      ${options.cityId},
-      ${options.reportingYear}::smallint,
-      ${options.version},
-      ${options.radiusM}
-    )
-  `;
-  return [...rows];
+  return withLongStatements(sql, async (transaction) => {
+    const rows = await transaction<CellSitePair[]>`
+      select cell_id, site_id, distance_m
+      from private.industrial_sites_near_cells(
+        ${options.snapshotId},
+        ${options.cityId},
+        ${options.reportingYear}::smallint,
+        ${options.version},
+        ${options.radiusM}
+      )
+    `;
+    return [...rows];
+  });
 }
 
 export async function listCityCells(
