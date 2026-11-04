@@ -92,6 +92,13 @@ Modules are idempotent: running a snapshot twice overwrites, never duplicates. B
 - Section output is frozen with the report: the frontend never queries the engine tables. Keep it small (the nearest features, a few measured values), never source geometries.
 - `create-report --email <user> --lat <lat> --lon <lon> --address <text> [--locale ro|en]` inserts a pending report for a local user; it stands in for the order flow and is for local testing only.
 
+## Health source imports
+
+`import-health-sources [--dir <path>] [--city <slug> …] [--valid-from YYYY-MM-DD]` fills the two reference tables the Health score reads, from files in `--dir` (default `SOURCES_DIR/health`). It runs before `build-snapshot`, never inside it.
+
+- `cnas/<city slug>/surse.csv` (`fisier,tip,data_listei,url_pagina,url_fisier,observatii`) lists the files of each CAS list as published; `tip` is `farmacii`, `medici-familie`, `ambulatoriu`, `spitale` or `dentist`. Each `.xlsx` or `.csv` file is read by `findTableColumns` (header row found by its provider name and address or locality columns) and `extractCnasProviders` (city rows only: by the locality column, where `Sector 1`–`6` counts as București, or by the city name in the address when other rows name another locality; duplicates dropped), then `private.replace_cnas_providers` replaces that city, kind and list date with the rows of all its files together (a list with a file that cannot be read keeps its previous import). Addresses are geocoded later, by the snapshot. Other formats are logged and skipped.
+- `upu-cpu.csv` (`oras,nume,nivel,pediatric,adresa,lat,lon,sursa_act,sursa_url`) is the list of hospitals with UPU or CPU. A row without coordinates is placed by the offline geocoder; when one row of a city cannot be placed, that city's units are left as they are. `private.sync_emergency_hospitals` keeps the open units that did not change (same name, level, pediatric flag, within 100 m), closes the others on `--valid-from` (default the first day of the current month) and opens the new ones then. A city with no row in the file keeps its units.
+
 ## Scores built so far
 
 | Score | Tables (`private`) | Sources | Notes |
@@ -124,6 +131,7 @@ Each score is built on its own branch on top of the foundation; these convention
 pnpm --filter @propertyscore/worker start build-snapshot [--period YYYY-MM] [--city <slug> …] [--score <key> …]
 pnpm --filter @propertyscore/worker start generate-report --report <uuid>
 pnpm --filter @propertyscore/worker start create-report --email <user> --lat <lat> --lon <lon> --address <text> [--locale ro|en]
+pnpm --filter @propertyscore/worker start import-health-sources [--dir <path>] [--city <slug> …] [--valid-from YYYY-MM-DD]
 pnpm --filter @propertyscore/worker start import-market-listings --source <code> --period YYYY-MM --file <csv> [--eur-ron <rate>]
 pnpm test:worker          # worker Vitest suite; the database tests run when DATABASE_URL is set
 ```
