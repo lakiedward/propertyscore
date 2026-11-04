@@ -84,19 +84,21 @@ export async function listCellNeighbours(
   cityId: string,
   cellSizeM: number,
 ): Promise<Map<string, string[]>> {
-  const rows = await sql<{ cell_id: string; neighbours: string[] }[]>`
-    select a.id as cell_id, array_agg(b.id) as neighbours
-    from private.cell_scores cs
-    join private.grid_cells a on a.id = cs.cell_id
-    join private.grid_cells b
-      on b.city_id = a.city_id
-      and b.size_m = a.size_m
-      and b.id <> a.id
-      and extensions.st_dwithin(a.center, b.center, ${1.2 * Math.sqrt(3) * cellSizeM})
-    where cs.snapshot_id = ${snapshotId} and a.city_id = ${cityId}
-    group by a.id
-  `;
-  return new Map(rows.map((row) => [row.cell_id, row.neighbours]));
+  return withLongStatements(sql, async (transaction) => {
+    const rows = await transaction<{ cell_id: string; neighbours: string[] }[]>`
+      select a.id as cell_id, array_agg(b.id) as neighbours
+      from private.cell_scores cs
+      join private.grid_cells a on a.id = cs.cell_id
+      join private.grid_cells b
+        on b.city_id = a.city_id
+        and b.size_m = a.size_m
+        and b.id <> a.id
+        and extensions.st_dwithin(a.center, b.center, ${1.2 * Math.sqrt(3) * cellSizeM})
+      where cs.snapshot_id = ${snapshotId} and a.city_id = ${cityId}
+      group by a.id
+    `;
+    return new Map(rows.map((row) => [row.cell_id, row.neighbours]));
+  });
 }
 
 export async function listFeedSources(sql: Sql, cityId: string): Promise<FeedSource[]> {

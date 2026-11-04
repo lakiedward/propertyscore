@@ -8,7 +8,7 @@ type JsonValue = postgres.JSONValue;
 
 export type JsonObject = Record<string, JsonValue>;
 
-export const LONG_STATEMENT_TIMEOUT = '1h';
+export const LONG_STATEMENT_TIMEOUT = '3h';
 
 export function createSql(databaseUrl: string): Sql {
   return postgres(databaseUrl, {

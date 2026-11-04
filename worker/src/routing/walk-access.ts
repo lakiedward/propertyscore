@@ -202,8 +202,8 @@ export async function computeWalkAccess(options: ComputeWalkAccessOptions): Prom
         );
         return walkAccessRowsForCell(cell.cell_id, targets, cell.candidates, legs, distanceMethod);
       });
-      const [result] = await transaction<{ written: number }[]>`
-        select private.write_cell_walk_access(${snapshotId}, ${transaction.json(rows.flat())}::jsonb) as written
+      const [result] = await sql<{ written: number }[]>`
+        select private.write_cell_walk_access(${snapshotId}, ${sql.json(rows.flat())}::jsonb) as written
       `;
       written += result?.written ?? 0;
     }
