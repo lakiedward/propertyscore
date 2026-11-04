@@ -66,6 +66,7 @@ create policy "Owners can update their properties"
 
 - Buckets are private unless their content is truly public; size limit and allowed MIME types are set on the bucket in a migration.
 - Object paths are `<owner_id>/<entity_id>/<filename>`; `storage.objects` policies check `(storage.foldername(name))[1] = (select auth.uid())::text`, live in migrations and have pgTAP tests.
+- A server-only bucket (source files only the worker reads with a secret key, such as `source-extracts`) is private and has no `storage.objects` policies at all; its pgTAP test proves that `anon` and `authenticated` see no object in it, get `42501` on upload and change or delete nothing.
 
 ## Edge Functions
 

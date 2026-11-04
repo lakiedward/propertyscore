@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(7);
+select plan(10);
 
 insert into storage.objects (bucket_id, name)
 values ('source-extracts', 'osm/romania-latest.osm.pbf');
@@ -31,6 +31,32 @@ select throws_ok(
   'A visitor cannot upload a source extract'
 );
 
+select results_eq(
+  $$
+    with updated as (
+      update storage.objects set metadata = '{}'
+      where bucket_id = 'source-extracts'
+      returning 1
+    )
+    select count(*)::int from updated
+  $$,
+  $$ values (0) $$,
+  'A visitor cannot change a source extract'
+);
+
+select results_eq(
+  $$
+    with deleted as (
+      delete from storage.objects
+      where bucket_id = 'source-extracts'
+      returning 1
+    )
+    select count(*)::int from deleted
+  $$,
+  $$ values (0) $$,
+  'A visitor cannot delete a source extract'
+);
+
 reset role;
 set local role authenticated;
 set local request.jwt.claims = '{"role": "authenticated", "sub": "11111111-1111-1111-1111-111111111111"}';
@@ -46,6 +72,19 @@ select throws_ok(
   '42501',
   null,
   'A signed-in user cannot upload a source extract'
+);
+
+select results_eq(
+  $$
+    with updated as (
+      update storage.objects set metadata = '{}'
+      where bucket_id = 'source-extracts'
+      returning 1
+    )
+    select count(*)::int from updated
+  $$,
+  $$ values (0) $$,
+  'A signed-in user cannot change a source extract'
 );
 
 select results_eq(

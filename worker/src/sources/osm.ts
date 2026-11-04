@@ -41,7 +41,7 @@ export type OsmExtractSource = {
   apiKey: string | null;
 };
 
-export function osmExtractHeaders(source: OsmExtractSource): Record<string, string> {
+function osmExtractHeaders(source: OsmExtractSource): Record<string, string> {
   if (!source.apiKey) return {};
   return { apikey: source.apiKey, Authorization: `Bearer ${source.apiKey}` };
 }
