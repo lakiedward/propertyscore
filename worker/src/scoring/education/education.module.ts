@@ -284,7 +284,7 @@ export const educationModule: ScoreModule = {
       sourceDate,
       skipped,
       levelSources,
-    } = await loadRegister(context.sourcesDir, params.register);
+    } = await loadRegister(context.sourcesDir, params.register, context.sourceMirror);
     context.logger.info('education register read', {
       school_year: params.register.school_year,
       source_date: sourceDate,

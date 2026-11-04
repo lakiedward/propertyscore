@@ -158,7 +158,8 @@ One Railway project `propertyscore`, environment `production`, region `europe-we
 | `snapshot` | `DATABASE_URL` | set by the user: the session pooler URL of the production Supabase project (IPv4; the direct connection is IPv6 only and Railway's outbound IPv6 is off by default) |
 | `snapshot` | `ADS_API_KEY` | set by the user |
 | `snapshot` | `OSM_EXTRACT_URL` | `https://zksoblghnnirkjvewrsv.supabase.co/storage/v1/object/authenticated/source-extracts/osm/romania-latest.osm.pbf` |
-| `snapshot` | `OSM_EXTRACT_API_KEY` | set by the user: a secret key (`sb_secret_…`) of the production Supabase project, sent as `apikey` and `Authorization: Bearer` to read the private bucket |
+| `snapshot` | `OSM_EXTRACT_API_KEY` | set by the user: a secret key (`sb_secret_…`) of the production Supabase project, sent as `apikey` and `Authorization: Bearer` to read the private bucket (the extract and the mirror below) |
+| `snapshot` | `SOURCE_MIRROR_URL` | `https://zksoblghnnirkjvewrsv.supabase.co/storage/v1/object/authenticated/source-extracts`: sources whose host refuses Railway are read from this folder of the private bucket instead, with `OSM_EXTRACT_API_KEY`. Today only the SIIIR register, at `education/siiir-<school year>.xlsx` (data.gov.ro resets connections from cloud IPs); upload it once per school year with content type `application/octet-stream` |
 | `snapshot` | `VALHALLA_URL` | `http://${{valhalla.RAILWAY_PRIVATE_DOMAIN}}:8002` |
 | `snapshot` | `SOURCES_DIR`, `LOG_LEVEL`, `ADS_API_URL`, `AIR_EEA_*` | unset (the defaults of `readEnv`) unless a source changes |
 | `valhalla` | `tile_urls` | `https://download.geofabrik.de/europe/romania-latest.osm.pbf`, used only when no `.pbf` is on the volume |

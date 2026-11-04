@@ -9,6 +9,7 @@ const envSchema = z.object({
     .url({ protocol: /^https$/ })
     .default('https://download.geofabrik.de/europe/romania-latest.osm.pbf'),
   OSM_EXTRACT_API_KEY: z.string().min(1).optional(),
+  SOURCE_MIRROR_URL: z.url({ protocol: /^https$/ }).optional(),
   VALHALLA_URL: z.url({ protocol: /^https?$/ }).optional(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   ADS_API_URL: z.url({ protocol: /^https$/ }).default('https://ads.atmosphere.copernicus.eu/api'),

@@ -2,6 +2,7 @@ import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { downloadOnce } from '../../sources/download.ts';
+import { mirroredSource, type SourceMirror } from '../../sources/mirror.ts';
 import { readXlsxRows, streamXlsxRows } from '../../sources/xlsx.ts';
 import type { EducationParams } from './education.params.ts';
 import { readSchoolingPlan, type SchoolingPlan } from './education.plan.ts';
@@ -34,11 +35,23 @@ async function loadPlan(
   return readSchoolingPlan(streamXlsxRows(path));
 }
 
+export function registerSource(
+  register: EducationParams['register'],
+  mirror: SourceMirror | undefined,
+): { url: string; headers: Record<string, string> } {
+  if (!mirror) return { url: register.url, headers: {} };
+  return mirroredSource(mirror, `education/siiir-${register.school_year}.xlsx`);
+}
+
 export async function loadRegister(
   sourcesDir: string,
   register: EducationParams['register'],
+  mirror?: SourceMirror,
 ): Promise<SiiirConversion> {
-  const path = await downloadOnce(register.url, registerPath(sourcesDir, register.school_year));
+  const source = registerSource(register, mirror);
+  const path = await downloadOnce(source.url, registerPath(sourcesDir, register.school_year), {
+    headers: source.headers,
+  });
   const plan = await loadPlan(sourcesDir, register);
   return convertSiiirRows(await readXlsxRows(path), register.cities, plan);
 }
