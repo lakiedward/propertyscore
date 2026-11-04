@@ -8,7 +8,7 @@ ENV JAVA_HOME=/opt/java/openjdk \
   XDG_CACHE_HOME=/opt/cache
 
 RUN apt-get update \
-  && apt-get install --yes --no-install-recommends ca-certificates osmium-tool unzip python3 python3-venv gdal-bin \
+  && apt-get install --yes --no-install-recommends ca-certificates osmium-tool unzip python3 python3-venv gdal-bin catdoc poppler-utils \
   && rm -rf /var/lib/apt/lists/* \
   && npm install --global pnpm@12.10.1
 

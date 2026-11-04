@@ -103,10 +103,10 @@ async function readSharedStrings(path: string): Promise<string[]> {
   }
 }
 
-export async function* streamXlsxRows(path: string): AsyncGenerator<string[]> {
+export async function* streamXlsxRows(path: string, sheet = 1): AsyncGenerator<string[]> {
   const shared = await readSharedStrings(path);
   try {
-    yield* sheetRows(readZipMember(path, 'xl/worksheets/sheet1.xml'), shared);
+    yield* sheetRows(readZipMember(path, `xl/worksheets/sheet${String(sheet)}.xml`), shared);
   } catch (error) {
     if (error instanceof WorkerError && error.code === 'unzip_failed') {
       throw new WorkerError('xlsx_invalid', `${path} is not a readable XLSX workbook`, {
@@ -117,8 +117,8 @@ export async function* streamXlsxRows(path: string): AsyncGenerator<string[]> {
   }
 }
 
-export async function readXlsxRows(path: string): Promise<string[][]> {
+export async function readXlsxRows(path: string, sheet = 1): Promise<string[][]> {
   const rows: string[][] = [];
-  for await (const row of streamXlsxRows(path)) rows.push(row);
+  for await (const row of streamXlsxRows(path, sheet)) rows.push(row);
   return rows;
 }

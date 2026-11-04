@@ -49,7 +49,7 @@ describe('findTableColumns', () => {
           ['CMI Dr. Pop', 'Str. Lalelelor', '7A'],
         ],
         columns,
-        'Sibiu',
+        'București',
       ).rows,
     ).toEqual([{ name: 'CMI Dr. Pop', address: 'Str. Lalelelor nr. 7A' }]);
   });
@@ -240,7 +240,7 @@ describe('groupCnasLists', () => {
     const rows = [clinic, lab].flatMap((table) => {
       const columns = findTableColumns(table);
       if (columns === null) throw new Error('columns not found');
-      return extractCnasProviders(table, columns, 'Sibiu', seen).rows.map((row) => row.name);
+      return extractCnasProviders(table, columns, 'București', seen).rows.map((row) => row.name);
     });
     expect(rows).toEqual(['Clinica Unu', 'Lab Doi', 'Lab Trei']);
   });
@@ -262,7 +262,7 @@ describe('extractCnasProviders for one city', () => {
     ]);
   });
 
-  it('keeps a list whose addresses name the city only sometimes', () => {
+  it('keeps only the rows whose address names the city when there is no locality column', () => {
     const list = [
       ['Denumire', 'Adresa'],
       ['Farmacia A', 'Str. Avram Iancu nr. 1, Cluj-Napoca'],
@@ -271,8 +271,8 @@ describe('extractCnasProviders for one city', () => {
     const columns = findTableColumns(list);
     if (columns === null) throw new Error('columns not found');
     expect(extractCnasProviders(list, columns, 'Cluj-Napoca')).toMatchObject({
-      localityFilter: 'none',
-      rows: [{ name: 'Farmacia A' }, { name: 'Farmacia B' }],
+      localityFilter: 'address',
+      rows: [{ name: 'Farmacia A' }],
     });
   });
 });
@@ -298,5 +298,37 @@ describe('placeEmergencyRows', () => {
       ['Geocodat', { lng: 24.15, lat: 45.79 }],
     ]);
     expect(result.unplaced).toEqual(['Negăsit']);
+  });
+});
+
+describe('extractCnasProviders on county lists', () => {
+  it('reads an empty locality cell from the address and ignores the county name', () => {
+    const list = [
+      ['Denumire furnizor', 'Localitate', 'Adresa'],
+      ['Farmacia Unu', '', 'Iași, Str. Lăpușneanu nr. 1'],
+      ['Farmacia Doi', '', 'Pașcani, Str. Gării nr. 2, jud. Iași'],
+      ['Farmacia Trei', 'Iași', 'Bd. Independenței nr. 3'],
+    ];
+    const columns = findTableColumns(list);
+    if (columns === null) throw new Error('columns not found');
+    expect(extractCnasProviders(list, columns, 'Iași').rows.map((row) => row.name)).toEqual([
+      'Farmacia Unu',
+      'Farmacia Trei',
+    ]);
+  });
+
+  it('gives a work point without a name the provider of the row above', () => {
+    const list = [
+      ['Denumire', 'Adresa'],
+      ['Farmacia Unu', 'Sibiu, Str. Mare nr. 1'],
+      ['', 'Sibiu, Str. Mică nr. 2'],
+      ['Farmacia Doi', 'Cisnădie, Str. Nouă nr. 3'],
+    ];
+    const columns = findTableColumns(list);
+    if (columns === null) throw new Error('columns not found');
+    expect(extractCnasProviders(list, columns, 'Sibiu').rows).toEqual([
+      { name: 'Farmacia Unu', address: 'Sibiu, Str. Mare nr. 1' },
+      { name: 'Farmacia Unu', address: 'Sibiu, Str. Mică nr. 2' },
+    ]);
   });
 });

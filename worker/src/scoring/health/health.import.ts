@@ -3,6 +3,9 @@ import { extname } from 'node:path';
 
 import { WorkerError } from '../../lib/errors.ts';
 import { parseCsvRecords, readCsvObjects } from '../../sources/csv.ts';
+import { readHtmlTableRows } from '../../sources/html.ts';
+import { layoutTableRows, PDF_BLANK_SHARES, readPdfText } from '../../sources/pdf.ts';
+import { readXlsRows } from '../../sources/xls.ts';
 import { readXlsxRows } from '../../sources/xlsx.ts';
 import type { CnasProviderKind, Point } from './health.sources.ts';
 
@@ -104,25 +107,9 @@ export function normalizePlace(text: string): string {
 
 const CAPITAL = 'bucuresti';
 
+const COUNTY_MENTION = /\bjud(etul|et)? [a-z]+\b/g;
+
 const SECTOR = /^(bucuresti )?sector(ul)? [1-6]$/;
-
-const LOCALITY_MARKERS = [
-  'loc',
-  'localitatea',
-  'com',
-  'comuna',
-  'sat',
-  'oras',
-  'orasul',
-  'mun',
-  'municipiul',
-];
-
-function namesOtherLocality(address: string | null): boolean {
-  if (address === null) return false;
-  const tokens = normalizeText(address).split(' ');
-  return tokens.some((token) => LOCALITY_MARKERS.includes(token));
-}
 
 function containsPhrase(haystack: string, phrase: string): boolean {
   return ` ${haystack} `.includes(` ${phrase} `);
@@ -138,6 +125,12 @@ const NAME_HEADERS = [
   'denumirea',
   'furnizor',
   'unitate sanitara',
+  'unitatea sanitara',
+  'unitatea spitaliceasca',
+  'unitate spitaliceasca',
+  'cdenfurn',
+  'societatea',
+  'societate',
   'nume',
 ];
 
@@ -147,9 +140,29 @@ const ADDRESS_HEADERS = [
   'adresa punct lucru',
   'adresa',
   'punct de lucru',
-  'sediu',
   'strada',
+  'str',
+  'sediul',
+  'sediu',
+  'urban',
 ];
+
+const STREET_HEADERS = ['strada', 'str'];
+
+const NOT_LOCALITY_WORDS = ['str', 'completa'];
+
+const STREET_WORDS = ['punct', 'strada', 'str', 'sediu', 'sediul', 'completa'];
+
+function isLocalityOnly(cell: string): boolean {
+  return (
+    LOCALITY_HEADERS.some((word) => containsPhrase(cell, word)) &&
+    !STREET_WORDS.some((word) => containsPhrase(cell, word))
+  );
+}
+
+function isNumberHeader(cell: string): boolean {
+  return NUMBER_HEADERS.some((word) => cell === word || cell.endsWith(` ${word}`));
+}
 
 const NUMBER_HEADERS = ['nr', 'numar'];
 
@@ -174,19 +187,27 @@ export function findTableColumns(rows: readonly (readonly string[])[]): TableCol
     const name = headerIndex(cells, NAME_HEADERS);
     if (name === null) continue;
     const others = cells.map((cell, position) => (position === name ? '' : cell));
-    const address = headerIndex(others, ADDRESS_HEADERS);
-    const locality = headerIndex(others, LOCALITY_HEADERS);
+    const address = headerIndex(
+      others.map((cell) => (isLocalityOnly(cell) ? '' : cell)),
+      ADDRESS_HEADERS,
+    );
+    const localityCandidates = others.map((cell, position) =>
+      position === address || NOT_LOCALITY_WORDS.some((word) => containsPhrase(cell, word))
+        ? ''
+        : cell,
+    );
+    const locality = headerIndex(localityCandidates, LOCALITY_HEADERS);
     if (address === null && locality === null) continue;
-    const number =
-      address !== null && containsPhrase(cells[address] ?? '', 'strada')
-        ? cells.findIndex((cell) => NUMBER_HEADERS.includes(cell))
-        : -1;
+    const addressHeader = address === null ? '' : (cells[address] ?? '');
+    const number = STREET_HEADERS.some((word) => containsPhrase(addressHeader, word))
+      ? cells.findIndex((cell, position) => position !== address && isNumberHeader(cell))
+      : -1;
     return {
       headerIndex: index,
       name,
       address,
       number: number === -1 ? null : number,
-      locality: locality === address ? null : locality,
+      locality,
     };
   }
   return null;
@@ -211,27 +232,28 @@ export function extractCnasProviders(
   seen = new Set<string>(),
 ): ProviderExtraction {
   const city = normalizePlace(cityName);
+  let previousName = '';
   const body = rows
     .slice(columns.headerIndex + 1)
-    .map((row) => ({
-      name: cell(row, columns.name).slice(0, 300),
-      address: rowAddress(row, columns),
-      locality: normalizePlace(cell(row, columns.locality)),
-    }))
+    .map((row) => {
+      const address = rowAddress(row, columns);
+      const ownName = cell(row, columns.name).slice(0, 300);
+      const name = ownName === '' && address !== null ? previousName : ownName;
+      if (ownName !== '') previousName = ownName;
+      return { name, address, locality: normalizePlace(cell(row, columns.locality)) };
+    })
     .filter((row) => row.name !== '' && !/^\d+$/.test(row.name));
 
   const mentionsCity = (address: string | null) =>
-    address !== null && containsPhrase(normalizePlace(address), city);
-  const isCityLocality = (locality: string) =>
-    containsPhrase(locality, city) || (city === CAPITAL && SECTOR.test(locality));
+    address !== null &&
+    containsPhrase(normalizePlace(normalizeText(address).replace(COUNTY_MENTION, ' ')), city);
+  const isCityLocality = (locality: string, address: string | null) =>
+    locality === ''
+      ? mentionsCity(address)
+      : containsPhrase(locality, city) || (city === CAPITAL && SECTOR.test(locality));
   let localityFilter: LocalityFilter = 'none';
   if (columns.locality !== null) localityFilter = 'column';
-  else if (
-    body.some((row) => mentionsCity(row.address)) &&
-    body.some((row) => !mentionsCity(row.address) && namesOtherLocality(row.address))
-  ) {
-    localityFilter = 'address';
-  }
+  else if (city !== CAPITAL) localityFilter = 'address';
 
   const result: ProviderExtraction = {
     rows: [],
@@ -242,7 +264,7 @@ export function extractCnasProviders(
   for (const row of body) {
     const isInCity =
       localityFilter === 'column'
-        ? isCityLocality(row.locality)
+        ? isCityLocality(row.locality, row.address)
         : localityFilter === 'address'
           ? mentionsCity(row.address)
           : true;
@@ -363,9 +385,69 @@ export async function readCsvFile<Column extends string>(
   return rows;
 }
 
-export async function readTableFile(path: string): Promise<string[][]> {
+const MAX_XLSX_SHEETS = 5;
+
+type ProviderTable = { rows: string[][]; columns: TableColumns };
+
+function filledProviderRows({ rows, columns }: ProviderTable): number {
+  const { address } = columns;
+  if (address === null) return 0;
+  return rows
+    .slice(columns.headerIndex + 1)
+    .filter((row) => (row[columns.name] ?? '').trim() !== '' && (row[address] ?? '').trim() !== '')
+    .length;
+}
+
+function withoutRowNumbers({ rows, columns }: ProviderTable): ProviderTable {
+  return {
+    columns,
+    rows: rows.map((row, index) =>
+      index <= columns.headerIndex
+        ? row
+        : row.map((cell, column) =>
+            column === columns.name ? cell.replace(/^\d{1,5}\s+/, '') : cell,
+          ),
+    ),
+  };
+}
+
+async function readPdfProviderTable(path: string): Promise<ProviderTable | null> {
+  const text = await readPdfText(path);
+  let best: ProviderTable | null = null;
+  for (const share of PDF_BLANK_SHARES) {
+    const rows = layoutTableRows(text, share);
+    const columns = findTableColumns(rows);
+    if (columns === null) continue;
+    const table = { rows, columns };
+    if (best === null || filledProviderRows(table) > filledProviderRows(best)) best = table;
+  }
+  return best === null ? null : withoutRowNumbers(best);
+}
+
+export async function readProviderTable(path: string): Promise<ProviderTable | null> {
   const extension = extname(path).toLowerCase();
-  if (extension === '.xlsx') return readXlsxRows(path);
+  if (extension === '.pdf') return readPdfProviderTable(path);
+  const sheets = extension === '.xlsx' ? MAX_XLSX_SHEETS : 1;
+  for (let sheet = 1; sheet <= sheets; sheet += 1) {
+    let rows: string[][];
+    try {
+      rows = await readTableFile(path, sheet);
+    } catch (error) {
+      if (sheet > 1) return null;
+      throw error;
+    }
+    const columns = findTableColumns(rows);
+    if (columns !== null) return { rows, columns };
+  }
+  return null;
+}
+
+async function readTableFile(path: string, sheet = 1): Promise<string[][]> {
+  const extension = extname(path).toLowerCase();
+  if (extension === '.xlsx') return readXlsxRows(path, sheet);
+  if (extension === '.xls') return readXlsRows(path);
+  if (extension === '.pdf') return layoutTableRows(await readPdfText(path));
+  if (extension === '.html' || extension === '.htm') return readHtmlTableRows(path);
   if (extension === '.csv') {
     const rows: string[][] = [];
     for await (const record of parseCsvRecords(createReadStream(path, 'utf8'))) rows.push(record);
