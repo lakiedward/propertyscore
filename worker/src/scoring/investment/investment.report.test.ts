@@ -189,7 +189,11 @@ describe.skipIf(!databaseUrl)('market listings import and the Investment assessm
     const report = await assessInvestmentAtAddress(
       sql,
       { cityId, cutoff: new Date() },
-      { params, ...CETATE, declared: { areaM2: 84, rooms: 3 } },
+      {
+        params,
+        ...CETATE,
+        declared: { areaM2: 84, rooms: 3, floor: null, constructionYear: null },
+      },
     );
 
     expect(report).toMatchObject({
@@ -214,7 +218,11 @@ describe.skipIf(!databaseUrl)('market listings import and the Investment assessm
     const report = await assessInvestmentAtAddress(
       sql,
       { cityId, cutoff: new Date('2020-01-01T00:00:00Z') },
-      { params, ...CETATE, declared: { areaM2: 84, rooms: 3 } },
+      {
+        params,
+        ...CETATE,
+        declared: { areaM2: 84, rooms: 3, floor: null, constructionYear: null },
+      },
     );
 
     expect(report).toMatchObject({ status: 'no_data', reason: 'no_market_data' });
