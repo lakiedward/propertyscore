@@ -198,6 +198,34 @@ export async function updatePassword(password: string) {
   if (signOutError) throw toAppError(signOutError);
 }
 
+export async function getAccountHasPassword(): Promise<boolean> {
+  const { data, error } = await supabase.rpc('account_has_password');
+  if (error) throw toAppError(error);
+  return data;
+}
+
+type PasswordChange = {
+  currentPassword: string | undefined;
+  password: string;
+};
+
+export async function changePassword({ currentPassword, password }: PasswordChange) {
+  const { error } = await supabase.auth.updateUser({
+    password,
+    ...(currentPassword ? { current_password: currentPassword } : {}),
+  });
+  if (error) throw toAppError(error);
+  const { error: signOutError } = await supabase.auth.signOut({ scope: 'others' });
+  if (signOutError) throw toAppError(signOutError);
+}
+
+export async function deleteOwnAccount(confirmation: string) {
+  const { error } = await supabase.rpc('delete_own_account', { confirmation });
+  if (error) throw toAppError(error);
+  const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' });
+  if (signOutError) throw toAppError(signOutError);
+}
+
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
   if (error) throw toAppError(error);

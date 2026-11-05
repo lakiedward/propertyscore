@@ -1,6 +1,8 @@
 import { messageKey } from '@/i18n/validation';
 import {
+  changePasswordFormSchema,
   credentialsSchema,
+  deleteAccountFormSchema,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   signUpSchema,
@@ -77,6 +79,46 @@ describe('auth schemas', () => {
       messageKey('auth:fields.email.error'),
       messageKey('auth:fields.password.required'),
     ]);
+  });
+
+  it('asks for the current password only when the account has one', () => {
+    const values = {
+      currentPassword: '',
+      password: 'Parola-Noua-1',
+      confirmPassword: 'Parola-Noua-1',
+    };
+
+    expect(changePasswordFormSchema(true).safeParse(values).error?.issues[0]?.message).toBe(
+      messageKey('auth:settings.password.currentRequired'),
+    );
+    expect(changePasswordFormSchema(false).safeParse(values).success).toBe(true);
+  });
+
+  it('asks for the new password twice when changing it', () => {
+    const result = changePasswordFormSchema(true).safeParse({
+      currentPassword: 'Parola-Veche-1',
+      password: 'Parola-Noua-1',
+      confirmPassword: 'Parola-Alta-1',
+    });
+
+    expect(result.error?.issues).toEqual([
+      expect.objectContaining({
+        path: ['confirmPassword'],
+        message: messageKey('auth:newPassword.mismatch'),
+      }),
+    ]);
+  });
+
+  it('asks for the password or the email to confirm deleting the account', () => {
+    expect(
+      deleteAccountFormSchema(true).safeParse({ confirmation: '' }).error?.issues[0]?.message,
+    ).toBe(messageKey('auth:settings.delete.passwordRequired'));
+    expect(
+      deleteAccountFormSchema(false).safeParse({ confirmation: '  ' }).error?.issues[0]?.message,
+    ).toBe(messageKey('auth:settings.delete.emailRequired'));
+    expect(deleteAccountFormSchema(false).parse({ confirmation: ' ana@example.test ' })).toEqual({
+      confirmation: 'ana@example.test',
+    });
   });
 
   it('builds the sign-up payload with the language and the redirect', () => {

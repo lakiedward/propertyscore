@@ -81,6 +81,7 @@ create policy "Owners can update their properties"
 ## Auth configuration and email templates
 
 - Auth settings, redirect URLs and email templates are configured in `supabase/config.toml` for local; hosted changes are mirrored by hand and listed in the PR. Email confirmation is on locally as in production. Email links use `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=<type>&next={{ .RedirectTo }}` (any device); OAuth alone uses the PKCE `/auth/callback`. `[auth.captcha]` is switched off for now (`enabled = false`); when it is turned back on it uses Turnstile with Cloudflare's always-pass test secret locally, and the real secret is set only in the hosted dashboard.
+- Password changes need no emailed code (`secure_password_change = false`, mirrored in the hosted dashboard), and the hosted project has "Require current password when changing password" on; the local CLI cannot set that one, so the settings form always sends `current_password`.
 - Templates live in `supabase/templates/` and branch on the user's language, Romanian by default: `{{ if eq .Data.locale "en" }}…{{ else }}…{{ end }}`. Both branches change together.
 
 ## Seed and tests

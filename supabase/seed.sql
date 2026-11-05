@@ -61,8 +61,10 @@ select
 from auth.users as users
 where users.email like '%@example.test';
 
-insert into public.user_roles (user_id, role)
-values ('a0000000-0000-4000-8000-000000000004', 'admin');
+update public.user_roles
+set role = 'admin'
+where user_id = 'a0000000-0000-4000-8000-000000000004'
+  and role = 'user';
 
 insert into public.listings (
   id,

@@ -62,7 +62,13 @@
       "weak_password": "The password is too weak. Choose a longer or more varied one.",
       "rate_limited": "Too many attempts. Wait a moment and try again.",
       "same_password": "The new password must be different from the old one.",
-      "captcha_failed": "The anti-robot check failed. Please try again."
+      "captcha_failed": "The anti-robot check failed. Please try again.",
+      "current_password_invalid": "The current password is not correct.",
+      "current_password_required": "Enter your current password.",
+      "reauthentication_needed": "For your security, sign out and sign in again, then change your password.",
+      "invalid_password": "The password is not correct.",
+      "email_mismatch": "The email address does not match your account.",
+      "last_admin": "You are the only admin. Make someone else an admin before deleting your account."
     }
   },
   "validation": {
@@ -243,6 +249,7 @@
       "settings": "Settings",
       "signOut": "Sign out",
       "role": {
+        "user": "User",
         "admin": "Admin"
       }
     },

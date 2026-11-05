@@ -1,6 +1,9 @@
-import { queryOptions, useMutation } from '@tanstack/react-query';
+import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AuthConfirmSearch } from '../auth.schemas';
 import {
+  changePassword,
+  deleteOwnAccount,
+  getAccountHasPassword,
   listEnabledSocialProviders,
   requestPasswordReset,
   resendConfirmation,
@@ -19,6 +22,11 @@ export const authQueries = {
       queryKey: [...authQueries.all(), 'social-providers'],
       queryFn: listEnabledSocialProviders,
       staleTime: Infinity,
+    }),
+  accountHasPassword: (userId: string) =>
+    queryOptions({
+      queryKey: [...authQueries.all(), 'account-has-password', userId],
+      queryFn: getAccountHasPassword,
     }),
   emailLink: ({ token_hash: tokenHash, type }: Pick<AuthConfirmSearch, 'token_hash' | 'type'>) =>
     queryOptions({
@@ -52,6 +60,20 @@ export function useRequestPasswordReset() {
 
 export function useUpdatePassword() {
   return useMutation({ mutationFn: updatePassword, meta: { silent: true } });
+}
+
+export function useChangePassword() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: changePassword,
+    meta: { silent: true },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: [...authQueries.all(), 'account-has-password'] }),
+  });
+}
+
+export function useDeleteOwnAccount() {
+  return useMutation({ mutationFn: deleteOwnAccount, meta: { silent: true } });
 }
 
 export function useSignOut() {

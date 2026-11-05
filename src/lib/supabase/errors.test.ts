@@ -19,6 +19,22 @@ describe('toAppError', () => {
     expect(toAppError(postgrestError(code)).code).toBe(expected);
   });
 
+  it.each([
+    ['invalid_password', 'confirmation'],
+    ['email_mismatch', 'confirmation'],
+    ['last_admin', undefined],
+  ])('maps the function error %s to its reason and the %s field', (message, field) => {
+    const error = toAppError(postgrestError('P0001', message));
+
+    expect(error.code).toBe('validation');
+    expect(error.reason).toBe(message);
+    expect(error.field).toBe(field);
+  });
+
+  it('keeps an unknown function error without a reason', () => {
+    expect(toAppError(postgrestError('P0001', 'report_not_found')).reason).toBe(undefined);
+  });
+
   it('maps an unknown PostgREST code to unknown', () => {
     expect(toAppError(postgrestError('XX000')).code).toBe('unknown');
   });
@@ -36,6 +52,9 @@ describe('toAppError', () => {
     ['weak_password', 'weak_password'],
     ['same_password', 'same_password'],
     ['over_request_rate_limit', 'rate_limited'],
+    ['current_password_invalid', 'current_password_invalid'],
+    ['current_password_required', 'current_password_required'],
+    ['reauthentication_needed', 'reauthentication_needed'],
   ])('maps the auth code %s to the reason %s', (code, reason) => {
     expect(toAppError(new AuthApiError('auth failed', 400, code)).reason).toBe(reason);
   });
@@ -45,7 +64,9 @@ describe('toAppError', () => {
     ['email_exists', 'email'],
     ['weak_password', 'password'],
     ['same_password', 'password'],
-  ])('ties the sign-up auth code %s to the %s field', (code, field) => {
+    ['current_password_invalid', 'currentPassword'],
+    ['current_password_required', 'currentPassword'],
+  ])('ties the auth code %s to the %s field', (code, field) => {
     expect(toAppError(new AuthApiError('auth failed', 422, code)).field).toBe(field);
   });
 

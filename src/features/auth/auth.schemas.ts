@@ -70,6 +70,34 @@ export const newPasswordFormSchema = z
   });
 export type NewPasswordFormValues = z.infer<typeof newPasswordFormSchema>;
 
+export function changePasswordFormSchema(isCurrentPasswordRequired: boolean) {
+  return z
+    .object({
+      currentPassword: isCurrentPasswordRequired
+        ? z.string().min(1, { error: messageKey('auth:settings.password.currentRequired') })
+        : z.string(),
+      password: newPasswordSchema,
+      confirmPassword: z.string(),
+    })
+    .refine((values) => values.password === values.confirmPassword, {
+      path: ['confirmPassword'],
+      error: messageKey('auth:newPassword.mismatch'),
+    });
+}
+export type ChangePasswordFormValues = z.infer<ReturnType<typeof changePasswordFormSchema>>;
+
+export function deleteAccountFormSchema(isPasswordAccount: boolean) {
+  return z.object({
+    confirmation: isPasswordAccount
+      ? z.string().min(1, { error: messageKey('auth:settings.delete.passwordRequired') })
+      : z
+          .string()
+          .trim()
+          .min(1, { error: messageKey('auth:settings.delete.emailRequired') }),
+  });
+}
+export type DeleteAccountFormValues = z.infer<ReturnType<typeof deleteAccountFormSchema>>;
+
 export const authCallbackSearchSchema = authSearchSchema.extend({
   error: z.string().optional().catch(undefined),
   error_code: z.string().optional().catch(undefined),

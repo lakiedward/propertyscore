@@ -8,7 +8,13 @@ export type AppErrorReason =
   | 'weak_password'
   | 'same_password'
   | 'captcha_failed'
-  | 'rate_limited';
+  | 'rate_limited'
+  | 'current_password_invalid'
+  | 'current_password_required'
+  | 'reauthentication_needed'
+  | 'invalid_password'
+  | 'email_mismatch'
+  | 'last_admin';
 
 type AppErrorOptions = {
   cause?: unknown;

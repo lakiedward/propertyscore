@@ -12,6 +12,8 @@ export { homePathFor, postSignInPath } from './auth.utils';
 export { AuthCallbackPage } from './components/auth-callback-page';
 export { AuthConfirmPage } from './components/auth-confirm-page';
 export { AuthLayout } from './components/auth-layout';
+export { ChangePasswordSection } from './components/change-password-section';
+export { DeleteAccountSection } from './components/delete-account-section';
 export { LoginPage } from './components/login-page';
 export { NewPasswordPage } from './components/new-password-page';
 export { PasswordResetPage } from './components/password-reset-page';

@@ -62,7 +62,13 @@
       "weak_password": "Parola este prea slabă. Alege una mai lungă sau mai variată.",
       "rate_limited": "Prea multe încercări. Așteaptă puțin și încearcă din nou.",
       "same_password": "Parola nouă trebuie să fie diferită de cea veche.",
-      "captcha_failed": "Verificarea anti-robot a eșuat. Încearcă din nou."
+      "captcha_failed": "Verificarea anti-robot a eșuat. Încearcă din nou.",
+      "current_password_invalid": "Parola actuală nu este corectă.",
+      "current_password_required": "Introdu parola actuală.",
+      "reauthentication_needed": "Pentru siguranță, ieși din cont și autentifică-te din nou, apoi schimbă parola.",
+      "invalid_password": "Parola nu este corectă.",
+      "email_mismatch": "Adresa de email nu se potrivește cu cea a contului.",
+      "last_admin": "Ești singurul administrator. Numește alt administrator înainte să îți ștergi contul."
     }
   },
   "validation": {
@@ -245,6 +251,7 @@
       "settings": "Setări",
       "signOut": "Ieși din cont",
       "role": {
+        "user": "Utilizator",
         "admin": "Admin"
       }
     },
