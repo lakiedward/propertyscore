@@ -42,4 +42,4 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm dlx netlify-cli@27.16.2 deploy --prod --context production --message "$GITHUB_REF_NAME"
+      - run: pnpm --package=netlify-cli@27.16.2 dlx netlify deploy --prod --context production --message "$GITHUB_REF_NAME"
