@@ -33,6 +33,16 @@ export default defineConfig({
   },
   build: {
     sourcemap: sentryAuthToken ? 'hidden' : false,
+    rolldownOptions: {
+      treeshake: {
+        moduleSideEffects: [
+          {
+            test: /\/src\/features\/[^/]+\/(index\.ts|components\/[^/]+\.tsx)$/,
+            sideEffects: false,
+          },
+        ],
+      },
+    },
   },
   test: {
     globals: true,

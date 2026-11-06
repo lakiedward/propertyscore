@@ -14,7 +14,14 @@ const POSTGREST_CODES: Readonly<Record<string, AppErrorCode>> = {
   P0001: 'validation',
 };
 
+export const EXPIRED_LINK_CODES: readonly string[] = [
+  'otp_expired',
+  'flow_state_expired',
+  'flow_state_not_found',
+];
+
 const AUTH_REASONS: Readonly<Record<string, AppErrorReason>> = {
+  ...Object.fromEntries(EXPIRED_LINK_CODES.map((code) => [code, 'link_expired' as const])),
   invalid_credentials: 'invalid_credentials',
   email_not_confirmed: 'email_not_confirmed',
   user_already_exists: 'user_already_exists',
@@ -41,6 +48,8 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   invalid_password: 'invalid_password',
   email_mismatch: 'email_mismatch',
   last_admin: 'last_admin',
+  rate_limited: 'rate_limited',
+  reauthentication_needed: 'reauthentication_needed',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {

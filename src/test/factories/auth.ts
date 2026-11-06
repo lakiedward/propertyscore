@@ -31,12 +31,37 @@ function buildIdentity(overrides: Partial<UserIdentity> = {}): UserIdentity {
   };
 }
 
-export function buildUnconfirmedSignUp(email: string, createdAt = new Date()): User {
+export function buildUnconfirmedSignUp(
+  email: string,
+  createdAt = new Date(),
+  confirmationSentAt = new Date(),
+): User {
   return buildUser({
     email,
     created_at: createdAt.toISOString(),
+    confirmation_sent_at: confirmationSentAt.toISOString(),
     identities: [buildIdentity({ identity_data: { email } })],
   });
+}
+
+type AccessTokenClaims = {
+  user_roles?: readonly string[];
+  amr?: readonly { method: string; timestamp: number }[];
+};
+
+function toBase64Url(value: object): string {
+  const bytes = new TextEncoder().encode(JSON.stringify(value));
+  const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join('');
+  return btoa(binary).replace(/\+/gu, '-').replace(/\//gu, '_').replace(/=+$/u, '');
+}
+
+export function buildAccessToken({
+  user_roles = ['user'],
+  amr = [{ method: 'password', timestamp: Math.floor(Date.now() / 1000) }],
+}: AccessTokenClaims = {}): string {
+  const header = toBase64Url({ alg: 'HS256', typ: 'JWT' });
+  const payload = toBase64Url({ sub: TEST_USER_ID, role: 'authenticated', user_roles, amr });
+  return `${header}.${payload}.test-signature`;
 }
 
 export function buildSession(overrides: Partial<Session> = {}): Session {

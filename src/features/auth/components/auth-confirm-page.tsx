@@ -1,9 +1,10 @@
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { getRouteApi, Navigate } from '@tanstack/react-router';
-import { ArrowRightIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { TextLink } from '@/components/navigation/text-link';
+import { authQueries } from '../api/auth.queries';
 import { useAuth } from '../auth-context';
 import { emailLinkTarget } from '../auth.utils';
+import { ArrowLink } from './arrow-link';
 import { AuthNotice } from './auth-notice';
 import { AuthPageHeading } from './auth-page-heading';
 
@@ -11,13 +12,21 @@ const route = getRouteApi('/_public/auth/confirm');
 
 export function AuthConfirmPage() {
   const { t } = useTranslation('auth');
-  const { type, next } = route.useSearch();
-  const result = route.useLoaderData();
+  const { token_hash: tokenHash, type, next } = route.useSearch();
+  const { data: result } = useSuspenseQuery(authQueries.emailLink({ token_hash: tokenHash, type }));
   const { session, roles } = useAuth();
 
   if (result.status === 'verified') {
     if (session) {
       return <Navigate to={emailLinkTarget(type, next, roles)} replace />;
+    }
+    if (!result.hasSession) {
+      return (
+        <>
+          <AuthPageHeading title={t('confirm.acceptedTitle')} />
+          <AuthNotice tone="success">{t('confirm.accepted')}</AuthNotice>
+        </>
+      );
     }
     return <AuthPageHeading title={t('confirm.pending')} />;
   }
@@ -32,17 +41,15 @@ export function AuthConfirmPage() {
         {isExpired ? t('confirm.expired') : t('confirm.invalid')}
       </AuthNotice>
       {isRecovery ? (
-        <TextLink to="/password-reset" className="inline-flex items-center gap-1.5 self-start py-1">
+        <ArrowLink to="/password-reset" direction="forward">
           {t('confirm.newResetLink')}
-          <ArrowRightIcon aria-hidden className="size-4" />
-        </TextLink>
+        </ArrowLink>
       ) : (
         <>
           <p className="text-body text-muted-foreground">{t('confirm.signInHint')}</p>
-          <TextLink to="/login" className="inline-flex items-center gap-1.5 self-start py-1">
+          <ArrowLink to="/login" direction="forward">
             {t('confirm.signIn')}
-            <ArrowRightIcon aria-hidden className="size-4" />
-          </TextLink>
+          </ArrowLink>
         </>
       )}
     </>

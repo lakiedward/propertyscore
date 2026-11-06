@@ -1,16 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { PanelPage } from '@/components/layout/panel-page';
-import { i18n } from '@/i18n/i18n';
-import { pageTitle } from '@/i18n/page-title';
+import { panelPageHead } from '@/components/layout/panel-page-head';
 
 export const Route = createFileRoute('/_authenticated/account/favorites')({
-  head: () => ({ meta: [{ title: pageTitle(i18n.t('panel.account.nav.favorites')) }] }),
-  component: AccountFavoritesPage,
+  head: panelPageHead('panel.account.nav.favorites'),
+  component: () => <PanelPage titleKey="panel.account.nav.favorites" />,
 });
-
-function AccountFavoritesPage() {
-  const { t } = useTranslation();
-
-  return <PanelPage title={t('panel.account.nav.favorites')} />;
-}

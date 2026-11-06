@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { AppShellPage } from './pages/app-shell.page';
-import { storageStatePath } from './test-users';
+import { storageStatePath, testUsers } from './test-users';
 
 test.describe('Language for a Romanian user', () => {
   test.use({ storageState: storageStatePath('otherRo') });
@@ -10,14 +10,14 @@ test.describe('Language for a Romanian user', () => {
     await expect(new AppShellPage(page, 'ro').accountHeading).toBeVisible();
     await expect(new AppShellPage(page, 'ro').document).toHaveAttribute('lang', 'ro');
 
-    await new AppShellPage(page, 'ro').switchLanguage('en');
+    await new AppShellPage(page, 'ro', testUsers.otherRo.fullName).switchLanguage('en');
     await expect(new AppShellPage(page, 'en').accountHeading).toBeVisible();
 
     await page.reload();
     await expect(new AppShellPage(page, 'en').accountHeading).toBeVisible();
     await expect(new AppShellPage(page, 'en').document).toHaveAttribute('lang', 'en');
 
-    await new AppShellPage(page, 'en').switchLanguage('ro');
+    await new AppShellPage(page, 'en', testUsers.otherRo.fullName).switchLanguage('ro');
     await expect(new AppShellPage(page, 'ro').accountHeading).toBeVisible();
   });
 });

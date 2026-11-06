@@ -25,6 +25,7 @@ paths:
 - A feature's internals are imported only inside the feature; other code imports from `@/features/<feature>` (its `index.ts`). ESLint rejects deep imports.
 - Pure domain logic (scoring, calculations, formatting rules) lives in `<entity>.utils.ts` as plain functions with no React or Supabase import.
 - Start a new feature folder only for a new domain concept; a single screen does not need one.
+- A feature's `index.ts` and its `components/*.tsx` modules have no top-level side effects (only imports, declarations, `cva`, `getRouteApi`, `createLink`): `vite.config.ts` marks them side-effect free (`build.rolldownOptions.treeshake.moduleSideEffects`) so a page exported through `index.ts` lands in its route chunk instead of the entry chunk. Code that must run on import goes elsewhere (`main.tsx`, `i18n.ts`, a hook or an effect).
 
 ## Components
 

@@ -3,7 +3,7 @@ import { delay, http, HttpResponse } from 'msw';
 import roAuth from '@/i18n/locales/ro/auth.json';
 import roCommon from '@/i18n/locales/ro/common.json';
 import { buildSession } from '@/test/factories/auth';
-import { authErrorResponse } from '@/test/msw/handlers/auth';
+import { authErrorResponse, authSettingsResponse } from '@/test/msw/handlers/auth';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderWithProviders } from '@/test/render';
@@ -18,7 +18,50 @@ async function fillAndSubmit(
   await user.click(screen.getByRole('button', { name: roAuth.login.submit }));
 }
 
+function interceptBrowserRedirect() {
+  const assign = vi.fn<(url: string | URL) => void>();
+  const { href, origin, protocol, host, hostname, port, pathname, search, hash, ancestorOrigins } =
+    window.location;
+  vi.spyOn(window, 'location', 'get').mockReturnValue({
+    href,
+    origin,
+    protocol,
+    host,
+    hostname,
+    port,
+    pathname,
+    search,
+    hash,
+    ancestorOrigins,
+    assign,
+    replace: vi.fn(),
+    reload: vi.fn(),
+    toString: () => href,
+  });
+  return assign;
+}
+
+async function startGoogleSignIn(redirect: string) {
+  server.use(
+    http.get(supabaseUrl('/auth/v1/settings'), () => authSettingsResponse({ google: true })),
+  );
+  const view = await renderWithProviders(<LoginForm redirect={redirect} />);
+  const assign = interceptBrowserRedirect();
+
+  await view.user.click(screen.getByRole('button', { name: roAuth.social.google }));
+
+  await waitFor(() => {
+    expect(assign).toHaveBeenCalledOnce();
+  });
+  const authorizeUrl = new URL(String(assign.mock.calls[0]?.[0]));
+  return { authorizeUrl, redirectTo: new URL(authorizeUrl.searchParams.get('redirect_to') ?? '') };
+}
+
 describe('LoginForm', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('shows the field messages when submitted empty', async () => {
     const { user } = await renderWithProviders(<LoginForm />);
 
@@ -125,6 +168,25 @@ describe('LoginForm', () => {
     expect(await screen.findByRole('status')).toHaveTextContent(
       roAuth.social.unavailable.replace('{{provider}}', roAuth.social.providers.google),
     );
+  });
+
+  it('starts Google sign-in and comes back to the callback with the redirect', async () => {
+    const { authorizeUrl, redirectTo } = await startGoogleSignIn('/publish');
+
+    expect(authorizeUrl.origin + authorizeUrl.pathname).toBe(supabaseUrl('/auth/v1/authorize'));
+    expect(authorizeUrl.searchParams.get('provider')).toBe('google');
+    expect(redirectTo.origin).toBe(window.location.origin);
+    expect(redirectTo.pathname).toBe('/auth/callback');
+    expect(redirectTo.searchParams.get('redirect')).toBe('/publish');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('drops an unsafe redirect from the Google callback', async () => {
+    const { authorizeUrl, redirectTo } = await startGoogleSignIn('//evil.example');
+
+    expect(authorizeUrl.searchParams.get('provider')).toBe('google');
+    expect(redirectTo.pathname).toBe('/auth/callback');
+    expect(redirectTo.searchParams.has('redirect')).toBe(false);
   });
 
   it('says when a social sign-in cannot start', async () => {

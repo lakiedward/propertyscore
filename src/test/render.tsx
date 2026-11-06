@@ -11,6 +11,8 @@ import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { NotFoundPage } from '@/components/layout/not-found-page';
+import { PendingPage } from '@/components/layout/pending-page';
+import { RouteError } from '@/components/layout/route-error';
 import { AuthContext, type AuthState } from '@/features/auth';
 import { changeLocale, type Locale } from '@/i18n/i18n';
 import type { RouterContext } from '@/routes/__root';
@@ -66,6 +68,8 @@ export async function renderAppRoute(path: string, options: Omit<RenderOptions, 
     routeTree,
     history: createMemoryHistory({ initialEntries: [path] }),
     context: { queryClient, auth },
+    defaultPendingComponent: PendingPage,
+    defaultErrorComponent: RouteError,
     defaultNotFoundComponent: NotFoundPage,
   });
   await router.load();

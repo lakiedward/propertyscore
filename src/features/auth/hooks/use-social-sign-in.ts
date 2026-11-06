@@ -1,17 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { authQueries, useSignInWithProvider } from '../api/auth.queries';
-import type { SocialProvider } from '../auth.types';
-
-export type SocialSignInNotice = {
-  kind: 'unavailable' | 'failed';
-  provider: SocialProvider;
-};
+import type { SocialNotice, SocialProvider } from '../auth.types';
 
 export function useSocialSignIn(redirect: string | undefined) {
   const queryClient = useQueryClient();
   const signIn = useSignInWithProvider();
-  const [notice, setNotice] = useState<SocialSignInNotice>();
+  const [notice, setNotice] = useState<SocialNotice>();
 
   const select = async (provider: SocialProvider) => {
     setNotice(undefined);

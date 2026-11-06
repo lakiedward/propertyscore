@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
-const STORAGE_KEY = 'ps-sb-closed';
+export const SIDEBAR_COLLAPSED_STORAGE_KEY = 'ps-sb-closed';
 
 function readCollapsed(): boolean {
   try {
-    return window.localStorage.getItem(STORAGE_KEY) === '1';
+    return window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === '1';
   } catch {
     return false;
   }
@@ -12,7 +12,7 @@ function readCollapsed(): boolean {
 
 function writeCollapsed(isCollapsed: boolean) {
   try {
-    window.localStorage.setItem(STORAGE_KEY, isCollapsed ? '1' : '0');
+    window.localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, isCollapsed ? '1' : '0');
   } catch {
     return;
   }
@@ -22,10 +22,9 @@ export function useSidebarCollapsed() {
   const [isCollapsed, setIsCollapsed] = useState(readCollapsed);
 
   const toggle = () => {
-    setIsCollapsed((current) => {
-      writeCollapsed(!current);
-      return !current;
-    });
+    const next = !isCollapsed;
+    setIsCollapsed(next);
+    writeCollapsed(next);
   };
 
   return { isCollapsed, toggle };

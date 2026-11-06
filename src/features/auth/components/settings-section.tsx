@@ -21,7 +21,7 @@ export function SettingsSection({
       aria-labelledby={titleId}
       className={cn(
         'flex flex-col gap-4 rounded-lg border bg-card p-(--card-padding)',
-        tone === 'danger' ? 'border-error-border' : 'border-border-hairline',
+        tone === 'danger' ? 'border-error-border' : 'border-border',
       )}
     >
       <div className="flex flex-col gap-1.5">

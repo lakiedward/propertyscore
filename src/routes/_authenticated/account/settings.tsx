@@ -1,15 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { PendingPage } from '@/components/layout/pending-page';
 import { authQueries } from '@/features/auth';
 import { AccountSettingsPage } from '@/features/profile';
-import { i18n } from '@/i18n/i18n';
-import { pageTitle } from '@/i18n/page-title';
+import { panelPageHead } from '@/components/layout/panel-page-head';
 
 export const Route = createFileRoute('/_authenticated/account/settings')({
   loader: ({ context }) =>
-    context.queryClient.query(authQueries.accountHasPassword(context.user.id)),
-  head: () => ({ meta: [{ title: pageTitle(i18n.t('panel.account.nav.settings')) }] }),
-  pendingComponent: PendingPage,
+    context.queryClient.query({
+      ...authQueries.accountHasPassword(context.user.id),
+      staleTime: 'static',
+    }),
+  head: panelPageHead('panel.account.nav.settings'),
   component: AccountSettingsRoute,
 });
 

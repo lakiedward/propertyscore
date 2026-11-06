@@ -6,7 +6,7 @@ import { useErrorMessage } from '@/i18n/error-message';
 import { useCaptcha } from '../hooks/use-captcha';
 import { useCooldown } from '../hooks/use-cooldown';
 import { AuthNotice } from './auth-notice';
-import { Captcha } from './captcha';
+import { CaptchaField } from './captcha-field';
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -25,19 +25,18 @@ export function ResendLink({ onResend, isCoolingDownAtStart = false }: ResendLin
   const [state, setState] = useState<ResendState>({ status: 'idle' });
 
   const handleResend = async () => {
-    if (!captcha.isReady) {
-      setState({ status: 'error', error: undefined });
+    const captchaResult = captcha.consume();
+    if (!captchaResult) {
+      setState({ status: 'idle' });
       return;
     }
     setState({ status: 'pending' });
     try {
-      await onResend(captcha.token);
+      await onResend(captchaResult.token);
       setState({ status: 'sent' });
       cooldown.start();
     } catch (error) {
       setState({ status: 'error', error });
-    } finally {
-      captcha.reset();
     }
   };
 
@@ -45,11 +44,9 @@ export function ResendLink({ onResend, isCoolingDownAtStart = false }: ResendLin
     <div className="flex flex-col gap-2.5">
       {state.status === 'sent' ? <AuthNotice tone="success">{t('resend.sent')}</AuthNotice> : null}
       {state.status === 'error' ? (
-        <AuthNotice tone="error">
-          {state.error === undefined ? t('captcha.required') : errorMessage(state.error)}
-        </AuthNotice>
+        <AuthNotice tone="error">{errorMessage(state.error)}</AuthNotice>
       ) : null}
-      {cooldown.isActive ? null : <Captcha key={captcha.widgetKey} onToken={captcha.setToken} />}
+      {cooldown.isActive ? null : <CaptchaField captcha={captcha} />}
       <Button
         type="button"
         variant="outline"

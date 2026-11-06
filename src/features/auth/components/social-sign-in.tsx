@@ -3,16 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { GoogleMark } from '@/components/brand/google-mark';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { SocialProvider } from '../auth.types';
+import { SOCIAL_PROVIDERS, type SocialProvider } from '../auth.types';
 
-const PROVIDERS: readonly { id: SocialProvider; mark: ReactNode; className: string }[] = [
-  {
-    id: 'google',
+const PROVIDER_LOOKS: Readonly<Record<SocialProvider, { mark: ReactNode; className: string }>> = {
+  google: {
     mark: <GoogleMark />,
     className:
       'border-border bg-card text-foreground hover:border-border-control hover:bg-secondary',
   },
-];
+};
 
 type SocialSignInProps = {
   pendingProvider?: SocialProvider | undefined;
@@ -25,20 +24,20 @@ export function SocialSignIn({ pendingProvider, onSelect }: SocialSignInProps) {
   return (
     <>
       <div className="flex flex-col gap-2.5">
-        {PROVIDERS.map((provider) => (
+        {SOCIAL_PROVIDERS.map((provider) => (
           <Button
-            key={provider.id}
+            key={provider}
             type="button"
             size="xl"
-            aria-busy={pendingProvider === provider.id}
+            aria-busy={pendingProvider === provider}
             disabled={pendingProvider !== undefined}
             onClick={() => {
-              onSelect(provider.id);
+              onSelect(provider);
             }}
-            className={cn('w-full gap-3 border font-bold', provider.className)}
+            className={cn('w-full gap-3 border font-bold', PROVIDER_LOOKS[provider].className)}
           >
-            {provider.mark}
-            {t(`social.${provider.id}`)}
+            {PROVIDER_LOOKS[provider].mark}
+            {t(`social.${provider}`)}
           </Button>
         ))}
       </div>

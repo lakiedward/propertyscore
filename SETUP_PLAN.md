@@ -343,8 +343,8 @@ Messages that need values (such as "at least 3 characters") read them from the Z
 - **Methods**: email + password and magic link to start. Add OAuth providers (Google etc.) only when product asks for them. Supabase handles PKCE and redirects.
 - **OAuth providers in use**: Google only. Apple was left out with the Login design; Facebook was built with the design and removed on 2026-11-04 at the owner's request (one provider is enough for now, and Facebook's Live mode needs business verification). Adding a provider later means a Supabase provider block, its secrets in `supabase/.env`, its official mark in `components/brand/` and its button in `features/auth`.
 - **`AuthProvider`** (`features/auth`) owns the session:
-  - It reads the initial session with `supabase.auth.getSession()`.
-  - It subscribes with `supabase.auth.onAuthStateChange`, updates context, and calls `router.invalidate()` so guards re-run.
+  - It subscribes with `supabase.auth.onAuthStateChange` and takes the initial session from the `INITIAL_SESSION` event, so there is no separate `getSession()` call and no race between the two.
+  - It updates context synchronously in the callback and calls `router.invalidate()` so guards re-run.
   - On `SIGNED_OUT` it calls `queryClient.clear()`.
   - It renders nothing until the initial session is known, so guards never see a "maybe logged in" state.
 - **`useAuth()`** returns `{ session, user, signIn, signOut, … }`. Components never call `supabase.auth.*` directly; they go through `features/auth/api`.
@@ -372,7 +372,7 @@ export const Route = createFileRoute('/_authenticated')({
 ### Authorization
 
 - **RLS is the authorization layer.** If a policy doesn't allow it, no client code can do it. UI checks (hiding a button, guarding a route) are UX only.
-- **Roles, when we need them**: a `public.user_roles` table, plus a **Custom Access Token Hook** that adds a `user_roles` claim (an array, so one person can hold several roles) to the JWT. Policies and the UI read that claim; the browser reads it with `supabase.auth.getClaims()`, never by decoding the token. Every account gets a `user` row from the sign-up trigger, so a regular user is explicit in the token (`["user"]`) rather than an empty list; making an admin changes that row to `admin`. Rejected: no row for regular users, because an empty claim cannot tell a regular user from an account whose role is missing.
+- **Roles, when we need them**: a `public.user_roles` table, plus a **Custom Access Token Hook** that adds a `user_roles` claim (an array, so one person can hold several roles) to the JWT. Policies and the UI read that claim; the browser reads it, with the `amr` sign-in method, by decoding the session's access token payload, for the UI only. `getClaims()` was used first and rejected on 2026-11-06: it makes a network request (the user endpoint or the JWKS file) before the first paint of every page load and on every token refresh, and the UI does not need a verified claim because RLS checks the real JWT on the server. Every account gets a `user` row from the sign-up trigger, so a regular user is explicit in the token (`["user"]`) rather than an empty list; making an admin changes that row to `admin`. Rejected: no row for regular users, because an empty claim cannot tell a regular user from an account whose role is missing.
   - **Never** use `user_metadata` for authorization, because users can edit it. `app_metadata` and the hook claim are server-controlled.
 - `useAuth()` exposes `hasRole(role)` / `can(permission)` helpers that read the claims. Route guards for role-restricted areas use them in `beforeLoad`.
 - **Never use the service-role / secret key in the frontend**, and never put it in a `VITE_` variable. It belongs only in Edge Functions and CI secrets.

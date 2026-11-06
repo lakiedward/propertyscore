@@ -1,16 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { PanelPage } from '@/components/layout/panel-page';
-import { i18n } from '@/i18n/i18n';
-import { pageTitle } from '@/i18n/page-title';
+import { panelPageHead } from '@/components/layout/panel-page-head';
 
 export const Route = createFileRoute('/_authenticated/admin/analytics')({
-  head: () => ({ meta: [{ title: pageTitle(i18n.t('panel.admin.nav.analytics')) }] }),
-  component: AdminAnalyticsPage,
+  head: panelPageHead('panel.admin.nav.analytics'),
+  component: () => <PanelPage titleKey="panel.admin.nav.analytics" />,
 });
-
-function AdminAnalyticsPage() {
-  const { t } = useTranslation();
-
-  return <PanelPage title={t('panel.admin.nav.analytics')} />;
-}

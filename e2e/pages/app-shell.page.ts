@@ -1,25 +1,24 @@
 import type { Locator, Page } from '@playwright/test';
-import enAuth from '../../src/i18n/locales/en/auth.json' with { type: 'json' };
-import enCommon from '../../src/i18n/locales/en/common.json' with { type: 'json' };
-import roAuth from '../../src/i18n/locales/ro/auth.json' with { type: 'json' };
-import roCommon from '../../src/i18n/locales/ro/common.json' with { type: 'json' };
-
-const COMMON_TEXT = { ro: roCommon, en: enCommon } as const;
-const AUTH_TEXT = { ro: roAuth, en: enAuth } as const;
+import { AUTH_TEXT, COMMON_TEXT, type E2eLocale } from './texts';
 
 export class AppShellPage {
   private readonly page: Page;
-  private readonly text: (typeof COMMON_TEXT)[keyof typeof COMMON_TEXT];
-  private readonly authText: (typeof AUTH_TEXT)[keyof typeof AUTH_TEXT];
+  private readonly text: (typeof COMMON_TEXT)[E2eLocale];
+  private readonly authText: (typeof AUTH_TEXT)[E2eLocale];
+  private readonly userName: string | undefined;
 
-  constructor(page: Page, locale: keyof typeof COMMON_TEXT) {
+  constructor(page: Page, locale: E2eLocale, userName?: string) {
     this.page = page;
     this.text = COMMON_TEXT[locale];
     this.authText = AUTH_TEXT[locale];
+    this.userName = userName;
   }
 
   get userMenuButton(): Locator {
-    return this.page.getByRole('banner').locator('button[aria-haspopup="menu"]:visible');
+    if (!this.userName) {
+      throw new Error('AppShellPage needs the user name to find the user menu');
+    }
+    return this.page.getByRole('banner').getByRole('button', { name: this.userName });
   }
 
   get accountHeading(): Locator {
@@ -34,14 +33,14 @@ export class AppShellPage {
     return this.page.locator('html');
   }
 
-  async switchLanguage(to: keyof typeof COMMON_TEXT) {
+  async switchLanguage(to: E2eLocale) {
     await this.userMenuButton.click();
     await this.page.getByRole('menuitem', { name: COMMON_TEXT[to].language[to] }).click();
   }
 
   async signOut() {
     await this.userMenuButton.click();
-    await this.page.getByRole('menuitem', { name: this.text.panel.userMenu.signOut }).click();
+    await this.page.getByRole('menuitem', { name: this.text.actions.signOut }).click();
     await this.page
       .getByRole('dialog', { name: this.authText.signOut.title })
       .getByRole('button', { name: this.authText.signOut.confirm })

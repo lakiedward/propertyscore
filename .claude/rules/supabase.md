@@ -52,6 +52,8 @@ create policy "Owners can update their properties"
 
 - Business rules, multi-table writes and score recomputation are Postgres functions called through `supabase.rpc()`. `security invoker` by default; `security definer` only when required, always with `set search_path = ''` and fully qualified names.
 - Functions raise errors with codes, not sentences: `raise exception using errcode = 'P0001', message = 'address_not_found'`. The frontend translates the code.
+- A function that must keep a row when it refuses (a failed attempt counted for rate limiting) returns the outcome code instead of raising, because a raise rolls the row back: `delete_own_account` returns `deleted`, `invalid_password` or `email_mismatch`, and the `api/` function turns any outcome other than success into an `AppError` through `toAppError({ code: 'P0001', message: outcome, details: null })`. Rules that can be refused without a trace still raise.
+- Checks that must not race (the last admin) take a transaction lock first (`pg_advisory_xact_lock`), so a concurrent caller sees the committed result.
 - Views are created `with (security_invoker = true)`.
 - Internal tables and helpers live in the `private` schema, which PostgREST does not expose.
 - Triggers maintain `updated_at` and audit columns; client code never sets them.

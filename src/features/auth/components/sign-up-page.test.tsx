@@ -6,8 +6,12 @@ import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
 
+function tagContent(template: string, tag: string): string {
+  return new RegExp(`<${tag}>(.*?)</${tag}>`).exec(template)?.[1] ?? template;
+}
+
 function otherEmailAction(): string {
-  return roAuth.otherEmail.replace(/^.*<action>(.*)<\/action>.*$/, '$1');
+  return tagContent(roAuth.otherEmail, 'action');
 }
 
 const signedIn = signedInAs();
@@ -16,10 +20,9 @@ describe('SignUpPage', { timeout: 20_000 }, () => {
   it('links back to sign-in with the words inside the link', async () => {
     await renderAppRoute('/sign-up');
 
-    expect(await screen.findByRole('link', { name: 'Intră în cont.' })).toHaveAttribute(
-      'href',
-      '/login',
-    );
+    expect(
+      await screen.findByRole('link', { name: tagContent(roAuth.signUp.hasAccount, 'action') }),
+    ).toHaveAttribute('href', '/login');
   });
 
   it('sends a signed-in visitor to the page named in redirect', async () => {

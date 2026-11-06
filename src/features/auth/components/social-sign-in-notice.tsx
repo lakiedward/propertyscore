@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import type { SocialSignInNotice as Notice } from '../hooks/use-social-sign-in';
+import type { SocialNotice } from '../auth.types';
 import { AuthNotice } from './auth-notice';
 
 type SocialSignInNoticeProps = {
-  notice: Notice;
+  notice: SocialNotice;
 };
 
 export function SocialSignInNotice({ notice }: SocialSignInNoticeProps) {

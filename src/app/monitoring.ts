@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react';
 import { env } from '@/config/env';
 import { currentLocale, i18n } from '@/i18n/i18n';
-import { redactShareTokensIn } from '@/lib/url';
+import { redactSensitiveParamsIn } from '@/lib/url';
 import type { createAppRouter } from './router';
 
 const TRACES_SAMPLE_RATE = 0.1;
@@ -15,9 +15,9 @@ export function initMonitoring(router: ReturnType<typeof createAppRouter>) {
     environment: env.VITE_APP_ENV,
     integrations: [Sentry.tanstackRouterBrowserTracingIntegration(router)],
     tracesSampleRate: TRACES_SAMPLE_RATE,
-    beforeSend: redactShareTokensIn,
-    beforeSendTransaction: redactShareTokensIn,
-    beforeBreadcrumb: redactShareTokensIn,
+    beforeSend: redactSensitiveParamsIn,
+    beforeSendTransaction: redactSensitiveParamsIn,
+    beforeBreadcrumb: redactSensitiveParamsIn,
   });
   Sentry.setTag('locale', currentLocale());
   i18n.on('languageChanged', () => {

@@ -11,7 +11,6 @@ import {
   signInWithProvider,
   signOut,
   signUp,
-  updatePassword,
   verifyEmailLink,
 } from './auth.api';
 
@@ -23,9 +22,10 @@ export const authQueries = {
       queryFn: listEnabledSocialProviders,
       staleTime: Infinity,
     }),
+  accountHasPasswordAll: () => [...authQueries.all(), 'account-has-password'] as const,
   accountHasPassword: (userId: string) =>
     queryOptions({
-      queryKey: [...authQueries.all(), 'account-has-password', userId],
+      queryKey: [...authQueries.accountHasPasswordAll(), userId],
       queryFn: getAccountHasPassword,
     }),
   emailLink: ({ token_hash: tokenHash, type }: Pick<AuthConfirmSearch, 'token_hash' | 'type'>) =>
@@ -58,17 +58,13 @@ export function useRequestPasswordReset() {
   return useMutation({ mutationFn: requestPasswordReset, meta: { silent: true } });
 }
 
-export function useUpdatePassword() {
-  return useMutation({ mutationFn: updatePassword, meta: { silent: true } });
-}
-
 export function useChangePassword() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: changePassword,
     meta: { silent: true },
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: [...authQueries.all(), 'account-has-password'] }),
+      queryClient.invalidateQueries({ queryKey: authQueries.accountHasPasswordAll() }),
   });
 }
 

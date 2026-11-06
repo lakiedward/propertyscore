@@ -1,58 +1,40 @@
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { env } from '@/config/env';
+import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase/client';
-import { Constants } from '@/lib/supabase/database.types';
 import { toAppError } from '@/lib/supabase/errors';
 import { safeRedirectPath } from '@/lib/url';
 import type { AuthConfirmSearch, Credentials, SignUpPayload } from '../auth.schemas';
-import { SOCIAL_PROVIDERS, type AppRole, type SocialProvider } from '../auth.types';
-
-const APP_ROLES: readonly string[] = Constants.public.Enums.app_role;
-
-const rolesClaimSchema = z.object({
-  user_roles: z.array(z.string()).catch([]),
-});
+import { SOCIAL_PROVIDERS, type SocialProvider } from '../auth.types';
 
 const authSettingsSchema = z.object({
   external: z.record(z.string(), z.boolean()),
 });
 
-function isAppRole(value: string): value is AppRole {
-  return APP_ROLES.includes(value);
-}
-
 const REPEATED_SIGN_UP_AGE_MS = 120_000;
+const SERVER_ERROR_STATUS = 500;
+const DELETED_OUTCOME = 'deleted';
 
 type CaptchaToken = { captchaToken?: string | undefined };
 
-function emailLinkRedirectUrl(redirect: string | undefined): string {
-  if (!redirect) {
+function siteUrlWithRedirect(path: '/' | '/auth/callback', redirect: string | undefined): string {
+  const safeRedirect = safeRedirectPath(redirect, '');
+  if (path === '/' && !safeRedirect) {
     return env.siteUrl;
   }
-  const url = new URL('/', env.siteUrl);
-  url.searchParams.set('redirect', safeRedirectPath(redirect));
-  return url.toString();
-}
-
-function authCallbackUrl(redirect: string | undefined): string {
-  const url = new URL('/auth/callback', env.siteUrl);
-  if (redirect) {
-    url.searchParams.set('redirect', safeRedirectPath(redirect));
+  const url = new URL(path, env.siteUrl);
+  if (safeRedirect) {
+    url.searchParams.set('redirect', safeRedirect);
   }
   return url.toString();
 }
 
-export async function getSession(): Promise<Session | null> {
-  const { data, error } = await supabase.auth.getSession();
-  if (error) throw toAppError(error);
-  return data.session;
-}
-
-export async function getRoles(accessToken: string): Promise<AppRole[]> {
-  const { data, error } = await supabase.auth.getClaims(accessToken);
-  if (error) throw toAppError(error);
-  return rolesClaimSchema.parse(data?.claims ?? {}).user_roles.filter(isAppRole);
+async function signOutWithoutFailing(scope: 'others' | 'local') {
+  const { error } = await supabase.auth.signOut({ scope });
+  if (error) {
+    logger.warn('Sign-out after an account change failed', { scope, code: error.code });
+  }
 }
 
 export function subscribeToAuthChanges(
@@ -101,7 +83,7 @@ type SocialSignInRequest = {
 export async function signInWithProvider({ provider, redirect }: SocialSignInRequest) {
   const { error } = await supabase.auth.signInWithOAuth({
     provider,
-    options: { redirectTo: authCallbackUrl(redirect) },
+    options: { redirectTo: siteUrlWithRedirect('/auth/callback', redirect) },
   });
   if (error) throw toAppError(error);
 }
@@ -124,7 +106,7 @@ export async function signUp({
     password,
     options: {
       data: { locale, full_name: fullName, phone },
-      emailRedirectTo: emailLinkRedirectUrl(redirect),
+      emailRedirectTo: siteUrlWithRedirect('/', redirect),
       captchaToken,
     },
   });
@@ -141,8 +123,11 @@ export async function signUp({
   if (!data.user?.identities?.length) {
     return { status: 'already_registered' };
   }
-  const age = Date.now() - Date.parse(data.user.created_at);
-  return { status: age > REPEATED_SIGN_UP_AGE_MS ? 'confirmation_resent' : 'confirmation_sent' };
+  const sentAt = data.user.confirmation_sent_at;
+  const isResent =
+    sentAt !== undefined &&
+    Date.parse(sentAt) - Date.parse(data.user.created_at) > REPEATED_SIGN_UP_AGE_MS;
+  return { status: isResent ? 'confirmation_resent' : 'confirmation_sent' };
 }
 
 type ResendConfirmationRequest = CaptchaToken & {
@@ -158,12 +143,13 @@ export async function resendConfirmation({
   const { error } = await supabase.auth.resend({
     type: 'signup',
     email,
-    options: { emailRedirectTo: emailLinkRedirectUrl(redirect), captchaToken },
+    options: { emailRedirectTo: siteUrlWithRedirect('/', redirect), captchaToken },
   });
   if (error) throw toAppError(error);
 }
 
-export type EmailLinkResult = { status: 'verified' | 'expired' | 'invalid' };
+export type EmailLinkResult =
+  { status: 'verified'; hasSession: boolean } | { status: 'expired' | 'invalid' };
 
 export async function verifyEmailLink({
   token_hash: tokenHash,
@@ -172,31 +158,31 @@ export async function verifyEmailLink({
   if (!tokenHash || !type) {
     return { status: 'invalid' };
   }
-  const { error } = await supabase.auth.verifyOtp({
+  const { data, error } = await supabase.auth.verifyOtp({
     token_hash: tokenHash,
     type: type === 'signup' ? 'email' : type,
   });
   if (!error) {
-    return { status: 'verified' };
+    return { status: 'verified', hasSession: data.session !== null };
   }
-  return { status: error.code === 'otp_expired' ? 'expired' : 'invalid' };
+  const appError = toAppError(error);
+  if (appError.reason === 'link_expired') {
+    return { status: 'expired' };
+  }
+  if (appError.code === 'network' || (error.status ?? 0) >= SERVER_ERROR_STATUS) {
+    throw appError;
+  }
+  return { status: 'invalid' };
 }
 
 type PasswordResetRequest = CaptchaToken & { email: string };
 
 export async function requestPasswordReset({ email, captchaToken }: PasswordResetRequest) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: emailLinkRedirectUrl('/password-reset/new'),
+    redirectTo: siteUrlWithRedirect('/', '/password-reset/new'),
     captchaToken,
   });
   if (error) throw toAppError(error);
-}
-
-export async function updatePassword(password: string) {
-  const { error } = await supabase.auth.updateUser({ password });
-  if (error) throw toAppError(error);
-  const { error: signOutError } = await supabase.auth.signOut({ scope: 'others' });
-  if (signOutError) throw toAppError(signOutError);
 }
 
 export async function getAccountHasPassword(): Promise<boolean> {
@@ -216,15 +202,16 @@ export async function changePassword({ currentPassword, password }: PasswordChan
     ...(currentPassword ? { current_password: currentPassword } : {}),
   });
   if (error) throw toAppError(error);
-  const { error: signOutError } = await supabase.auth.signOut({ scope: 'others' });
-  if (signOutError) throw toAppError(signOutError);
+  await signOutWithoutFailing('others');
 }
 
 export async function deleteOwnAccount(confirmation: string) {
-  const { error } = await supabase.rpc('delete_own_account', { confirmation });
+  const { data, error } = await supabase.rpc('delete_own_account', { confirmation });
   if (error) throw toAppError(error);
-  const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' });
-  if (signOutError) throw toAppError(signOutError);
+  if (data !== DELETED_OUTCOME) {
+    throw toAppError({ code: 'P0001', message: data, details: null });
+  }
+  await signOutWithoutFailing('local');
 }
 
 export async function signOut() {

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { Locale } from '@/i18n/i18n';
 import { messageKey } from '@/i18n/validation';
+import { EMAIL_LINK_TYPES } from './auth.types';
 import { isPhoneNumber, toE164Phone } from './auth.utils';
 
 export const PASSWORD_MIN_LENGTH = 8;
@@ -19,8 +20,22 @@ const newPasswordSchema = z
     error: messageKey('auth:fields.password.tooShort', { count: PASSWORD_MIN_LENGTH }),
   })
   .max(PASSWORD_MAX_LENGTH)
-  .regex(/\p{L}/u, { error: messageKey('auth:fields.password.needsLetterAndDigit') })
-  .regex(/\p{N}/u, { error: messageKey('auth:fields.password.needsLetterAndDigit') });
+  .regex(/[A-Za-z]/u, { error: messageKey('auth:fields.password.needsLetterAndDigit') })
+  .regex(/[0-9]/u, { error: messageKey('auth:fields.password.needsLetterAndDigit') });
+
+const newPasswordFields = {
+  password: newPasswordSchema,
+  confirmPassword: z.string(),
+};
+
+function passwordsMatch(values: { password: string; confirmPassword: string }) {
+  return values.password === values.confirmPassword;
+}
+
+const passwordsMatchOptions = {
+  path: ['confirmPassword'],
+  error: messageKey('auth:newPassword.mismatch'),
+};
 
 export const credentialsSchema = z.object({
   email: emailSchema,
@@ -67,14 +82,8 @@ export const passwordResetRequestSchema = z.object({
 export type PasswordResetRequestValues = z.infer<typeof passwordResetRequestSchema>;
 
 export const newPasswordFormSchema = z
-  .object({
-    password: newPasswordSchema,
-    confirmPassword: z.string(),
-  })
-  .refine((values) => values.password === values.confirmPassword, {
-    path: ['confirmPassword'],
-    error: messageKey('auth:newPassword.mismatch'),
-  });
+  .object(newPasswordFields)
+  .refine(passwordsMatch, passwordsMatchOptions);
 export type NewPasswordFormValues = z.infer<typeof newPasswordFormSchema>;
 
 export function changePasswordFormSchema(isCurrentPasswordRequired: boolean) {
@@ -83,13 +92,9 @@ export function changePasswordFormSchema(isCurrentPasswordRequired: boolean) {
       currentPassword: isCurrentPasswordRequired
         ? z.string().min(1, { error: messageKey('auth:settings.password.currentRequired') })
         : z.string(),
-      password: newPasswordSchema,
-      confirmPassword: z.string(),
+      ...newPasswordFields,
     })
-    .refine((values) => values.password === values.confirmPassword, {
-      path: ['confirmPassword'],
-      error: messageKey('auth:newPassword.mismatch'),
-    });
+    .refine(passwordsMatch, passwordsMatchOptions);
 }
 export type ChangePasswordFormValues = z.infer<ReturnType<typeof changePasswordFormSchema>>;
 
@@ -109,8 +114,6 @@ export const authCallbackSearchSchema = authSearchSchema.extend({
   error: z.string().optional().catch(undefined),
   error_code: z.string().optional().catch(undefined),
 });
-
-const EMAIL_LINK_TYPES = ['signup', 'email', 'recovery', 'email_change'] as const;
 
 export const authConfirmSearchSchema = z.object({
   token_hash: z.string().min(1).optional().catch(undefined),

@@ -1,7 +1,8 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
+import { MainContent } from '@/components/layout/main-content';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
+import { SkipLink } from '@/components/layout/skip-link';
 import { homePathFor, useAuth } from '@/features/auth';
 import { LanguageSwitcher, UserMenu, useSyncProfileLocale } from '@/features/profile';
 
@@ -10,7 +11,6 @@ export const Route = createFileRoute('/_site')({
 });
 
 function SiteLayout() {
-  const { t } = useTranslation();
   const { user, roles } = useAuth();
   const userId = user?.id;
   const panelPath = homePathFor(roles);
@@ -18,12 +18,7 @@ function SiteLayout() {
   return (
     <div className="flex min-h-svh flex-col bg-background" data-density="comfortable">
       {userId ? <ProfileLocaleSync userId={userId} /> : null}
-      <a
-        href="#main"
-        className="sr-only z-200 rounded-md bg-primary px-4 py-3 text-label text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
-      >
-        {t('site.skipToContent')}
-      </a>
+      <SkipLink />
       <SiteHeader
         account={
           user
@@ -35,13 +30,9 @@ function SiteLayout() {
         }
         menuLanguageSwitcher={<LanguageSwitcher userId={userId} variant="segmented" />}
       />
-      <main
-        id="main"
-        tabIndex={-1}
-        className="flex-1 focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset"
-      >
+      <MainContent className="flex-1">
         <Outlet />
-      </main>
+      </MainContent>
       <SiteFooter />
     </div>
   );

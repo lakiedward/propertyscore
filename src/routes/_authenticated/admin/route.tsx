@@ -15,7 +15,7 @@ function AdminLayout() {
   const { user } = Route.useRouteContext();
 
   return (
-    <AdminShell userMenu={(tone) => <UserMenu user={user} tone={tone} appRole="admin" />}>
+    <AdminShell userMenu={<UserMenu user={user} tone="panel" appRole="admin" />}>
       <Outlet />
     </AdminShell>
   );

@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
+import { toast } from 'sonner';
 import roAuth from '@/i18n/locales/ro/auth.json';
 import roCommon from '@/i18n/locales/ro/common.json';
 import { buildUser, signedInAs } from '@/test/factories/auth';
@@ -15,6 +16,27 @@ type TestUser = Awaited<ReturnType<typeof renderWithProviders>>['user'];
 async function fillNewPassword(user: TestUser, password: string, confirmPassword = password) {
   await user.type(screen.getByLabelText(roAuth.settings.password.new), password);
   await user.type(screen.getByLabelText(roAuth.settings.password.confirm), confirmPassword);
+}
+
+function pluralText(template: string, count: number): string {
+  return template.replace('{{count}}', String(count));
+}
+
+function recordLogouts() {
+  const urls: string[] = [];
+  server.use(
+    http.post(supabaseUrl('/auth/v1/logout'), ({ request }) => {
+      urls.push(request.url);
+      return new HttpResponse(null, { status: 204 });
+    }),
+  );
+  return urls;
+}
+
+async function submitChange(user: TestUser, password: string, confirmPassword = password) {
+  await user.type(screen.getByLabelText(roAuth.settings.password.current), 'Parola-Test-2026');
+  await fillNewPassword(user, password, confirmPassword);
+  await user.click(screen.getByRole('button', { name: roAuth.settings.password.submit }));
 }
 
 function recordPasswordUpdates() {
@@ -34,6 +56,7 @@ describe('ChangePasswordSection', { timeout: 20_000 }, () => {
   });
 
   afterEach(async () => {
+    vi.restoreAllMocks();
     await signOut();
   });
 
@@ -106,5 +129,90 @@ describe('ChangePasswordSection', { timeout: 20_000 }, () => {
       expect(requests).toHaveLength(1);
     });
     expect(requests[0]).not.toHaveProperty('current_password');
+  });
+
+  it('signs out the other sessions once after the change', async () => {
+    recordPasswordUpdates();
+    const logouts = recordLogouts();
+    const { user } = await renderWithProviders(<ChangePasswordSection hasPassword />, {
+      auth: signedInAs(),
+    });
+
+    await submitChange(user, 'Parola-Noua-2026');
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(roAuth.settings.password.new)).toHaveValue('');
+    });
+    expect(logouts).toHaveLength(1);
+    expect(new URL(logouts[0] ?? '').searchParams.get('scope')).toBe('others');
+  });
+
+  it('keeps the change when signing out the other sessions fails', async () => {
+    recordPasswordUpdates();
+    server.use(
+      http.post(
+        supabaseUrl('/auth/v1/logout'),
+        () => authErrorResponse('unexpected_failure', 500),
+        { once: true },
+      ),
+    );
+    const success = vi.spyOn(toast, 'success');
+    const { user } = await renderWithProviders(<ChangePasswordSection hasPassword />, {
+      auth: signedInAs(),
+    });
+
+    await submitChange(user, 'Parola-Noua-2026');
+
+    await waitFor(() => {
+      expect(success).toHaveBeenCalledWith(roAuth.settings.password.saved);
+    });
+    expect(screen.getByLabelText(roAuth.settings.password.new)).toHaveValue('');
+    expect(screen.queryByText(roAuth.settings.password.failedTitle)).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['too short', 'abc1', pluralText(roAuth.fields.password.tooShort_few, 8)],
+    ['without a letter', '12345678', roAuth.fields.password.needsLetterAndDigit],
+    ['with only diacritics as letters', 'ășțîâăîș1', roAuth.fields.password.needsLetterAndDigit],
+  ])('refuses a new password %s', async (_case, password, message) => {
+    const requests = recordPasswordUpdates();
+    const { user } = await renderWithProviders(<ChangePasswordSection hasPassword />, {
+      auth: signedInAs(),
+    });
+
+    await submitChange(user, password);
+
+    expect(await screen.findByText(message)).toBeInTheDocument();
+    expect(requests).toHaveLength(0);
+  });
+
+  it('asks for the same new password twice', async () => {
+    const requests = recordPasswordUpdates();
+    const { user } = await renderWithProviders(<ChangePasswordSection hasPassword />, {
+      auth: signedInAs(),
+    });
+
+    await submitChange(user, 'Parola-Noua-2026', 'Parola-Alta-2026');
+
+    expect(await screen.findByText(roAuth.newPassword.mismatch)).toBeInTheDocument();
+    expect(requests).toHaveLength(0);
+  });
+
+  it('disables the button while the password is being saved', async () => {
+    server.use(
+      http.put(supabaseUrl('/auth/v1/user'), async () => {
+        await delay('infinite');
+        return HttpResponse.json(buildUser());
+      }),
+    );
+    const { user } = await renderWithProviders(<ChangePasswordSection hasPassword />, {
+      auth: signedInAs(),
+    });
+
+    await submitChange(user, 'Parola-Noua-2026');
+
+    expect(
+      await screen.findByRole('button', { name: roAuth.settings.password.pending }),
+    ).toBeDisabled();
   });
 });

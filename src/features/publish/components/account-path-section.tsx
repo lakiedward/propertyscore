@@ -88,7 +88,7 @@ export function AccountPathSection({ isSignedIn }: AccountPathSectionProps) {
                 </span>
                 <span
                   className={cn(
-                    'self-start rounded-full px-2.5 py-1 text-meta leading-copy font-extrabold tracking-[0.08em] uppercase',
+                    'self-start rounded-full px-2.5 py-1 text-meta leading-copy font-extrabold tracking-label uppercase',
                     isAccount ? 'bg-cta/16 text-cta' : 'bg-background text-muted-foreground',
                   )}
                 >

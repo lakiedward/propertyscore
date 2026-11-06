@@ -1,14 +1,11 @@
 import type { Locator, Page } from '@playwright/test';
-import enAuth from '../../src/i18n/locales/en/auth.json' with { type: 'json' };
-import roAuth from '../../src/i18n/locales/ro/auth.json' with { type: 'json' };
-
-const AUTH_TEXT = { ro: roAuth, en: enAuth } as const;
+import { AUTH_TEXT, type E2eLocale } from './texts';
 
 export class SignUpPage {
   private readonly page: Page;
-  private readonly text: (typeof AUTH_TEXT)[keyof typeof AUTH_TEXT];
+  private readonly text: (typeof AUTH_TEXT)[E2eLocale];
 
-  constructor(page: Page, locale: keyof typeof AUTH_TEXT = 'ro') {
+  constructor(page: Page, locale: E2eLocale = 'ro') {
     this.page = page;
     this.text = AUTH_TEXT[locale];
   }

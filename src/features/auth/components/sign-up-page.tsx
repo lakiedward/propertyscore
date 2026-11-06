@@ -1,7 +1,7 @@
 import { getRouteApi } from '@tanstack/react-router';
 import { useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
 import { TextLink } from '@/components/navigation/text-link';
+import { AuthFooterPrompt } from './auth-footer-prompt';
 import { AuthHeading } from './auth-heading';
 import { ConfirmEmailCard } from './confirm-email-card';
 import { SignUpForm } from './sign-up-form';
@@ -9,7 +9,6 @@ import { SignUpForm } from './sign-up-form';
 const route = getRouteApi('/_public/sign-up');
 
 export function SignUpPage() {
-  const { t } = useTranslation('auth');
   const { redirect } = route.useSearch();
   const [confirmation, setConfirmation] = useState<{ email: string; isRepeat: boolean }>();
 
@@ -35,17 +34,12 @@ export function SignUpPage() {
           setConfirmation({ email, isRepeat });
         }}
       />
-      <p className="text-center text-body-sm leading-copy text-muted-foreground">
-        <Trans
-          t={t}
-          i18nKey="signUp.hasAccount"
-          components={{
-            action: (
-              <TextLink to="/login" search={{ redirect }} size="inherit" className="px-0.5 py-1" />
-            ),
-          }}
-        />
-      </p>
+      <AuthFooterPrompt
+        i18nKey="signUp.hasAccount"
+        action={
+          <TextLink to="/login" search={{ redirect }} size="inherit" className="px-0.5 py-1" />
+        }
+      />
     </>
   );
 }

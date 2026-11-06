@@ -9,11 +9,12 @@ import { useScrollProgress } from '@/hooks/use-scroll-progress';
 import { useSectionNav } from '@/hooks/use-section-nav';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import type { PanelPath } from './panel-paths';
 import { SiteMenu } from './site-menu';
 import { HOME_SECTION } from './site-navigation';
 
 export type SiteHeaderAccount = {
-  path: '/account' | '/admin';
+  path: PanelPath;
   menu: ReactNode;
 };
 

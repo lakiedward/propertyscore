@@ -9,13 +9,16 @@ describe('AdminShell', { timeout: 20_000 }, () => {
   it('shows the admin sections to an admin', async () => {
     await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
 
-    const sidebar = await screen.findByRole('complementary', { name: NAV.navLabel });
+    const [sidebar] = await screen.findAllByRole('navigation', { name: NAV.navLabel });
+    if (!sidebar) {
+      throw new Error('The admin sidebar is missing');
+    }
     expect(within(sidebar).getByText(NAV.groups.business)).toBeInTheDocument();
     expect(within(sidebar).getByRole('link', { name: NAV.nav.users })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    expect(within(sidebar).getAllByRole('link')).toHaveLength(13);
+    expect(within(sidebar).getAllByRole('link')).toHaveLength(12);
     expect(screen.getAllByText(roCommon.panel.userMenu.role.admin).length).toBeGreaterThan(0);
   });
 
@@ -23,7 +26,7 @@ describe('AdminShell', { timeout: 20_000 }, () => {
     await renderAppRoute('/admin', { auth: signedInAs() });
 
     expect(await screen.findByText(roCommon.pages.notFound.title)).toBeInTheDocument();
-    expect(screen.queryByRole('complementary', { name: NAV.navLabel })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: NAV.navLabel })).not.toBeInTheDocument();
   });
 
   it('sends a signed-out visitor to sign in first', async () => {

@@ -8,10 +8,11 @@ import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/com
 import { SERVICE_PRICES } from '@/config/pricing';
 import { formatPrice } from '@/i18n/format';
 import { useSectionNav } from '@/hooks/use-section-nav';
+import { PANEL_LINK_KEYS, type PanelPath } from './panel-paths';
 import { HOME_SECTION, type HomeSectionId, type PublishSectionId } from './site-navigation';
 
 type SiteMenuProps = {
-  accountPath?: '/account' | '/admin' | undefined;
+  accountPath?: PanelPath | undefined;
   languageSwitcher: ReactNode;
 };
 
@@ -196,7 +197,7 @@ export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
               onClick={handleNavigate}
               className="flex min-h-touch items-center rounded-md px-1 text-body text-on-inverse-muted hover:text-on-inverse focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
             >
-              {t(accountPath ? 'site.header.account' : 'site.header.signIn')}
+              {accountPath ? t(PANEL_LINK_KEYS[accountPath]) : t('site.header.signIn')}
             </Link>
           </section>
           <section className="flex flex-col gap-3">

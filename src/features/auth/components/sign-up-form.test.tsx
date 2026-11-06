@@ -35,6 +35,10 @@ async function fillAndSubmit(
   await user.click(screen.getByRole('button', { name: labels.signUp.submit }));
 }
 
+function tagContent(template: string, tag: string): string {
+  return new RegExp(`<${tag}>(.*?)</${tag}>`).exec(template)?.[1] ?? template;
+}
+
 function pluralText(template: string, count: number): string {
   return template.replace('{{count}}', String(count));
 }
@@ -188,14 +192,16 @@ describe('SignUpForm', () => {
     await fillAndSubmit(user);
 
     expect(await screen.findByText(roAuth.signUp.alreadyRegistered.title)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Intră în cont' })).toHaveAttribute(
-      'href',
-      '/login?redirect=%2Fpublish',
-    );
-    expect(screen.getByRole('link', { name: 'resetează parola' })).toHaveAttribute(
-      'href',
-      '/password-reset',
-    );
+    expect(
+      screen.getByRole('link', {
+        name: tagContent(roAuth.signUp.alreadyRegistered.text, 'signIn'),
+      }),
+    ).toHaveAttribute('href', '/login?redirect=%2Fpublish');
+    expect(
+      screen.getByRole('link', {
+        name: tagContent(roAuth.signUp.alreadyRegistered.text, 'reset'),
+      }),
+    ).toHaveAttribute('href', '/password-reset');
     expect(onConfirmationNeeded).not.toHaveBeenCalled();
     expect(screen.queryByText(roAuth.signUp.failedTitle)).not.toBeInTheDocument();
   });

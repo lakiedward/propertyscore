@@ -1,16 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { TextLink } from '@/components/navigation/text-link';
 import { Button } from '@/components/ui/button';
 import { FieldGroup } from '@/components/ui/field';
-import { useErrorMessage } from '@/i18n/error-message';
-import { isAppError } from '@/lib/errors';
-import { applyServerErrors } from '@/lib/forms';
-import { useUpdatePassword } from '../api/auth.queries';
+import { useChangePassword } from '../api/auth.queries';
 import { useAuth } from '../auth-context';
 import {
   newPasswordFormSchema,
@@ -18,32 +14,31 @@ import {
   type NewPasswordFormValues,
 } from '../auth.schemas';
 import { homePathFor } from '../auth.utils';
+import { useFormError } from '../hooks/use-form-error';
 import { AuthNotice } from './auth-notice';
 import { AuthPageHeading } from './auth-page-heading';
 import { AuthTextField } from './auth-text-field';
+import { FormErrorNotice } from './form-error-notice';
 
 export function NewPasswordPage() {
   const { t } = useTranslation('auth');
   const { session, roles } = useAuth();
   const navigate = useNavigate();
-  const errorMessage = useErrorMessage();
-  const updatePassword = useUpdatePassword();
-  const [formError, setFormError] = useState<unknown>();
+  const changePassword = useChangePassword();
   const form = useForm<NewPasswordFormValues>({
     resolver: zodResolver(newPasswordFormSchema),
     defaultValues: { password: '', confirmPassword: '' },
   });
+  const formError = useFormError(form);
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    setFormError(undefined);
+    formError.clear();
     try {
-      await updatePassword.mutateAsync(values.password);
+      await changePassword.mutateAsync({ currentPassword: undefined, password: values.password });
       toast.success(t('newPassword.saved'));
-      await navigate({ href: homePathFor(roles) });
+      await navigate({ to: homePathFor(roles) });
     } catch (error) {
-      if (!applyServerErrors(form, error)) {
-        setFormError(error);
-      }
+      formError.handle(error);
     }
   });
 
@@ -54,7 +49,7 @@ export function NewPasswordPage() {
         <AuthNotice tone="warning" title={t('newPassword.expired.title')}>
           {t('newPassword.expired.text')}
         </AuthNotice>
-        <TextLink to="/password-reset" className="self-start py-1">
+        <TextLink to="/password-reset" className="touch-target self-start py-1">
           {t('newPassword.expired.action')}
         </TextLink>
       </>
@@ -64,12 +59,12 @@ export function NewPasswordPage() {
   return (
     <>
       <AuthPageHeading title={t('newPassword.title')}>{t('newPassword.text')}</AuthPageHeading>
-      {formError ? (
-        <AuthNotice tone="error" title={t('newPassword.failedTitle')}>
-          {isAppError(formError) && formError.reason
-            ? errorMessage(formError)
-            : t('newPassword.failedText')}
-        </AuthNotice>
+      {formError.error ? (
+        <FormErrorNotice
+          error={formError.error}
+          title={t('newPassword.failedTitle')}
+          fallback={t('newPassword.failedText')}
+        />
       ) : null}
       <form onSubmit={(event) => void handleSubmit(event)} noValidate>
         <FieldGroup className="gap-3">
@@ -103,10 +98,10 @@ export function NewPasswordPage() {
           <Button
             type="submit"
             size="xl"
-            disabled={updatePassword.isPending}
+            disabled={changePassword.isPending}
             className="mt-1 w-full"
           >
-            {updatePassword.isPending ? t('newPassword.pending') : t('newPassword.submit')}
+            {changePassword.isPending ? t('newPassword.pending') : t('newPassword.submit')}
           </Button>
         </FieldGroup>
       </form>

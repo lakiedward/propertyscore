@@ -25,7 +25,7 @@
     "close": "Închide",
     "retry": "Încearcă din nou",
     "goHome": "Înapoi la pagina principală",
-    "signOut": "Deconectare"
+    "signOut": "Ieși din cont"
   },
   "language": {
     "label": "Limbă",
@@ -56,6 +56,7 @@
     "network": "Nu ne putem conecta la server. Verifică conexiunea la internet.",
     "unknown": "A apărut o eroare neașteptată. Încearcă din nou.",
     "reasons": {
+      "link_expired": "Linkul a expirat. Cere unul nou.",
       "invalid_credentials": "Emailul sau parola nu sunt corecte.",
       "email_not_confirmed": "Confirmă adresa de email înainte de autentificare.",
       "user_already_exists": "Există deja un cont cu acest email.",
@@ -65,7 +66,7 @@
       "captcha_failed": "Verificarea anti-robot a eșuat. Încearcă din nou.",
       "current_password_invalid": "Parola actuală nu este corectă.",
       "current_password_required": "Introdu parola actuală.",
-      "reauthentication_needed": "Pentru siguranță, ieși din cont și autentifică-te din nou, apoi schimbă parola.",
+      "reauthentication_needed": "Pentru siguranță, autentifică-te din nou, apoi reia acțiunea.",
       "invalid_password": "Parola nu este corectă.",
       "email_mismatch": "Adresa de email nu se potrivește cu cea a contului.",
       "last_admin": "Ești singurul administrator. Numește alt administrator înainte să îți ștergi contul."
@@ -107,7 +108,6 @@
       "openMenu": "Deschide meniul",
       "brandHome": "PropertyScore, înapoi la început",
       "signIn": "Intră în cont",
-      "account": "Contul meu",
       "publish": "Publică anunț gratuit",
       "smartCheck": "Verifică o adresă cu Smart Check",
       "physical": "Programează inspecția Property Fizic"
@@ -214,9 +214,7 @@
         "products": "Produse",
         "invoices": "Facturi",
         "settings": "Setări"
-      },
-      "openMenu": "Deschide meniul",
-      "closeMenu": "Închide meniul"
+      }
     },
     "admin": {
       "label": "Admin",
@@ -240,16 +238,16 @@
         "products": "Produse",
         "content": "Conținut"
       },
-      "openMenu": "Extinde meniul",
-      "closeMenu": "Restrânge meniul"
+      "pageTitle": "{{page}} · Admin"
     },
-    "brandHome": "PropertyScore, site-ul public",
+    "expandMenu": "Extinde meniul",
+    "collapseMenu": "Restrânge meniul",
+    "brandHome": "{{brand}}, site-ul public",
+    "link": {
+      "account": "Contul meu",
+      "admin": "Panou admin"
+    },
     "userMenu": {
-      "openAccount": "Contul meu",
-      "openAdmin": "Panou admin",
-      "profile": "Profil",
-      "settings": "Setări",
-      "signOut": "Ieși din cont",
       "role": {
         "user": "Utilizator",
         "admin": "Admin"

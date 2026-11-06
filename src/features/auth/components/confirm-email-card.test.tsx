@@ -1,6 +1,7 @@
 import { act, screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import roAuth from '@/i18n/locales/ro/auth.json';
+import roCommon from '@/i18n/locales/ro/common.json';
 import { authErrorResponse } from '@/test/msw/handlers/auth';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
@@ -88,7 +89,9 @@ describe('ConfirmEmailCard', { timeout: 20_000 }, () => {
 
     await user.click(screen.getByRole('button', { name: roAuth.resend.action }));
 
-    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      roCommon.errors.reasons.rate_limited,
+    );
     expect(screen.getByRole('button', { name: roAuth.resend.action })).toBeEnabled();
   });
 

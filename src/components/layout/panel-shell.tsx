@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useLocation } from '@tanstack/react-router';
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,49 +6,61 @@ import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
 import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed';
 import { cn } from '@/lib/utils';
-import type { ResolvedNavGroup, ResolvedNavItem } from './panel-navigation';
-
-export type PanelMenuTone = 'light' | 'inverse';
+import { MainContent } from './main-content';
+import {
+  ACCOUNT_NAVIGATION,
+  ADMIN_NAVIGATION,
+  findCurrentNavItem,
+  type ResolvedNavGroup,
+  type ResolvedNavItem,
+} from './panel-navigation';
+import type { PanelArea } from './panel-paths';
+import { SkipLink } from './skip-link';
 
 type PanelShellProps = {
-  groups: readonly ResolvedNavGroup[];
-  navLabel: string;
-  areaLabel: string;
-  expandLabel: string;
-  collapseLabel: string;
-  headerStart?: ReactNode;
-  userMenu: (tone: PanelMenuTone) => ReactNode;
-  headerRowClassName?: string;
+  area: PanelArea;
+  headerStart?: (current: ResolvedNavItem | undefined) => ReactNode;
+  userMenu: ReactNode;
   mainClassName: string;
   children: ReactNode;
 };
 
+function usePanelGroups(area: PanelArea): ResolvedNavGroup[] {
+  const { t } = useTranslation();
+  if (area === 'account') {
+    return ACCOUNT_NAVIGATION.map((group) => ({
+      id: group.id,
+      title: t(`panel.account.groups.${group.id}`),
+      items: group.items.map((item) => ({ ...item, label: t(`panel.account.nav.${item.id}`) })),
+    }));
+  }
+  return ADMIN_NAVIGATION.map((group) => ({
+    id: group.id,
+    title: t(`panel.admin.groups.${group.id}`),
+    items: group.items.map((item) => ({ ...item, label: t(`panel.admin.nav.${item.id}`) })),
+  }));
+}
+
 export function PanelShell({
-  groups,
-  navLabel,
-  areaLabel,
-  expandLabel,
-  collapseLabel,
+  area,
   headerStart,
   userMenu,
-  headerRowClassName,
   mainClassName,
   children,
 }: PanelShellProps) {
   const { t } = useTranslation();
   const { isCollapsed, toggle } = useSidebarCollapsed();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const groups = usePanelGroups(area);
   const items = groups.flatMap((group) => group.items);
+  const navLabel = t(`panel.${area}.navLabel`);
+  const brandHomeLabel = t('panel.brandHome', { brand: t('brand.core') });
+  const headerStartContent = headerStart?.(findCurrentNavItem(groups, pathname));
 
   return (
     <div data-density="compact" className="flex min-h-svh bg-card">
-      <a
-        href="#main"
-        className="sr-only z-200 rounded-md bg-primary px-4 py-3 text-label text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
-      >
-        {t('site.skipToContent')}
-      </a>
-      <aside
-        aria-label={navLabel}
+      <SkipLink />
+      <div
         className={cn(
           'sticky top-0 hidden h-svh shrink-0 flex-col gap-3.5 overflow-auto bg-sidebar px-3 py-4 text-on-inverse md:flex',
           isCollapsed ? 'w-19' : 'w-68',
@@ -63,7 +75,7 @@ export function PanelShell({
           {isCollapsed ? null : (
             <Link
               to="/"
-              aria-label={t('panel.brandHome')}
+              aria-label={brandHomeLabel}
               className="inline-flex items-center gap-2.5 rounded-md focus-visible:ring-3 focus-visible:ring-sidebar-ring focus-visible:outline-none"
             >
               <span className="grid size-8.5 place-items-center rounded-thumb bg-cta">
@@ -75,9 +87,9 @@ export function PanelShell({
           <button
             type="button"
             onClick={toggle}
-            aria-label={isCollapsed ? expandLabel : collapseLabel}
+            aria-label={isCollapsed ? t('panel.expandMenu') : t('panel.collapseMenu')}
             aria-expanded={!isCollapsed}
-            className="grid size-10 shrink-0 place-items-center rounded-thumb bg-sidebar-control text-on-inverse hover:bg-sidebar-control-hover focus-visible:ring-3 focus-visible:ring-sidebar-ring focus-visible:outline-none"
+            className="touch-target grid size-10 shrink-0 place-items-center rounded-thumb bg-sidebar-control text-on-inverse hover:bg-sidebar-control-hover focus-visible:ring-3 focus-visible:ring-sidebar-ring focus-visible:outline-none"
           >
             {isCollapsed ? (
               <PanelLeftOpenIcon aria-hidden className="size-4.5" />
@@ -86,7 +98,7 @@ export function PanelShell({
             )}
           </button>
         </div>
-        <nav className="flex flex-col gap-4">
+        <nav aria-label={navLabel} className="flex flex-col gap-4">
           {groups.map((group) => (
             <div key={group.id} className="flex flex-col gap-0.5">
               {isCollapsed ? null : (
@@ -100,34 +112,28 @@ export function PanelShell({
             </div>
           ))}
         </nav>
-      </aside>
+      </div>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 bg-surface-inverse text-on-inverse md:border-b md:border-border md:bg-card md:text-foreground">
-          <div
-            className={cn(
-              'flex min-h-header items-center gap-3 pr-2 pl-4 md:px-6',
-              headerRowClassName,
-            )}
-          >
+        <header className="sticky top-0 z-100 bg-surface-inverse text-on-inverse md:border-b md:border-border md:bg-card md:text-foreground">
+          <div className="flex min-h-header items-center gap-3 pr-2 pl-4 md:min-h-[calc(var(--header-height)-1px)] md:px-6">
             <Link
               to="/"
-              aria-label={t('panel.brandHome')}
-              className="inline-flex rounded-md focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none md:hidden"
+              aria-label={brandHomeLabel}
+              className="touch-target inline-flex rounded-md focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none md:hidden"
             >
               <BrandMark tone="inverse" size={20} />
             </Link>
-            <span className="text-meta font-bold tracking-[0.08em] text-cta uppercase md:hidden">
-              {areaLabel}
+            <span className="text-meta font-bold tracking-label text-cta uppercase md:hidden">
+              {t(`panel.${area}.label`)}
             </span>
-            {headerStart ? <div className="hidden min-w-0 md:block">{headerStart}</div> : null}
-            <div className="ml-auto flex items-center gap-1">
-              <div className="md:hidden">{userMenu('inverse')}</div>
-              <div className="hidden md:block">{userMenu('light')}</div>
-            </div>
+            {headerStartContent ? (
+              <div className="hidden min-w-0 md:block">{headerStartContent}</div>
+            ) : null}
+            <div className="ml-auto flex items-center gap-1">{userMenu}</div>
           </div>
           <nav
             aria-label={navLabel}
-            className="[scrollbar-width:none] overflow-x-auto border-t border-sidebar-border md:hidden"
+            className="scrollbar-none overflow-x-auto border-t border-on-inverse/12 md:hidden"
           >
             <ul className="flex w-max gap-1 px-2 py-1.5">
               {items.map((item) => (
@@ -144,16 +150,9 @@ export function PanelShell({
             </ul>
           </nav>
         </header>
-        <main
-          id="main"
-          tabIndex={-1}
-          className={cn(
-            'flex w-full min-w-0 flex-1 flex-col gap-5 focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
-            mainClassName,
-          )}
-        >
+        <MainContent className={cn('flex w-full min-w-0 flex-1 flex-col gap-5', mainClassName)}>
           {children}
-        </main>
+        </MainContent>
       </div>
     </div>
   );

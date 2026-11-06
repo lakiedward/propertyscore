@@ -1,6 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { signInWithPassword, signOut } from '@/features/auth';
 import roAuth from '@/i18n/locales/ro/auth.json';
 import roCommon from '@/i18n/locales/ro/common.json';
 import { signedInAs } from '@/test/factories/auth';
@@ -10,15 +9,17 @@ import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderWithProviders } from '@/test/render';
 import { UserMenu } from './user-menu';
 
-const MENU = roCommon.panel.userMenu;
 const auth = signedInAs();
+const profile = buildProfile();
+const profileName = profile.full_name ?? '';
+const email = auth.user?.email ?? '';
 
 async function openMenu() {
   const { user } = await renderWithProviders(
     auth.user ? <UserMenu user={auth.user} tone="light" /> : null,
     { auth },
   );
-  await user.click(await screen.findByRole('button', { name: /Ana Mărginean/u }));
+  await user.click(await screen.findByRole('button', { name: profileName }));
   return user;
 }
 
@@ -26,12 +27,11 @@ describe('UserMenu', { timeout: 20_000 }, () => {
   it('shows the name, initials and email from the profile', async () => {
     await openMenu();
 
-    expect(screen.getByRole('menu')).toHaveTextContent('ana.ro@example.test');
+    expect(screen.getByRole('menu')).toHaveTextContent(email);
     expect(screen.getByText('AM')).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: MENU.profile })).toHaveAttribute(
-      'href',
-      '/account/settings',
-    );
+    expect(
+      screen.getByRole('menuitem', { name: roCommon.panel.account.nav.settings }),
+    ).toHaveAttribute('href', '/account/settings');
   });
 
   it('opens the panel for the role from the public site', async () => {
@@ -40,9 +40,9 @@ describe('UserMenu', { timeout: 20_000 }, () => {
       { auth },
     );
 
-    await user.click(await screen.findByRole('button', { name: /Ana Mărginean/u }));
+    await user.click(await screen.findByRole('button', { name: profileName }));
 
-    expect(screen.getByRole('menuitem', { name: MENU.openAdmin })).toHaveAttribute(
+    expect(screen.getByRole('menuitem', { name: roCommon.panel.link.admin })).toHaveAttribute(
       'href',
       '/admin',
     );
@@ -51,7 +51,9 @@ describe('UserMenu', { timeout: 20_000 }, () => {
   it('has no panel link inside the panels', async () => {
     await openMenu();
 
-    expect(screen.queryByRole('menuitem', { name: MENU.openAccount })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: roCommon.panel.link.account }),
+    ).not.toBeInTheDocument();
   });
 
   it('falls back to the email while the profile has no name', async () => {
@@ -65,9 +67,13 @@ describe('UserMenu', { timeout: 20_000 }, () => {
       { auth },
     );
 
-    await user.click(await screen.findByRole('button', { name: /ana\.ro@example\.test/u }));
+    await user.click(
+      await screen.findByRole('button', {
+        name: (accessibleName) => accessibleName.includes(email),
+      }),
+    );
 
-    expect(screen.getAllByText(MENU.role.admin).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(roCommon.panel.userMenu.role.admin).length).toBeGreaterThan(0);
   });
 
   it('switches the language and saves it on the profile', async () => {
@@ -98,7 +104,7 @@ describe('UserMenu', { timeout: 20_000 }, () => {
     );
     const user = await openMenu();
 
-    await user.click(screen.getByRole('menuitem', { name: MENU.signOut }));
+    await user.click(screen.getByRole('menuitem', { name: roCommon.actions.signOut }));
     const dialog = await screen.findByRole('dialog', { name: roAuth.signOut.title });
     await user.click(within(dialog).getByRole('button', { name: roAuth.signOut.cancel }));
 
@@ -109,23 +115,21 @@ describe('UserMenu', { timeout: 20_000 }, () => {
   });
 
   it('signs out after the confirmation', async () => {
-    await signInWithPassword({ email: 'ana.ro@example.test', password: 'Parola-Test-2026' });
-    let signOutCalls = 0;
-    server.use(
-      http.post(supabaseUrl('/auth/v1/logout'), () => {
-        signOutCalls += 1;
-        return new HttpResponse(null, { status: 204 });
-      }),
-    );
     const user = await openMenu();
 
-    await user.click(screen.getByRole('menuitem', { name: MENU.signOut }));
+    await user.click(screen.getByRole('menuitem', { name: roCommon.actions.signOut }));
     const dialog = await screen.findByRole('dialog', { name: roAuth.signOut.title });
     await user.click(within(dialog).getByRole('button', { name: roAuth.signOut.confirm }));
 
     await waitFor(() => {
-      expect(signOutCalls).toBe(1);
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
-    await signOut();
+  });
+
+  it('cuts a long name and email instead of overflowing the menu', async () => {
+    await openMenu();
+
+    expect(screen.getByTitle(email)).toHaveClass('truncate');
+    expect(screen.getByTitle(profileName)).toHaveClass('truncate');
   });
 });

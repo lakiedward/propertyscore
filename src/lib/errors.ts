@@ -12,6 +12,7 @@ export type AppErrorReason =
   | 'current_password_invalid'
   | 'current_password_required'
   | 'reauthentication_needed'
+  | 'link_expired'
   | 'invalid_password'
   | 'email_mismatch'
   | 'last_admin';

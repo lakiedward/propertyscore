@@ -1,5 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import roAuth from '@/i18n/locales/ro/auth.json';
 import roCommon from '@/i18n/locales/ro/common.json';
 import { signedInAs } from '@/test/factories/auth';
@@ -15,7 +15,11 @@ function functionError(message: string) {
   return HttpResponse.json({ code: 'P0001', message, details: null, hint: null }, { status: 400 });
 }
 
-function answerDelete(response: () => Response) {
+function outcome(code: string) {
+  return HttpResponse.json(code);
+}
+
+function answerDelete(response: () => Response | Promise<Response>) {
   const requests: unknown[] = [];
   server.use(
     http.post(supabaseUrl('/rest/v1/rpc/delete_own_account'), async ({ request }) => {
@@ -36,7 +40,7 @@ describe('DeleteAccountSection', { timeout: 20_000 }, () => {
   });
 
   it('deletes the account with the password and goes home', async () => {
-    const requests = answerDelete(() => new HttpResponse(null, { status: 204 }));
+    const requests = answerDelete(() => outcome('deleted'));
     const { user, router } = await renderWithProviders(
       <DeleteAccountSection email={EMAIL} hasPassword />,
       { path: '/account/settings', auth: signedInAs() },
@@ -53,7 +57,7 @@ describe('DeleteAccountSection', { timeout: 20_000 }, () => {
   });
 
   it('asks for the password before deleting', async () => {
-    const requests = answerDelete(() => new HttpResponse(null, { status: 204 }));
+    const requests = answerDelete(() => outcome('deleted'));
     const { user } = await renderWithProviders(<DeleteAccountSection email={EMAIL} hasPassword />, {
       auth: signedInAs(),
     });
@@ -66,7 +70,7 @@ describe('DeleteAccountSection', { timeout: 20_000 }, () => {
   });
 
   it('shows a wrong password next to its field', async () => {
-    answerDelete(() => functionError('invalid_password'));
+    answerDelete(() => outcome('invalid_password'));
     const { user } = await renderWithProviders(<DeleteAccountSection email={EMAIL} hasPassword />, {
       auth: signedInAs(),
     });
@@ -79,7 +83,7 @@ describe('DeleteAccountSection', { timeout: 20_000 }, () => {
   });
 
   it('asks an account without a password for its email', async () => {
-    const requests = answerDelete(() => new HttpResponse(null, { status: 204 }));
+    const requests = answerDelete(() => outcome('deleted'));
     const { user } = await renderWithProviders(
       <DeleteAccountSection email={EMAIL} hasPassword={false} />,
       { path: '/account/settings', auth: signedInAs() },
@@ -105,5 +109,78 @@ describe('DeleteAccountSection', { timeout: 20_000 }, () => {
     await user.click(screen.getByRole('button', { name: roAuth.settings.delete.submit }));
 
     expect(await screen.findByText(roCommon.errors.reasons.last_admin)).toBeInTheDocument();
+  });
+
+  it('shows an email that does not match next to its field', async () => {
+    answerDelete(() => outcome('email_mismatch'));
+    const { user } = await renderWithProviders(
+      <DeleteAccountSection email={EMAIL} hasPassword={false} />,
+      { auth: signedInAs() },
+    );
+
+    await user.click(screen.getByRole('button', { name: roAuth.settings.delete.open }));
+    await user.type(screen.getByLabelText(roAuth.settings.delete.email), 'alt@example.test');
+    await user.click(screen.getByRole('button', { name: roAuth.settings.delete.submit }));
+
+    expect(await screen.findByText(roCommon.errors.reasons.email_mismatch)).toBeInTheDocument();
+    expect(screen.getByLabelText(roAuth.settings.delete.email)).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
+  });
+
+  it('offers a new Google sign-in when the last one is too old', async () => {
+    answerDelete(() => functionError('reauthentication_needed'));
+    const { user } = await renderWithProviders(
+      <DeleteAccountSection email={EMAIL} hasPassword={false} />,
+      { auth: signedInAs() },
+    );
+
+    await user.click(screen.getByRole('button', { name: roAuth.settings.delete.open }));
+    await user.type(screen.getByLabelText(roAuth.settings.delete.email), EMAIL);
+    await user.click(screen.getByRole('button', { name: roAuth.settings.delete.submit }));
+
+    expect(
+      await screen.findByText(roCommon.errors.reasons.reauthentication_needed),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: roAuth.settings.delete.reauthAction.replace(
+          '{{provider}}',
+          roAuth.social.providers.google,
+        ),
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it('explains too many attempts', async () => {
+    answerDelete(() => functionError('rate_limited'));
+    const { user } = await renderWithProviders(<DeleteAccountSection email={EMAIL} hasPassword />, {
+      auth: signedInAs(),
+    });
+
+    await user.click(screen.getByRole('button', { name: roAuth.settings.delete.open }));
+    await user.type(screen.getByLabelText(roAuth.settings.delete.password), 'Parola-Test-2026');
+    await user.click(screen.getByRole('button', { name: roAuth.settings.delete.submit }));
+
+    expect(await screen.findByText(roCommon.errors.reasons.rate_limited)).toBeInTheDocument();
+  });
+
+  it('disables the button while the account is being deleted', async () => {
+    answerDelete(async () => {
+      await delay('infinite');
+      return outcome('deleted');
+    });
+    const { user } = await renderWithProviders(<DeleteAccountSection email={EMAIL} hasPassword />, {
+      auth: signedInAs(),
+    });
+
+    await user.click(screen.getByRole('button', { name: roAuth.settings.delete.open }));
+    await user.type(screen.getByLabelText(roAuth.settings.delete.password), 'Parola-Test-2026');
+    await user.click(screen.getByRole('button', { name: roAuth.settings.delete.submit }));
+
+    expect(
+      await screen.findByRole('button', { name: roAuth.settings.delete.pending }),
+    ).toBeDisabled();
   });
 });

@@ -181,7 +181,7 @@ isOneToOne: false
 { Args: { "event": Json }; Returns: Json
                            },
 "delete_own_account":
-{ Args: { "confirmation": string }; Returns: undefined
+{ Args: { "confirmation": string }; Returns: string
                            },
 "resolve_report_share_link":
 { Args: { "p_report_id": string,"p_token": string }; Returns: {

@@ -11,7 +11,7 @@ for (const name of USERS) {
     const loginPage = new LoginPage(page, 'ro');
     await loginPage.goto();
     await loginPage.signIn(user.email, user.password);
-    await expect(new AppShellPage(page, user.locale).userMenuButton).toBeVisible();
+    await expect(new AppShellPage(page, user.locale, user.fullName).userMenuButton).toBeVisible();
     await page.context().storageState({ path: storageStatePath(name) });
   });
 }

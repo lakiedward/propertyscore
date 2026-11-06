@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(21);
+select plan(24);
 
 insert into auth.users (id, email, raw_user_meta_data)
 values
@@ -38,23 +38,40 @@ select is(
 );
 
 select is(
-  (public.custom_access_token_hook(jsonb_build_object(
+  hook.claims - 'sub',
+  '{"role": "authenticated", "user_roles": ["user"]}'::jsonb,
+  'The hook puts the user role in a regular user token and keeps the existing claims'
+)
+from (
+  select public.custom_access_token_hook(jsonb_build_object(
     'user_id', '22222222-2222-2222-2222-222222222222',
     'claims', jsonb_build_object('sub', '22222222-2222-2222-2222-222222222222', 'role', 'authenticated'),
     'authentication_method', 'password'
-  )) -> 'claims' -> 'user_roles'),
-  '["user"]'::jsonb,
-  'The hook puts the user role in a regular user token'
+  )) -> 'claims' as claims
+) as hook;
+
+select ok(
+  has_function_privilege('supabase_auth_admin', 'public.custom_access_token_hook(jsonb)', 'execute'),
+  'The Auth service can run the access token hook'
 );
 
-select is(
-  (public.custom_access_token_hook(jsonb_build_object(
-    'user_id', '22222222-2222-2222-2222-222222222222',
-    'claims', jsonb_build_object('sub', '22222222-2222-2222-2222-222222222222', 'role', 'authenticated'),
-    'authentication_method', 'password'
-  )) -> 'claims' ->> 'role'),
-  'authenticated',
-  'The hook keeps the existing claims'
+select ok(
+  has_table_privilege('supabase_auth_admin', 'public.user_roles', 'select'),
+  'The Auth service has select on the roles table'
+);
+
+select ok(
+  exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'user_roles'
+      and policyname = 'Auth admin can read every role'
+      and cmd = 'SELECT'
+      and roles = array['supabase_auth_admin']::name[]
+      and qual = 'true'
+  ),
+  'The hook, which runs as the caller, reads every role through a select policy for the Auth service only'
 );
 
 select results_eq(
@@ -104,6 +121,13 @@ select throws_ok(
 );
 
 select throws_ok(
+  $$ delete from public.user_roles where user_id = '22222222-2222-2222-2222-222222222222' $$,
+  '42501',
+  null,
+  'A regular user cannot delete their own role'
+);
+
+select throws_ok(
   $$ select public.custom_access_token_hook('{}'::jsonb) $$,
   '42501',
   null,
@@ -146,6 +170,7 @@ select throws_ok(
 
 reset role;
 set local role anon;
+set local request.jwt.claims = '{"role": "anon"}';
 
 select throws_ok(
   $$ select count(*) from public.user_roles $$,

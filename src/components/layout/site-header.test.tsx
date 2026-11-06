@@ -54,7 +54,7 @@ describe('SiteHeader', () => {
 
     await user.click(screen.getByRole('button', { name: roCommon.site.header.openMenu }));
     const menu = await screen.findByRole('dialog', { name: roCommon.site.menu.label });
-    expect(within(menu).getByRole('link', { name: roCommon.site.header.account })).toHaveAttribute(
+    expect(within(menu).getByRole('link', { name: roCommon.panel.link.admin })).toHaveAttribute(
       'href',
       '/admin',
     );

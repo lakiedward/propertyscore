@@ -1,5 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import roAuth from '@/i18n/locales/ro/auth.json';
 import roCommon from '@/i18n/locales/ro/common.json';
 import { buildUser, signedInAs } from '@/test/factories/auth';
@@ -76,5 +76,41 @@ describe('NewPasswordPage', { timeout: 20_000 }, () => {
     await fillPasswords(user, 'Parola-Test-2026');
 
     expect(await screen.findByText(roCommon.errors.reasons.same_password)).toBeInTheDocument();
+  });
+
+  it('signs out the other sessions once after saving', async () => {
+    server.use(http.put(supabaseUrl('/auth/v1/user'), () => HttpResponse.json(buildUser())));
+    const logouts: string[] = [];
+    server.use(
+      http.post(supabaseUrl('/auth/v1/logout'), ({ request }) => {
+        logouts.push(request.url);
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const { user, router } = await renderWithProviders(<NewPasswordPage />, {
+      auth: signedInAs(),
+    });
+
+    await fillPasswords(user, 'Parola-Noua-2026');
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/account');
+    });
+    expect(logouts).toHaveLength(1);
+    expect(new URL(logouts[0] ?? '').searchParams.get('scope')).toBe('others');
+  });
+
+  it('disables the button while the password is being saved', async () => {
+    server.use(
+      http.put(supabaseUrl('/auth/v1/user'), async () => {
+        await delay('infinite');
+        return HttpResponse.json(buildUser());
+      }),
+    );
+    const { user } = await renderWithProviders(<NewPasswordPage />, { auth: signedInAs() });
+
+    await fillPasswords(user, 'Parola-Noua-2026');
+
+    expect(await screen.findByRole('button', { name: roAuth.newPassword.pending })).toBeDisabled();
   });
 });

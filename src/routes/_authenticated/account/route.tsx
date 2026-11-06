@@ -10,7 +10,7 @@ function AccountLayout() {
   const { user } = Route.useRouteContext();
 
   return (
-    <AccountShell userMenu={(tone) => <UserMenu user={user} tone={tone} />}>
+    <AccountShell userMenu={<UserMenu user={user} tone="panel" />}>
       <Outlet />
     </AccountShell>
   );

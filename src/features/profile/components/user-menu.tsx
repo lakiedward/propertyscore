@@ -1,18 +1,16 @@
 import type { User } from '@supabase/supabase-js';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { cva } from 'class-variance-authority';
+import { cva, type VariantProps } from 'class-variance-authority';
 import {
   ChevronDownIcon,
   LanguagesIcon,
   LayoutDashboardIcon,
   LogOutIcon,
   SettingsIcon,
-  UserIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,9 +18,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { PANEL_LINK_KEYS, type PanelPath } from '@/components/layout/panel-paths';
 import { SignOutDialog, type AppRole } from '@/features/auth';
 import { SUPPORTED_LOCALES } from '@/i18n/i18n';
 import { useLocale } from '@/i18n/use-locale';
+import { cn } from '@/lib/utils';
 import { profileQueries } from '../api/profile.queries';
 import { useChangeLocale } from '../hooks/use-change-locale';
 import { initialsOf } from '../profile.utils';
@@ -33,19 +33,22 @@ const triggerVariants = cva(
     variants: {
       tone: {
         light: 'text-foreground hover:bg-secondary focus-visible:ring-ring',
-        inverse: 'text-on-inverse hover:bg-sidebar-accent focus-visible:ring-focus-inverse',
+        inverse: 'text-on-inverse hover:bg-on-inverse/8 focus-visible:ring-focus-inverse',
+        panel:
+          'text-on-inverse hover:bg-on-inverse/8 focus-visible:ring-focus-inverse md:text-foreground md:hover:bg-secondary md:focus-visible:ring-ring',
       },
     },
   },
 );
 
 const avatarVariants = cva(
-  'grid size-8.5 shrink-0 place-items-center rounded-full text-[13px] font-extrabold',
+  'grid size-8.5 shrink-0 place-items-center rounded-full text-caption leading-none font-extrabold',
   {
     variants: {
       tone: {
         light: 'bg-primary text-primary-foreground',
         inverse: 'bg-cta text-cta-foreground',
+        panel: 'bg-cta text-cta-foreground md:bg-primary md:text-primary-foreground',
       },
     },
   },
@@ -55,9 +58,9 @@ const ITEM_CLASS = 'min-h-11 gap-2.5 px-3 text-body-sm [&_svg]:size-4.5';
 
 type UserMenuProps = {
   user: User;
-  tone: 'light' | 'inverse';
+  tone: NonNullable<VariantProps<typeof triggerVariants>['tone']>;
   appRole?: AppRole;
-  panelPath?: '/account' | '/admin';
+  panelPath?: PanelPath;
   isNameHidden?: boolean;
 };
 
@@ -87,7 +90,7 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
             >
               <span>{name}</span>
               {appRole ? (
-                <span className="text-nav-sm font-extrabold tracking-[0.08em] text-brand uppercase">
+                <span className="text-nav-sm font-extrabold tracking-label text-brand uppercase">
                   {t(`panel.userMenu.role.${appRole}`)}
                 </span>
               ) : null}
@@ -96,30 +99,26 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-65 p-1.5">
-          <DropdownMenuLabel className="mb-1 flex flex-col border-b border-border-subtle px-3 py-2.5">
-            <strong className="text-body-sm font-bold text-foreground">{name}</strong>
-            <span className="text-meta text-muted-foreground">{email}</span>
+          <DropdownMenuLabel className="mb-1 flex min-w-0 flex-col border-b border-border-subtle px-3 py-2.5">
+            <strong title={name} className="truncate text-body-sm font-bold text-foreground">
+              {name}
+            </strong>
+            <span title={email} className="truncate text-meta text-muted-foreground">
+              {email}
+            </span>
           </DropdownMenuLabel>
           {panelPath ? (
             <DropdownMenuItem asChild className={ITEM_CLASS}>
               <Link to={panelPath}>
                 <LayoutDashboardIcon aria-hidden />
-                {panelPath === '/admin'
-                  ? t('panel.userMenu.openAdmin')
-                  : t('panel.userMenu.openAccount')}
+                {t(PANEL_LINK_KEYS[panelPath])}
               </Link>
             </DropdownMenuItem>
           ) : null}
           <DropdownMenuItem asChild className={ITEM_CLASS}>
             <Link to="/account/settings">
-              <UserIcon aria-hidden />
-              {t('panel.userMenu.profile')}
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild className={ITEM_CLASS}>
-            <Link to="/account/settings">
               <SettingsIcon aria-hidden />
-              {t('panel.userMenu.settings')}
+              {t('panel.account.nav.settings')}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -140,7 +139,7 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
             }}
           >
             <LogOutIcon aria-hidden />
-            {t('panel.userMenu.signOut')}
+            {t('actions.signOut')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

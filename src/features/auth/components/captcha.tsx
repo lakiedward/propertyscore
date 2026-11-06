@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
-import { env } from '@/config/env';
 import { useLocale } from '@/i18n/use-locale';
 import { logger } from '@/lib/logger';
+import { CAPTCHA_SITE_KEY } from '../hooks/use-captcha';
 
 const SCRIPT_URL = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
@@ -67,7 +67,7 @@ type CaptchaProps = {
 export function Captcha({ onToken }: CaptchaProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const locale = useLocale();
-  const siteKey = env.VITE_TURNSTILE_SITE_KEY;
+  const siteKey = CAPTCHA_SITE_KEY;
   const handleToken = useEffectEvent((token: string | undefined) => {
     onToken(token);
   });
