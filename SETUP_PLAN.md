@@ -34,7 +34,7 @@ This document sets the stack, structure and rules for the Property Score fronten
 | DB tests | pgTAP via `supabase test db` (RLS above all) | Testing RLS only through the UI |
 | Lint / format | ESLint 9 flat config + typescript-eslint + Prettier 3 | TSLint, Biome (good, but its React/a11y rule coverage is smaller) |
 | Monitoring | Sentry (`@sentry/react`) | Console logs only |
-| CI | GitHub Actions: typecheck, lint, unit, DB, E2E, build | — |
+| CI | GitHub Actions: typecheck, lint, unit, DB, build (E2E run locally) | — |
 | Scoring and document jobs | `worker/` in this repository: a pnpm workspace package run by Node 24 directly, connecting to the same Supabase Postgres with `postgres.js`, deployed to Railway (decided 2026-11-03; rules in `.claude/rules/worker.md`). SmartCheck scores are precomputed per monthly snapshot on an EPSG:3844 hexagon grid in PostGIS (`private` schema); reports only read the ready snapshot | Edge Functions (time and memory limits, no Chromium, no `osmium`), a scheduled GitHub Action (no long-running job runner for reports and PDFs later), a second Supabase project (two auth systems, no RLS across databases), a separate repository (the schema, generated types and translations would drift), H3 in JavaScript (an extra dependency for what `ST_HexagonGrid` already does) |
 
 Pin exact versions when the project is created (`pnpm add -E`). Upgrade on purpose, through Renovate or Dependabot PRs.
@@ -813,7 +813,7 @@ Rules:
 - **Component tests are required** for forms (validation plus server-error mapping) and for screens with conditional logic. Simple presentational components don't need them.
 - **E2E tests are a short list of critical paths**, kept fast: sign up / sign in, create → score → view a property, permission denial between two users. Log in by saving Playwright `storageState` per test user, not through the UI in every test.
 - **Coverage**: report it, but don't gate on a percentage. Reviews check that new logic comes with tests.
-- **CI runs** typecheck → lint → translation check → unit/component → `supabase start` → `supabase db reset` → pgTAP → Playwright → build.
+- **CI runs** typecheck → lint → translation check → unit/component → `supabase start` → `supabase db reset` → pgTAP → build. Playwright runs only locally (`pnpm test:e2e`), by hand before merging changes to critical paths. Changed on 2026-11-06: the E2E job made every push wait too long for a suite that covers a handful of paths.
 
 ---
 
@@ -918,7 +918,7 @@ The architecture above is deliberately thin. Keep it that way:
 7. Create `src/i18n/` (init, typed keys, `format.ts`, `common` and `auth` namespaces in `ro` and `en`) and the language switcher. Translate the hidden strings in the shadcn components added in step 4. Write the bilingual auth email templates in `supabase/templates/`.
 8. Set up the tooling: ESLint (with `eslint-plugin-i18next`), Prettier, EditorConfig, Vitest + RTL + MSW, Playwright, Knip, lefthook and the translation check script.
 9. Add the GitHub Actions workflows:
-   - `ci.yml` on every PR: typecheck, lint, format check, translation check, unit tests, DB tests, E2E and build, plus the check that generated types match the migrations.
+   - `ci.yml` on every PR: typecheck, lint, format check, translation check, unit tests, DB tests and build, plus the check that generated types match the migrations.
    - `deploy.yml` on a `vX.Y.Z` tag: job `migrate` runs `supabase db push`, then job `site` builds with the Netlify site's production variables and publishes it (`netlify-cli deploy --prod --context production`). There is no hosted dev environment; merges to `main` only run CI.
    - Frontend deploys happen only in `deploy.yml`, never through Netlify's Git integration (`ignore = "exit 0"` in `netlify.toml`). Changed on 2026-11-04: with the Git integration the site went live on every merge while the database moved only on a tag, so a merge with migrations broke the live site until the tag; deploying both from one tagged workflow keeps them in step. The site job needs the GitHub `production` environment's secret `NETLIFY_AUTH_TOKEN` and variable `NETLIFY_SITE_ID`.
 10. Hosting: Netlify (site `propertyscore-app`), published by `deploy.yml` on a version tag (no Git integration builds, see the CI item above) and configured in `netlify.toml`: `pnpm build` on Node 24, `dist` published, an SPA fallback to `index.html`, and security headers (CSP allowing the Supabase, Sentry and OpenFreeMap domains, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`). Vercel and Cloudflare Pages would have worked equally well; Netlify was chosen because the owner's other projects already run there. The Supabase URL and publishable key are set as Netlify environment variables for the `production` context only, never committed, so Deploy Previews and branch deploys never reach the production database. HSTS is sent without `includeSubDomains` and `preload` until the production domain is chosen, because a preload entry is hard to withdraw. Sentry stays off on Netlify until `VITE_SENTRY_DSN` is set there; source maps keep uploading from CI (section 20), so `SENTRY_AUTH_TOKEN` is not set in Netlify.

@@ -182,7 +182,7 @@ pnpm test:worker          # worker Vitest suite (database tests need DATABASE_UR
 - The dev server listens on `127.0.0.1:5173` (`server.host` in `vite.config.ts`), the `site_url` the local email links point to. `pnpm db:reset` deletes every local account except the seed users; keep personal test accounts in a git-ignored `supabase/seed.local*.sql`.
 - After every migration: `pnpm db:reset`, then `pnpm db:types`, and commit the migration and the regenerated types together.
 - For the in-app browser preview use the `property-score-dev` configuration in `.claude/launch.json`.
-- CI on every pull request: typecheck → lint → format check → `i18n:check` → unit and component tests → `supabase start` → `db reset` → pgTAP → worker tests against the local database → generated-types drift check → Playwright → build. Lefthook only formats and lints staged files; CI is the gate.
+- CI on every pull request: typecheck → lint → format check → `i18n:check` → unit and component tests → `supabase start` → `db reset` → pgTAP → worker tests against the local database → generated-types drift check → build. Playwright is not in CI: run `pnpm test:e2e` locally before merging changes to critical paths. Lefthook only formats and lints staged files; CI is the gate.
 
 ## Git
 
