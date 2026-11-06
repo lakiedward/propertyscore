@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 type MosaicPhoto = {
   id: string;
   src: string;
+  smallSrc: string;
   alt: string;
 };
 
@@ -55,7 +56,7 @@ export function PhotoMosaic({ photos, moreLabel, emptyLabel, className }: PhotoM
                 className="relative min-h-0 overflow-hidden rounded-md bg-surface-alt"
               >
                 <img
-                  src={photo.src}
+                  src={photo.smallSrc}
                   alt={photo.alt}
                   loading="lazy"
                   decoding="async"

@@ -1,5 +1,6 @@
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toListingPhoto, toListingThumb } from '../listing.images';
+import { logger } from '@/lib/logger';
+import { toListingPhotoFiles } from '../listing.images';
 import {
   addListingPhotoRow,
   createListing,
@@ -11,11 +12,9 @@ import {
   updateListing,
 } from './my-listings.api';
 import {
-  downloadListingFile,
   listingPhotoPath,
-  removeListingFile,
-  uploadListingFile,
-  uploadListingThumb,
+  removeListingPhotoFiles,
+  uploadListingPhotoFiles,
 } from './listings.storage';
 
 const CITIES_STALE_MS = 3_600_000;
@@ -81,12 +80,18 @@ export function useAddListingPhotos() {
     mutationFn: async ({ ownerId, listingId, files, nextPosition }: AddPhotosInput) => {
       let position = nextPosition;
       for (const file of files) {
-        const photo = await toListingPhoto(file);
+        const photoFiles = await toListingPhotoFiles(file);
         const path = listingPhotoPath(ownerId, listingId, crypto.randomUUID());
-        await uploadListingFile(path, photo);
-        await addListingPhotoRow({ listingId, path, position });
-        if (position === 0) {
-          await uploadListingThumb(path, await toListingThumb(photo));
+        await uploadListingPhotoFiles(path, photoFiles);
+        try {
+          await addListingPhotoRow({ listingId, path, position });
+        } catch (error) {
+          await removeListingPhotoFiles(path).catch((cleanupError: unknown) => {
+            logger.warn('Could not remove the files of an unsaved listing photo', {
+              error: cleanupError,
+            });
+          });
+          throw error;
         }
         position += 1;
       }
@@ -95,21 +100,14 @@ export function useAddListingPhotos() {
   });
 }
 
-type RemovePhotoInput = {
-  photo: { id: string; path: string };
-  nextCoverPath: string | null;
-};
-
 export function useRemoveListingPhoto() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ photo, nextCoverPath }: RemovePhotoInput) => {
+    mutationFn: async (photo: { id: string; path: string }) => {
       await removeListingPhotoRow(photo.id);
-      await removeListingFile(photo.path);
-      if (nextCoverPath) {
-        const cover = await downloadListingFile(nextCoverPath);
-        await uploadListingThumb(nextCoverPath, await toListingThumb(cover));
-      }
+      await removeListingPhotoFiles(photo.path).catch((error: unknown) => {
+        logger.warn('Could not remove the files of a deleted listing photo', { error });
+      });
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: myListingQueries.all() }),
   });

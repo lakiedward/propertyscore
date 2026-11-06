@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useErrorMessage } from '@/i18n/error-message';
-import { getListingPhotoUrl } from '../api/listings.storage';
+import { getListingMediumUrl } from '../api/listings.storage';
 import { useAddListingPhotos, useRemoveListingPhoto } from '../api/my-listings.queries';
 import { LISTING_PHOTO_TYPES } from '../listing.images';
 
@@ -74,7 +74,7 @@ export function ListingPhotosField({
           {photos.map((photo, index) => (
             <li key={photo.id} className="relative overflow-hidden rounded-md bg-surface-alt">
               <img
-                src={getListingPhotoUrl(photo.path)}
+                src={getListingMediumUrl(photo.path)}
                 alt={t('photos.alt', { index: index + 1 })}
                 loading="lazy"
                 decoding="async"
@@ -94,8 +94,7 @@ export function ListingPhotosField({
                   aria-label={t('photos.remove', { index: index + 1 })}
                   disabled={removePhoto.isPending || addPhotos.isPending}
                   onClick={() => {
-                    const nextCover = index === 0 ? photos[1] : undefined;
-                    removePhoto.mutate({ photo, nextCoverPath: nextCover?.path ?? null });
+                    removePhoto.mutate(photo);
                   }}
                 >
                   <Trash2Icon aria-hidden />

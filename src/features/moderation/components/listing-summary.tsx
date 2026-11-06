@@ -9,7 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { PhotoMosaic } from '@/components/media/photo-mosaic';
 import { FactChip } from '@/components/property/fact-chip';
-import { getListingPhotoUrl } from '@/features/listings';
+import { getListingMediumUrl, getListingPhotoUrl } from '@/features/listings';
 import { useListingPrice } from '../hooks/use-listing-price';
 import type { ReviewListing } from '../moderation.types';
 import { hiddenPhotoCount } from '../moderation.utils';
@@ -28,6 +28,7 @@ export function ListingSummary({ listing, titleId }: ListingSummaryProps) {
   const photos = listing.photos.map((photo, index) => ({
     id: photo.id,
     src: getListingPhotoUrl(photo.path),
+    smallSrc: getListingMediumUrl(photo.path),
     alt: t('listing.photoAlt', {
       index: index + 1,
       total: listing.photos.length,
