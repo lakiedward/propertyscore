@@ -1,6 +1,15 @@
+import { AppError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';
-import type { ModerationCounts } from '../moderation.types';
+import type { DecisionInput, ModerationCounts, ModerationStatus } from '../moderation.types';
+
+const QUEUE_LIMIT = 50;
+
+const QUEUE_COLUMNS =
+  'id, status, transaction, title, city, price, currency, area_m2, photo_path, submitted_at, decided_at' as const;
+
+const REVIEW_COLUMNS =
+  'id, status, transaction, title, street_label, city, rooms, area_m2, price, currency, floor, building_floors, year_built, description, submitted_at, decided_at, owner:profiles!listings_owner_profile_fkey(full_name), photos:listing_photos(id, path, position, created_at), decisions:listing_decisions(id, decision, reasons, message, created_at)' as const;
 
 const EMPTY_COUNTS: ModerationCounts = {
   pending_approval: 0,
@@ -19,4 +28,44 @@ export async function getModerationCounts(): Promise<ModerationCounts> {
     }
   }
   return counts;
+}
+
+export async function listModerationQueue(status: ModerationStatus) {
+  const { data, error, count } = await supabase
+    .from('listings')
+    .select(QUEUE_COLUMNS, { count: 'exact' })
+    .eq('status', status)
+    .order(status === 'pending_approval' ? 'submitted_at' : 'decided_at', {
+      ascending: false,
+      nullsFirst: false,
+    })
+    .order('id', { ascending: false })
+    .range(0, QUEUE_LIMIT - 1);
+  if (error) throw toAppError(error);
+  return { items: data, total: count ?? data.length };
+}
+
+export async function getModerationListing(id: string) {
+  const { data, error } = await supabase
+    .from('listings')
+    .select(REVIEW_COLUMNS)
+    .eq('id', id)
+    .neq('status', 'draft')
+    .order('position', { referencedTable: 'listing_photos', ascending: true })
+    .order('created_at', { referencedTable: 'listing_decisions', ascending: false })
+    .maybeSingle();
+  if (error) throw toAppError(error);
+  if (!data) throw new AppError('not_found', `Listing ${id} is not in moderation`);
+  return data;
+}
+
+export async function decideListing({ listingId, decision, reasons, message }: DecisionInput) {
+  const { data, error } = await supabase.rpc('decide_listing', {
+    p_listing_id: listingId,
+    p_decision: decision,
+    p_reasons: reasons,
+    p_message: message ?? '',
+  });
+  if (error) throw toAppError(error);
+  return data;
 }

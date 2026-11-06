@@ -33,6 +33,7 @@ export const FONT_SIZES = [
   'nav-sm',
   'nav',
   'nav-count',
+  'status',
   'logo-xs',
   'logo-sm',
   'logo-md',

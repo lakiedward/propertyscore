@@ -33,7 +33,7 @@ describe('AdminShell', { timeout: 20_000 }, () => {
     if (!sidebar) {
       throw new Error('The admin sidebar is missing');
     }
-    const pendingLabel = NAV.pendingListings_few.replace('{{count}}', '3');
+    const pendingLabel = NAV.pendingListings_few.replace('{{count}}', '2');
     expect(
       await within(sidebar).findByRole(
         'link',

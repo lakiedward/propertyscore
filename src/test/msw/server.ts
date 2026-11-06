@@ -8,7 +8,7 @@ import { profileHandlers } from './handlers/profile';
 export const server = setupServer(
   ...authHandlers,
   ...profileHandlers,
+  ...moderationHandlers,
   ...listingHandlers,
   ...onlineReportHandlers,
-  ...moderationHandlers,
 );

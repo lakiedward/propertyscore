@@ -1,0 +1,166 @@
+{
+  "pageTitle": "Listing moderation",
+  "head": {
+    "eyebrow": "Portal",
+    "title": "Listing moderation",
+    "description": "Review the listing, then approve it, reject it for changes or block it."
+  },
+  "tabs": {
+    "label": "Filter by status",
+    "pending_approval": "To review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "blocked": "Blocked"
+  },
+  "status": {
+    "pending_approval": "To review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "blocked": "Blocked"
+  },
+  "queue": {
+    "label": "Listings",
+    "priceArea": "{{price}} · {{area}}",
+    "resubmitted": "Resubmitted",
+    "empty": {
+      "pending": {
+        "title": "No listings left to review",
+        "description": "New listings appear here as soon as they are submitted."
+      },
+      "decided": {
+        "title": "No listings here",
+        "description": "Listings appear here after you make a decision."
+      }
+    }
+  },
+  "when": {
+    "today": "today · {{time}}",
+    "yesterday": "yesterday · {{time}}",
+    "date": "{{date}}"
+  },
+  "listing": {
+    "transaction": {
+      "sale": "For sale",
+      "rent": "For rent"
+    },
+    "dealCity": "{{deal}} · {{city}}",
+    "pricePerMonth": "{{price}} / month",
+    "area": "{{value}} m²",
+    "facts": {
+      "rooms_one": "{{count}} room",
+      "rooms_other": "{{count}} rooms",
+      "floor": "Floor {{floor}} of {{total}}",
+      "floorOnly": "Floor {{floor}}",
+      "groundFloor": "Ground floor",
+      "basement": "Basement",
+      "yearBuilt": "Built {{year}}"
+    },
+    "morePhotos_one": "+{{count}} photo",
+    "morePhotos_other": "+{{count}} photos",
+    "photoAlt": "Photo {{index}} of {{total}}: {{title}}",
+    "noPhotos": "The listing has no photos.",
+    "owner": {
+      "submitted": "Owner · submitted {{when}}",
+      "today": "today, {{time}}",
+      "yesterday": "yesterday, {{time}}",
+      "date": "{{date}}",
+      "unnamed": "Unnamed owner"
+    },
+    "preview": "See the public page"
+  },
+  "checklist": {
+    "title": "Checks",
+    "progress": "{{done}} of {{total}}",
+    "photos": {
+      "label": "The photos are clear and show the home",
+      "description_one": "{{count}} photo",
+      "description_other": "{{count}} photos"
+    },
+    "personalData": {
+      "label": "No people, documents or personal data in the photos"
+    },
+    "price": {
+      "label": "The price and area are plausible",
+      "description": "Listing: {{value}}/m²"
+    },
+    "description": {
+      "label": "The description is accurate, with no contact details"
+    }
+  },
+  "decision": {
+    "title": "Decision",
+    "approve": "Approve and publish",
+    "approveHint": "Tick every check to approve.",
+    "reject": "Reject listing",
+    "block": "Block listing",
+    "form": {
+      "rejected": {
+        "hint": "The owner gets the reason and can edit and resubmit the listing.",
+        "submit": "Reject listing"
+      },
+      "blocked": {
+        "hint": "The listing will not be published and can no longer be edited or resubmitted. The owner sees the reason in their account.",
+        "submit": "Block listing"
+      },
+      "reasons": "Reasons",
+      "message": "Message for the owner",
+      "cancel": "Cancel",
+      "pending": "Saving…"
+    },
+    "confirmBlock": {
+      "title": "Block this listing?",
+      "description": "“{{title}}” can no longer be edited or resubmitted. This decision is final.",
+      "confirm": "Block listing",
+      "pending": "Blocking…"
+    },
+    "pending": "Saving…"
+  },
+  "reasons": {
+    "photos": {
+      "label": "Too few or unclear photos",
+      "message": "Add more clear photos, one for each room."
+    },
+    "personal_data": {
+      "label": "Personal data in the photos",
+      "message": "Some photos show documents or personal data. Remove them."
+    },
+    "price_area": {
+      "label": "Wrong price or area",
+      "message": "Check the price and area; they do not match the area's figures."
+    },
+    "description": {
+      "label": "Incomplete description",
+      "message": "Complete the description with the condition of the home and its amenities."
+    },
+    "contact_details": {
+      "label": "Contact details in the text",
+      "message": "Remove the phone number from the description; buyers contact you through the portal."
+    },
+    "duplicate": {
+      "label": "Duplicate listing",
+      "message": "This home is already published in another listing."
+    },
+    "unavailable": {
+      "label": "The home does not exist or is sold",
+      "message": "We could not confirm that the home is available."
+    },
+    "rules": {
+      "label": "Breaks the portal rules",
+      "message": "The listing breaks the portal's publishing rules."
+    }
+  },
+  "toast": {
+    "approved": "{{title}} was approved and published.",
+    "rejected": "{{title}} was rejected. The owner can edit and resubmit the listing.",
+    "blocked": "{{title}} was blocked. The owner sees the reason in their account."
+  },
+  "decided": {
+    "approved": "Approved {{date}}",
+    "rejected": "Rejected {{date}}",
+    "blocked": "Blocked {{date}}"
+  },
+  "previewDialog": {
+    "title": "Public preview",
+    "description": "This is how the listing appears on the site once approved."
+  }
+}
