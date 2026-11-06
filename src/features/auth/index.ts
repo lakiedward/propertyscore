@@ -23,5 +23,6 @@ export { DeleteAccountSection } from './components/delete-account-section';
 export { LoginPage } from './components/login-page';
 export { NewPasswordPage } from './components/new-password-page';
 export { PasswordResetPage } from './components/password-reset-page';
+export { PhoneSection } from './components/phone-section';
 export { SignOutDialog } from './components/sign-out-dialog';
 export { SignUpPage } from './components/sign-up-page';

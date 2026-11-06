@@ -23,9 +23,13 @@
   },
   "actions": {
     "close": "Închide",
+    "cancel": "Renunță",
     "retry": "Încearcă din nou",
     "goHome": "Înapoi la pagina principală",
     "signOut": "Ieși din cont"
+  },
+  "toasts": {
+    "region": "Notificări"
   },
   "language": {
     "label": "Limbă",

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { FieldGroup } from '@/components/ui/field';
+import { SettingsSection } from '@/components/layout/settings-section';
 import { useChangePassword } from '../api/auth.queries';
 import {
   changePasswordFormSchema,
@@ -13,7 +14,6 @@ import {
 import { useFormError } from '../hooks/use-form-error';
 import { AuthTextField } from './auth-text-field';
 import { FormErrorNotice } from './form-error-notice';
-import { SettingsSection } from './settings-section';
 
 type ChangePasswordSectionProps = {
   hasPassword: boolean;

@@ -1,15 +1,6 @@
 import { LogOutIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { useSignOut } from '../api/auth.queries';
 
 type SignOutDialogProps = {
@@ -30,29 +21,17 @@ export function SignOutDialog({ isOpen, onOpenChange }: SignOutDialogProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('signOut.title')}</DialogTitle>
-          <DialogDescription>{t('signOut.text')}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button type="button" variant="outline">
-              {t('signOut.cancel')}
-            </Button>
-          </DialogClose>
-          <Button
-            type="button"
-            variant="destructive"
-            disabled={signOut.isPending}
-            onClick={handleConfirm}
-          >
-            <LogOutIcon aria-hidden />
-            {signOut.isPending ? t('signOut.pending') : t('signOut.confirm')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmDialog
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      title={t('signOut.title')}
+      description={t('signOut.text')}
+      confirmLabel={t('signOut.confirm')}
+      pendingLabel={t('signOut.pending')}
+      tone="destructive"
+      confirmIcon={LogOutIcon}
+      isPending={signOut.isPending}
+      onConfirm={handleConfirm}
+    />
   );
 }

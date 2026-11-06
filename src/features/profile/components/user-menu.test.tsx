@@ -105,11 +105,11 @@ describe('UserMenu', { timeout: 20_000 }, () => {
     const user = await openMenu();
 
     await user.click(screen.getByRole('menuitem', { name: roCommon.actions.signOut }));
-    const dialog = await screen.findByRole('dialog', { name: roAuth.signOut.title });
-    await user.click(within(dialog).getByRole('button', { name: roAuth.signOut.cancel }));
+    const dialog = await screen.findByRole('alertdialog', { name: roAuth.signOut.title });
+    await user.click(within(dialog).getByRole('button', { name: roCommon.actions.cancel }));
 
     await waitFor(() => {
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     });
     expect(signOutCalls).toBe(0);
   });
@@ -118,11 +118,11 @@ describe('UserMenu', { timeout: 20_000 }, () => {
     const user = await openMenu();
 
     await user.click(screen.getByRole('menuitem', { name: roCommon.actions.signOut }));
-    const dialog = await screen.findByRole('dialog', { name: roAuth.signOut.title });
+    const dialog = await screen.findByRole('alertdialog', { name: roAuth.signOut.title });
     await user.click(within(dialog).getByRole('button', { name: roAuth.signOut.confirm }));
 
     await waitFor(() => {
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     });
   });
 

@@ -3,15 +3,37 @@ import { http, HttpResponse } from 'msw';
 import roAuth from '@/i18n/locales/ro/auth.json';
 import roCommon from '@/i18n/locales/ro/common.json';
 import { signedInAs } from '@/test/factories/auth';
+import { buildProfile } from '@/test/factories/profile';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
 
 const PASSWORD = roAuth.settings.password;
 const DELETE = roAuth.settings.delete;
+const PHONE = roAuth.settings.phone;
 
 function answerHasPassword(response: () => Response | Promise<Response>) {
   server.use(http.post(supabaseUrl('/rest/v1/rpc/account_has_password'), response));
+}
+
+function answerWithoutPhone() {
+  let savedPhone: string | null = null;
+  server.use(
+    http.get(supabaseUrl('/rest/v1/profiles'), () =>
+      HttpResponse.json(buildProfile({ phone: savedPhone })),
+    ),
+    http.patch(supabaseUrl('/rest/v1/profiles'), async ({ request }) => {
+      const body: unknown = await request.json();
+      savedPhone =
+        typeof body === 'object' &&
+        body !== null &&
+        'phone' in body &&
+        typeof body.phone === 'string'
+          ? body.phone
+          : null;
+      return HttpResponse.json(buildProfile({ phone: savedPhone }));
+    }),
+  );
 }
 
 function serverError() {
@@ -23,7 +45,7 @@ function serverError() {
 
 async function openDeleteDialog(user: Awaited<ReturnType<typeof renderAppRoute>>['user']) {
   await user.click(await screen.findByRole('button', { name: DELETE.open }));
-  return screen.findByRole('dialog', { name: DELETE.dialogTitle });
+  return screen.findByRole('alertdialog', { name: DELETE.dialogTitle });
 }
 
 async function openSettingsFromTheSidebar() {
@@ -110,5 +132,33 @@ describe('AccountSettingsPage', { timeout: 20_000 }, () => {
       await screen.findByRole('heading', { level: 2, name: PASSWORD.title }),
     ).toBeInTheDocument();
     expect(screen.queryByText(roCommon.pages.loading)).not.toBeInTheDocument();
+  });
+
+  it('sends an account without a phone to the settings until the phone is saved', async () => {
+    answerHasPassword(() => HttpResponse.json(false));
+    answerWithoutPhone();
+    const { user, router } = await renderAppRoute('/account/reports', { auth: signedInAs() });
+
+    expect(await screen.findByText(PHONE.missingTitle)).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/account/settings');
+
+    await user.type(screen.getByLabelText(roAuth.fields.phone.label), '0722 123 456');
+    await user.click(screen.getByRole('button', { name: PHONE.submit }));
+
+    await vi.waitFor(() => {
+      expect(router.state.location.pathname).toBe('/account/reports');
+    });
+  });
+
+  it('rejects an invalid phone number', async () => {
+    answerHasPassword(() => HttpResponse.json(false));
+    answerWithoutPhone();
+    const { user } = await renderAppRoute('/account', { auth: signedInAs() });
+
+    await user.type(await screen.findByLabelText(roAuth.fields.phone.label), '123');
+    await user.click(screen.getByRole('button', { name: PHONE.submit }));
+
+    expect(await screen.findByText(roAuth.fields.phone.error)).toBeInTheDocument();
+    expect(screen.getByText(PHONE.missingTitle)).toBeInTheDocument();
   });
 });

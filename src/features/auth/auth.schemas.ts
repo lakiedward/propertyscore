@@ -37,6 +37,12 @@ const passwordsMatchOptions = {
   error: messageKey('auth:newPassword.mismatch'),
 };
 
+const phoneSchema = z
+  .string()
+  .trim()
+  .min(1, { error: messageKey('auth:fields.phone.required'), abort: true })
+  .refine(isPhoneNumber, { error: messageKey('auth:fields.phone.error') });
+
 export const credentialsSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, { error: messageKey('auth:fields.password.required') }),
@@ -52,11 +58,7 @@ export const signUpSchema = z.object({
       error: messageKey('auth:fields.name.tooLong', { count: FULL_NAME_MAX_LENGTH }),
     }),
   email: emailSchema,
-  phone: z
-    .string()
-    .trim()
-    .min(1, { error: messageKey('auth:fields.phone.required'), abort: true })
-    .refine(isPhoneNumber, { error: messageKey('auth:fields.phone.error') }),
+  phone: phoneSchema,
   password: newPasswordSchema,
   acceptsTerms: z.boolean().refine((value) => value, {
     error: messageKey('auth:fields.terms.error'),
@@ -75,6 +77,11 @@ export function toSignUpPayload(values: SignUpValues, locale: Locale, redirect?:
   };
 }
 export type SignUpPayload = ReturnType<typeof toSignUpPayload>;
+
+export const accountPhoneFormSchema = z.object({
+  phone: phoneSchema,
+});
+export type AccountPhoneFormValues = z.infer<typeof accountPhoneFormSchema>;
 
 export const passwordResetRequestSchema = z.object({
   email: emailSchema,

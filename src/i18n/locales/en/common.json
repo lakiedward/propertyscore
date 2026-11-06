@@ -23,9 +23,13 @@
   },
   "actions": {
     "close": "Close",
+    "cancel": "Cancel",
     "retry": "Try again",
     "goHome": "Back to the home page",
     "signOut": "Sign out"
+  },
+  "toasts": {
+    "region": "Notifications"
   },
   "language": {
     "label": "Language",

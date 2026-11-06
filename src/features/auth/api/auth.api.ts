@@ -12,6 +12,7 @@ const authSettingsSchema = z.object({
   external: z.record(z.string(), z.boolean()),
 });
 
+const ACCOUNT_PHONE_COLUMNS = 'phone' as const;
 const REPEATED_SIGN_UP_AGE_MS = 120_000;
 const SERVER_ERROR_STATUS = 500;
 const DELETED_OUTCOME = 'deleted';
@@ -189,6 +190,27 @@ export async function getAccountHasPassword(): Promise<boolean> {
   const { data, error } = await supabase.rpc('account_has_password');
   if (error) throw toAppError(error);
   return data;
+}
+
+export async function getAccountPhone(userId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(ACCOUNT_PHONE_COLUMNS)
+    .eq('id', userId)
+    .single();
+  if (error) throw toAppError(error);
+  return data.phone;
+}
+
+export async function updateAccountPhone({ userId, phone }: { userId: string; phone: string }) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ phone })
+    .eq('id', userId)
+    .select(ACCOUNT_PHONE_COLUMNS)
+    .single();
+  if (error) throw toAppError(error);
+  return data.phone;
 }
 
 type PasswordChange = {

@@ -4,6 +4,7 @@ import {
   changePassword,
   deleteOwnAccount,
   getAccountHasPassword,
+  getAccountPhone,
   listEnabledSocialProviders,
   requestPasswordReset,
   resendConfirmation,
@@ -11,6 +12,7 @@ import {
   signInWithProvider,
   signOut,
   signUp,
+  updateAccountPhone,
   verifyEmailLink,
 } from './auth.api';
 
@@ -27,6 +29,11 @@ export const authQueries = {
     queryOptions({
       queryKey: [...authQueries.accountHasPasswordAll(), userId],
       queryFn: getAccountHasPassword,
+    }),
+  accountPhone: (userId: string) =>
+    queryOptions({
+      queryKey: [...authQueries.all(), 'account-phone', userId],
+      queryFn: () => getAccountPhone(userId),
     }),
   emailLink: ({ token_hash: tokenHash, type }: Pick<AuthConfirmSearch, 'token_hash' | 'type'>) =>
     queryOptions({
@@ -65,6 +72,17 @@ export function useChangePassword() {
     meta: { silent: true },
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: authQueries.accountHasPasswordAll() }),
+  });
+}
+
+export function useUpdateAccountPhone() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateAccountPhone,
+    meta: { silent: true },
+    onSuccess: (phone, { userId }) => {
+      queryClient.setQueryData(authQueries.accountPhone(userId).queryKey, phone);
+    },
   });
 }
 
