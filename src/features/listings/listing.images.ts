@@ -5,8 +5,6 @@ const WEBP_QUALITY = 0.85;
 
 export const LISTING_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
-export const LISTING_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
-
 function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(

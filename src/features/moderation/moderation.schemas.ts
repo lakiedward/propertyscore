@@ -18,8 +18,6 @@ export const moderationSearchSchema = z.object({
   listing: z.uuid().optional().catch(undefined),
 });
 
-export type ModerationSearch = z.infer<typeof moderationSearchSchema>;
-
 export const decisionFormSchema = z.object({
   reasons: z
     .array(z.enum(DECISION_REASON_CODES))

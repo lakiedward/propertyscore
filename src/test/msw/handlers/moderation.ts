@@ -8,7 +8,7 @@ export const SEEDED_REVIEW_LISTINGS: ReviewListing[] = [
   buildReviewListing({ title: 'Garsonieră, Circumvalațiunii', transaction: 'rent', price: 450 }),
 ];
 
-export const SEEDED_MODERATION_COUNTS = [
+const SEEDED_MODERATION_COUNTS = [
   { status: 'pending_approval', total: 2 },
   { status: 'approved', total: 13 },
   { status: 'rejected', total: 1 },

@@ -32,7 +32,7 @@ export const SEEDED_MY_LISTINGS: MyListing[] = [
   }),
 ];
 
-export const CITY_TIMISOARA = {
+const CITY_TIMISOARA = {
   id: 'c4000000-0000-4000-8000-000000000001',
   name: 'Timișoara',
   center: '0101000020E610000052616C21C8393540AA2B9FE579E04640',

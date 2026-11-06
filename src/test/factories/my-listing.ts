@@ -1,7 +1,7 @@
 import type { MyListing, MyListingRow } from '@/features/listings';
 import { TEST_USER_ID } from './auth';
 
-export const OWNER_ID = TEST_USER_ID;
+const OWNER_ID = TEST_USER_ID;
 
 let sequence = 0;
 
