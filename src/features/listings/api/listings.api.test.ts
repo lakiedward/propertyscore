@@ -19,14 +19,14 @@ describe('listListings', () => {
     server.events.removeAllListeners();
   });
 
-  it('asks for the newest published listings of one transaction, page by page', async () => {
+  it('asks for the newest approved listings of one transaction, page by page', async () => {
     const requests = recordRequests();
 
     await listListings({ transaction: 'rent', limit: 6 });
 
     const [request] = requests;
     const params = new URL(request?.url ?? '').searchParams;
-    expect(params.get('status')).toBe('eq.published');
+    expect(params.get('status')).toBe('eq.approved');
     expect(params.get('transaction')).toBe('eq.rent');
     expect(params.get('order')).toBe('published_at.desc,id.desc');
     expect(params.get('offset')).toBe('0');
@@ -34,7 +34,7 @@ describe('listListings', () => {
     expect(request?.headers.get('Prefer')).toContain('count=exact');
   });
 
-  it('returns only published listings from the handler', async () => {
+  it('returns only approved listings from the handler', async () => {
     const { items } = await listListings({ transaction: 'sale', limit: 6 });
 
     expect(items.map((item) => item.title)).toEqual([

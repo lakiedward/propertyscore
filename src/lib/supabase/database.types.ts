@@ -37,19 +37,65 @@ export type Database = {
                   Relationships: [
                     
                   ]
-                },"listings": {
+                },"listing_decisions": {
                   Row: {
-                    "area_m2": number,"city": string,"created_at": string,"currency": string,"id": string,"latitude": number,"longitude": number,"owner_id": string,"photo_path": string | null,"price": number,"published_at": string | null,"rooms": number,"smartcheck_score": number | null,"status": Database["public"]['Enums']["listing_status"],"street_label": string,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at": string,"verification": Database["public"]['Enums']["listing_verification"]
+                    "created_at": string,"decided_by": string | null,"decision": Database["public"]['Enums']["listing_decision"],"id": string,"listing_id": string,"message": string | null,"reasons": (Database["public"]['Enums']["listing_decision_reason"])[]
                   }
                   ComputedFields: never
                   Insert: {
-                    "area_m2": number,"city": string,"created_at"?: string,"currency": string,"id"?: string,"latitude": number,"longitude": number,"owner_id"?: string,"photo_path"?: string | null,"price": number,"published_at"?: string | null,"rooms": number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label": string,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"verification"?: Database["public"]['Enums']["listing_verification"]
+                    "created_at"?: string,"decided_by"?: string | null,"decision": Database["public"]['Enums']["listing_decision"],"id"?: string,"listing_id": string,"message"?: string | null,"reasons"?: (Database["public"]['Enums']["listing_decision_reason"])[]
                   }
                   Update: {
-                    "area_m2"?: number,"city"?: string,"created_at"?: string,"currency"?: string,"id"?: string,"latitude"?: number,"longitude"?: number,"owner_id"?: string,"photo_path"?: string | null,"price"?: number,"published_at"?: string | null,"rooms"?: number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label"?: string,"title"?: string,"transaction"?: Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"verification"?: Database["public"]['Enums']["listing_verification"]
+                    "created_at"?: string,"decided_by"?: string | null,"decision"?: Database["public"]['Enums']["listing_decision"],"id"?: string,"listing_id"?: string,"message"?: string | null,"reasons"?: (Database["public"]['Enums']["listing_decision_reason"])[]
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "listing_decisions_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"listing_photos": {
+                  Row: {
+                    "created_at": string,"id": string,"listing_id": string,"owner_id": string,"path": string,"position": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"listing_id": string,"owner_id"?: string,"path": string,"position": number,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"listing_id"?: string,"owner_id"?: string,"path"?: string,"position"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_photos_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"listings": {
+                  Row: {
+                    "area_m2": number,"building_floors": number | null,"city": string,"created_at": string,"currency": string,"decided_at": string | null,"description": string | null,"floor": number | null,"id": string,"latitude": number,"longitude": number,"owner_id": string,"photo_path": string | null,"price": number,"published_at": string | null,"rooms": number,"smartcheck_score": number | null,"status": Database["public"]['Enums']["listing_status"],"street_label": string,"submitted_at": string | null,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at": string,"verification": Database["public"]['Enums']["listing_verification"],"year_built": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "area_m2": number,"building_floors"?: number | null,"city": string,"created_at"?: string,"currency": string,"decided_at"?: string | null,"description"?: string | null,"floor"?: number | null,"id"?: string,"latitude": number,"longitude": number,"owner_id"?: string,"photo_path"?: string | null,"price": number,"published_at"?: string | null,"rooms": number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label": string,"submitted_at"?: string | null,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"verification"?: Database["public"]['Enums']["listing_verification"],"year_built"?: number | null
+                  }
+                  Update: {
+                    "area_m2"?: number,"building_floors"?: number | null,"city"?: string,"created_at"?: string,"currency"?: string,"decided_at"?: string | null,"description"?: string | null,"floor"?: number | null,"id"?: string,"latitude"?: number,"longitude"?: number,"owner_id"?: string,"photo_path"?: string | null,"price"?: number,"published_at"?: string | null,"rooms"?: number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label"?: string,"submitted_at"?: string | null,"title"?: string,"transaction"?: Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"verification"?: Database["public"]['Enums']["listing_verification"],"year_built"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listings_owner_profile_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"online_reports": {
                   Row: {
@@ -180,8 +226,29 @@ isOneToOne: false
 "custom_access_token_hook":
 { Args: { "event": Json }; Returns: Json
                            },
+"decide_listing":
+{ Args: { "p_decision": Database["public"]['Enums']["listing_decision"],"p_listing_id": string,"p_message": string,"p_reasons": (Database["public"]['Enums']["listing_decision_reason"])[] }; Returns: {
+              "created_at": string,
+"decided_by": string | null,
+"decision": Database["public"]['Enums']["listing_decision"],
+"id": string,
+"listing_id": string,
+"message": string | null,
+"reasons": (Database["public"]['Enums']["listing_decision_reason"])[]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "listing_decisions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "delete_own_account":
 { Args: { "confirmation": string }; Returns: string
+                           },
+"listing_moderation_counts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "status": Database["public"]['Enums']["listing_status"],"total": number
+            }[]
                            },
 "resolve_report_share_link":
 { Args: { "p_report_id": string,"p_token": string }; Returns: {
@@ -190,10 +257,44 @@ isOneToOne: false
                            },
 "revoke_report_share_link":
 { Args: { "p_report_id": string }; Returns: undefined
-                           }
+                           },
+"submit_listing":
+{ Args: { "p_listing_id": string }; Returns: {
+              "area_m2": number,
+"building_floors": number | null,
+"city": string,
+"created_at": string,
+"currency": string,
+"decided_at": string | null,
+"description": string | null,
+"floor": number | null,
+"id": string,
+"latitude": number,
+"longitude": number,
+"owner_id": string,
+"photo_path": string | null,
+"price": number,
+"published_at": string | null,
+"rooms": number,
+"smartcheck_score": number | null,
+"status": Database["public"]['Enums']["listing_status"],
+"street_label": string,
+"submitted_at": string | null,
+"title": string,
+"transaction": Database["public"]['Enums']["listing_transaction"],
+"updated_at": string,
+"verification": Database["public"]['Enums']["listing_verification"],
+"year_built": number | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "listings"
+        isOneToOne: true
+        isSetofReturn: false
+      } }
           }
           Enums: {
-            "app_role": "user"|"admin","listing_status": "draft"|"published","listing_transaction": "sale"|"rent","listing_verification": "physical"|"smartcheck"|"none","online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
+            "app_role": "user"|"admin","listing_decision": "approved"|"rejected"|"blocked","listing_decision_reason": "photos"|"personal_data"|"price_area"|"description"|"contact_details"|"duplicate"|"unavailable"|"rules","listing_status": "draft"|"pending_approval"|"approved"|"rejected"|"blocked","listing_transaction": "sale"|"rent","listing_verification": "physical"|"smartcheck"|"none","online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -313,7 +414,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "app_role": ["user", "admin"],"listing_status": ["draft", "published"],"listing_transaction": ["sale", "rent"],"listing_verification": ["physical", "smartcheck", "none"],"online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
+            "app_role": ["user", "admin"],"listing_decision": ["approved", "rejected", "blocked"],"listing_decision_reason": ["photos", "personal_data", "price_area", "description", "contact_details", "duplicate", "unavailable", "rules"],"listing_status": ["draft", "pending_approval", "approved", "rejected", "blocked"],"listing_transaction": ["sale", "rent"],"listing_verification": ["physical", "smartcheck", "none"],"online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
           }
         }
 } as const

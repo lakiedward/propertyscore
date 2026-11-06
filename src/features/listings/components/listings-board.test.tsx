@@ -47,7 +47,7 @@ afterEach(() => {
 });
 
 describe('ListingsBoard', () => {
-  it('lists the published listings for sale with their count', async () => {
+  it('lists the approved listings for sale with their count', async () => {
     await renderWithProviders(<ListingsBoard transaction="sale" onTransactionChange={vi.fn()} />);
 
     const buttons = await findListingButtons();
@@ -168,7 +168,7 @@ describe('ListingsBoard', () => {
     expect(await findListingButtons()).toHaveLength(2);
   });
 
-  it('shows the empty state without a count when nothing is published', async () => {
+  it('shows the empty state without a count when nothing is approved', async () => {
     serveListings([]);
     await renderWithProviders(<ListingsBoard transaction="sale" onTransactionChange={vi.fn()} />);
 

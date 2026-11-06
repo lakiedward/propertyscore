@@ -15,7 +15,17 @@ export type AppErrorReason =
   | 'link_expired'
   | 'invalid_password'
   | 'email_mismatch'
-  | 'last_admin';
+  | 'last_admin'
+  | 'listing_not_found'
+  | 'listing_already_pending'
+  | 'listing_blocked'
+  | 'listing_invalid_transition'
+  | 'listing_incomplete'
+  | 'listing_not_pending'
+  | 'listing_photo_limit'
+  | 'decision_reason_invalid'
+  | 'decision_message_required'
+  | 'decision_message_too_long';
 
 type AppErrorOptions = {
   cause?: unknown;

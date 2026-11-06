@@ -83,12 +83,14 @@ insert into public.listings (
   verification,
   smartcheck_score,
   photo_path,
-  published_at
+  published_at,
+  submitted_at,
+  decided_at
 )
 select
   seed.id,
   'a0000000-0000-4000-8000-000000000001'::uuid,
-  'published',
+  'approved',
   seed.transaction::public.listing_transaction,
   seed.title,
   seed.street_label,
@@ -102,6 +104,8 @@ select
   seed.verification::public.listing_verification,
   seed.smartcheck_score,
   'a0000000-0000-4000-8000-000000000001/' || seed.id || '/cover.webp',
+  now() - make_interval(mins => seed.position),
+  now() - make_interval(days => 1, mins => seed.position),
   now() - make_interval(mins => seed.position)
 from (
   values
@@ -118,3 +122,98 @@ from (
     ('b0000000-0000-4000-8000-000000000011'::uuid, 11, 'rent', '2 camere, balcon', 'Str. Eminescu, 2', 2, 60, 480, 45.7615, 21.2281, 'physical', null),
     ('b0000000-0000-4000-8000-000000000012'::uuid, 12, 'rent', 'Apartament cu 3 camere', 'Str. Brediceanu, 7', 3, 72, 590, 45.7562, 21.2174, 'none', null)
 ) as seed (id, position, transaction, title, street_label, rooms, area_m2, price, latitude, longitude, verification, smartcheck_score);
+
+insert into public.listings (
+  id,
+  owner_id,
+  status,
+  transaction,
+  title,
+  street_label,
+  city,
+  rooms,
+  area_m2,
+  price,
+  currency,
+  latitude,
+  longitude,
+  description,
+  floor,
+  building_floors,
+  year_built,
+  submitted_at,
+  decided_at,
+  published_at
+)
+values
+  ('b0000000-0000-4000-8000-000000000013', 'a0000000-0000-4000-8000-000000000003', 'pending_approval', 'sale',
+   'Apartament 3 camere, Complex', 'Str. Gheorghe Lazăr, 12', 'Timișoara', 3, 90, 168000, 'EUR', 45.7469, 21.2394,
+   'Apartament luminos, renovat în 2023, cu balcon închis și centrală proprie. Aproape de Universitate și de linia de tramvai 8.',
+   3, 4, 1985, now() - interval '2 hours', null, null),
+  ('b0000000-0000-4000-8000-000000000014', 'a0000000-0000-4000-8000-000000000002', 'pending_approval', 'rent',
+   'Garsonieră, Circumvalațiunii', 'Calea Circumvalațiunii, 31', 'Timișoara', 1, 32, 450, 'EUR', 45.7612, 21.2125,
+   'Garsonieră mobilată și utilată, disponibilă din 1 decembrie. Contract minim 12 luni.',
+   2, 10, 1982, now() - interval '1 day 4 hours', null, null),
+  ('b0000000-0000-4000-8000-000000000015', 'a0000000-0000-4000-8000-000000000003', 'pending_approval', 'sale',
+   'Casă 4 camere, Elisabetin', 'Str. Gheorghe Doja, 40', 'Timișoara', 4, 140, 245000, 'EUR', 45.7448, 21.2241,
+   'Casă interbelică cu curte, renovată parțial. Acoperiș refăcut în 2021, instalație electrică nouă.',
+   null, 1, 1938, now() - interval '3 days', now() - interval '5 days', null),
+  ('b0000000-0000-4000-8000-000000000016', 'a0000000-0000-4000-8000-000000000002', 'approved', 'sale',
+   'Apartament 2 camere, Iosefin', 'Str. Iosif Nemoianu, 5', 'Timișoara', 2, 56, 112000, 'EUR', 45.7483, 21.2087,
+   'Apartament cu două camere decomandate, aproape de Piața Iosefin.',
+   1, 4, 1978, now() - interval '6 days', now() - interval '5 days', now() - interval '5 days'),
+  ('b0000000-0000-4000-8000-000000000017', 'a0000000-0000-4000-8000-000000000003', 'rejected', 'rent',
+   'Studio, Dâmbovița', 'Calea Dâmbovița, 18', 'Timișoara', 1, 28, 380, 'EUR', 45.7395, 21.2019,
+   'Studio la parter, intrare separată.',
+   0, 4, 1990, now() - interval '7 days', now() - interval '6 days', null),
+  ('b0000000-0000-4000-8000-000000000018', 'a0000000-0000-4000-8000-000000000002', 'blocked', 'sale',
+   'Apartament 3 camere, Lipovei', 'Calea Lipovei, 70', 'Timișoara', 3, 78, 95000, 'EUR', 45.7731, 21.2412,
+   'Anunț duplicat al unui apartament deja publicat.',
+   4, 10, 1984, now() - interval '8 days', now() - interval '7 days', null),
+  ('b0000000-0000-4000-8000-000000000019', 'a0000000-0000-4000-8000-000000000003', 'draft', 'sale',
+   '2 camere, Fabric', 'Str. Ștefan cel Mare, 9', 'Timișoara', 2, 61, 99000, 'EUR', 45.7577, 21.2489,
+   null, 2, 4, 1965, null, null, null);
+
+insert into public.listing_photos (listing_id, owner_id, path, position, created_at)
+select
+  listings.id,
+  listings.owner_id,
+  listings.owner_id || '/' || listings.id || '/cover.webp',
+  0,
+  listings.created_at
+from public.listings
+where listings.owner_id = 'a0000000-0000-4000-8000-000000000001';
+
+insert into public.listing_photos (listing_id, owner_id, path, position)
+select
+  seed.listing_id,
+  seed.owner_id,
+  seed.owner_id || '/' || seed.listing_id || '/' || case when photos.position = 0 then 'cover' else 'photo-' || photos.position end || '.webp',
+  photos.position
+from (
+  values
+    ('b0000000-0000-4000-8000-000000000013'::uuid, 'a0000000-0000-4000-8000-000000000003'::uuid, 6),
+    ('b0000000-0000-4000-8000-000000000014'::uuid, 'a0000000-0000-4000-8000-000000000002'::uuid, 5),
+    ('b0000000-0000-4000-8000-000000000015'::uuid, 'a0000000-0000-4000-8000-000000000003'::uuid, 5),
+    ('b0000000-0000-4000-8000-000000000016'::uuid, 'a0000000-0000-4000-8000-000000000002'::uuid, 5),
+    ('b0000000-0000-4000-8000-000000000017'::uuid, 'a0000000-0000-4000-8000-000000000003'::uuid, 2),
+    ('b0000000-0000-4000-8000-000000000018'::uuid, 'a0000000-0000-4000-8000-000000000002'::uuid, 5)
+) as seed (listing_id, owner_id, photo_count)
+cross join lateral generate_series(0, seed.photo_count - 1) as photos (position);
+
+insert into public.listing_decisions (listing_id, decision, reasons, message, decided_by, created_at)
+select listings.id, 'approved', '{}', null, 'a0000000-0000-4000-8000-000000000004', listings.decided_at
+from public.listings
+where listings.status = 'approved';
+
+insert into public.listing_decisions (listing_id, decision, reasons, message, decided_by, created_at)
+values
+  ('b0000000-0000-4000-8000-000000000015', 'rejected', '{photos,description}',
+   'Adaugă mai multe fotografii clare, cu fiecare cameră. Completează descrierea cu starea locuinței și dotările.',
+   'a0000000-0000-4000-8000-000000000004', now() - interval '5 days'),
+  ('b0000000-0000-4000-8000-000000000017', 'rejected', '{photos}',
+   'Adaugă fotografii cu baia și bucătăria. Avem nevoie de cel puțin 5 fotografii.',
+   'a0000000-0000-4000-8000-000000000004', now() - interval '6 days'),
+  ('b0000000-0000-4000-8000-000000000018', 'blocked', '{duplicate}',
+   'Locuința este deja publicată într-un alt anunț.',
+   'a0000000-0000-4000-8000-000000000004', now() - interval '7 days');
