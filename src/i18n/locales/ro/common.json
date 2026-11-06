@@ -73,7 +73,17 @@
       "reauthentication_needed": "Pentru siguranță, autentifică-te din nou, apoi reia acțiunea.",
       "invalid_password": "Parola nu este corectă.",
       "email_mismatch": "Adresa de email nu se potrivește cu cea a contului.",
-      "last_admin": "Ești singurul administrator. Numește alt administrator înainte să îți ștergi contul."
+      "last_admin": "Ești singurul administrator. Numește alt administrator înainte să îți ștergi contul.",
+      "listing_not_found": "Nu am găsit anunțul.",
+      "listing_already_pending": "Anunțul a fost deja trimis spre verificare.",
+      "listing_blocked": "Anunțul a fost blocat și nu mai poate fi modificat sau retrimis.",
+      "listing_invalid_transition": "Anunțul nu mai poate fi modificat în această stare.",
+      "listing_incomplete": "Adaugă o descriere și cel puțin 5 fotografii înainte să trimiți anunțul.",
+      "listing_not_pending": "Anunțul a fost deja verificat.",
+      "listing_photo_limit": "Poți adăuga cel mult 20 de fotografii.",
+      "decision_reason_invalid": "Alege cel puțin un motiv.",
+      "decision_message_required": "Scrie un mesaj pentru proprietar.",
+      "decision_message_too_long": "Mesajul poate avea cel mult 2.000 de caractere."
     }
   },
   "validation": {
@@ -242,7 +252,10 @@
         "products": "Produse",
         "content": "Conținut"
       },
-      "pageTitle": "{{page}} · Admin"
+      "pageTitle": "{{page}} · Admin",
+      "pendingListings_one": "{{count}} anunț de verificat",
+      "pendingListings_few": "{{count}} anunțuri de verificat",
+      "pendingListings_other": "{{count}} de anunțuri de verificat"
     },
     "expandMenu": "Extinde meniul",
     "collapseMenu": "Restrânge meniul",
@@ -257,6 +270,31 @@
         "admin": "Admin"
       }
     },
-    "crumb": "{{area}} / {{page}}"
+    "crumb": "{{area}} / {{page}}",
+    "backToSite": "Înapoi la site"
+  },
+  "listingSummary": {
+    "transaction": {
+      "sale": "De vânzare",
+      "rent": "De închiriat"
+    },
+    "dealCity": "{{deal}} · {{city}}",
+    "pricePerMonth": "{{price}} / lună",
+    "area": "{{value}} m²",
+    "facts": {
+      "rooms_one": "{{count}} cameră",
+      "rooms_few": "{{count}} camere",
+      "rooms_other": "{{count}} de camere",
+      "floor": "Etaj {{floor}} din {{total}}",
+      "floorOnly": "Etaj {{floor}}",
+      "groundFloor": "Parter",
+      "basement": "Demisol",
+      "yearBuilt": "Construit {{year}}"
+    },
+    "morePhotos_one": "+{{count}} poză",
+    "morePhotos_few": "+{{count}} poze",
+    "morePhotos_other": "+{{count}} de poze",
+    "photoAlt": "Fotografia {{index}} din {{total}}: {{title}}",
+    "noPhotos": "Anunțul nu are fotografii."
   }
 }

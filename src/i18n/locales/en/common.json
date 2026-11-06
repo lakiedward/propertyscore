@@ -73,7 +73,17 @@
       "reauthentication_needed": "For your security, sign in again, then try once more.",
       "invalid_password": "The password is not correct.",
       "email_mismatch": "The email address does not match your account.",
-      "last_admin": "You are the only admin. Make someone else an admin before deleting your account."
+      "last_admin": "You are the only admin. Make someone else an admin before deleting your account.",
+      "listing_not_found": "We could not find the listing.",
+      "listing_already_pending": "The listing has already been sent for review.",
+      "listing_blocked": "The listing has been blocked and can no longer be changed or resubmitted.",
+      "listing_invalid_transition": "The listing can no longer be changed in this state.",
+      "listing_incomplete": "Add a description and at least 5 photos before you submit the listing.",
+      "listing_not_pending": "The listing has already been reviewed.",
+      "listing_photo_limit": "You can add at most 20 photos.",
+      "decision_reason_invalid": "Choose at least one reason.",
+      "decision_message_required": "Write a message for the owner.",
+      "decision_message_too_long": "The message can have at most 2,000 characters."
     }
   },
   "validation": {
@@ -240,7 +250,9 @@
         "products": "Products",
         "content": "Content"
       },
-      "pageTitle": "{{page}} · Admin"
+      "pageTitle": "{{page}} · Admin",
+      "pendingListings_one": "{{count}} listing to review",
+      "pendingListings_other": "{{count}} listings to review"
     },
     "expandMenu": "Expand the menu",
     "collapseMenu": "Collapse the menu",
@@ -255,6 +267,29 @@
         "admin": "Admin"
       }
     },
-    "crumb": "{{area}} / {{page}}"
+    "crumb": "{{area}} / {{page}}",
+    "backToSite": "Back to site"
+  },
+  "listingSummary": {
+    "transaction": {
+      "sale": "For sale",
+      "rent": "For rent"
+    },
+    "dealCity": "{{deal}} · {{city}}",
+    "pricePerMonth": "{{price}} / month",
+    "area": "{{value}} m²",
+    "facts": {
+      "rooms_one": "{{count}} room",
+      "rooms_other": "{{count}} rooms",
+      "floor": "Floor {{floor}} of {{total}}",
+      "floorOnly": "Floor {{floor}}",
+      "groundFloor": "Ground floor",
+      "basement": "Basement",
+      "yearBuilt": "Built {{year}}"
+    },
+    "morePhotos_one": "+{{count}} photo",
+    "morePhotos_other": "+{{count}} photos",
+    "photoAlt": "Photo {{index}} of {{total}}: {{title}}",
+    "noPhotos": "The listing has no photos."
   }
 }

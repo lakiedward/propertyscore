@@ -9,7 +9,7 @@ export async function listListings({ transaction, limit }: ListingFilters) {
   const { data, error, count } = await supabase
     .from('listings')
     .select(LISTING_COLUMNS, { count: 'exact' })
-    .eq('status', 'published')
+    .eq('status', 'approved')
     .eq('transaction', transaction)
     .order('published_at', { ascending: false })
     .order('id', { ascending: false })

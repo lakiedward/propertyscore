@@ -1,0 +1,214 @@
+{
+  "pageTitle": "Anunțurile mele",
+  "list": {
+    "title": "Anunțurile mele",
+    "description": "Creezi anunțul, îl trimiți spre verificare și vezi aici răspunsul echipei.",
+    "add": "Adaugă anunț",
+    "label": "Anunțurile tale",
+    "edit": "Editează",
+    "view": "Vezi anunțul",
+    "empty": {
+      "title": "Nu ai încă niciun anunț",
+      "description": "Adaugă primul anunț; îl salvăm ca ciornă până îl trimiți spre verificare."
+    },
+    "eyebrow": "Vânzare și închiriere",
+    "addressCity": "{{street}} · {{city}}",
+    "floorShort": "et. {{floor}}/{{total}}",
+    "floorOnlyShort": "et. {{floor}}",
+    "groundFloorShort": "parter",
+    "reasonLabel": "Motiv:",
+    "preview": "Previzualizează",
+    "previewTitle": "Previzualizare",
+    "previewDescription": "Așa apare anunțul pe site după aprobare.",
+    "photoMissing": "Fără fotografie"
+  },
+  "status": {
+    "draft": "Ciornă",
+    "pending_approval": "În verificare",
+    "approved": "Publicat",
+    "rejected": "Respins",
+    "blocked": "Blocat"
+  },
+  "notice": {
+    "draft": {
+      "title": "Ciornă",
+      "description": "Completează anunțul, adaugă cel puțin 5 fotografii și trimite-l spre verificare."
+    },
+    "pending_approval": {
+      "title": "Anunțul este în verificare",
+      "description": "Îl verificăm în cel mult 24 de ore. Până atunci nu îl poți modifica."
+    },
+    "approved": {
+      "title": "Anunțul este publicat",
+      "description": "Apare pe site și pe harta proprietăților."
+    },
+    "rejected": {
+      "title": "Anunțul a fost respins",
+      "description": "Fă modificările cerute și retrimite anunțul spre verificare."
+    },
+    "blocked": {
+      "title": "Anunțul a fost blocat",
+      "description": "Anunțul nu mai poate fi modificat sau retrimis."
+    },
+    "reason": "Motiv: {{message}}",
+    "decidedAt": "Decizie din {{date}}"
+  },
+  "editor": {
+    "newTitle": "Anunț nou",
+    "editTitle": "Editează anunțul",
+    "back": "Anunțurile mele",
+    "save": "Salvează ciorna",
+    "saveChanges": "Salvează modificările",
+    "submit": "Trimite spre verificare",
+    "resubmit": "Retrimite spre verificare",
+    "saving": "Se salvează…",
+    "submitting": "Se trimite…",
+    "saved": "Ciorna a fost salvată.",
+    "submitted": "Anunțul a fost trimis spre verificare.",
+    "resubmitted": "Anunțul a fost retrimis spre verificare."
+  },
+  "form": {
+    "details": "Detalii",
+    "location": "Adresă și loc pe hartă",
+    "descriptionSection": "Descriere",
+    "transaction": {
+      "label": "Tip anunț",
+      "sale": "Vânzare",
+      "rent": "Închiriere"
+    },
+    "title": {
+      "label": "Titlu",
+      "placeholder": "de ex. Apartament 3 camere, Complex"
+    },
+    "city": {
+      "label": "Oraș",
+      "placeholder": "Alege orașul"
+    },
+    "street": {
+      "label": "Stradă și număr",
+      "placeholder": "de ex. Str. Gheorghe Lazăr, 12"
+    },
+    "rooms": {
+      "label": "Camere"
+    },
+    "area": {
+      "label": "Suprafață utilă"
+    },
+    "price": {
+      "label": "Preț",
+      "rentHint": "Pentru închiriere, prețul este pe lună."
+    },
+    "currency": {
+      "label": "Monedă",
+      "EUR": "EUR",
+      "RON": "RON"
+    },
+    "floor": {
+      "label": "Etaj",
+      "hint": "0 pentru parter, -1 pentru demisol. Opțional."
+    },
+    "buildingFloors": {
+      "label": "Etaje în clădire",
+      "hint": "Opțional."
+    },
+    "yearBuilt": {
+      "label": "Anul construcției",
+      "hint": "Opțional."
+    },
+    "description": {
+      "label": "Descriere",
+      "hint": "Starea locuinței, dotările, ce e aproape. Fără numere de telefon."
+    },
+    "pin": {
+      "label": "Locul pe hartă",
+      "hint": "Apasă pe hartă ca să pui pinul la adresa exactă.",
+      "mapLabel": "Hartă pentru alegerea locului",
+      "mapError": "Harta nu s-a putut încărca. Reîncarcă pagina.",
+      "missing": "Alege locul pe hartă."
+    }
+  },
+  "photos": {
+    "title": "Fotografii",
+    "description": "Minim 5 fotografii clare, fără persoane sau acte. Prima este coperta.",
+    "count_one": "{{count}} fotografie din {{max}}",
+    "count_few": "{{count}} fotografii din {{max}}",
+    "count_other": "{{count}} de fotografii din {{max}}",
+    "add": "Adaugă fotografii",
+    "adding": "Se încarcă…",
+    "remove": "Șterge fotografia {{index}}",
+    "cover": "Copertă",
+    "alt": "Fotografia {{index}} a anunțului",
+    "saveFirst": "Salvează ciorna ca să poți adăuga fotografii.",
+    "invalidType": "Poți încărca doar imagini JPG, PNG sau WebP.",
+    "tooLarge": "Fotografia este prea mare după conversie (peste 5 MB)."
+  },
+  "wizard": {
+    "subtitle": "Nu ai nevoie de raport ca să publici. Salvăm anunțul ca ciornă până îl trimiți.",
+    "stepOf": "Pasul {{step}} din {{total}}",
+    "stepsLabel": "Pașii anunțului",
+    "steps": {
+      "type": "Tip",
+      "text": "Titlu și descriere",
+      "details": "Detalii",
+      "address": "Adresă",
+      "photos": "Fotografii",
+      "contact": "Contact"
+    },
+    "titles": {
+      "type": "Ce fel de anunț?",
+      "text": "Titlu și descriere",
+      "details": "Detalii",
+      "address": "Unde e locuința?",
+      "photos": "Fotografii",
+      "contact": "Cum te contactează cumpărătorii"
+    },
+    "type": {
+      "sale": {
+        "label": "Vânzare",
+        "hint": "Preț total"
+      },
+      "rent": {
+        "label": "Închiriere",
+        "hint": "Chirie lunară"
+      }
+    },
+    "text": {
+      "titleHint": "Tip, camere și zona. {{count}} / {{max}} caractere.",
+      "descriptionHint": "{{count}} / {{max}} caractere · spune ce e adevărat, fără superlative."
+    },
+    "details": {
+      "priceSale": "Preț total",
+      "priceRent": "Chirie lunară",
+      "currencyEUR": "EUR (€)",
+      "currencyRON": "RON (lei)",
+      "suffixEUR": "€",
+      "suffixRON": "lei",
+      "areaSuffix": "m²",
+      "rooms": "Camere",
+      "roomsMore": "5+",
+      "roomsExact": "Număr exact de camere"
+    },
+    "address": {
+      "street": "Adresa exactă",
+      "pin": "Ce vezi tu · pin exact",
+      "draftNote": "Când treci mai departe, salvăm anunțul ca ciornă și poți adăuga fotografiile."
+    },
+    "photosNote": "Poți trimite anunțul spre verificare doar cu cel puțin 5 fotografii.",
+    "contact": {
+      "phone": "Telefon de contact",
+      "phoneHint": "Numărul din contul tău.",
+      "noPhone": "Nu ai adăugat încă un număr de telefon.",
+      "settings": "Schimbă-l din Setări",
+      "email": "Email",
+      "ready": "Anunțul intră la verificare. Îți arătăm aici răspunsul echipei, de obicei în cel mult 24 de ore."
+    },
+    "back": "Înapoi",
+    "continue": "Continuă",
+    "stepErrors": "Completează câmpurile marcate înainte să continui."
+  },
+  "overview": {
+    "previewLabel": "Previzualizare · așa arată pe site",
+    "contactTitle": "Așa te vor contacta cumpărătorii",
+    "readOnly": "Anunțul nu poate fi modificat acum."
+  }
+}

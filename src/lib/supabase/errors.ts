@@ -50,11 +50,24 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   last_admin: 'last_admin',
   rate_limited: 'rate_limited',
   reauthentication_needed: 'reauthentication_needed',
+  listing_not_found: 'listing_not_found',
+  listing_already_pending: 'listing_already_pending',
+  listing_blocked: 'listing_blocked',
+  listing_invalid_transition: 'listing_invalid_transition',
+  listing_incomplete: 'listing_incomplete',
+  listing_not_pending: 'listing_not_pending',
+  listing_photo_limit: 'listing_photo_limit',
+  decision_reason_invalid: 'decision_reason_invalid',
+  decision_message_required: 'decision_message_required',
+  decision_message_too_long: 'decision_message_too_long',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
   invalid_password: 'confirmation',
   email_mismatch: 'confirmation',
+  decision_reason_invalid: 'reasons',
+  decision_message_required: 'message',
+  decision_message_too_long: 'message',
 };
 
 const AUTH_UNAUTHENTICATED = new Set([

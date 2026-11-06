@@ -20,6 +20,27 @@ describe('AdminShell', { timeout: 20_000 }, () => {
     );
     expect(within(sidebar).getAllByRole('link')).toHaveLength(12);
     expect(screen.getAllByText(roCommon.panel.userMenu.role.admin).length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: roCommon.panel.backToSite })).toHaveAttribute(
+      'href',
+      '/',
+    );
+  });
+
+  it('shows how many listings wait for review next to Anunțuri', async () => {
+    await renderAppRoute('/admin', { auth: signedInAs('admin') });
+
+    const [sidebar] = await screen.findAllByRole('navigation', { name: NAV.navLabel });
+    if (!sidebar) {
+      throw new Error('The admin sidebar is missing');
+    }
+    const pendingLabel = NAV.pendingListings_few.replace('{{count}}', '2');
+    expect(
+      await within(sidebar).findByRole(
+        'link',
+        { name: new RegExp(`^${NAV.nav.listings}\\s*${pendingLabel}$`) },
+        { timeout: 5_000 },
+      ),
+    ).toBeInTheDocument();
   });
 
   it('hides the admin panel from a regular user', async () => {

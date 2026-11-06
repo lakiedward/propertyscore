@@ -63,8 +63,8 @@ export function PhoneSection({ userId, phone, redirect }: PhoneSectionProps) {
           fallback={t('settings.phone.failedText')}
         />
       ) : null}
-      <form onSubmit={(event) => void handleSubmit(event)} noValidate className="max-w-md">
-        <FieldGroup className="gap-4">
+      <form onSubmit={(event) => void handleSubmit(event)} noValidate className="w-full">
+        <FieldGroup className="grid gap-4 md:grid-cols-2">
           <Controller
             name="phone"
             control={form.control}
@@ -81,7 +81,11 @@ export function PhoneSection({ userId, phone, redirect }: PhoneSectionProps) {
               />
             )}
           />
-          <Button type="submit" disabled={updatePhone.isPending} className="self-start">
+          <Button
+            type="submit"
+            disabled={updatePhone.isPending}
+            className="justify-self-start md:col-span-2"
+          >
             {updatePhone.isPending ? t('settings.phone.pending') : t('settings.phone.submit')}
           </Button>
         </FieldGroup>

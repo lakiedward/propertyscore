@@ -28,7 +28,7 @@ export function buildListing(overrides: Partial<ListingRow> = {}): ListingRow {
   sequence += 1;
   return {
     id: `b0000000-0000-4000-8000-${String(sequence).padStart(12, '0')}`,
-    status: 'published',
+    status: 'approved',
     transaction: 'sale',
     title: `Apartament cu 2 camere ${String(sequence)}`,
     street_label: 'Str. Școlii, 12',

@@ -88,7 +88,7 @@ insert into public.listings (
 select
   seed.id,
   'a0000000-0000-4000-8000-000000000001'::uuid,
-  'published',
+  'approved',
   seed.transaction::public.listing_transaction,
   seed.title,
   seed.street_label,

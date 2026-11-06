@@ -1,4 +1,5 @@
 import {
+  toCurrency,
   formatCurrency,
   formatDate,
   formatDateTime,
@@ -18,6 +19,12 @@ function plain(value: string): string {
 }
 
 describe('format', () => {
+  it('keeps the currency of the record', () => {
+    expect(toCurrency('EUR')).toBe('EUR');
+    expect(toCurrency('RON')).toBe('RON');
+    expect(toCurrency('USD')).toBe('RON');
+  });
+
   describe('in Romanian', () => {
     beforeEach(async () => {
       await changeLocale('ro');

@@ -1,0 +1,147 @@
+{
+  "pageTitle": "Moderare anunțuri",
+  "head": {
+    "eyebrow": "Portal",
+    "title": "Moderare anunțuri",
+    "description": "Verifici anunțul, apoi îl aprobi, îl respingi pentru modificări sau îl blochezi."
+  },
+  "tabs": {
+    "label": "Filtrează după stare",
+    "pending_approval": "De verificat",
+    "approved": "Aprobate",
+    "rejected": "Respinse",
+    "blocked": "Blocate"
+  },
+  "status": {
+    "pending_approval": "De verificat",
+    "approved": "Aprobat",
+    "rejected": "Respins",
+    "blocked": "Blocat"
+  },
+  "queue": {
+    "label": "Anunțuri",
+    "priceArea": "{{price}} · {{area}}",
+    "resubmitted": "Retrimis",
+    "empty": {
+      "pending": {
+        "title": "Nu mai ai anunțuri de verificat",
+        "description": "Anunțurile noi apar aici imediat ce sunt trimise."
+      },
+      "decided": {
+        "title": "Niciun anunț aici",
+        "description": "Anunțurile apar aici după ce iei o decizie."
+      }
+    }
+  },
+  "when": {
+    "today": "azi · {{time}}",
+    "yesterday": "ieri · {{time}}",
+    "date": "{{date}}"
+  },
+  "listing": {
+    "owner": {
+      "submitted": "Proprietar · trimis {{when}}",
+      "today": "azi, {{time}}",
+      "yesterday": "ieri, {{time}}",
+      "date": "{{date}}",
+      "unnamed": "Proprietar fără nume"
+    },
+    "preview": "Vezi pagina publică"
+  },
+  "checklist": {
+    "title": "Verificări",
+    "progress": "{{done}} din {{total}}",
+    "photos": {
+      "label": "Fotografiile sunt clare și arată locuința",
+      "description_one": "{{count}} fotografie",
+      "description_few": "{{count}} fotografii",
+      "description_other": "{{count}} de fotografii"
+    },
+    "personalData": {
+      "label": "Fără persoane, acte sau date personale în poze"
+    },
+    "price": {
+      "label": "Prețul și suprafața sunt plauzibile",
+      "description": "Anunț: {{value}}/m²"
+    },
+    "description": {
+      "label": "Descrierea e corectă, fără date de contact"
+    }
+  },
+  "decision": {
+    "title": "Decizie",
+    "approve": "Aprobă și publică",
+    "approveHint": "Bifează toate verificările ca să poți aproba.",
+    "reject": "Respinge anunțul",
+    "block": "Blochează anunțul",
+    "form": {
+      "rejected": {
+        "hint": "Proprietarul primește motivul și poate edita și retrimite anunțul.",
+        "submit": "Respinge anunțul"
+      },
+      "blocked": {
+        "hint": "Anunțul nu va fi publicat și nu mai poate fi editat sau retrimis. Proprietarul vede motivul în contul lui.",
+        "submit": "Blochează anunțul"
+      },
+      "reasons": "Motive",
+      "message": "Mesaj pentru proprietar",
+      "cancel": "Renunță",
+      "pending": "Se salvează…"
+    },
+    "confirmBlock": {
+      "title": "Blochezi anunțul?",
+      "description": "„{{title}}” nu va mai putea fi editat sau retrimis. Decizia este definitivă.",
+      "confirm": "Blochează anunțul",
+      "pending": "Se blochează…"
+    },
+    "pending": "Se salvează…"
+  },
+  "reasons": {
+    "photos": {
+      "label": "Fotografii puține sau neclare",
+      "message": "Adaugă mai multe fotografii clare, cu fiecare cameră."
+    },
+    "personal_data": {
+      "label": "Date personale în poze",
+      "message": "Unele fotografii conțin acte sau date personale. Șterge-le."
+    },
+    "price_area": {
+      "label": "Preț sau suprafață greșite",
+      "message": "Verifică prețul și suprafața; nu se potrivesc cu zona."
+    },
+    "description": {
+      "label": "Descriere incompletă",
+      "message": "Completează descrierea cu starea locuinței și dotările."
+    },
+    "contact_details": {
+      "label": "Date de contact în text",
+      "message": "Scoate numărul de telefon din descriere; cumpărătorii te contactează prin portal."
+    },
+    "duplicate": {
+      "label": "Anunț duplicat",
+      "message": "Locuința este deja publicată într-un alt anunț."
+    },
+    "unavailable": {
+      "label": "Locuința nu există sau e vândută",
+      "message": "Nu am putut confirma că locuința este disponibilă."
+    },
+    "rules": {
+      "label": "Încalcă regulile portalului",
+      "message": "Anunțul încalcă regulile de publicare ale portalului."
+    }
+  },
+  "toast": {
+    "approved": "{{title}} a fost aprobat și publicat.",
+    "rejected": "{{title}} a fost respins. Proprietarul poate edita și retrimite anunțul.",
+    "blocked": "{{title}} a fost blocat. Proprietarul vede motivul în contul lui."
+  },
+  "decided": {
+    "approved": "Aprobat {{date}}",
+    "rejected": "Respins {{date}}",
+    "blocked": "Blocat {{date}}"
+  },
+  "previewDialog": {
+    "title": "Previzualizare publică",
+    "description": "Așa apare anunțul pe site după aprobare."
+  }
+}
