@@ -252,7 +252,10 @@
         "products": "Produse",
         "content": "Conținut"
       },
-      "pageTitle": "{{page}} · Admin"
+      "pageTitle": "{{page}} · Admin",
+      "pendingListings_one": "{{count}} anunț de verificat",
+      "pendingListings_few": "{{count}} anunțuri de verificat",
+      "pendingListings_other": "{{count}} de anunțuri de verificat"
     },
     "expandMenu": "Extinde meniul",
     "collapseMenu": "Restrânge meniul",
@@ -267,6 +270,7 @@
         "admin": "Admin"
       }
     },
-    "crumb": "{{area}} / {{page}}"
+    "crumb": "{{area}} / {{page}}",
+    "backToSite": "Înapoi la site"
   }
 }

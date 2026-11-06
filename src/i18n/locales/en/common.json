@@ -250,7 +250,9 @@
         "products": "Products",
         "content": "Content"
       },
-      "pageTitle": "{{page}} · Admin"
+      "pageTitle": "{{page}} · Admin",
+      "pendingListings_one": "{{count}} listing to review",
+      "pendingListings_other": "{{count}} listings to review"
     },
     "expandMenu": "Expand the menu",
     "collapseMenu": "Collapse the menu",
@@ -265,6 +267,7 @@
         "admin": "Admin"
       }
     },
-    "crumb": "{{area}} / {{page}}"
+    "crumb": "{{area}} / {{page}}",
+    "backToSite": "Back to site"
   }
 }
