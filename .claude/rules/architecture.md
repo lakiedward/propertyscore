@@ -19,7 +19,7 @@ The table is a starting point, not the truth. Confirm it before relying on it: t
 | --- | --- | --- | --- | --- |
 | Postgres (Supabase) with PostGIS and `unaccent` | Supabase | every table, RLS, the scoring grid, zone scores, report freezing (`private.*`), the transit network each snapshot routed on (`private.transit_routing_bundles`) | data, rules, state transitions, geographic queries, search | long loops, user and document files (Storage), calls to other services |
 | RPC (Postgres functions) | Supabase | share links, snapshot lifecycle, report begin/complete/fail | business rules, multi-table and atomic writes, anything the browser must not bypass | work over seconds, side effects outside the database |
-| Supabase Auth | Supabase | sign-in, sign-up, sessions, bilingual email templates | identity, sessions, auth emails | roles (they live in tables or JWT claims, never `user_metadata`) |
+| Supabase Auth | Supabase | email and password, Google OAuth (PKCE, `/auth/callback`), password reset, the custom access token hook (`user_roles` claim), bilingual email templates | identity, sessions, auth emails, roles in the token | role assignment itself (rows in `user_roles`, never `user_metadata`) |
 | Supabase Storage | Supabase | `listing-photos` bucket | files with RLS, signed URLs | image transformation (paid feature, not used) |
 | Edge Functions | Supabase | none yet | short calls with a secret, webhooks, secret-key work finishing in seconds | rendering, binaries, heavy loops, waiting for other jobs |
 | `pg_cron` | Supabase | not enabled yet | small periodic SQL: expiries, timeouts, enqueueing | the work itself when it is heavy |
@@ -28,7 +28,8 @@ The table is a starting point, not the truth. Confirm it before relying on it: t
 | Frontend SPA | Netlify, static with SPA fallback and security headers | every screen | UI, UX checks | secrets, authorization, server code (no Netlify Functions) |
 | MapLibre with OpenFreeMap tiles | browser | listings map, report map | maps without a key | server-side map rendering |
 | Sentry | browser | errors and monitoring | errors | logs with personal data |
-| GitHub Actions | GitHub | CI, `deploy-db.yml` | checks, migrations on a tag | jobs the product runs |
+| Cloudflare Turnstile | browser widget + Supabase Auth check | CAPTCHA on sign-up, sign-in, password reset and resend (switched off for now: no site key, `[auth.captcha] enabled = false`) | stopping scripted sign-ups and email floods | anything that is not an auth form |
+| GitHub Actions | GitHub | CI, `deploy.yml` | checks; on a tag, migrations and then the Netlify site | jobs the product runs |
 
 ## 2. How to choose
 

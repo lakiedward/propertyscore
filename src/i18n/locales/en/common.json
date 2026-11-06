@@ -23,9 +23,13 @@
   },
   "actions": {
     "close": "Close",
+    "cancel": "Cancel",
     "retry": "Try again",
     "goHome": "Back to the home page",
     "signOut": "Sign out"
+  },
+  "toasts": {
+    "region": "Notifications"
   },
   "language": {
     "label": "Language",
@@ -35,11 +39,6 @@
       "ro": "RO",
       "en": "EN"
     }
-  },
-  "account": {
-    "pageTitle": "Dashboard",
-    "title": "Welcome",
-    "description": "You are signed in as {{email}}. Your properties will appear here."
   },
   "pages": {
     "notFound": {
@@ -61,11 +60,20 @@
     "network": "We can't reach the server. Check your internet connection.",
     "unknown": "Something unexpected happened. Please try again.",
     "reasons": {
+      "link_expired": "The link has expired. Ask for a new one.",
       "invalid_credentials": "The email or password is incorrect.",
       "email_not_confirmed": "Confirm your email address before signing in.",
       "user_already_exists": "An account with this email already exists.",
       "weak_password": "The password is too weak. Choose a longer or more varied one.",
-      "rate_limited": "Too many attempts. Wait a moment and try again."
+      "rate_limited": "Too many attempts. Wait a moment and try again.",
+      "same_password": "The new password must be different from the old one.",
+      "captcha_failed": "The anti-robot check failed. Please try again.",
+      "current_password_invalid": "The current password is not correct.",
+      "current_password_required": "Enter your current password.",
+      "reauthentication_needed": "For your security, sign in again, then try once more.",
+      "invalid_password": "The password is not correct.",
+      "email_mismatch": "The email address does not match your account.",
+      "last_admin": "You are the only admin. Make someone else an admin before deleting your account."
     }
   },
   "validation": {
@@ -102,7 +110,6 @@
       "openMenu": "Open the menu",
       "brandHome": "PropertyScore, back to the top",
       "signIn": "Sign in",
-      "account": "My account",
       "publish": "Post a free listing",
       "smartCheck": "Check an address with Smart Check",
       "physical": "Book a Property Fizic inspection"
@@ -189,5 +196,65 @@
   },
   "price": {
     "perMonth": "{{price}} / month"
+  },
+  "panel": {
+    "account": {
+      "label": "My account",
+      "navLabel": "Account sections",
+      "groups": {
+        "activity": "Activity",
+        "homes": "Homes",
+        "account": "Account"
+      },
+      "nav": {
+        "overview": "Overview",
+        "reports": "Reports",
+        "appointments": "Appointments",
+        "requests": "Requests",
+        "listings": "Listings",
+        "favorites": "Favourites",
+        "products": "Products",
+        "invoices": "Invoices",
+        "settings": "Settings"
+      }
+    },
+    "admin": {
+      "label": "Admin",
+      "navLabel": "Admin navigation",
+      "groups": {
+        "today": "Today",
+        "portal": "Portal",
+        "business": "Business"
+      },
+      "nav": {
+        "dashboard": "Dashboard",
+        "appointments": "Appointments",
+        "inspections": "Inspections",
+        "listings": "Listings",
+        "feedback": "Feedback",
+        "users": "Users",
+        "partners": "Partners",
+        "payments": "Payments",
+        "scoring": "Scoring",
+        "analytics": "Analytics",
+        "products": "Products",
+        "content": "Content"
+      },
+      "pageTitle": "{{page}} · Admin"
+    },
+    "expandMenu": "Expand the menu",
+    "collapseMenu": "Collapse the menu",
+    "brandHome": "{{brand}}, public site",
+    "link": {
+      "account": "My account",
+      "admin": "Admin panel"
+    },
+    "userMenu": {
+      "role": {
+        "user": "User",
+        "admin": "Admin"
+      }
+    },
+    "crumb": "{{area}} / {{page}}"
   }
 }

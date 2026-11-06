@@ -87,7 +87,7 @@ Only this inventory is needed to resolve the selection; full specs come later an
 Follow `references/selection.md`:
 
 1. Map each part the user named to design screens and sections. Anything ambiguous is confirmed with the user before going further.
-2. List what the selected screens need that does not exist yet: tokens, shared components, layouts (site header, footer, shells), routes, and the data behind every section that shows records.
+2. List what the selected screens need that does not exist yet: tokens, shared components, layouts (site header, footer, shells), routes, and the data behind every section that shows records. Follow `.claude/rules/react.md` §Reuse and shared components: every generic pattern on the screens (confirmations, toasts, notices, empty and error states, form dialogs, settings sections) maps to an existing shared component, or becomes a new one in `src/components/<group>/` with its content as props, never a one-off inside a feature.
 3. List every link and CTA on the selected screens that leads to a screen outside the selection, with whether its route exists.
 4. Present the **scope table** (`selection.md` §4). Ask with `AskUserQuestion` only what the selection does not settle (for example a section that might be meant as illustration or as real data).
 

@@ -86,15 +86,18 @@ export function useCreateProperty() {
 ## Authentication and session
 
 - `features/auth` owns everything that calls `supabase.auth.*`; components use `useAuth()` (`session`, `user`, `signIn`, `signUp`, `signOut`, `hasRole`, `can`).
-- `AuthProvider` reads the initial session with `getSession()`, subscribes with `onAuthStateChange`, calls `router.invalidate()` on every change, clears the query cache on `SIGNED_OUT`, and renders nothing until the first session is known.
+- `AuthProvider` subscribes with `onAuthStateChange` and takes the first session from its `INITIAL_SESSION` event (no separate `getSession()` call), builds the state synchronously inside the callback, calls `router.invalidate()` on every change, clears the query cache on `SIGNED_OUT`, and renders nothing until the first session is known.
 - Sign-up and magic-link calls pass `options.data.locale` with the current language and `emailRedirectTo` from `env`.
 - After sign-in: set Sentry's user (id only), load `profiles.locale` and switch the language when it differs.
-- Roles come from the JWT claim added by the Custom Access Token Hook, read through `hasRole`. Never authorize from `user_metadata`. UI checks are UX; RLS is the authorization.
-- Never decode or store tokens yourself; supabase-js manages the session.
+- Roles come from the `user_roles` JWT claim added by the Custom Access Token Hook; `createAuthState` reads it, with the `amr` sign-in method, from the payload of the session's access token (`rolesFromAccessToken`, `signInMethodFromAccessToken` in `auth.utils.ts`, no network call), and components read it through `useAuth().roles` / `hasRole`. The decoded claims are not verified and drive the UI only; every protected read and write is checked by RLS against the verified JWT. After sign-in, `postSignInPath(roles, redirect)` keeps a safe `redirect` (an `/admin` redirect only for admins), otherwise admins land on `/admin` and everyone else on `/account`; routes for signed-out visitors throw `signedInRedirect(context.auth, redirect)` from `beforeLoad` when it returns a redirect. Never authorize from `user_metadata`. UI checks are UX; RLS is the authorization.
+- OAuth returns to `/auth/callback?redirect=…` (PKCE), where supabase-js exchanges the code before the router loads. Email confirmation, recovery and email-change links go to `/auth/confirm?token_hash=…&type=…&next=…` and are verified with `verifyOtp` (`verifyEmailLink`): an expired link shows a new-link screen, a network or server failure throws so the route offers a retry.
+- Never store tokens yourself or authorize from a decoded claim; supabase-js manages the session. Decoding the access token payload is allowed only for UI state (roles, sign-in method).
+- After a change that has already succeeded (a new password, a deleted account), a follow-up sign-out of other sessions is best effort: its failure is logged with `logger.warn`, never shown as a failure of the change.
+- `logger` and Sentry redact `share`, `token_hash`, `code`, `access_token` and `refresh_token` query parameters from every event, breadcrumb and transaction (`redactSensitiveParamsIn` in `lib/url.ts`); a new secret-bearing URL parameter is added there.
 
 ## Environment
 
-- Read configuration only through `env` from `@/config/env`, a Zod-validated object (`VITE_APP_ENV`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SENTRY_DSN`). Never `import.meta.env` outside `config/env.ts`.
+- Read configuration only through `env` from `@/config/env`, a Zod-validated object (`VITE_APP_ENV`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SENTRY_DSN`, `VITE_SITE_URL`, `VITE_TURNSTILE_SITE_KEY`). Never `import.meta.env` outside `config/env.ts`.
 - A new variable is added to the schema, to `.env.example` with a placeholder, and to the hosting provider and CI in the same change.
 - Everything in a `VITE_` variable is public. Never the secret / service-role key.
 - `src/lib/supabase/client.ts` holds the only `createClient<Database>()` call.

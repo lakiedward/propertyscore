@@ -7,7 +7,12 @@
       Thanks for signing up to Property Score. Confirm your email address to start using your
       account.
     </p>
-    <p><a href="{{ .ConfirmationURL }}">Confirm my email</a></p>
+    <p>
+      <a
+        href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup&next={{ .RedirectTo }}"
+        >Confirm my email</a
+      >
+    </p>
     <p>If you didn't create an account, you can ignore this email.</p>
   </body>
 </html>
@@ -19,7 +24,12 @@
       Îți mulțumim că te-ai înregistrat în Property Score. Confirmă adresa de email ca să începi să
       folosești contul.
     </p>
-    <p><a href="{{ .ConfirmationURL }}">Confirm adresa de email</a></p>
+    <p>
+      <a
+        href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup&next={{ .RedirectTo }}"
+        >Confirm adresa de email</a
+      >
+    </p>
     <p>Dacă nu ai creat tu acest cont, poți ignora acest email.</p>
   </body>
 </html>

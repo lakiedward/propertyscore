@@ -28,8 +28,21 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    host: '127.0.0.1',
+  },
   build: {
     sourcemap: sentryAuthToken ? 'hidden' : false,
+    rolldownOptions: {
+      treeshake: {
+        moduleSideEffects: [
+          {
+            test: /\/src\/features\/[^/]+\/(index\.ts|components\/[^/]+\.tsx)$/,
+            sideEffects: false,
+          },
+        ],
+      },
+    },
   },
   test: {
     globals: true,
@@ -42,6 +55,7 @@ export default defineConfig({
       VITE_SUPABASE_URL: 'http://127.0.0.1:54321',
       VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key',
       VITE_SENTRY_DSN: '',
+      VITE_TURNSTILE_SITE_KEY: '',
     },
     coverage: {
       provider: 'v8',

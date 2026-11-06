@@ -1,11 +1,11 @@
-name: Deploy database
+name: Deploy
 
 on:
   push:
     tags: ['v*.*.*']
 
 concurrency:
-  group: deploy-db-production
+  group: deploy-production
   cancel-in-progress: false
 
 jobs:
@@ -26,3 +26,20 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec supabase link --project-ref "$SUPABASE_PROJECT_ID"
       - run: pnpm exec supabase db push
+
+  site:
+    needs: migrate
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ vars.NETLIFY_SITE_ID }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --package=netlify-cli@27.16.2 dlx netlify deploy --prod --context production --message "$GITHUB_REF_NAME"

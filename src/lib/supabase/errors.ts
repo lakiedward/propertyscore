@@ -14,19 +14,47 @@ const POSTGREST_CODES: Readonly<Record<string, AppErrorCode>> = {
   P0001: 'validation',
 };
 
+export const EXPIRED_LINK_CODES: readonly string[] = [
+  'otp_expired',
+  'flow_state_expired',
+  'flow_state_not_found',
+];
+
 const AUTH_REASONS: Readonly<Record<string, AppErrorReason>> = {
+  ...Object.fromEntries(EXPIRED_LINK_CODES.map((code) => [code, 'link_expired' as const])),
   invalid_credentials: 'invalid_credentials',
   email_not_confirmed: 'email_not_confirmed',
   user_already_exists: 'user_already_exists',
   email_exists: 'user_already_exists',
   weak_password: 'weak_password',
+  same_password: 'same_password',
+  captcha_failed: 'captcha_failed',
   over_request_rate_limit: 'rate_limited',
   over_email_send_rate_limit: 'rate_limited',
+  current_password_invalid: 'current_password_invalid',
+  current_password_required: 'current_password_required',
+  reauthentication_needed: 'reauthentication_needed',
 };
 
 const AUTH_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
   user_already_exists: 'email',
   weak_password: 'password',
+  same_password: 'password',
+  current_password_invalid: 'currentPassword',
+  current_password_required: 'currentPassword',
+};
+
+const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
+  invalid_password: 'invalid_password',
+  email_mismatch: 'email_mismatch',
+  last_admin: 'last_admin',
+  rate_limited: 'rate_limited',
+  reauthentication_needed: 'reauthentication_needed',
+};
+
+const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
+  invalid_password: 'confirmation',
+  email_mismatch: 'confirmation',
 };
 
 const AUTH_UNAUTHENTICATED = new Set([
@@ -88,6 +116,14 @@ function fromAuthError(error: {
 }
 
 function fromPostgrestError(error: PostgrestLikeError) {
+  const reason = error.code === 'P0001' ? RPC_REASONS[error.message] : undefined;
+  if (reason) {
+    return new AppError('validation', error.message, {
+      cause: error,
+      reason,
+      field: RPC_FIELDS[reason],
+    });
+  }
   const code = POSTGREST_CODES[error.code];
   if (code) {
     return new AppError(code, error.message, { cause: error });

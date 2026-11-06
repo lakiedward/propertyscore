@@ -1,0 +1,67 @@
+import { MailIcon } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { useErrorMessage } from '@/i18n/error-message';
+import { useCaptcha } from '../hooks/use-captcha';
+import { useCooldown } from '../hooks/use-cooldown';
+import { AuthNotice } from './auth-notice';
+import { CaptchaField } from './captcha-field';
+
+const RESEND_COOLDOWN_SECONDS = 60;
+
+type ResendState = { status: 'idle' | 'pending' | 'sent' } | { status: 'error'; error: unknown };
+
+type ResendLinkProps = {
+  onResend: (captchaToken: string | undefined) => Promise<void>;
+  isCoolingDownAtStart?: boolean;
+};
+
+export function ResendLink({ onResend, isCoolingDownAtStart = false }: ResendLinkProps) {
+  const { t } = useTranslation('auth');
+  const errorMessage = useErrorMessage();
+  const captcha = useCaptcha();
+  const cooldown = useCooldown(RESEND_COOLDOWN_SECONDS, isCoolingDownAtStart);
+  const [state, setState] = useState<ResendState>({ status: 'idle' });
+
+  const handleResend = async () => {
+    const captchaResult = captcha.consume();
+    if (!captchaResult) {
+      setState({ status: 'idle' });
+      return;
+    }
+    setState({ status: 'pending' });
+    try {
+      await onResend(captchaResult.token);
+      setState({ status: 'sent' });
+      cooldown.start();
+    } catch (error) {
+      setState({ status: 'error', error });
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      {state.status === 'sent' ? <AuthNotice tone="success">{t('resend.sent')}</AuthNotice> : null}
+      {state.status === 'error' ? (
+        <AuthNotice tone="error">{errorMessage(state.error)}</AuthNotice>
+      ) : null}
+      {cooldown.isActive ? null : <CaptchaField captcha={captcha} />}
+      <Button
+        type="button"
+        variant="outline"
+        size="xl"
+        disabled={cooldown.isActive || state.status === 'pending'}
+        onClick={() => void handleResend()}
+        className="w-full gap-3 tabular-nums"
+      >
+        <MailIcon aria-hidden />
+        {cooldown.isActive
+          ? t('resend.wait', { count: cooldown.remaining })
+          : state.status === 'pending'
+            ? t('resend.pending')
+            : t('resend.action')}
+      </Button>
+    </div>
+  );
+}

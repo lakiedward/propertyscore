@@ -3,7 +3,7 @@ import { delay, http, HttpResponse } from 'msw';
 import enAuth from '@/i18n/locales/en/auth.json';
 import roAuth from '@/i18n/locales/ro/auth.json';
 import roCommon from '@/i18n/locales/ro/common.json';
-import { buildSession, buildUser } from '@/test/factories/auth';
+import { buildSession, buildUnconfirmedSignUp, buildUser } from '@/test/factories/auth';
 import { authErrorResponse } from '@/test/msw/handlers/auth';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
@@ -14,6 +14,7 @@ type FormLabels = {
   fields: {
     name: { label: string };
     email: { label: string };
+    phone: { label: string };
     password: { label: string };
     terms: { label: string };
   };
@@ -28,9 +29,14 @@ async function fillAndSubmit(
 ) {
   await user.type(screen.getByLabelText(labels.fields.name.label), 'Ana Pop');
   await user.type(screen.getByLabelText(labels.fields.email.label), 'nou@example.test');
+  await user.type(screen.getByLabelText(labels.fields.phone.label), '0722 123 456');
   await user.type(screen.getByLabelText(labels.fields.password.label), 'Parola-Lunga-1');
   await user.click(screen.getByRole('checkbox', { name: labels.fields.terms.label }));
   await user.click(screen.getByRole('button', { name: labels.signUp.submit }));
+}
+
+function tagContent(template: string, tag: string): string {
+  return new RegExp(`<${tag}>(.*?)</${tag}>`).exec(template)?.[1] ?? template;
 }
 
 function pluralText(template: string, count: number): string {
@@ -39,13 +45,14 @@ function pluralText(template: string, count: number): string {
 
 describe('SignUpForm', () => {
   it('shows every field message, the terms one included', async () => {
-    const { user } = await renderWithProviders(<SignUpForm onEmailSent={vi.fn()} />);
+    const { user } = await renderWithProviders(<SignUpForm onConfirmationNeeded={vi.fn()} />);
 
     await user.type(screen.getByLabelText(roAuth.fields.password.label), 'scurt');
     await user.click(screen.getByRole('button', { name: roAuth.signUp.submit }));
 
     expect(await screen.findByText(roAuth.fields.name.error)).toBeInTheDocument();
     expect(screen.getByText(roAuth.fields.email.error)).toBeInTheDocument();
+    expect(screen.getByText(roAuth.fields.phone.required)).toBeInTheDocument();
     expect(
       screen.getByText(pluralText(roAuth.fields.password.tooShort_few, 8)),
     ).toBeInTheDocument();
@@ -54,7 +61,20 @@ describe('SignUpForm', () => {
     expect(terms).toHaveAccessibleDescription(roAuth.fields.terms.error);
   });
 
-  it('sends the name, the language and the confirmation link back to the login page', async () => {
+  it('rejects a phone number that is too short', async () => {
+    const { user } = await renderWithProviders(<SignUpForm onConfirmationNeeded={vi.fn()} />);
+
+    await user.type(screen.getByLabelText(roAuth.fields.phone.label), '0722 12');
+    await user.click(screen.getByRole('button', { name: roAuth.signUp.submit }));
+
+    expect(await screen.findByText(roAuth.fields.phone.error)).toBeInTheDocument();
+    expect(screen.getByLabelText(roAuth.fields.phone.label)).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
+  });
+
+  it('sends the name, the phone, the language and a confirmation link back to the asked page', async () => {
     const requests: { body: unknown; redirectTo: string | null }[] = [];
     server.use(
       http.post(SIGN_UP_URL, async ({ request }) => {
@@ -62,11 +82,11 @@ describe('SignUpForm', () => {
           body: await request.json(),
           redirectTo: new URL(request.url).searchParams.get('redirect_to'),
         });
-        return HttpResponse.json(buildUser({ email: 'nou@example.test' }));
+        return HttpResponse.json(buildUnconfirmedSignUp('nou@example.test'));
       }),
     );
     const { user } = await renderWithProviders(
-      <SignUpForm redirect="/publish" onEmailSent={vi.fn()} />,
+      <SignUpForm redirect="/publish" onConfirmationNeeded={vi.fn()} />,
       { locale: 'en' },
     );
 
@@ -76,22 +96,48 @@ describe('SignUpForm', () => {
       expect(requests).toHaveLength(1);
     });
     expect(requests[0]?.body).toEqual(
-      expect.objectContaining({ data: { locale: 'en', full_name: 'Ana Pop' } }),
+      expect.objectContaining({
+        data: { locale: 'en', full_name: 'Ana Pop', phone: '+40722123456' },
+      }),
     );
     const redirectTo = new URL(requests[0]?.redirectTo ?? '');
-    expect(redirectTo.pathname).toBe('/login');
+    expect(redirectTo.pathname).toBe('/');
     expect(redirectTo.searchParams.get('redirect')).toBe('/publish');
   });
 
-  it('reports the address when the email still has to be confirmed', async () => {
-    server.use(http.post(SIGN_UP_URL, () => HttpResponse.json(buildUser())));
-    const onEmailSent = vi.fn();
-    const { user } = await renderWithProviders(<SignUpForm onEmailSent={onEmailSent} />);
+  it('reports the address when a new email has to be confirmed', async () => {
+    server.use(
+      http.post(SIGN_UP_URL, () => HttpResponse.json(buildUnconfirmedSignUp('nou@example.test'))),
+    );
+    const onConfirmationNeeded = vi.fn();
+    const { user } = await renderWithProviders(
+      <SignUpForm onConfirmationNeeded={onConfirmationNeeded} />,
+    );
 
     await fillAndSubmit(user);
 
     await waitFor(() => {
-      expect(onEmailSent).toHaveBeenCalledWith('nou@example.test');
+      expect(onConfirmationNeeded).toHaveBeenCalledWith('nou@example.test', false);
+    });
+  });
+
+  it('recognises a repeated sign-up of an email that is not confirmed yet', async () => {
+    server.use(
+      http.post(SIGN_UP_URL, () =>
+        HttpResponse.json(
+          buildUnconfirmedSignUp('nou@example.test', new Date(Date.now() - 10 * 60_000)),
+        ),
+      ),
+    );
+    const onConfirmationNeeded = vi.fn();
+    const { user } = await renderWithProviders(
+      <SignUpForm onConfirmationNeeded={onConfirmationNeeded} />,
+    );
+
+    await fillAndSubmit(user);
+
+    await waitFor(() => {
+      expect(onConfirmationNeeded).toHaveBeenCalledWith('nou@example.test', true);
     });
   });
 
@@ -103,8 +149,10 @@ describe('SignUpForm', () => {
         return HttpResponse.json(buildSession());
       }),
     );
-    const onEmailSent = vi.fn();
-    const { user } = await renderWithProviders(<SignUpForm onEmailSent={onEmailSent} />);
+    const onConfirmationNeeded = vi.fn();
+    const { user } = await renderWithProviders(
+      <SignUpForm onConfirmationNeeded={onConfirmationNeeded} />,
+    );
 
     await fillAndSubmit(user);
 
@@ -112,7 +160,7 @@ describe('SignUpForm', () => {
       expect(requests).toHaveLength(1);
     });
     expect(await screen.findByRole('button', { name: roAuth.signUp.submit })).toBeEnabled();
-    expect(onEmailSent).not.toHaveBeenCalled();
+    expect(onConfirmationNeeded).not.toHaveBeenCalled();
   });
 
   it('disables the button while the account is created', async () => {
@@ -121,30 +169,55 @@ describe('SignUpForm', () => {
         await delay('infinite');
       }),
     );
-    const { user } = await renderWithProviders(<SignUpForm onEmailSent={vi.fn()} />);
+    const { user } = await renderWithProviders(<SignUpForm onConfirmationNeeded={vi.fn()} />);
 
     await fillAndSubmit(user);
 
     expect(await screen.findByRole('button', { name: roAuth.signUp.pending })).toBeDisabled();
   });
 
-  it('puts a taken email on the email field', async () => {
-    server.use(http.post(SIGN_UP_URL, () => authErrorResponse('user_already_exists', 422)));
-    const { user } = await renderWithProviders(<SignUpForm onEmailSent={vi.fn()} />);
+  it.each([
+    ['refused as already registered', () => authErrorResponse('user_already_exists', 422)],
+    [
+      'answered with an account without identities',
+      () => HttpResponse.json(buildUser({ email: 'nou@example.test', identities: [] })),
+    ],
+  ])('says the email already has an account when it is %s', async (_case, respond) => {
+    server.use(http.post(SIGN_UP_URL, respond));
+    const onConfirmationNeeded = vi.fn();
+    const { user } = await renderWithProviders(
+      <SignUpForm redirect="/publish" onConfirmationNeeded={onConfirmationNeeded} />,
+    );
 
     await fillAndSubmit(user);
 
-    await waitFor(() => {
-      expect(screen.getByLabelText(roAuth.fields.email.label)).toHaveAccessibleDescription(
-        roCommon.errors.reasons.user_already_exists,
-      );
-    });
+    expect(await screen.findByText(roAuth.signUp.alreadyRegistered.title)).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', {
+        name: tagContent(roAuth.signUp.alreadyRegistered.text, 'signIn'),
+      }),
+    ).toHaveAttribute('href', '/login?redirect=%2Fpublish');
+    expect(
+      screen.getByRole('link', {
+        name: tagContent(roAuth.signUp.alreadyRegistered.text, 'reset'),
+      }),
+    ).toHaveAttribute('href', '/password-reset');
+    expect(onConfirmationNeeded).not.toHaveBeenCalled();
     expect(screen.queryByText(roAuth.signUp.failedTitle)).not.toBeInTheDocument();
+  });
+
+  it('asks for a letter and a digit in the password', async () => {
+    const { user } = await renderWithProviders(<SignUpForm onConfirmationNeeded={vi.fn()} />);
+
+    await user.type(screen.getByLabelText(roAuth.fields.password.label), 'parolafaracifre');
+    await user.click(screen.getByRole('button', { name: roAuth.signUp.submit }));
+
+    expect(await screen.findByText(roAuth.fields.password.needsLetterAndDigit)).toBeInTheDocument();
   });
 
   it('puts a weak password on the password field', async () => {
     server.use(http.post(SIGN_UP_URL, () => authErrorResponse('weak_password', 422)));
-    const { user } = await renderWithProviders(<SignUpForm onEmailSent={vi.fn()} />);
+    const { user } = await renderWithProviders(<SignUpForm onConfirmationNeeded={vi.fn()} />);
 
     await fillAndSubmit(user);
 
@@ -157,7 +230,7 @@ describe('SignUpForm', () => {
 
   it('explains a network failure', async () => {
     server.use(http.post(SIGN_UP_URL, () => HttpResponse.error()));
-    const { user } = await renderWithProviders(<SignUpForm onEmailSent={vi.fn()} />);
+    const { user } = await renderWithProviders(<SignUpForm onConfirmationNeeded={vi.fn()} />);
 
     await fillAndSubmit(user);
 
@@ -167,7 +240,7 @@ describe('SignUpForm', () => {
 
   it('falls back to the generic text for an unexpected failure', async () => {
     server.use(http.post(SIGN_UP_URL, () => authErrorResponse('unexpected_failure', 500)));
-    const { user } = await renderWithProviders(<SignUpForm onEmailSent={vi.fn()} />);
+    const { user } = await renderWithProviders(<SignUpForm onConfirmationNeeded={vi.fn()} />);
 
     await fillAndSubmit(user);
 
@@ -175,18 +248,18 @@ describe('SignUpForm', () => {
     expect(screen.getByText(roAuth.signUp.failedText)).toBeInTheDocument();
   });
 
-  it('explains that social sign-up is not available yet', async () => {
-    const { user } = await renderWithProviders(<SignUpForm onEmailSent={vi.fn()} />);
+  it('explains that a social provider is not turned on yet', async () => {
+    const { user } = await renderWithProviders(<SignUpForm onConfirmationNeeded={vi.fn()} />);
 
-    await user.click(screen.getByRole('button', { name: roAuth.social.facebook }));
+    await user.click(screen.getByRole('button', { name: roAuth.social.google }));
 
-    expect(screen.getByRole('status')).toHaveTextContent(
-      roAuth.social.unavailable.replace('{{provider}}', roAuth.social.providers.facebook),
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      roAuth.social.unavailable.replace('{{provider}}', roAuth.social.providers.google),
     );
   });
 
   it('explains a password that is too long', async () => {
-    const { user } = await renderWithProviders(<SignUpForm onEmailSent={vi.fn()} />);
+    const { user } = await renderWithProviders(<SignUpForm onConfirmationNeeded={vi.fn()} />);
 
     await user.type(screen.getByLabelText(roAuth.fields.password.label), 'a'.repeat(73));
     await user.click(screen.getByRole('button', { name: roAuth.signUp.submit }));

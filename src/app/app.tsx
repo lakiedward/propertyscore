@@ -27,7 +27,7 @@ function RoutedApp({ router }: Pick<AppProps, 'router'>) {
 
   useEffect(() => {
     void router.invalidate();
-  }, [router, auth.session]);
+  }, [router, auth]);
 
   useEffect(() => {
     const handleLanguageChanged = () => {

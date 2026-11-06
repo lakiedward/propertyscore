@@ -11,7 +11,7 @@ paths:
 - The schema changes only through `supabase migration new <verb>_<object>`, written as SQL, applied with `pnpm db:reset`, reviewed in the PR. Never edit a hosted project in the dashboard; if it happened, capture it with `supabase db diff` as a migration.
 - Never edit a migration that has reached `main`; write a new one.
 - After a migration: `pnpm db:reset`, `pnpm db:types`, commit both. CI fails when the generated types drift.
-- Never run `supabase db push`, `apply_migration` or `execute_sql` that writes against a hosted project; migrations reach production only through `deploy-db.yml` on a version tag. There is no hosted dev project; the `supabase-local` MCP server in `.mcp.json` targets the local stack. Read-only MCP tools (`list_tables`, `get_advisors`, `search_docs`) are fine.
+- Never run `supabase db push`, `apply_migration` or `execute_sql` that writes against a hosted project; migrations reach production only through `deploy.yml` on a version tag, which publishes the site right after them. There is no hosted dev project; the `supabase-local` MCP server in `.mcp.json` targets the local stack. Read-only MCP tools (`list_tables`, `get_advisors`, `search_docs`) are fine.
 
 ## Tables and columns
 
@@ -44,7 +44,7 @@ create policy "Owners can update their properties"
 - `insert` and `update` policies have `with check`.
 - Auth functions are wrapped in a sub-select: `(select auth.uid())`, `(select auth.jwt())`.
 - Complex checks (membership, roles) live in a `security definer` function in the `private` schema with `set search_path = ''`, called from the policy.
-- Roles are read from the `user_role` claim set by the Custom Access Token Hook; never from `user_metadata`.
+- Roles are read from the `user_roles` claim (an array of `app_role` values) set by the Custom Access Token Hook from `public.user_roles`; never from `user_metadata`. In a policy, check it inline (`coalesce(((select auth.jwt()) -> 'user_roles') ? 'admin', false)`); `security definer` functions use `private.has_role(role)`. A new role is a new `app_role` value, never a new claim.
 - Columns the client must not write (computed scores, ownership) are protected with column privileges (`revoke update (score) on public.properties from authenticated`) or a trigger; a policy alone does not protect a column.
 - Every policy has pgTAP tests for both outcomes: the owner can, another user and `anon` cannot.
 
@@ -52,6 +52,8 @@ create policy "Owners can update their properties"
 
 - Business rules, multi-table writes and score recomputation are Postgres functions called through `supabase.rpc()`. `security invoker` by default; `security definer` only when required, always with `set search_path = ''` and fully qualified names.
 - Functions raise errors with codes, not sentences: `raise exception using errcode = 'P0001', message = 'address_not_found'`. The frontend translates the code.
+- A function that must keep a row when it refuses (a failed attempt counted for rate limiting) returns the outcome code instead of raising, because a raise rolls the row back: `delete_own_account` returns `deleted`, `invalid_password` or `email_mismatch`, and the `api/` function turns any outcome other than success into an `AppError` through `toAppError({ code: 'P0001', message: outcome, details: null })`. Rules that can be refused without a trace still raise.
+- Checks that must not race (the last admin) take a transaction lock first (`pg_advisory_xact_lock`), so a concurrent caller sees the committed result.
 - Views are created `with (security_invoker = true)`.
 - Internal tables and helpers live in the `private` schema, which PostgREST does not expose.
 - Triggers maintain `updated_at` and audit columns; client code never sets them.
@@ -80,7 +82,8 @@ create policy "Owners can update their properties"
 
 ## Auth configuration and email templates
 
-- Auth settings, redirect URLs and email templates are configured in `supabase/config.toml` for local; hosted changes are mirrored by hand and listed in the PR.
+- Auth settings, redirect URLs and email templates are configured in `supabase/config.toml` for local; hosted changes are mirrored by hand and listed in the PR. Email confirmation is on locally as in production. Email links use `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=<type>&next={{ .RedirectTo }}` (any device); OAuth alone uses the PKCE `/auth/callback`. `[auth.captcha]` is switched off for now (`enabled = false`); when it is turned back on it uses Turnstile with Cloudflare's always-pass test secret locally, and the real secret is set only in the hosted dashboard.
+- Password changes need no emailed code (`secure_password_change = false`, mirrored in the hosted dashboard), and the hosted project has "Require current password when changing password" on; the local CLI cannot set that one, so the settings form always sends `current_password`.
 - Templates live in `supabase/templates/` and branch on the user's language, Romanian by default: `{{ if eq .Data.locale "en" }}…{{ else }}…{{ end }}`. Both branches change together.
 
 ## Seed and tests

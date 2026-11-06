@@ -25,6 +25,7 @@ paths:
 - A feature's internals are imported only inside the feature; other code imports from `@/features/<feature>` (its `index.ts`). ESLint rejects deep imports.
 - Pure domain logic (scoring, calculations, formatting rules) lives in `<entity>.utils.ts` as plain functions with no React or Supabase import.
 - Start a new feature folder only for a new domain concept; a single screen does not need one.
+- A feature's `index.ts` and its `components/*.tsx` modules have no top-level side effects (only imports, declarations, `cva`, `getRouteApi`, `createLink`): `vite.config.ts` marks them side-effect free (`build.rolldownOptions.treeshake.moduleSideEffects`) so a page exported through `index.ts` lands in its route chunk instead of the entry chunk. Code that must run on import goes elsewhere (`main.tsx`, `i18n.ts`, a hook or an effect).
 
 ## Components
 
@@ -35,6 +36,15 @@ paths:
 - Composition over configuration: prefer `children` and small composable parts to a component with many boolean props.
 - Lists use stable ids as `key`, never the index for lists that change.
 - No inline arrow components inside render; no components defined inside other components.
+
+## Reuse and shared components
+
+- **Look before you build.** Before writing any UI, check the component catalogue (`design-system.md` §4), `src/components/*/`, `src/components/ui/` and every feature's `index.ts`. If something already does the job, use it, or extend it with a prop or variant; never write a second version next to it.
+- **Generic interaction patterns are shared from the first use.** Confirmations (`components/feedback/confirm-dialog.tsx`), toasts (`toast.*` from `sonner`, styled in `components/ui/sonner.tsx`), notices (`Alert`), empty, loading and error states (`components/layout/empty-state.tsx`, `pending-page.tsx`, `route-error.tsx`), status labels (`StatusPill`) and panel page headings (`PanelPage`) are built once in `src/components/<group>/`. The caller passes what to show (title, text, labels, tone, icon, pending state, action) through props and `children`. A new pattern of this kind, such as a settings section, a form dialog or a page toolbar, goes straight to `src/components/<group>/` with the content as props, never as a one-off inside a feature.
+- **Domain components start in their feature.** A block that knows a feature's data (a phone form, a listing card for one screen) lives in that feature. When a second feature needs it, move it to `src/components/<group>/` in the same change, make the feature-specific parts props, and update both callers. Never copy it.
+- **Shared components stay dumb.** They take props, render and call the callbacks they are given; they never fetch, import a feature, or hard-code a feature's text. Labels come from the caller through `t()`; only truly generic words (`common:actions.cancel`, `common:actions.close`) are read inside the component.
+- **Never assemble a shared pattern by hand from its primitive.** A confirmation is a `ConfirmDialog`, not a `Dialog` or `AlertDialog` with buttons; a toast is `toast.success` / `.error` / `.info` / `.warning` with no inline classes or styles; a notice is an `Alert` tone, not a coloured `div`.
+- Every new shared component gets a catalogue row in `design-system.md` §4 (location, props, variants) and its test in the same change.
 
 ## Hooks and effects
 

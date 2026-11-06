@@ -1,4 +1,4 @@
-import { redactShareToken, redactShareTokensIn, safeRedirectPath } from './url';
+import { redactSensitiveParams, redactSensitiveParamsIn, safeRedirectPath } from './url';
 
 describe('safeRedirectPath', () => {
   it.each([
@@ -23,25 +23,36 @@ describe('safeRedirectPath', () => {
     '/\r\n/evil.test',
     '%2F%2Fevil.test',
     '/%2F%2Fevil.test',
+    '/.//evil.com',
+    '/..//evil.com',
+    '/%2e//evil.com',
+    '/x/../\\evil.com',
   ])('never leaves the origin for %j', (value) => {
     const result = safeRedirectPath(value);
     expect(new URL(result, window.location.origin).origin).toBe(window.location.origin);
     expect(result.startsWith('//')).toBe(false);
   });
 
-  it.each([undefined, '', 'properties', 'https://evil.test', '//evil', '/\\evil', '/\t/evil.test'])(
-    'falls back to the account page for %j',
-    (value) => {
-      expect(safeRedirectPath(value)).toBe('/account');
-    },
-  );
+  it.each([
+    undefined,
+    '',
+    'properties',
+    'https://evil.test',
+    '//evil',
+    '/\\evil',
+    '/\t/evil.test',
+    '/.//evil.com',
+    '/%2e//evil.com',
+  ])('falls back to the account page for %j', (value) => {
+    expect(safeRedirectPath(value)).toBe('/account');
+  });
 
   it('uses the given fallback', () => {
     expect(safeRedirectPath('//evil.test', '/')).toBe('/');
   });
 });
 
-describe('redactShareToken', () => {
+describe('redactSensitiveParams', () => {
   const token = 'a'.repeat(48);
 
   it.each([
@@ -58,16 +69,26 @@ describe('redactShareToken', () => {
       `/login?redirect=%2Fcheck%2Fresult%2Fr1%3Fshare%3D${token}`,
       '/login?redirect=%2Fcheck%2Fresult%2Fr1%3Fshare%3D[redacted]',
     ],
+    [
+      `/auth/confirm?token_hash=${token}&type=recovery&next=x`,
+      '/auth/confirm?token_hash=[redacted]&type=recovery&next=x',
+    ],
+    [
+      `/auth/callback?code=${token}&redirect=%2Fpublish`,
+      '/auth/callback?code=[redacted]&redirect=%2Fpublish',
+    ],
   ])('removes the token from %s', (value, expected) => {
-    expect(redactShareToken(value)).toBe(expected);
+    expect(redactSensitiveParams(value)).toBe(expected);
   });
 
-  it('keeps other parameters that end in share', () => {
-    expect(redactShareToken('/x?reshare=1&tab=share')).toBe('/x?reshare=1&tab=share');
+  it('keeps other parameters whose names end in a sensitive name', () => {
+    expect(redactSensitiveParams('/x?reshare=1&tab=share&error_code=otp_expired')).toBe(
+      '/x?reshare=1&tab=share&error_code=otp_expired',
+    );
   });
 });
 
-describe('redactShareTokensIn', () => {
+describe('redactSensitiveParamsIn', () => {
   it('redacts every nested string and keeps the same object', () => {
     const token = 'b'.repeat(48);
     const event = {
@@ -79,7 +100,7 @@ describe('redactShareTokensIn', () => {
       level: 'error',
     };
 
-    const result = redactShareTokensIn(event);
+    const result = redactSensitiveParamsIn(event);
 
     expect(result).toBe(event);
     expect(JSON.stringify(event)).not.toContain(token);

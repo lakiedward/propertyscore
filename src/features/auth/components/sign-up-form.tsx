@@ -1,15 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
-import { useErrorMessage } from '@/i18n/error-message';
+import { FieldGroup } from '@/components/ui/field';
 import { currentLocale } from '@/i18n/i18n';
-import { useValidationMessage } from '@/i18n/validation';
-import { isAppError } from '@/lib/errors';
-import { applyServerErrors } from '@/lib/forms';
 import { useSignUp } from '../api/auth.queries';
 import {
   PASSWORD_MIN_LENGTH,
@@ -18,64 +13,75 @@ import {
   type SignUpValues,
 } from '../auth.schemas';
 import type { SocialProvider } from '../auth.types';
-import { AuthNotice } from './auth-notice';
+import { useCaptcha } from '../hooks/use-captcha';
+import { useFormError } from '../hooks/use-form-error';
+import { useSocialSignIn } from '../hooks/use-social-sign-in';
+import { AlreadyRegisteredNotice } from './already-registered-notice';
 import { AuthTextField } from './auth-text-field';
+import { CaptchaField } from './captcha-field';
+import { FormErrorNotice } from './form-error-notice';
 import { SocialSignIn } from './social-sign-in';
-import { SocialUnavailableNotice } from './social-unavailable-notice';
+import { SocialSignInNotice } from './social-sign-in-notice';
+import { TermsField } from './terms-field';
 
 type SignUpFormProps = {
   redirect?: string | undefined;
-  onEmailSent: (email: string) => void;
+  onConfirmationNeeded: (email: string, isRepeat: boolean) => void;
 };
 
-function hasSpecificMessage(error: unknown): boolean {
-  return isAppError(error) && (error.code !== 'unknown' || error.reason !== undefined);
-}
-
-export function SignUpForm({ redirect, onEmailSent }: SignUpFormProps) {
+export function SignUpForm({ redirect, onConfirmationNeeded }: SignUpFormProps) {
   const { t } = useTranslation('auth');
-  const errorMessage = useErrorMessage();
-  const validationMessage = useValidationMessage();
   const signUp = useSignUp();
-  const [oauthProvider, setOauthProvider] = useState<SocialProvider>();
-  const [formError, setFormError] = useState<unknown>();
-  const termsId = useId();
-  const termsErrorId = `${termsId}-error`;
+  const social = useSocialSignIn(redirect);
+  const captcha = useCaptcha();
+  const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { fullName: '', email: '', password: '', acceptsTerms: false },
+    defaultValues: { fullName: '', email: '', phone: '', password: '', acceptsTerms: false },
   });
+  const formError = useFormError(form);
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    setOauthProvider(undefined);
-    setFormError(undefined);
+    social.clearNotice();
+    formError.clear();
+    setIsAlreadyRegistered(false);
+    const captchaResult = captcha.consume();
+    if (!captchaResult) {
+      return;
+    }
     try {
-      const result = await signUp.mutateAsync(toSignUpPayload(values, currentLocale(), redirect));
-      if (result.needsEmailConfirmation) {
-        onEmailSent(values.email);
+      const result = await signUp.mutateAsync({
+        ...toSignUpPayload(values, currentLocale(), redirect),
+        captchaToken: captchaResult.token,
+      });
+      if (result.status === 'already_registered') {
+        setIsAlreadyRegistered(true);
+      } else if (result.status !== 'signed_in') {
+        onConfirmationNeeded(values.email, result.status === 'confirmation_resent');
       }
     } catch (error) {
-      if (!applyServerErrors(form, error)) {
-        setFormError(error);
-      }
+      formError.handle(error);
     }
   });
 
   const handleSocialSelect = (provider: SocialProvider) => {
     signUp.reset();
-    setFormError(undefined);
-    setOauthProvider(provider);
+    formError.clear();
+    void social.select(provider);
   };
 
   return (
     <>
-      {oauthProvider ? <SocialUnavailableNotice provider={oauthProvider} /> : null}
-      {formError ? (
-        <AuthNotice tone="error" title={t('signUp.failedTitle')}>
-          {hasSpecificMessage(formError) ? errorMessage(formError) : t('signUp.failedText')}
-        </AuthNotice>
+      {social.notice ? <SocialSignInNotice notice={social.notice} /> : null}
+      {isAlreadyRegistered ? <AlreadyRegisteredNotice redirect={redirect} /> : null}
+      {formError.error ? (
+        <FormErrorNotice
+          error={formError.error}
+          title={t('signUp.failedTitle')}
+          fallback={t('signUp.failedText')}
+        />
       ) : null}
-      <SocialSignIn onSelect={handleSocialSelect} />
+      <SocialSignIn pendingProvider={social.pendingProvider} onSelect={handleSocialSelect} />
       <form onSubmit={(event) => void handleSubmit(event)} noValidate>
         <FieldGroup className="gap-3">
           <Controller
@@ -105,6 +111,21 @@ export function SignUpForm({ redirect, onEmailSent }: SignUpFormProps) {
             )}
           />
           <Controller
+            name="phone"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <AuthTextField
+                {...field}
+                label={t('fields.phone.label')}
+                error={fieldState.error?.message}
+                type="tel"
+                autoComplete="tel"
+                inputMode="tel"
+                placeholder={t('fields.phone.placeholder')}
+              />
+            )}
+          />
+          <Controller
             name="password"
             control={form.control}
             render={({ field, fieldState }) => (
@@ -123,33 +144,16 @@ export function SignUpForm({ redirect, onEmailSent }: SignUpFormProps) {
             name="acceptsTerms"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field orientation="horizontal" data-invalid={fieldState.invalid} className="py-2.5">
-                <Checkbox
-                  id={termsId}
-                  name={field.name}
-                  checked={field.value}
-                  onCheckedChange={(checked) => {
-                    field.onChange(checked === true);
-                  }}
-                  onBlur={field.onBlur}
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.invalid ? termsErrorId : undefined}
-                  className="mt-px"
-                />
-                <FieldContent className="gap-1">
-                  <FieldLabel
-                    htmlFor={termsId}
-                    className="cursor-pointer text-body leading-compact font-normal text-foreground"
-                  >
-                    {t('fields.terms.label')}
-                  </FieldLabel>
-                  <FieldError id={termsErrorId} className="text-caption leading-copy">
-                    {validationMessage(fieldState.error?.message)}
-                  </FieldError>
-                </FieldContent>
-              </Field>
+              <TermsField
+                name={field.name}
+                isChecked={field.value}
+                error={fieldState.error?.message}
+                onCheckedChange={field.onChange}
+                onBlur={field.onBlur}
+              />
             )}
           />
+          <CaptchaField captcha={captcha} />
           <Button type="submit" size="xl" disabled={signUp.isPending} className="mt-1 w-full">
             {signUp.isPending ? t('signUp.pending') : t('signUp.submit')}
           </Button>

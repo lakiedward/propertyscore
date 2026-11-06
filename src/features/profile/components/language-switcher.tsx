@@ -10,9 +10,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { changeLocale, isLocale, SUPPORTED_LOCALES } from '@/i18n/i18n';
+import { SUPPORTED_LOCALES } from '@/i18n/i18n';
 import { useLocale } from '@/i18n/use-locale';
-import { useUpdateProfileLocale } from '../api/profile.queries';
+import { useChangeLocale } from '../hooks/use-change-locale';
 
 const segmentedGroupVariants = cva('', {
   variants: {
@@ -45,26 +45,8 @@ export function LanguageSwitcher({
   tone = 'dark',
 }: LanguageSwitcherProps) {
   const { t } = useTranslation();
-  const updateProfileLocale = useUpdateProfileLocale();
   const locale = useLocale();
-
-  const handleChange = (value: string) => {
-    if (!isLocale(value) || value === locale) {
-      return;
-    }
-    const previous = locale;
-    void changeLocale(value);
-    if (userId) {
-      updateProfileLocale.mutate(
-        { userId, locale: value },
-        {
-          onError: () => {
-            void changeLocale(previous);
-          },
-        },
-      );
-    }
-  };
+  const handleChange = useChangeLocale(userId);
 
   if (variant === 'segmented') {
     const isCompact = tone === 'light';

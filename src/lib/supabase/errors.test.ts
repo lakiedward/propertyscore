@@ -19,6 +19,32 @@ describe('toAppError', () => {
     expect(toAppError(postgrestError(code)).code).toBe(expected);
   });
 
+  it.each([
+    ['invalid_password', 'confirmation'],
+    ['email_mismatch', 'confirmation'],
+    ['last_admin', undefined],
+    ['rate_limited', undefined],
+    ['reauthentication_needed', undefined],
+  ])('maps the function error %s to its reason and the %s field', (message, field) => {
+    const error = toAppError(postgrestError('P0001', message));
+
+    expect(error.code).toBe('validation');
+    expect(error.reason).toBe(message);
+    expect(error.field).toBe(field);
+  });
+
+  it('maps a function outcome returned as data like a function error', () => {
+    const error = toAppError({ code: 'P0001', message: 'invalid_password', details: null });
+
+    expect(error.code).toBe('validation');
+    expect(error.reason).toBe('invalid_password');
+    expect(error.field).toBe('confirmation');
+  });
+
+  it('keeps an unknown function error without a reason', () => {
+    expect(toAppError(postgrestError('P0001', 'report_not_found')).reason).toBe(undefined);
+  });
+
   it('maps an unknown PostgREST code to unknown', () => {
     expect(toAppError(postgrestError('XX000')).code).toBe('unknown');
   });
@@ -34,16 +60,42 @@ describe('toAppError', () => {
     ['user_already_exists', 'user_already_exists'],
     ['email_exists', 'user_already_exists'],
     ['weak_password', 'weak_password'],
+    ['same_password', 'same_password'],
+    ['captcha_failed', 'captcha_failed'],
     ['over_request_rate_limit', 'rate_limited'],
+    ['over_email_send_rate_limit', 'rate_limited'],
+    ['otp_expired', 'link_expired'],
+    ['flow_state_expired', 'link_expired'],
+    ['flow_state_not_found', 'link_expired'],
+    ['current_password_invalid', 'current_password_invalid'],
+    ['current_password_required', 'current_password_required'],
+    ['reauthentication_needed', 'reauthentication_needed'],
   ])('maps the auth code %s to the reason %s', (code, reason) => {
     expect(toAppError(new AuthApiError('auth failed', 400, code)).reason).toBe(reason);
+  });
+
+  it.each([
+    ['over_request_rate_limit', 'unknown'],
+    ['over_email_send_rate_limit', 'unknown'],
+    ['captcha_failed', 'validation'],
+    ['otp_expired', 'validation'],
+    ['flow_state_expired', 'validation'],
+    ['flow_state_not_found', 'validation'],
+  ])('gives the auth code %s the %s code', (code, expected) => {
+    const error = toAppError(new AuthApiError('auth failed', 400, code));
+
+    expect(error.code).toBe(expected);
+    expect(error.field).toBe(undefined);
   });
 
   it.each([
     ['user_already_exists', 'email'],
     ['email_exists', 'email'],
     ['weak_password', 'password'],
-  ])('ties the sign-up auth code %s to the %s field', (code, field) => {
+    ['same_password', 'password'],
+    ['current_password_invalid', 'currentPassword'],
+    ['current_password_required', 'currentPassword'],
+  ])('ties the auth code %s to the %s field', (code, field) => {
     expect(toAppError(new AuthApiError('auth failed', 422, code)).field).toBe(field);
   });
 

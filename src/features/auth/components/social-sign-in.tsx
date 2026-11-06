@@ -1,54 +1,43 @@
-import { AppleIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FacebookMark } from '@/components/brand/facebook-mark';
 import { GoogleMark } from '@/components/brand/google-mark';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { SocialProvider } from '../auth.types';
+import { SOCIAL_PROVIDERS, type SocialProvider } from '../auth.types';
 
-const PROVIDERS: readonly { id: SocialProvider; mark: ReactNode; className: string }[] = [
-  {
-    id: 'google',
+const PROVIDER_LOOKS: Readonly<Record<SocialProvider, { mark: ReactNode; className: string }>> = {
+  google: {
     mark: <GoogleMark />,
     className:
       'border-border bg-card text-foreground hover:border-border-control hover:bg-secondary',
   },
-  {
-    id: 'apple',
-    mark: <AppleIcon aria-hidden className="size-5" />,
-    className: 'border-social-apple bg-social-apple text-on-inverse hover:bg-social-apple-hover',
-  },
-  {
-    id: 'facebook',
-    mark: <FacebookMark />,
-    className:
-      'border-social-facebook bg-social-facebook text-on-inverse hover:bg-social-facebook-hover',
-  },
-];
+};
 
 type SocialSignInProps = {
+  pendingProvider?: SocialProvider | undefined;
   onSelect: (provider: SocialProvider) => void;
 };
 
-export function SocialSignIn({ onSelect }: SocialSignInProps) {
+export function SocialSignIn({ pendingProvider, onSelect }: SocialSignInProps) {
   const { t } = useTranslation('auth');
 
   return (
     <>
       <div className="flex flex-col gap-2.5">
-        {PROVIDERS.map((provider) => (
+        {SOCIAL_PROVIDERS.map((provider) => (
           <Button
-            key={provider.id}
+            key={provider}
             type="button"
             size="xl"
+            aria-busy={pendingProvider === provider}
+            disabled={pendingProvider !== undefined}
             onClick={() => {
-              onSelect(provider.id);
+              onSelect(provider);
             }}
-            className={cn('w-full gap-3 border font-bold', provider.className)}
+            className={cn('w-full gap-3 border font-bold', PROVIDER_LOOKS[provider].className)}
           >
-            {provider.mark}
-            {t(`social.${provider.id}`)}
+            {PROVIDER_LOOKS[provider].mark}
+            {t(`social.${provider}`)}
           </Button>
         ))}
       </div>

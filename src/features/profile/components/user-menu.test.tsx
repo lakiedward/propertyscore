@@ -1,0 +1,135 @@
+import { screen, waitFor, within } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
+import roAuth from '@/i18n/locales/ro/auth.json';
+import roCommon from '@/i18n/locales/ro/common.json';
+import { signedInAs } from '@/test/factories/auth';
+import { buildProfile } from '@/test/factories/profile';
+import { server } from '@/test/msw/server';
+import { supabaseUrl } from '@/test/msw/supabase-url';
+import { renderWithProviders } from '@/test/render';
+import { UserMenu } from './user-menu';
+
+const auth = signedInAs();
+const profile = buildProfile();
+const profileName = profile.full_name ?? '';
+const email = auth.user?.email ?? '';
+
+async function openMenu() {
+  const { user } = await renderWithProviders(
+    auth.user ? <UserMenu user={auth.user} tone="light" /> : null,
+    { auth },
+  );
+  await user.click(await screen.findByRole('button', { name: profileName }));
+  return user;
+}
+
+describe('UserMenu', { timeout: 20_000 }, () => {
+  it('shows the name, initials and email from the profile', async () => {
+    await openMenu();
+
+    expect(screen.getByRole('menu')).toHaveTextContent(email);
+    expect(screen.getByText('AM')).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: roCommon.panel.account.nav.settings }),
+    ).toHaveAttribute('href', '/account/settings');
+  });
+
+  it('opens the panel for the role from the public site', async () => {
+    const { user } = await renderWithProviders(
+      auth.user ? <UserMenu user={auth.user} tone="light" panelPath="/admin" isNameHidden /> : null,
+      { auth },
+    );
+
+    await user.click(await screen.findByRole('button', { name: profileName }));
+
+    expect(screen.getByRole('menuitem', { name: roCommon.panel.link.admin })).toHaveAttribute(
+      'href',
+      '/admin',
+    );
+  });
+
+  it('has no panel link inside the panels', async () => {
+    await openMenu();
+
+    expect(
+      screen.queryByRole('menuitem', { name: roCommon.panel.link.account }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('falls back to the email while the profile has no name', async () => {
+    server.use(
+      http.get(supabaseUrl('/rest/v1/profiles'), () =>
+        HttpResponse.json(buildProfile({ full_name: null })),
+      ),
+    );
+    const { user } = await renderWithProviders(
+      auth.user ? <UserMenu user={auth.user} tone="inverse" appRole="admin" /> : null,
+      { auth },
+    );
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: (accessibleName) => accessibleName.includes(email),
+      }),
+    );
+
+    expect(screen.getAllByText(roCommon.panel.userMenu.role.admin).length).toBeGreaterThan(0);
+  });
+
+  it('switches the language and saves it on the profile', async () => {
+    const updates: unknown[] = [];
+    server.use(
+      http.patch(supabaseUrl('/rest/v1/profiles'), async ({ request }) => {
+        updates.push(await request.json());
+        return HttpResponse.json(buildProfile({ locale: 'en' }));
+      }),
+    );
+    const user = await openMenu();
+
+    await user.click(screen.getByRole('menuitem', { name: roCommon.language.en }));
+
+    await waitFor(() => {
+      expect(document.documentElement).toHaveAttribute('lang', 'en');
+    });
+    expect(updates).toEqual([{ locale: 'en' }]);
+  });
+
+  it('keeps the session when the sign-out is cancelled', async () => {
+    let signOutCalls = 0;
+    server.use(
+      http.post(supabaseUrl('/auth/v1/logout'), () => {
+        signOutCalls += 1;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const user = await openMenu();
+
+    await user.click(screen.getByRole('menuitem', { name: roCommon.actions.signOut }));
+    const dialog = await screen.findByRole('alertdialog', { name: roAuth.signOut.title });
+    await user.click(within(dialog).getByRole('button', { name: roCommon.actions.cancel }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    });
+    expect(signOutCalls).toBe(0);
+  });
+
+  it('signs out after the confirmation', async () => {
+    const user = await openMenu();
+
+    await user.click(screen.getByRole('menuitem', { name: roCommon.actions.signOut }));
+    const dialog = await screen.findByRole('alertdialog', { name: roAuth.signOut.title });
+    await user.click(within(dialog).getByRole('button', { name: roAuth.signOut.confirm }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    });
+  });
+
+  it('cuts a long name and email instead of overflowing the menu', async () => {
+    await openMenu();
+
+    expect(screen.getByTitle(email)).toHaveClass('truncate');
+    expect(screen.getByTitle(profileName)).toHaveClass('truncate');
+  });
+});
