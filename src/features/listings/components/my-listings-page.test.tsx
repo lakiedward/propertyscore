@@ -7,23 +7,31 @@ import { renderAppRoute } from '@/test/render';
 
 const [REJECTED, BLOCKED] = SEEDED_MY_LISTINGS;
 
+function cardOf(title: string) {
+  return screen.getByRole('article', { name: title });
+}
+
 describe('MyListingsPage', { timeout: 20_000 }, () => {
-  it('shows each listing with its status and the reason of a rejection', async () => {
+  it('shows each listing with its status, the admin reason and the right action', async () => {
     await renderAppRoute('/account/listings', { auth: signedInAs() });
 
-    const list = await screen.findByRole('navigation', { name: ro.list.label });
-    const rejectedRow = within(list).getByRole('link', { name: new RegExp(REJECTED?.title ?? '') });
-    expect(within(rejectedRow).getByText(ro.status.rejected)).toBeInTheDocument();
-    expect(
-      within(rejectedRow).getByText(
-        ro.notice.reason.replace('{{message}}', REJECTED?.decisions[0]?.message ?? ''),
-      ),
-    ).toBeInTheDocument();
-    expect(within(rejectedRow).getByText(ro.list.edit)).toBeInTheDocument();
+    expect(await screen.findByRole('list', { name: ro.list.label })).toBeInTheDocument();
 
-    const blockedRow = within(list).getByRole('link', { name: new RegExp(BLOCKED?.title ?? '') });
-    expect(within(blockedRow).getByText(ro.status.blocked)).toBeInTheDocument();
-    expect(within(blockedRow).getByText(ro.list.view)).toBeInTheDocument();
+    const rejected = cardOf(REJECTED?.title ?? '');
+    expect(within(rejected).getByText(ro.status.rejected)).toBeInTheDocument();
+    expect(within(rejected).getByText(REJECTED?.decisions[0]?.message ?? '')).toBeInTheDocument();
+    expect(within(rejected).getByRole('link', { name: ro.list.edit })).toHaveAttribute(
+      'href',
+      `/account/listings/${REJECTED?.id ?? ''}`,
+    );
+    expect(within(rejected).getByRole('button', { name: ro.list.preview })).toBeInTheDocument();
+
+    const blocked = cardOf(BLOCKED?.title ?? '');
+    expect(within(blocked).getByText(ro.status.blocked)).toBeInTheDocument();
+    expect(within(blocked).getByRole('link', { name: ro.list.view })).toBeInTheDocument();
+    expect(
+      within(blocked).queryByRole('button', { name: ro.list.preview }),
+    ).not.toBeInTheDocument();
   });
 
   it('invites the owner to add a first listing', async () => {

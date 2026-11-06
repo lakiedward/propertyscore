@@ -22,12 +22,6 @@ export function pricePerSquareMeter(price: number, areaM2: number): number | nul
   return areaM2 > 0 ? Math.round(price / areaM2) : null;
 }
 
-const MOSAIC_PHOTO_COUNT = 4;
-
-export function hiddenPhotoCount(total: number): number {
-  return Math.max(0, total - MOSAIC_PHOTO_COUNT);
-}
-
 export function decisionMessage(messages: readonly string[]): string {
   return messages.join(' ');
 }

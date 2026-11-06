@@ -29,12 +29,17 @@ function captureWrites() {
   return writes;
 }
 
+function stepTitle(key: keyof typeof ro.wizard.titles) {
+  return screen.findByRole('heading', { level: 2, name: ro.wizard.titles[key] });
+}
+
 describe('ListingEditorPage', { timeout: 20_000 }, () => {
-  it('shows why a listing was rejected and resubmits the same listing after saving', async () => {
+  it('shows why a listing was rejected and resubmits the same listing from the last step', async () => {
     const writes = captureWrites();
-    const { user, router } = await renderAppRoute(`/account/listings/${REJECTED?.id ?? ''}`, {
-      auth: signedInAs(),
-    });
+    const { user, router } = await renderAppRoute(
+      `/account/listings/${REJECTED?.id ?? ''}?step=6`,
+      { auth: signedInAs() },
+    );
 
     expect(await screen.findByText(ro.notice.rejected.title)).toBeInTheDocument();
     expect(
@@ -42,6 +47,7 @@ describe('ListingEditorPage', { timeout: 20_000 }, () => {
         ro.notice.reason.replace('{{message}}', REJECTED?.decisions[0]?.message ?? ''),
       ),
     ).toBeInTheDocument();
+    expect(await stepTitle('contact')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: ro.editor.resubmit }));
 
@@ -62,7 +68,7 @@ describe('ListingEditorPage', { timeout: 20_000 }, () => {
         ),
       ),
     );
-    const { user } = await renderAppRoute(`/account/listings/${REJECTED?.id ?? ''}`, {
+    const { user } = await renderAppRoute(`/account/listings/${REJECTED?.id ?? ''}?step=6`, {
       auth: signedInAs(),
     });
 
@@ -71,21 +77,40 @@ describe('ListingEditorPage', { timeout: 20_000 }, () => {
     expect(await screen.findByText(roCommon.errors.reasons.listing_incomplete)).toBeInTheDocument();
   });
 
-  it('keeps a blocked listing read-only', async () => {
+  it('shows a blocked listing as a read-only preview', async () => {
     await renderAppRoute(`/account/listings/${BLOCKED?.id ?? ''}`, { auth: signedInAs() });
 
     expect(await screen.findByText(ro.notice.blocked.title)).toBeInTheDocument();
-    expect(screen.getByLabelText(ro.form.title.label)).toBeDisabled();
+    expect(screen.getByText(ro.overview.previewLabel)).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: ro.wizard.stepsLabel })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: ro.editor.submit })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: ro.photos.add })).not.toBeInTheDocument();
   });
 
-  it('asks for the required fields before saving a new listing', async () => {
+  it('moves through the steps and stops at a step with a missing field', async () => {
     const { user } = await renderAppRoute('/account/listings/new', { auth: signedInAs() });
+
+    expect(await stepTitle('type')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: ro.wizard.continue }));
+
+    expect(await stepTitle('text')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: ro.wizard.continue }));
+
+    expect(await screen.findByText(roCommon.validation.required)).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: ro.wizard.titles.text }),
+    ).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText(ro.form.title.label), 'Apartament 2 camere, Fabric');
+    await user.click(screen.getByRole('button', { name: ro.wizard.continue }));
+
+    expect(await stepTitle('details')).toBeInTheDocument();
+  });
+
+  it('takes the owner back to the first unfinished step when saving an empty draft', async () => {
+    const { user } = await renderAppRoute('/account/listings/new?step=3', { auth: signedInAs() });
 
     await user.click(await screen.findByRole('button', { name: ro.editor.save }));
 
-    expect(await screen.findByText(ro.form.pin.missing)).toBeInTheDocument();
-    expect(screen.getAllByText(roCommon.validation.required).length).toBeGreaterThan(0);
+    expect(await stepTitle('text')).toBeInTheDocument();
   });
 });

@@ -2,12 +2,12 @@ import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { StatusPill } from '@/components/feedback/status-pill';
 import { getListingThumbUrl } from '@/features/listings';
+import { useListingPrice } from '@/hooks/use-listing-price';
 import { formatDate } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import { STATUS_META, toModerationStatus } from '../moderation-status';
 import type { QueueListing } from '../moderation.types';
 import { dayBucket } from '../moderation.utils';
-import { useListingPrice } from '../hooks/use-listing-price';
 
 type QueueRowProps = {
   listing: QueueListing;

@@ -15,12 +15,12 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useTrustLabel } from '@/hooks/use-trust-label';
-import { formatNumber, formatPrice } from '@/i18n/format';
+import { formatNumber, formatPrice, toCurrency } from '@/i18n/format';
 import { oneOf } from '@/lib/utils';
 import { LISTINGS_PREVIEW_LIMIT, listingQueries } from '../api/listings.queries';
 import { getListingThumbUrl } from '../api/listings.storage';
 import type { Listing, ListingTransaction } from '../listing.types';
-import { toCurrency, toTrustKind } from '../listing.utils';
+import { toTrustKind } from '../listing.utils';
 
 const TIMISOARA_CENTER: LngLat = [21.2303, 45.7546];
 const TRANSACTIONS: readonly ListingTransaction[] = ['sale', 'rent'];

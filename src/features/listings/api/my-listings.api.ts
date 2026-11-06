@@ -7,7 +7,7 @@ import { parseEwkbPoint } from '../listing.utils';
 const MY_LISTINGS_LIMIT = 50;
 
 const MY_LISTING_ROW_COLUMNS =
-  'id, status, transaction, title, city, price, currency, area_m2, photo_path, updated_at, decisions:listing_decisions(id, decision, message, created_at)' as const;
+  'id, status, transaction, title, street_label, city, rooms, floor, building_floors, price, currency, area_m2, photo_path, updated_at, decisions:listing_decisions(id, decision, message, created_at)' as const;
 
 const MY_LISTING_COLUMNS =
   'id, owner_id, status, transaction, title, street_label, city, rooms, area_m2, price, currency, floor, building_floors, year_built, description, latitude, longitude, photos:listing_photos(id, path, position, created_at), decisions:listing_decisions(id, decision, reasons, message, created_at)' as const;

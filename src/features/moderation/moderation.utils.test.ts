@@ -1,9 +1,4 @@
-import {
-  dayBucket,
-  decisionMessage,
-  hiddenPhotoCount,
-  pricePerSquareMeter,
-} from './moderation.utils';
+import { dayBucket, decisionMessage, pricePerSquareMeter } from './moderation.utils';
 
 describe('moderation.utils', () => {
   const now = new Date(2026, 10, 6, 12, 0);
@@ -17,11 +12,6 @@ describe('moderation.utils', () => {
   it('rounds the price per square metre and refuses an empty area', () => {
     expect(pricePerSquareMeter(168000, 90)).toBe(1867);
     expect(pricePerSquareMeter(1000, 0)).toBeNull();
-  });
-
-  it('counts the photos the mosaic does not show', () => {
-    expect(hiddenPhotoCount(18)).toBe(14);
-    expect(hiddenPhotoCount(3)).toBe(0);
   });
 
   it('joins the reason messages into one note', () => {

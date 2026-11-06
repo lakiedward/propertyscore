@@ -20,7 +20,7 @@ export function AccountSettingsPage({ userId, email, redirect }: AccountSettings
   return (
     <>
       <PanelPage titleKey="panel.account.nav.settings" />
-      <div className="flex w-full max-w-narrow flex-col gap-6">
+      <div className="flex w-full flex-col gap-6">
         <PhoneSection key={phone ?? 'missing'} userId={userId} phone={phone} redirect={redirect} />
         <ChangePasswordSection key={String(hasPassword)} hasPassword={hasPassword} />
         <DeleteAccountSection

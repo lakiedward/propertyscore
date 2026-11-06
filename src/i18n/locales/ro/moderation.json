@@ -39,28 +39,6 @@
     "date": "{{date}}"
   },
   "listing": {
-    "transaction": {
-      "sale": "De vânzare",
-      "rent": "De închiriat"
-    },
-    "dealCity": "{{deal}} · {{city}}",
-    "pricePerMonth": "{{price}} / lună",
-    "area": "{{value}} m²",
-    "facts": {
-      "rooms_one": "{{count}} cameră",
-      "rooms_few": "{{count}} camere",
-      "rooms_other": "{{count}} de camere",
-      "floor": "Etaj {{floor}} din {{total}}",
-      "floorOnly": "Etaj {{floor}}",
-      "groundFloor": "Parter",
-      "basement": "Demisol",
-      "yearBuilt": "Construit {{year}}"
-    },
-    "morePhotos_one": "+{{count}} poză",
-    "morePhotos_few": "+{{count}} poze",
-    "morePhotos_other": "+{{count}} de poze",
-    "photoAlt": "Fotografia {{index}} din {{total}}: {{title}}",
-    "noPhotos": "Anunțul nu are fotografii.",
     "owner": {
       "submitted": "Proprietar · trimis {{when}}",
       "today": "azi, {{time}}",

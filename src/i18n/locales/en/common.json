@@ -269,5 +269,27 @@
     },
     "crumb": "{{area}} / {{page}}",
     "backToSite": "Back to site"
+  },
+  "listingSummary": {
+    "transaction": {
+      "sale": "For sale",
+      "rent": "For rent"
+    },
+    "dealCity": "{{deal}} · {{city}}",
+    "pricePerMonth": "{{price}} / month",
+    "area": "{{value}} m²",
+    "facts": {
+      "rooms_one": "{{count}} room",
+      "rooms_other": "{{count}} rooms",
+      "floor": "Floor {{floor}} of {{total}}",
+      "floorOnly": "Floor {{floor}}",
+      "groundFloor": "Ground floor",
+      "basement": "Basement",
+      "yearBuilt": "Built {{year}}"
+    },
+    "morePhotos_one": "+{{count}} photo",
+    "morePhotos_other": "+{{count}} photos",
+    "photoAlt": "Photo {{index}} of {{total}}: {{title}}",
+    "noPhotos": "The listing has no photos."
   }
 }

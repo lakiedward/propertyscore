@@ -5,15 +5,22 @@
     "description": "Creezi anunțul, îl trimiți spre verificare și vezi aici răspunsul echipei.",
     "add": "Adaugă anunț",
     "label": "Anunțurile tale",
-    "priceArea": "{{price}} · {{area}}",
     "edit": "Editează",
     "view": "Vezi anunțul",
-    "updated": "Actualizat {{date}}",
     "empty": {
       "title": "Nu ai încă niciun anunț",
       "description": "Adaugă primul anunț; îl salvăm ca ciornă până îl trimiți spre verificare."
     },
-    "area": "{{value}} m²"
+    "eyebrow": "Vânzare și închiriere",
+    "addressCity": "{{street}} · {{city}}",
+    "floorShort": "et. {{floor}}/{{total}}",
+    "floorOnlyShort": "et. {{floor}}",
+    "groundFloorShort": "parter",
+    "reasonLabel": "Motiv:",
+    "preview": "Previzualizează",
+    "previewTitle": "Previzualizare",
+    "previewDescription": "Așa apare anunțul pe site după aprobare.",
+    "photoMissing": "Fără fotografie"
   },
   "status": {
     "draft": "Ciornă",
@@ -85,7 +92,7 @@
       "label": "Camere"
     },
     "area": {
-      "label": "Suprafață utilă (m²)"
+      "label": "Suprafață utilă"
     },
     "price": {
       "label": "Preț",
@@ -134,5 +141,74 @@
     "saveFirst": "Salvează ciorna ca să poți adăuga fotografii.",
     "invalidType": "Poți încărca doar imagini JPG, PNG sau WebP.",
     "tooLarge": "Fotografia este prea mare după conversie (peste 5 MB)."
+  },
+  "wizard": {
+    "subtitle": "Nu ai nevoie de raport ca să publici. Salvăm anunțul ca ciornă până îl trimiți.",
+    "stepOf": "Pasul {{step}} din {{total}}",
+    "stepsLabel": "Pașii anunțului",
+    "steps": {
+      "type": "Tip",
+      "text": "Titlu și descriere",
+      "details": "Detalii",
+      "address": "Adresă",
+      "photos": "Fotografii",
+      "contact": "Contact"
+    },
+    "titles": {
+      "type": "Ce fel de anunț?",
+      "text": "Titlu și descriere",
+      "details": "Detalii",
+      "address": "Unde e locuința?",
+      "photos": "Fotografii",
+      "contact": "Cum te contactează cumpărătorii"
+    },
+    "type": {
+      "sale": {
+        "label": "Vânzare",
+        "hint": "Preț total"
+      },
+      "rent": {
+        "label": "Închiriere",
+        "hint": "Chirie lunară"
+      }
+    },
+    "text": {
+      "titleHint": "Tip, camere și zona. {{count}} / {{max}} caractere.",
+      "descriptionHint": "{{count}} / {{max}} caractere · spune ce e adevărat, fără superlative."
+    },
+    "details": {
+      "priceSale": "Preț total",
+      "priceRent": "Chirie lunară",
+      "currencyEUR": "EUR (€)",
+      "currencyRON": "RON (lei)",
+      "suffixEUR": "€",
+      "suffixRON": "lei",
+      "areaSuffix": "m²",
+      "rooms": "Camere",
+      "roomsMore": "5+",
+      "roomsExact": "Număr exact de camere"
+    },
+    "address": {
+      "street": "Adresa exactă",
+      "pin": "Ce vezi tu · pin exact",
+      "draftNote": "Când treci mai departe, salvăm anunțul ca ciornă și poți adăuga fotografiile."
+    },
+    "photosNote": "Poți trimite anunțul spre verificare doar cu cel puțin 5 fotografii.",
+    "contact": {
+      "phone": "Telefon de contact",
+      "phoneHint": "Numărul din contul tău.",
+      "noPhone": "Nu ai adăugat încă un număr de telefon.",
+      "settings": "Schimbă-l din Setări",
+      "email": "Email",
+      "ready": "Anunțul intră la verificare. Îți arătăm aici răspunsul echipei, de obicei în cel mult 24 de ore."
+    },
+    "back": "Înapoi",
+    "continue": "Continuă",
+    "stepErrors": "Completează câmpurile marcate înainte să continui."
+  },
+  "overview": {
+    "previewLabel": "Previzualizare · așa arată pe site",
+    "contactTitle": "Așa te vor contacta cumpărătorii",
+    "readOnly": "Anunțul nu poate fi modificat acum."
   }
 }

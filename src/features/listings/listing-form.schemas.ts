@@ -5,6 +5,10 @@ import type { TablesInsert } from '@/lib/supabase/database.types';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
+export const LISTING_TITLE_MAX = 70;
+
+export const LISTING_DESCRIPTION_MAX = 3000;
+
 type NumberRule = { min: number; max: number; isInteger?: boolean; isRequired: boolean };
 
 function localeNumber({ min, max, isInteger = false, isRequired }: NumberRule) {
@@ -31,7 +35,7 @@ function localeNumber({ min, max, isInteger = false, isRequired }: NumberRule) {
 export const listingFormSchema = z
   .object({
     transaction: z.enum(['sale', 'rent']),
-    title: z.string().trim().min(1).max(120),
+    title: z.string().trim().min(1).max(LISTING_TITLE_MAX),
     city: z.string().trim().min(1).max(80),
     street_label: z.string().trim().min(1).max(120),
     rooms: localeNumber({ min: 1, max: 20, isInteger: true, isRequired: true }),
@@ -46,7 +50,7 @@ export const listingFormSchema = z
       isInteger: true,
       isRequired: false,
     }),
-    description: z.string().trim().max(4000),
+    description: z.string().trim().max(LISTING_DESCRIPTION_MAX),
     pin: z.tuple([z.number(), z.number()]).nullable(),
   })
   .refine((values) => values.pin !== null, {

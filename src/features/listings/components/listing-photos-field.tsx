@@ -1,5 +1,5 @@
 import { ImagePlusIcon, Trash2Icon } from 'lucide-react';
-import { useId, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,6 @@ export function ListingPhotosField({
 }: ListingPhotosFieldProps) {
   const { t } = useTranslation('myListings');
   const errorMessage = useErrorMessage();
-  const headingId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [typeError, setTypeError] = useState(false);
   const addPhotos = useAddListingPhotos();
@@ -52,14 +51,9 @@ export function ListingPhotosField({
   };
 
   return (
-    <section aria-labelledby={headingId} className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <h2 id={headingId} className="text-body font-bold text-foreground">
-            {t('photos.title')}
-          </h2>
-          <p className="text-small text-muted-foreground">{t('photos.description')}</p>
-        </div>
+        <p className="text-small text-muted-foreground">{t('photos.description')}</p>
         <span className="text-meta text-muted-foreground tabular-nums">
           {t('photos.count', { count: photos.length, max: MAX_PHOTOS })}
         </span>
@@ -140,6 +134,6 @@ export function ListingPhotosField({
           </Button>
         </div>
       ) : null}
-    </section>
+    </div>
   );
 }

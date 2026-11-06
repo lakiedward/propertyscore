@@ -29,38 +29,16 @@ type PanelShellProps = {
   children: ReactNode;
 };
 
-const sidebarVariants = cva(
-  'sticky top-0 hidden h-svh shrink-0 flex-col overflow-auto bg-sidebar text-on-inverse md:flex',
-  {
-    variants: {
-      area: {
-        account: 'gap-3.5 px-3 py-4',
-        admin: 'gap-5.5 px-3.5 pt-5 pb-4',
-      },
-    },
-  },
-);
+const SIDEBAR_CLASS =
+  'sticky top-0 hidden h-svh shrink-0 flex-col gap-5.5 overflow-auto bg-sidebar px-3.5 pt-5 pb-4 text-on-inverse md:flex';
 
-const groupTitleVariants = cva(
-  'px-2.5 pb-1.5 text-nav-sm font-extrabold text-sidebar-group uppercase',
-  {
-    variants: {
-      area: {
-        account: 'tracking-[0.1em]',
-        admin: 'pb-2 leading-copy tracking-[0.12em]',
-      },
-    },
-  },
-);
+const GROUP_TITLE_CLASS =
+  'px-2.5 pb-2 text-nav-sm leading-copy font-extrabold tracking-[0.12em] text-sidebar-group uppercase';
 
 const sidebarLinkVariants = cva(
-  'group flex items-center text-sidebar-foreground hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-sidebar-ring focus-visible:outline-none data-[status=active]:bg-sidebar-primary data-[status=active]:font-extrabold data-[status=active]:text-sidebar-primary-foreground',
+  'group flex min-h-11 items-center gap-3 rounded-thumb px-2.5 text-nav font-semibold text-sidebar-foreground hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-sidebar-ring focus-visible:outline-none data-[status=active]:bg-sidebar-primary data-[status=active]:font-extrabold data-[status=active]:text-sidebar-primary-foreground',
   {
     variants: {
-      area: {
-        account: 'min-h-11.5 gap-3 rounded-icon px-2 text-body-sm font-semibold',
-        admin: 'min-h-11 gap-3 rounded-thumb px-2.5 text-nav font-semibold',
-      },
       isCollapsed: {
         true: 'justify-center',
         false: '',
@@ -68,16 +46,6 @@ const sidebarLinkVariants = cva(
     },
   },
 );
-
-const sidebarIconVariants = cva('grid shrink-0 place-items-center text-sidebar-icon', {
-  variants: {
-    area: {
-      account:
-        'size-8 rounded-[9px] group-data-[status=active]:bg-cta group-data-[status=active]:text-cta-foreground',
-      admin: 'size-5.5 group-data-[status=active]:text-sidebar-primary-foreground',
-    },
-  },
-});
 
 function usePanelGroups(area: PanelArea): ResolvedNavGroup[] {
   const { t } = useTranslation();
@@ -115,11 +83,10 @@ export function PanelShell({
   return (
     <div data-density="compact" data-panel-area={area} className="flex min-h-svh bg-card">
       <SkipLink />
-      <div className={cn(sidebarVariants({ area }), isCollapsed ? 'w-19' : 'w-68')}>
+      <div className={cn(SIDEBAR_CLASS, isCollapsed ? 'w-19' : 'w-68')}>
         <div
           className={cn(
-            'flex min-h-11 gap-2 px-1',
-            area === 'admin' ? 'items-start pb-4.5' : 'items-center',
+            'flex min-h-11 items-start gap-2 px-1 pb-4.5',
             isCollapsed ? 'justify-center' : 'justify-between',
           )}
         >
@@ -127,25 +94,15 @@ export function PanelShell({
             <Link
               to="/"
               aria-label={brandHomeLabel}
-              className={cn(
-                'inline-grid grid-cols-[auto_auto] items-center gap-y-1.5 rounded-md focus-visible:ring-3 focus-visible:ring-sidebar-ring focus-visible:outline-none',
-                area === 'admin' ? 'gap-x-1' : 'gap-x-2.5',
-              )}
+              className="inline-grid grid-cols-[auto_auto] items-center gap-x-1 gap-y-1.5 rounded-md focus-visible:ring-3 focus-visible:ring-sidebar-ring focus-visible:outline-none"
             >
-              <span
-                className={cn(
-                  'grid place-items-center rounded-thumb bg-cta',
-                  area === 'admin' ? 'size-8' : 'size-8.5',
-                )}
-              >
+              <span className="grid size-8 place-items-center rounded-thumb bg-cta">
                 <BrandMark size={20} />
               </span>
               <Logo tone="inverse" size="sm" hasMark={false} isDecorative />
-              {area === 'admin' ? (
-                <span className="col-start-2 justify-self-start rounded-full bg-sidebar-chip px-2 py-0.75 text-nav-sm leading-copy font-extrabold tracking-label text-cta uppercase">
-                  {t('panel.admin.label')}
-                </span>
-              ) : null}
+              <span className="col-start-2 justify-self-start rounded-full bg-sidebar-chip px-2 py-0.75 text-nav-sm leading-copy font-extrabold tracking-label text-cta uppercase">
+                {t(`panel.${area}.label`)}
+              </span>
             </Link>
           )}
           <button
@@ -162,17 +119,13 @@ export function PanelShell({
             )}
           </button>
         </div>
-        <nav
-          aria-label={navLabel}
-          className={cn('flex flex-col', area === 'admin' ? 'gap-5.5' : 'gap-4')}
-        >
+        <nav aria-label={navLabel} className="flex flex-col gap-5.5">
           {groups.map((group) => (
             <div key={group.id} className="flex flex-col gap-0.5">
-              {isCollapsed ? null : <p className={groupTitleVariants({ area })}>{group.title}</p>}
+              {isCollapsed ? null : <p className={GROUP_TITLE_CLASS}>{group.title}</p>}
               {group.items.map((item) => (
                 <SidebarLink
                   key={item.id}
-                  area={area}
                   item={item}
                   count={navCounts?.[item.id]}
                   isCollapsed={isCollapsed}
@@ -181,21 +134,19 @@ export function PanelShell({
             </div>
           ))}
         </nav>
-        {area === 'admin' ? (
-          <div className="mt-auto border-t border-sidebar-divider pt-3.5">
-            <Link
-              to="/"
-              title={isCollapsed ? t('panel.backToSite') : undefined}
-              className={cn(
-                'flex min-h-11 items-center gap-3 rounded-thumb px-2.5 text-small font-semibold text-sidebar-muted hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-sidebar-ring focus-visible:outline-none',
-                isCollapsed && 'justify-center',
-              )}
-            >
-              <ArrowLeftIcon aria-hidden className="size-4.75 shrink-0" />
-              <span className={cn(isCollapsed && 'sr-only')}>{t('panel.backToSite')}</span>
-            </Link>
-          </div>
-        ) : null}
+        <div className="mt-auto border-t border-sidebar-divider pt-3.5">
+          <Link
+            to="/"
+            title={isCollapsed ? t('panel.backToSite') : undefined}
+            className={cn(
+              'flex min-h-11 items-center gap-3 rounded-thumb px-2.5 text-small font-semibold text-sidebar-muted hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-sidebar-ring focus-visible:outline-none',
+              isCollapsed && 'justify-center',
+            )}
+          >
+            <ArrowLeftIcon aria-hidden className="size-4.75 shrink-0" />
+            <span className={cn(isCollapsed && 'sr-only')}>{t('panel.backToSite')}</span>
+          </Link>
+        </div>
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-100 bg-surface-inverse text-on-inverse md:border-b md:border-border md:bg-card md:text-foreground">
@@ -243,13 +194,12 @@ export function PanelShell({
 }
 
 type SidebarLinkProps = {
-  area: PanelArea;
   item: ResolvedNavItem;
   count: { value: number; label: string } | undefined;
   isCollapsed: boolean;
 };
 
-function SidebarLink({ area, item, count, isCollapsed }: SidebarLinkProps) {
+function SidebarLink({ item, count, isCollapsed }: SidebarLinkProps) {
   const Icon = item.icon;
   const hasCount = count !== undefined && count.value > 0;
 
@@ -258,10 +208,10 @@ function SidebarLink({ area, item, count, isCollapsed }: SidebarLinkProps) {
       to={item.to}
       activeOptions={{ exact: item.isExact ?? false }}
       title={isCollapsed ? item.label : undefined}
-      className={sidebarLinkVariants({ area, isCollapsed })}
+      className={sidebarLinkVariants({ isCollapsed })}
     >
-      <span className={sidebarIconVariants({ area })}>
-        <Icon aria-hidden className={area === 'admin' ? 'size-4.75' : 'size-4.5'} />
+      <span className="grid size-5.5 shrink-0 place-items-center text-sidebar-icon group-data-[status=active]:text-sidebar-primary-foreground">
+        <Icon aria-hidden className="size-4.75" />
       </span>
       <span className={cn('min-w-0 flex-1', isCollapsed && 'sr-only')}>{item.label}</span>
       {hasCount ? (

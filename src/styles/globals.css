@@ -604,8 +604,8 @@
   --chart-4: var(--ps-amber-400);
   --chart-5: var(--ps-green-400);
   --sidebar: var(--ps-green-800);
-  --sidebar-foreground: color-mix(in srgb, var(--ps-white) 86%, transparent);
-  --sidebar-primary: var(--ps-white);
+  --sidebar-foreground: color-mix(in srgb, var(--ps-white) 80%, transparent);
+  --sidebar-primary: var(--ps-lime-300);
   --sidebar-primary-foreground: var(--ps-green-800);
   --sidebar-accent: color-mix(in srgb, var(--ps-white) 8%, transparent);
   --sidebar-accent-foreground: var(--ps-white);
@@ -613,8 +613,8 @@
   --sidebar-ring: var(--ps-lime-300);
   --sidebar-control: color-mix(in srgb, var(--ps-white) 6%, transparent);
   --sidebar-control-hover: color-mix(in srgb, var(--ps-white) 12%, transparent);
-  --sidebar-group: color-mix(in srgb, var(--ps-white) 50%, transparent);
-  --sidebar-icon: var(--ps-lime-300);
+  --sidebar-group: color-mix(in srgb, var(--ps-white) 42%, transparent);
+  --sidebar-icon: color-mix(in srgb, var(--ps-white) 62%, transparent);
   --sidebar-muted: color-mix(in srgb, var(--ps-white) 72%, transparent);
   --sidebar-divider: color-mix(in srgb, var(--ps-white) 10%, transparent);
   --sidebar-chip: color-mix(in srgb, var(--ps-lime-300) 14%, transparent);
@@ -787,14 +787,6 @@
   --header-height: 76px;
   --table-row-height: 52px;
   --stack-gap: 16px;
-}
-
-[data-panel-area='admin'] {
-  --sidebar-foreground: color-mix(in srgb, var(--ps-white) 80%, transparent);
-  --sidebar-primary: var(--ps-lime-300);
-  --sidebar-primary-foreground: var(--ps-green-800);
-  --sidebar-group: color-mix(in srgb, var(--ps-white) 42%, transparent);
-  --sidebar-icon: color-mix(in srgb, var(--ps-white) 62%, transparent);
 }
 
 [data-density='compact'] {

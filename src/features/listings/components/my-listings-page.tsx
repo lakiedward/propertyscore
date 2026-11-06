@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
 import { Button } from '@/components/ui/button';
 import { myListingQueries } from '../api/my-listings.queries';
-import { MyListingRow } from './my-listing-row';
+import { MyListingCard } from './my-listing-card';
 
 const authenticatedRoute = getRouteApi('/_authenticated');
 
@@ -26,24 +26,21 @@ export function MyListingsPage() {
     <div className="flex flex-col gap-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1">
+          <p className="text-eyebrow leading-copy font-bold tracking-eyebrow text-muted-foreground uppercase">
+            {t('list.eyebrow')}
+          </p>
           <h1 className="text-h2 leading-heading text-foreground">{t('list.title')}</h1>
-          <p className="text-small text-muted-foreground">{t('list.description')}</p>
         </div>
         {data.items.length > 0 ? addListing : null}
       </header>
       {data.items.length > 0 ? (
-        <nav
-          aria-label={t('list.label')}
-          className="overflow-hidden rounded-lg border border-border bg-card"
-        >
-          <ul className="divide-y divide-border-subtle">
-            {data.items.map((listing) => (
-              <li key={listing.id}>
-                <MyListingRow listing={listing} />
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <ul aria-label={t('list.label')} className="flex flex-col gap-3.5">
+          {data.items.map((listing) => (
+            <li key={listing.id}>
+              <MyListingCard listing={listing} ownerId={user.id} />
+            </li>
+          ))}
+        </ul>
       ) : (
         <EmptyState
           kind="empty"

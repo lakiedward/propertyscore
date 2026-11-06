@@ -2,6 +2,10 @@ import { currentLocale, type Locale } from './i18n';
 
 export type Currency = 'RON' | 'EUR';
 
+export function toCurrency(value: string): Currency {
+  return value === 'EUR' ? 'EUR' : 'RON';
+}
+
 const FORMAT_LOCALES: Readonly<Record<Locale, string>> = {
   ro: 'ro-RO',
   en: 'en-GB',
