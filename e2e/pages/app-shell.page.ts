@@ -42,7 +42,7 @@ export class AppShellPage {
     await this.userMenuButton.click();
     await this.page.getByRole('menuitem', { name: this.text.actions.signOut }).click();
     await this.page
-      .getByRole('dialog', { name: this.authText.signOut.title })
+      .getByRole('alertdialog', { name: this.authText.signOut.title })
       .getByRole('button', { name: this.authText.signOut.confirm })
       .click();
   }

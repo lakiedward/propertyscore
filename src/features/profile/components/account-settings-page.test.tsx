@@ -142,7 +142,10 @@ describe('AccountSettingsPage', { timeout: 20_000 }, () => {
     expect(await screen.findByText(PHONE.missingTitle)).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/account/settings');
 
-    await user.type(screen.getByLabelText(roAuth.fields.phone.label), '0722 123 456');
+    await user.type(
+      screen.getByRole('textbox', { name: roAuth.fields.phone.label }),
+      '0722 123 456',
+    );
     await user.click(screen.getByRole('button', { name: PHONE.submit }));
 
     await vi.waitFor(() => {
@@ -155,7 +158,7 @@ describe('AccountSettingsPage', { timeout: 20_000 }, () => {
     answerWithoutPhone();
     const { user } = await renderAppRoute('/account', { auth: signedInAs() });
 
-    await user.type(await screen.findByLabelText(roAuth.fields.phone.label), '123');
+    await user.type(await screen.findByRole('textbox', { name: roAuth.fields.phone.label }), '123');
     await user.click(screen.getByRole('button', { name: PHONE.submit }));
 
     expect(await screen.findByText(roAuth.fields.phone.error)).toBeInTheDocument();

@@ -16,7 +16,9 @@ export class SettingsPage {
 
   async deleteAccount(password: string) {
     await this.page.getByRole('button', { name: this.text.settings.delete.open }).click();
-    const dialog = this.page.getByRole('dialog', { name: this.text.settings.delete.dialogTitle });
+    const dialog = this.page.getByRole('alertdialog', {
+      name: this.text.settings.delete.dialogTitle,
+    });
     await dialog.getByLabel(this.text.settings.delete.password, { exact: true }).fill(password);
     await dialog.getByRole('button', { name: this.text.settings.delete.submit }).click();
   }
