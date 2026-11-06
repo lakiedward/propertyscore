@@ -14,6 +14,7 @@ type FormLabels = {
   fields: {
     name: { label: string };
     email: { label: string };
+    phone: { label: string };
     password: { label: string };
     terms: { label: string };
   };
@@ -28,6 +29,7 @@ async function fillAndSubmit(
 ) {
   await user.type(screen.getByLabelText(labels.fields.name.label), 'Ana Pop');
   await user.type(screen.getByLabelText(labels.fields.email.label), 'nou@example.test');
+  await user.type(screen.getByLabelText(labels.fields.phone.label), '0722 123 456');
   await user.type(screen.getByLabelText(labels.fields.password.label), 'Parola-Lunga-1');
   await user.click(screen.getByRole('checkbox', { name: labels.fields.terms.label }));
   await user.click(screen.getByRole('button', { name: labels.signUp.submit }));
@@ -46,6 +48,7 @@ describe('SignUpForm', () => {
 
     expect(await screen.findByText(roAuth.fields.name.error)).toBeInTheDocument();
     expect(screen.getByText(roAuth.fields.email.error)).toBeInTheDocument();
+    expect(screen.getByText(roAuth.fields.phone.required)).toBeInTheDocument();
     expect(
       screen.getByText(pluralText(roAuth.fields.password.tooShort_few, 8)),
     ).toBeInTheDocument();
@@ -54,7 +57,20 @@ describe('SignUpForm', () => {
     expect(terms).toHaveAccessibleDescription(roAuth.fields.terms.error);
   });
 
-  it('sends the name, the language and a confirmation link back to the asked page', async () => {
+  it('rejects a phone number that is too short', async () => {
+    const { user } = await renderWithProviders(<SignUpForm onConfirmationNeeded={vi.fn()} />);
+
+    await user.type(screen.getByLabelText(roAuth.fields.phone.label), '0722 12');
+    await user.click(screen.getByRole('button', { name: roAuth.signUp.submit }));
+
+    expect(await screen.findByText(roAuth.fields.phone.error)).toBeInTheDocument();
+    expect(screen.getByLabelText(roAuth.fields.phone.label)).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
+  });
+
+  it('sends the name, the phone, the language and a confirmation link back to the asked page', async () => {
     const requests: { body: unknown; redirectTo: string | null }[] = [];
     server.use(
       http.post(SIGN_UP_URL, async ({ request }) => {
@@ -76,7 +92,9 @@ describe('SignUpForm', () => {
       expect(requests).toHaveLength(1);
     });
     expect(requests[0]?.body).toEqual(
-      expect.objectContaining({ data: { locale: 'en', full_name: 'Ana Pop' } }),
+      expect.objectContaining({
+        data: { locale: 'en', full_name: 'Ana Pop', phone: '+40722123456' },
+      }),
     );
     const redirectTo = new URL(requests[0]?.redirectTo ?? '');
     expect(redirectTo.pathname).toBe('/');

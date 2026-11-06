@@ -1,6 +1,7 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { signInWithPassword, signOut } from '@/features/auth';
+import roAuth from '@/i18n/locales/ro/auth.json';
 import roCommon from '@/i18n/locales/ro/common.json';
 import { signedInAs } from '@/test/factories/auth';
 import { buildProfile } from '@/test/factories/profile';
@@ -87,7 +88,27 @@ describe('UserMenu', { timeout: 20_000 }, () => {
     expect(updates).toEqual([{ locale: 'en' }]);
   });
 
-  it('signs out', async () => {
+  it('keeps the session when the sign-out is cancelled', async () => {
+    let signOutCalls = 0;
+    server.use(
+      http.post(supabaseUrl('/auth/v1/logout'), () => {
+        signOutCalls += 1;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const user = await openMenu();
+
+    await user.click(screen.getByRole('menuitem', { name: MENU.signOut }));
+    const dialog = await screen.findByRole('dialog', { name: roAuth.signOut.title });
+    await user.click(within(dialog).getByRole('button', { name: roAuth.signOut.cancel }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+    expect(signOutCalls).toBe(0);
+  });
+
+  it('signs out after the confirmation', async () => {
     await signInWithPassword({ email: 'ana.ro@example.test', password: 'Parola-Test-2026' });
     let signOutCalls = 0;
     server.use(
@@ -99,6 +120,8 @@ describe('UserMenu', { timeout: 20_000 }, () => {
     const user = await openMenu();
 
     await user.click(screen.getByRole('menuitem', { name: MENU.signOut }));
+    const dialog = await screen.findByRole('dialog', { name: roAuth.signOut.title });
+    await user.click(within(dialog).getByRole('button', { name: roAuth.signOut.confirm }));
 
     await waitFor(() => {
       expect(signOutCalls).toBe(1);

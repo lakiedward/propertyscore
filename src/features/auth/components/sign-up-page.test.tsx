@@ -50,6 +50,7 @@ describe('SignUpPage', { timeout: 20_000 }, () => {
 
     await user.type(await screen.findByLabelText(roAuth.fields.name.label), 'Ana Pop');
     await user.type(screen.getByLabelText(roAuth.fields.email.label), 'nou@example.test');
+    await user.type(screen.getByLabelText(roAuth.fields.phone.label), '0722 123 456');
     await user.type(screen.getByLabelText(roAuth.fields.password.label), 'Parola-Lunga-1');
     await user.click(screen.getByRole('checkbox', { name: roAuth.fields.terms.label }));
     await user.click(screen.getByRole('button', { name: roAuth.signUp.submit }));

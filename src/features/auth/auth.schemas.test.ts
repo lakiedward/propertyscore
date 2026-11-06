@@ -13,6 +13,7 @@ import {
 const validSignUp: SignUpValues = {
   fullName: 'Ana Pop',
   email: 'nou@example.test',
+  phone: '0722 123 456',
   password: 'Parola-Lunga-1',
   acceptsTerms: true,
 };
@@ -126,8 +127,15 @@ describe('auth schemas', () => {
       email: 'nou@example.test',
       password: 'Parola-Lunga-1',
       fullName: 'Ana Pop',
+      phone: '+40722123456',
       locale: 'en',
       redirect: '/publish',
     });
+  });
+
+  it('asks for a valid phone number', () => {
+    expect(signUpMessages({ phone: '  ' }).phone).toBe(messageKey('auth:fields.phone.required'));
+    expect(signUpMessages({ phone: '0722 12' }).phone).toBe(messageKey('auth:fields.phone.error'));
+    expect(signUpMessages({ phone: '+40 722 123 456' }).phone).toBeUndefined();
   });
 });

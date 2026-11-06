@@ -50,7 +50,7 @@ export function SignUpForm({ redirect, onConfirmationNeeded }: SignUpFormProps) 
   const termsErrorId = `${termsId}-error`;
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { fullName: '', email: '', password: '', acceptsTerms: false },
+    defaultValues: { fullName: '', email: '', phone: '', password: '', acceptsTerms: false },
   });
 
   const handleSubmit = form.handleSubmit(async (values) => {
@@ -135,6 +135,21 @@ export function SignUpForm({ redirect, onConfirmationNeeded }: SignUpFormProps) 
                 type="email"
                 autoComplete="email"
                 inputMode="email"
+              />
+            )}
+          />
+          <Controller
+            name="phone"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <AuthTextField
+                {...field}
+                label={t('fields.phone.label')}
+                error={fieldState.error?.message}
+                type="tel"
+                autoComplete="tel"
+                inputMode="tel"
+                placeholder={t('fields.phone.placeholder')}
               />
             )}
           />

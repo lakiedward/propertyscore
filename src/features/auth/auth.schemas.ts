@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { Locale } from '@/i18n/i18n';
 import { messageKey } from '@/i18n/validation';
+import { isPhoneNumber, toE164Phone } from './auth.utils';
 
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 72;
@@ -36,6 +37,11 @@ export const signUpSchema = z.object({
       error: messageKey('auth:fields.name.tooLong', { count: FULL_NAME_MAX_LENGTH }),
     }),
   email: emailSchema,
+  phone: z
+    .string()
+    .trim()
+    .min(1, { error: messageKey('auth:fields.phone.required'), abort: true })
+    .refine(isPhoneNumber, { error: messageKey('auth:fields.phone.error') }),
   password: newPasswordSchema,
   acceptsTerms: z.boolean().refine((value) => value, {
     error: messageKey('auth:fields.terms.error'),
@@ -48,6 +54,7 @@ export function toSignUpPayload(values: SignUpValues, locale: Locale, redirect?:
     email: values.email,
     password: values.password,
     fullName: values.fullName,
+    phone: toE164Phone(values.phone),
     locale,
     redirect,
   };

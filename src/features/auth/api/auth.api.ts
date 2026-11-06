@@ -114,6 +114,7 @@ export async function signUp({
   email,
   password,
   fullName,
+  phone,
   locale,
   redirect,
   captchaToken,
@@ -122,7 +123,7 @@ export async function signUp({
     email,
     password,
     options: {
-      data: { locale, full_name: fullName },
+      data: { locale, full_name: fullName, phone },
       emailRedirectTo: emailLinkRedirectUrl(redirect),
       captchaToken,
     },

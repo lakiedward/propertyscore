@@ -10,6 +10,7 @@ import {
   SettingsIcon,
   UserIcon,
 } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import {
@@ -19,7 +20,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useSignOut, type AppRole } from '@/features/auth';
+import { SignOutDialog, type AppRole } from '@/features/auth';
 import { SUPPORTED_LOCALES } from '@/i18n/i18n';
 import { useLocale } from '@/i18n/use-locale';
 import { profileQueries } from '../api/profile.queries';
@@ -63,7 +64,7 @@ type UserMenuProps = {
 export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false }: UserMenuProps) {
   const { t } = useTranslation();
   const { data: profile } = useQuery(profileQueries.detail(user.id));
-  const signOut = useSignOut();
+  const [isSignOutOpen, setIsSignOutOpen] = useState(false);
   const locale = useLocale();
   const changeLanguage = useChangeLocale(user.id);
   const otherLocale = SUPPORTED_LOCALES.find((option) => option !== locale) ?? locale;
@@ -71,76 +72,79 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
   const name = profile?.full_name ?? email;
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button type="button" className={triggerVariants({ tone })}>
-          <span aria-hidden="true" className={avatarVariants({ tone })}>
-            {initialsOf(name)}
-          </span>
-          <span
-            className={cn(
-              'flex flex-col items-start leading-tight',
-              isNameHidden ? 'sr-only' : 'max-md:sr-only',
-            )}
-          >
-            <span>{name}</span>
-            {appRole ? (
-              <span className="text-nav-sm font-extrabold tracking-[0.08em] text-brand uppercase">
-                {t(`panel.userMenu.role.${appRole}`)}
-              </span>
-            ) : null}
-          </span>
-          <ChevronDownIcon aria-hidden className="size-4" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-65 p-1.5">
-        <DropdownMenuLabel className="mb-1 flex flex-col border-b border-border-subtle px-3 py-2.5">
-          <strong className="text-body-sm font-bold text-foreground">{name}</strong>
-          <span className="text-meta text-muted-foreground">{email}</span>
-        </DropdownMenuLabel>
-        {panelPath ? (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button type="button" className={triggerVariants({ tone })}>
+            <span aria-hidden="true" className={avatarVariants({ tone })}>
+              {initialsOf(name)}
+            </span>
+            <span
+              className={cn(
+                'flex flex-col items-start leading-tight',
+                isNameHidden ? 'sr-only' : 'max-md:sr-only',
+              )}
+            >
+              <span>{name}</span>
+              {appRole ? (
+                <span className="text-nav-sm font-extrabold tracking-[0.08em] text-brand uppercase">
+                  {t(`panel.userMenu.role.${appRole}`)}
+                </span>
+              ) : null}
+            </span>
+            <ChevronDownIcon aria-hidden className="size-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-65 p-1.5">
+          <DropdownMenuLabel className="mb-1 flex flex-col border-b border-border-subtle px-3 py-2.5">
+            <strong className="text-body-sm font-bold text-foreground">{name}</strong>
+            <span className="text-meta text-muted-foreground">{email}</span>
+          </DropdownMenuLabel>
+          {panelPath ? (
+            <DropdownMenuItem asChild className={ITEM_CLASS}>
+              <Link to={panelPath}>
+                <LayoutDashboardIcon aria-hidden />
+                {panelPath === '/admin'
+                  ? t('panel.userMenu.openAdmin')
+                  : t('panel.userMenu.openAccount')}
+              </Link>
+            </DropdownMenuItem>
+          ) : null}
           <DropdownMenuItem asChild className={ITEM_CLASS}>
-            <Link to={panelPath}>
-              <LayoutDashboardIcon aria-hidden />
-              {panelPath === '/admin'
-                ? t('panel.userMenu.openAdmin')
-                : t('panel.userMenu.openAccount')}
+            <Link to="/account/settings">
+              <UserIcon aria-hidden />
+              {t('panel.userMenu.profile')}
             </Link>
           </DropdownMenuItem>
-        ) : null}
-        <DropdownMenuItem asChild className={ITEM_CLASS}>
-          <Link to="/account/settings">
-            <UserIcon aria-hidden />
-            {t('panel.userMenu.profile')}
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild className={ITEM_CLASS}>
-          <Link to="/account/settings">
-            <SettingsIcon aria-hidden />
-            {t('panel.userMenu.settings')}
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          lang={otherLocale}
-          className={ITEM_CLASS}
-          onSelect={() => {
-            changeLanguage(otherLocale);
-          }}
-        >
-          <LanguagesIcon aria-hidden />
-          {t(`language.${otherLocale}`)}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          variant="destructive"
-          className={ITEM_CLASS}
-          onSelect={() => {
-            signOut.mutate();
-          }}
-        >
-          <LogOutIcon aria-hidden />
-          {t('panel.userMenu.signOut')}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <DropdownMenuItem asChild className={ITEM_CLASS}>
+            <Link to="/account/settings">
+              <SettingsIcon aria-hidden />
+              {t('panel.userMenu.settings')}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            lang={otherLocale}
+            className={ITEM_CLASS}
+            onSelect={() => {
+              changeLanguage(otherLocale);
+            }}
+          >
+            <LanguagesIcon aria-hidden />
+            {t(`language.${otherLocale}`)}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            variant="destructive"
+            className={ITEM_CLASS}
+            onSelect={() => {
+              setIsSignOutOpen(true);
+            }}
+          >
+            <LogOutIcon aria-hidden />
+            {t('panel.userMenu.signOut')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <SignOutDialog isOpen={isSignOutOpen} onOpenChange={setIsSignOutOpen} />
+    </>
   );
 }

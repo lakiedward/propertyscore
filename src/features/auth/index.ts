@@ -1,5 +1,5 @@
 export { signInWithPassword, signOut } from './api/auth.api';
-export { authQueries, useSignOut } from './api/auth.queries';
+export { authQueries } from './api/auth.queries';
 export {
   authCallbackSearchSchema,
   authConfirmSearchSchema,
@@ -18,4 +18,5 @@ export { LoginPage } from './components/login-page';
 export { NewPasswordPage } from './components/new-password-page';
 export { PasswordResetPage } from './components/password-reset-page';
 export { SignOutButton } from './components/sign-out-button';
+export { SignOutDialog } from './components/sign-out-dialog';
 export { SignUpPage } from './components/sign-up-page';
