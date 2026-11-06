@@ -23,7 +23,6 @@ import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedAccountAppointmentsRouteImport } from './routes/_authenticated/account/appointments'
 import { Route as AuthenticatedAccountFavoritesRouteImport } from './routes/_authenticated/account/favorites'
 import { Route as AuthenticatedAccountInvoicesRouteImport } from './routes/_authenticated/account/invoices'
-import { Route as AuthenticatedAccountListingsRouteImport } from './routes/_authenticated/account/listings'
 import { Route as AuthenticatedAccountProductsRouteImport } from './routes/_authenticated/account/products'
 import { Route as AuthenticatedAccountReportsRouteImport } from './routes/_authenticated/account/reports'
 import { Route as AuthenticatedAccountRequestsRouteImport } from './routes/_authenticated/account/requests'
@@ -44,6 +43,9 @@ import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth/ca
 import { Route as PublicAuthConfirmRouteImport } from './routes/_public/auth/confirm'
 import { Route as PublicPasswordResetIndexRouteImport } from './routes/_public/password-reset/index'
 import { Route as PublicPasswordResetNewRouteImport } from './routes/_public/password-reset/new'
+import { Route as AuthenticatedAccountListingsIndexRouteImport } from './routes/_authenticated/account/listings/index'
+import { Route as AuthenticatedAccountListingsListingIdRouteImport } from './routes/_authenticated/account/listings/$listingId'
+import { Route as AuthenticatedAccountListingsNewRouteImport } from './routes/_authenticated/account/listings/new'
 import { Route as ReportCheckResultReportIdRouteImport } from './routes/_report/check/result.$reportId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -115,12 +117,6 @@ const AuthenticatedAccountInvoicesRoute =
   AuthenticatedAccountInvoicesRouteImport.update({
     id: '/invoices',
     path: '/invoices',
-    getParentRoute: () => AuthenticatedAccountRouteRoute,
-  } as any)
-const AuthenticatedAccountListingsRoute =
-  AuthenticatedAccountListingsRouteImport.update({
-    id: '/listings',
-    path: '/listings',
     getParentRoute: () => AuthenticatedAccountRouteRoute,
   } as any)
 const AuthenticatedAccountProductsRoute =
@@ -238,6 +234,24 @@ const PublicPasswordResetNewRoute = PublicPasswordResetNewRouteImport.update({
   path: '/password-reset/new',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const AuthenticatedAccountListingsIndexRoute =
+  AuthenticatedAccountListingsIndexRouteImport.update({
+    id: '/listings/',
+    path: '/listings/',
+    getParentRoute: () => AuthenticatedAccountRouteRoute,
+  } as any)
+const AuthenticatedAccountListingsListingIdRoute =
+  AuthenticatedAccountListingsListingIdRouteImport.update({
+    id: '/listings/$listingId',
+    path: '/listings/$listingId',
+    getParentRoute: () => AuthenticatedAccountRouteRoute,
+  } as any)
+const AuthenticatedAccountListingsNewRoute =
+  AuthenticatedAccountListingsNewRouteImport.update({
+    id: '/listings/new',
+    path: '/listings/new',
+    getParentRoute: () => AuthenticatedAccountRouteRoute,
+  } as any)
 const ReportCheckResultReportIdRoute =
   ReportCheckResultReportIdRouteImport.update({
     id: '/check/result/$reportId',
@@ -255,7 +269,6 @@ export interface FileRoutesByFullPath {
   '/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/account/favorites': typeof AuthenticatedAccountFavoritesRoute
   '/account/invoices': typeof AuthenticatedAccountInvoicesRoute
-  '/account/listings': typeof AuthenticatedAccountListingsRoute
   '/account/products': typeof AuthenticatedAccountProductsRoute
   '/account/reports': typeof AuthenticatedAccountReportsRoute
   '/account/requests': typeof AuthenticatedAccountRequestsRoute
@@ -277,7 +290,10 @@ export interface FileRoutesByFullPath {
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
+  '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
   '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
+  '/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
@@ -287,7 +303,6 @@ export interface FileRoutesByTo {
   '/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/account/favorites': typeof AuthenticatedAccountFavoritesRoute
   '/account/invoices': typeof AuthenticatedAccountInvoicesRoute
-  '/account/listings': typeof AuthenticatedAccountListingsRoute
   '/account/products': typeof AuthenticatedAccountProductsRoute
   '/account/reports': typeof AuthenticatedAccountReportsRoute
   '/account/requests': typeof AuthenticatedAccountRequestsRoute
@@ -309,7 +324,10 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/password-reset': typeof PublicPasswordResetIndexRoute
+  '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
+  '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
   '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
+  '/account/listings': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -326,7 +344,6 @@ export interface FileRoutesById {
   '/_authenticated/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/_authenticated/account/favorites': typeof AuthenticatedAccountFavoritesRoute
   '/_authenticated/account/invoices': typeof AuthenticatedAccountInvoicesRoute
-  '/_authenticated/account/listings': typeof AuthenticatedAccountListingsRoute
   '/_authenticated/account/products': typeof AuthenticatedAccountProductsRoute
   '/_authenticated/account/reports': typeof AuthenticatedAccountReportsRoute
   '/_authenticated/account/requests': typeof AuthenticatedAccountRequestsRoute
@@ -348,7 +365,10 @@ export interface FileRoutesById {
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_public/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/_authenticated/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
+  '/_authenticated/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
   '/_report/check/result/$reportId': typeof ReportCheckResultReportIdRoute
+  '/_authenticated/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -362,7 +382,6 @@ export interface FileRouteTypes {
     | '/account/appointments'
     | '/account/favorites'
     | '/account/invoices'
-    | '/account/listings'
     | '/account/products'
     | '/account/reports'
     | '/account/requests'
@@ -384,7 +403,10 @@ export interface FileRouteTypes {
     | '/account/'
     | '/admin/'
     | '/password-reset/'
+    | '/account/listings/$listingId'
+    | '/account/listings/new'
     | '/check/result/$reportId'
+    | '/account/listings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -394,7 +416,6 @@ export interface FileRouteTypes {
     | '/account/appointments'
     | '/account/favorites'
     | '/account/invoices'
-    | '/account/listings'
     | '/account/products'
     | '/account/reports'
     | '/account/requests'
@@ -416,7 +437,10 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/password-reset'
+    | '/account/listings/$listingId'
+    | '/account/listings/new'
     | '/check/result/$reportId'
+    | '/account/listings'
   id:
     | '__root__'
     | '/_authenticated'
@@ -432,7 +456,6 @@ export interface FileRouteTypes {
     | '/_authenticated/account/appointments'
     | '/_authenticated/account/favorites'
     | '/_authenticated/account/invoices'
-    | '/_authenticated/account/listings'
     | '/_authenticated/account/products'
     | '/_authenticated/account/reports'
     | '/_authenticated/account/requests'
@@ -454,7 +477,10 @@ export interface FileRouteTypes {
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
     | '/_public/password-reset/'
+    | '/_authenticated/account/listings/$listingId'
+    | '/_authenticated/account/listings/new'
     | '/_report/check/result/$reportId'
+    | '/_authenticated/account/listings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -562,13 +588,6 @@ declare module '@tanstack/react-router' {
       path: '/invoices'
       fullPath: '/account/invoices'
       preLoaderRoute: typeof AuthenticatedAccountInvoicesRouteImport
-      parentRoute: typeof AuthenticatedAccountRouteRoute
-    }
-    '/_authenticated/account/listings': {
-      id: '/_authenticated/account/listings'
-      path: '/listings'
-      fullPath: '/account/listings'
-      preLoaderRoute: typeof AuthenticatedAccountListingsRouteImport
       parentRoute: typeof AuthenticatedAccountRouteRoute
     }
     '/_authenticated/account/products': {
@@ -711,6 +730,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicPasswordResetNewRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_authenticated/account/listings/': {
+      id: '/_authenticated/account/listings/'
+      path: '/listings'
+      fullPath: '/account/listings/'
+      preLoaderRoute: typeof AuthenticatedAccountListingsIndexRouteImport
+      parentRoute: typeof AuthenticatedAccountRouteRoute
+    }
+    '/_authenticated/account/listings/$listingId': {
+      id: '/_authenticated/account/listings/$listingId'
+      path: '/listings/$listingId'
+      fullPath: '/account/listings/$listingId'
+      preLoaderRoute: typeof AuthenticatedAccountListingsListingIdRouteImport
+      parentRoute: typeof AuthenticatedAccountRouteRoute
+    }
+    '/_authenticated/account/listings/new': {
+      id: '/_authenticated/account/listings/new'
+      path: '/listings/new'
+      fullPath: '/account/listings/new'
+      preLoaderRoute: typeof AuthenticatedAccountListingsNewRouteImport
+      parentRoute: typeof AuthenticatedAccountRouteRoute
+    }
     '/_report/check/result/$reportId': {
       id: '/_report/check/result/$reportId'
       path: '/check/result/$reportId'
@@ -725,12 +765,14 @@ interface AuthenticatedAccountRouteRouteChildren {
   AuthenticatedAccountAppointmentsRoute: typeof AuthenticatedAccountAppointmentsRoute
   AuthenticatedAccountFavoritesRoute: typeof AuthenticatedAccountFavoritesRoute
   AuthenticatedAccountInvoicesRoute: typeof AuthenticatedAccountInvoicesRoute
-  AuthenticatedAccountListingsRoute: typeof AuthenticatedAccountListingsRoute
   AuthenticatedAccountProductsRoute: typeof AuthenticatedAccountProductsRoute
   AuthenticatedAccountReportsRoute: typeof AuthenticatedAccountReportsRoute
   AuthenticatedAccountRequestsRoute: typeof AuthenticatedAccountRequestsRoute
   AuthenticatedAccountSettingsRoute: typeof AuthenticatedAccountSettingsRoute
   AuthenticatedAccountIndexRoute: typeof AuthenticatedAccountIndexRoute
+  AuthenticatedAccountListingsListingIdRoute: typeof AuthenticatedAccountListingsListingIdRoute
+  AuthenticatedAccountListingsNewRoute: typeof AuthenticatedAccountListingsNewRoute
+  AuthenticatedAccountListingsIndexRoute: typeof AuthenticatedAccountListingsIndexRoute
 }
 
 const AuthenticatedAccountRouteRouteChildren: AuthenticatedAccountRouteRouteChildren =
@@ -739,12 +781,16 @@ const AuthenticatedAccountRouteRouteChildren: AuthenticatedAccountRouteRouteChil
       AuthenticatedAccountAppointmentsRoute,
     AuthenticatedAccountFavoritesRoute: AuthenticatedAccountFavoritesRoute,
     AuthenticatedAccountInvoicesRoute: AuthenticatedAccountInvoicesRoute,
-    AuthenticatedAccountListingsRoute: AuthenticatedAccountListingsRoute,
     AuthenticatedAccountProductsRoute: AuthenticatedAccountProductsRoute,
     AuthenticatedAccountReportsRoute: AuthenticatedAccountReportsRoute,
     AuthenticatedAccountRequestsRoute: AuthenticatedAccountRequestsRoute,
     AuthenticatedAccountSettingsRoute: AuthenticatedAccountSettingsRoute,
     AuthenticatedAccountIndexRoute: AuthenticatedAccountIndexRoute,
+    AuthenticatedAccountListingsListingIdRoute:
+      AuthenticatedAccountListingsListingIdRoute,
+    AuthenticatedAccountListingsNewRoute: AuthenticatedAccountListingsNewRoute,
+    AuthenticatedAccountListingsIndexRoute:
+      AuthenticatedAccountListingsIndexRoute,
   }
 
 const AuthenticatedAccountRouteRouteWithChildren =

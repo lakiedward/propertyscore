@@ -58,6 +58,7 @@ type MapCanvasProps = {
   markers: readonly MapMarkerItem[];
   overlays?: readonly MapOverlay[];
   onError: () => void;
+  onPick?: (position: LngLat) => void;
   isPrintable?: boolean;
   className?: string;
 };
@@ -99,6 +100,7 @@ export function MapCanvas({
   markers,
   overlays = [],
   onError,
+  onPick,
   isPrintable = false,
   className,
 }: MapCanvasProps) {
@@ -217,6 +219,25 @@ export function MapCanvas({
       fitToBounds(map);
     }
   }, [map, boundsKey]);
+
+  const pickPosition = useEffectEvent((position: LngLat) => {
+    onPick?.(position);
+  });
+  const isPickable = onPick !== undefined;
+  useEffect(() => {
+    if (!map || !isPickable) {
+      return;
+    }
+    const handleClick = (event?: { lngLat: { lng: number; lat: number } }) => {
+      if (event) {
+        pickPosition([event.lngLat.lng, event.lngLat.lat]);
+      }
+    };
+    map.on('click', handleClick);
+    return () => {
+      map.off('click', handleClick);
+    };
+  }, [map, isPickable]);
 
   const moveToFocus = useEffectEvent((target: MapLibreMap) => {
     if (focus) {

@@ -31,7 +31,7 @@ const maplibre = vi.hoisted(() => {
     static instances: FakeMap[] = [];
     readonly options: FakeMapOptions;
     readonly canvas = document.createElement('canvas');
-    readonly handlers = new Map<string, () => void>();
+    readonly handlers = new Map<string, (event?: unknown) => void>();
     readonly sources = new Map<string, FakeGeoJSONSource>();
     readonly layers = new Set<string>();
     setPaintProperty = vi.fn();
@@ -76,13 +76,18 @@ const maplibre = vi.hoisted(() => {
       return this;
     }
 
-    on(event: string, handler: () => void) {
+    on(event: string, handler: (event?: unknown) => void) {
       this.handlers.set(event, handler);
       return this;
     }
 
-    emit(event: string) {
-      this.handlers.get(event)?.();
+    off(event: string) {
+      this.handlers.delete(event);
+      return this;
+    }
+
+    emit(event: string, payload?: unknown) {
+      this.handlers.get(event)?.(payload);
     }
 
     isStyleLoaded() {
@@ -237,6 +242,26 @@ describe('MapCanvas', () => {
 
     expect(onError).toHaveBeenCalledOnce();
     expect(screen.getByRole('region', { name: LABEL })).toBeInTheDocument();
+  });
+
+  it('reports the clicked position when it lets people pick a place', async () => {
+    const onPick = vi.fn();
+    await renderWithProviders(
+      <MapCanvas
+        label={LABEL}
+        center={CENTER}
+        zoom={14}
+        markers={[]}
+        onError={vi.fn()}
+        onPick={onPick}
+      />,
+    );
+
+    act(() => {
+      lastMap().emit('click', { lngLat: { lng: 21.23, lat: 45.75 } });
+    });
+
+    expect(onPick).toHaveBeenCalledWith([21.23, 45.75]);
   });
 
   it('removes the map when it unmounts', async () => {

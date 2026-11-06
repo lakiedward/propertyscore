@@ -1,0 +1,138 @@
+{
+  "pageTitle": "Anunțurile mele",
+  "list": {
+    "title": "Anunțurile mele",
+    "description": "Creezi anunțul, îl trimiți spre verificare și vezi aici răspunsul echipei.",
+    "add": "Adaugă anunț",
+    "label": "Anunțurile tale",
+    "priceArea": "{{price}} · {{area}}",
+    "edit": "Editează",
+    "view": "Vezi anunțul",
+    "updated": "Actualizat {{date}}",
+    "empty": {
+      "title": "Nu ai încă niciun anunț",
+      "description": "Adaugă primul anunț; îl salvăm ca ciornă până îl trimiți spre verificare."
+    },
+    "area": "{{value}} m²"
+  },
+  "status": {
+    "draft": "Ciornă",
+    "pending_approval": "În verificare",
+    "approved": "Publicat",
+    "rejected": "Respins",
+    "blocked": "Blocat"
+  },
+  "notice": {
+    "draft": {
+      "title": "Ciornă",
+      "description": "Completează anunțul, adaugă cel puțin 5 fotografii și trimite-l spre verificare."
+    },
+    "pending_approval": {
+      "title": "Anunțul este în verificare",
+      "description": "Îl verificăm în cel mult 24 de ore. Până atunci nu îl poți modifica."
+    },
+    "approved": {
+      "title": "Anunțul este publicat",
+      "description": "Apare pe site și pe harta proprietăților."
+    },
+    "rejected": {
+      "title": "Anunțul a fost respins",
+      "description": "Fă modificările cerute și retrimite anunțul spre verificare."
+    },
+    "blocked": {
+      "title": "Anunțul a fost blocat",
+      "description": "Anunțul nu mai poate fi modificat sau retrimis."
+    },
+    "reason": "Motiv: {{message}}",
+    "decidedAt": "Decizie din {{date}}"
+  },
+  "editor": {
+    "newTitle": "Anunț nou",
+    "editTitle": "Editează anunțul",
+    "back": "Anunțurile mele",
+    "save": "Salvează ciorna",
+    "saveChanges": "Salvează modificările",
+    "submit": "Trimite spre verificare",
+    "resubmit": "Retrimite spre verificare",
+    "saving": "Se salvează…",
+    "submitting": "Se trimite…",
+    "saved": "Ciorna a fost salvată.",
+    "submitted": "Anunțul a fost trimis spre verificare.",
+    "resubmitted": "Anunțul a fost retrimis spre verificare."
+  },
+  "form": {
+    "details": "Detalii",
+    "location": "Adresă și loc pe hartă",
+    "descriptionSection": "Descriere",
+    "transaction": {
+      "label": "Tip anunț",
+      "sale": "Vânzare",
+      "rent": "Închiriere"
+    },
+    "title": {
+      "label": "Titlu",
+      "placeholder": "de ex. Apartament 3 camere, Complex"
+    },
+    "city": {
+      "label": "Oraș",
+      "placeholder": "Alege orașul"
+    },
+    "street": {
+      "label": "Stradă și număr",
+      "placeholder": "de ex. Str. Gheorghe Lazăr, 12"
+    },
+    "rooms": {
+      "label": "Camere"
+    },
+    "area": {
+      "label": "Suprafață utilă (m²)"
+    },
+    "price": {
+      "label": "Preț",
+      "rentHint": "Pentru închiriere, prețul este pe lună."
+    },
+    "currency": {
+      "label": "Monedă",
+      "EUR": "EUR",
+      "RON": "RON"
+    },
+    "floor": {
+      "label": "Etaj",
+      "hint": "0 pentru parter, -1 pentru demisol. Opțional."
+    },
+    "buildingFloors": {
+      "label": "Etaje în clădire",
+      "hint": "Opțional."
+    },
+    "yearBuilt": {
+      "label": "Anul construcției",
+      "hint": "Opțional."
+    },
+    "description": {
+      "label": "Descriere",
+      "hint": "Starea locuinței, dotările, ce e aproape. Fără numere de telefon."
+    },
+    "pin": {
+      "label": "Locul pe hartă",
+      "hint": "Apasă pe hartă ca să pui pinul la adresa exactă.",
+      "mapLabel": "Hartă pentru alegerea locului",
+      "mapError": "Harta nu s-a putut încărca. Reîncarcă pagina.",
+      "missing": "Alege locul pe hartă."
+    }
+  },
+  "photos": {
+    "title": "Fotografii",
+    "description": "Minim 5 fotografii clare, fără persoane sau acte. Prima este coperta.",
+    "count_one": "{{count}} fotografie din {{max}}",
+    "count_few": "{{count}} fotografii din {{max}}",
+    "count_other": "{{count}} de fotografii din {{max}}",
+    "add": "Adaugă fotografii",
+    "adding": "Se încarcă…",
+    "remove": "Șterge fotografia {{index}}",
+    "cover": "Copertă",
+    "alt": "Fotografia {{index}} a anunțului",
+    "saveFirst": "Salvează ciorna ca să poți adăuga fotografii.",
+    "invalidType": "Poți încărca doar imagini JPG, PNG sau WebP.",
+    "tooLarge": "Fotografia este prea mare după conversie (peste 5 MB)."
+  }
+}
