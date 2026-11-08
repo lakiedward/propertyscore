@@ -25,7 +25,9 @@ export type AppErrorReason =
   | 'listing_photo_limit'
   | 'decision_reason_invalid'
   | 'decision_message_required'
-  | 'decision_message_too_long';
+  | 'decision_message_too_long'
+  | 'listing_floor_above_building'
+  | 'value_out_of_range';
 
 type AppErrorOptions = {
   cause?: unknown;

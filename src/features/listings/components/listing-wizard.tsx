@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useErrorMessage } from '@/i18n/error-message';
 import { formatNumber } from '@/i18n/format';
+import { isAppError } from '@/lib/errors';
 import { applyServerErrors } from '@/lib/forms';
 import { useCreateListing, useSubmitListing, useUpdateListing } from '../api/my-listings.queries';
 import {
@@ -87,9 +88,11 @@ export function ListingWizard({ listing, ownerId, email, step, onStepChange }: L
     try {
       await action();
     } catch (error) {
-      if (!applyServerErrors(form, error)) {
-        setFormError(error);
+      if (applyServerErrors(form, error) && isAppError(error) && error.field) {
+        onStepChange(firstStepWithError([error.field]));
+        return;
       }
+      setFormError(error);
     }
   };
 

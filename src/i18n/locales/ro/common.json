@@ -83,7 +83,9 @@
       "listing_photo_limit": "Poți adăuga cel mult 20 de fotografii.",
       "decision_reason_invalid": "Alege cel puțin un motiv.",
       "decision_message_required": "Scrie un mesaj pentru proprietar.",
-      "decision_message_too_long": "Mesajul poate avea cel mult 2.000 de caractere."
+      "decision_message_too_long": "Mesajul poate avea cel mult 2.000 de caractere.",
+      "listing_floor_above_building": "Etajul nu poate fi mai mare decât numărul de etaje ale clădirii.",
+      "value_out_of_range": "Valoarea este în afara limitelor permise."
     }
   },
   "validation": {

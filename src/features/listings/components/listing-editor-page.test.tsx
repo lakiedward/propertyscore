@@ -106,6 +106,31 @@ describe('ListingEditorPage', { timeout: 20_000 }, () => {
     expect(await stepTitle('details')).toBeInTheDocument();
   });
 
+  it('shows a refused value under its field on the step that holds it', async () => {
+    server.use(
+      http.patch(supabaseUrl('/rest/v1/listings'), () =>
+        HttpResponse.json(
+          {
+            code: '23514',
+            message:
+              'new row for relation "listings" violates check constraint "listings_year_built_check"',
+            details: null,
+            hint: null,
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+    const { user } = await renderAppRoute(`/account/listings/${REJECTED?.id ?? ''}?step=6`, {
+      auth: signedInAs(),
+    });
+
+    await user.click(await screen.findByRole('button', { name: ro.editor.saveChanges }));
+
+    expect(await stepTitle('details')).toBeInTheDocument();
+    expect(await screen.findByText(roCommon.errors.reasons.value_out_of_range)).toBeInTheDocument();
+  });
+
   it('takes the owner back to the first unfinished step when saving an empty draft', async () => {
     const { user } = await renderAppRoute('/account/listings/new?step=3', { auth: signedInAs() });
 

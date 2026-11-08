@@ -33,6 +33,33 @@ describe('toAppError', () => {
     expect(error.field).toBe(field);
   });
 
+  it.each([
+    ['listings_floor_within_building', 'listing_floor_above_building', 'floor'],
+    ['listings_price_check', 'value_out_of_range', 'price'],
+    ['listings_year_built_check', 'value_out_of_range', 'year_built'],
+    ['listings_latitude_check', 'value_out_of_range', 'pin'],
+  ])('maps the refused rule %s to the %s reason on the %s field', (constraint, reason, field) => {
+    const error = toAppError(
+      postgrestError(
+        '23514',
+        `new row for relation "listings" violates check constraint "${constraint}"`,
+      ),
+    );
+
+    expect(error.code).toBe('validation');
+    expect(error.reason).toBe(reason);
+    expect(error.field).toBe(field);
+  });
+
+  it('keeps a refused rule it cannot place on a field generic', () => {
+    const error = toAppError(
+      postgrestError('23514', 'new row for relation "x" violates check constraint "x_rule"'),
+    );
+
+    expect(error.code).toBe('validation');
+    expect(error.reason).toBeUndefined();
+  });
+
   it('maps a function outcome returned as data like a function error', () => {
     const error = toAppError({ code: 'P0001', message: 'invalid_password', details: null });
 

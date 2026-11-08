@@ -83,7 +83,9 @@
       "listing_photo_limit": "You can add at most 20 photos.",
       "decision_reason_invalid": "Choose at least one reason.",
       "decision_message_required": "Write a message for the owner.",
-      "decision_message_too_long": "The message can have at most 2,000 characters."
+      "decision_message_too_long": "The message can have at most 2,000 characters.",
+      "listing_floor_above_building": "The floor cannot be higher than the number of floors in the building.",
+      "value_out_of_range": "The value is outside the allowed range."
     }
   },
   "validation": {

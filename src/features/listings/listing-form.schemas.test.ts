@@ -46,6 +46,15 @@ describe('listingFormSchema', () => {
     );
   });
 
+  it('refuses a floor above the number of floors in the building', () => {
+    const result = listingFormSchema.safeParse({ ...VALID, floor: '5', building_floors: '4' });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['floor']);
+    expect(
+      listingFormSchema.safeParse({ ...VALID, floor: '4', building_floors: '4' }).success,
+    ).toBe(true);
+  });
+
   it('shows stored numbers in a form the Romanian parser reads back', () => {
     const values = toListingFormValues({
       ...toListingWrite(VALID),

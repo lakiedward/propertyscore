@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { formatNumber, parseLocaleNumber } from '@/i18n/format';
-import { validationMessage } from '@/i18n/validation';
+import { messageKey, validationMessage } from '@/i18n/validation';
 import type { TablesInsert } from '@/lib/supabase/database.types';
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -56,7 +56,18 @@ export const listingFormSchema = z
   .refine((values) => values.pin !== null, {
     path: ['pin'],
     message: validationMessage('required'),
-  });
+  })
+  .refine(
+    (values) => {
+      const floor = parseLocaleNumber(values.floor);
+      const buildingFloors = parseLocaleNumber(values.building_floors);
+      return floor === undefined || buildingFloors === undefined || floor <= buildingFloors;
+    },
+    {
+      path: ['floor'],
+      message: messageKey('common:errors.reasons.listing_floor_above_building'),
+    },
+  );
 
 export type ListingFormValues = z.input<typeof listingFormSchema>;
 

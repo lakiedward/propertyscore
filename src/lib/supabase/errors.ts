@@ -70,6 +70,47 @@ const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
   decision_message_too_long: 'message',
 };
 
+const CHECK_CONSTRAINTS: Readonly<Record<string, { reason: AppErrorReason; field: string }>> = {
+  listings_floor_within_building: { reason: 'listing_floor_above_building', field: 'floor' },
+};
+
+const CHECKED_TABLES = ['listings'] as const;
+
+const COLUMN_FIELDS: Readonly<Record<string, string>> = {
+  latitude: 'pin',
+  longitude: 'pin',
+};
+
+function checkConstraintField(constraint: string): string | undefined {
+  for (const table of CHECKED_TABLES) {
+    const prefix = `${table}_`;
+    if (constraint.startsWith(prefix) && constraint.endsWith('_check')) {
+      const column = constraint.slice(prefix.length, -'_check'.length);
+      return COLUMN_FIELDS[column] ?? column;
+    }
+  }
+  return undefined;
+}
+
+function fromCheckViolation(error: PostgrestLikeError): AppError | undefined {
+  const constraint = /check constraint "([^"]+)"/u.exec(error.message)?.[1];
+  if (!constraint) {
+    return undefined;
+  }
+  const known = CHECK_CONSTRAINTS[constraint];
+  if (known) {
+    return new AppError('validation', error.message, { cause: error, ...known });
+  }
+  const field = checkConstraintField(constraint);
+  return field
+    ? new AppError('validation', error.message, {
+        cause: error,
+        reason: 'value_out_of_range',
+        field,
+      })
+    : undefined;
+}
+
 const AUTH_UNAUTHENTICATED = new Set([
   'session_not_found',
   'session_expired',
@@ -129,6 +170,10 @@ function fromAuthError(error: {
 }
 
 function fromPostgrestError(error: PostgrestLikeError) {
+  const checkViolation = error.code === '23514' ? fromCheckViolation(error) : undefined;
+  if (checkViolation) {
+    return checkViolation;
+  }
   const reason = error.code === 'P0001' ? RPC_REASONS[error.message] : undefined;
   if (reason) {
     return new AppError('validation', error.message, {
