@@ -10,6 +10,7 @@ const mapPinVariants = cva(
         physical: 'bg-trust-physical text-trust-physical-foreground',
         online: 'bg-info text-info-foreground',
         none: 'border-trust-none-border bg-card text-brand',
+        brand: 'bg-primary text-primary-foreground',
       },
       isActive: {
         true: 'z-10 scale-110 border-brand bg-cta text-cta-foreground',
@@ -20,7 +21,7 @@ const mapPinVariants = cva(
 );
 
 type MapPinProps = {
-  kind: TrustKind;
+  kind: TrustKind | 'brand';
   label: string;
   accessibleName: string;
   isActive: boolean;

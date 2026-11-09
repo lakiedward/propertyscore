@@ -13,17 +13,15 @@ import { TrustBadge } from '@/components/trust/trust-badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useTrustLabel } from '@/hooks/use-trust-label';
 import { formatNumber, formatPrice, toCurrency } from '@/i18n/format';
-import { oneOf } from '@/lib/utils';
 import { LISTINGS_PREVIEW_LIMIT, listingQueries } from '../api/listings.queries';
 import { getListingThumbUrl } from '../api/listings.storage';
 import type { Listing, ListingTransaction } from '../listing.types';
 import { toTrustKind } from '../listing.utils';
+import { TransactionSwitch } from './transaction-switch';
 
 const TIMISOARA_CENTER: LngLat = [21.2303, 45.7546];
-const TRANSACTIONS: readonly ListingTransaction[] = ['sale', 'rent'];
 
 type ListingsBoardProps = {
   transaction: ListingTransaction;
@@ -44,13 +42,10 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
   const firstItem = items[0];
   const hasError = query.isError && !query.data;
 
-  const handleTransactionChange = (value: string) => {
-    const next = oneOf(TRANSACTIONS, value);
-    if (next && next !== transaction) {
-      setSelectedId(undefined);
-      setFocus(undefined);
-      onTransactionChange(next);
-    }
+  const handleTransactionChange = (next: ListingTransaction) => {
+    setSelectedId(undefined);
+    setFocus(undefined);
+    onTransactionChange(next);
   };
 
   const handleCardSelect = (listing: Listing) => {
@@ -84,23 +79,7 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
   return (
     <div className="mt-2 flex flex-col rounded-2xl bg-card p-3.5 shadow-bundle">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-1 pt-1 pb-3.5">
-        <ToggleGroup
-          type="single"
-          value={transaction}
-          onValueChange={handleTransactionChange}
-          aria-label={t('board.transactionLabel')}
-          className="gap-1 rounded-full bg-surface-leaf p-1"
-        >
-          {TRANSACTIONS.map((option) => (
-            <ToggleGroupItem
-              key={option}
-              value={option}
-              className="h-10 rounded-full px-4 text-small font-bold text-brand data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-            >
-              {t(`transaction.${option}`)}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        <TransactionSwitch value={transaction} onChange={handleTransactionChange} />
         <p className="text-small text-muted-foreground" aria-live="polite">
           {query.data && firstItem
             ? t(`board.count.${transaction}`, { count: query.data.total, city: firstItem.city })

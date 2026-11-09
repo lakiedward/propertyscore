@@ -39,4 +39,22 @@ describe('MapPin', () => {
 
     expect(onSelect).toHaveBeenCalledOnce();
   });
+
+  it('draws the brand pin forest with white text when it is not tied to a trust kind', async () => {
+    await renderWithProviders(
+      <MapPin
+        kind="brand"
+        label="97.000 €"
+        accessibleName={NAME}
+        isActive={false}
+        isSelected={false}
+        onSelect={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: NAME })).toHaveClass(
+      'bg-primary',
+      'text-primary-foreground',
+    );
+  });
 });

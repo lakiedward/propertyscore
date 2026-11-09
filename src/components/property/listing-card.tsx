@@ -6,7 +6,7 @@ type ListingCardProps = {
   title: string;
   price: ReactNode;
   meta: string;
-  badge: ReactNode;
+  badge?: ReactNode;
   accessibleName: string;
   isSelected: boolean;
   onSelect: () => void;
