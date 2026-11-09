@@ -1,3 +1,4 @@
+import type { ExplorerSort } from '@/config/listings-explorer';
 import type { Enums } from '@/lib/supabase/database.types';
 import type { listListings } from './api/listings.api';
 import type { getMyListing, listMyListings } from './api/my-listings.api';
@@ -17,9 +18,11 @@ export type ListingBounds = {
   north: number;
 };
 
-export type ListingsInBoundsFilters = {
+export type ExplorerListingFilters = {
   transaction: ListingTransaction;
-  bounds: ListingBounds;
+  bounds: ListingBounds | undefined;
+  maxPrice: number | undefined;
+  sort: ExplorerSort;
 };
 
 export type Listing = Awaited<ReturnType<typeof listListings>>['items'][number];

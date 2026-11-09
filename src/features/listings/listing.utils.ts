@@ -68,3 +68,86 @@ export function parseEwkbPoint(hex: string): [number, number] | null {
   }
   return [view.getFloat64(offset, isLittleEndian), view.getFloat64(offset + 8, isLittleEndian)];
 }
+
+type RegionShape = {
+  id: string;
+  coordinates: readonly (readonly (readonly [number, number])[])[][];
+};
+
+function isInsideRing(
+  [longitude, latitude]: readonly [number, number],
+  ring: readonly (readonly [number, number])[],
+): boolean {
+  let isInside = false;
+  for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index++) {
+    const current = ring[index];
+    const before = ring[previous];
+    if (!current || !before) {
+      continue;
+    }
+    const [x1, y1] = current;
+    const [x2, y2] = before;
+    if (
+      y1 > latitude !== y2 > latitude &&
+      longitude < ((x2 - x1) * (latitude - y1)) / (y2 - y1) + x1
+    ) {
+      isInside = !isInside;
+    }
+  }
+  return isInside;
+}
+
+function isInsideRegion(position: readonly [number, number], region: RegionShape): boolean {
+  return region.coordinates.some((polygon) => {
+    const [outer, ...holes] = polygon;
+    return (
+      outer !== undefined &&
+      isInsideRing(position, outer) &&
+      !holes.some((hole) => isInsideRing(position, hole))
+    );
+  });
+}
+
+function regionBox(region: RegionShape): ListingBounds {
+  const box = { west: Infinity, south: Infinity, east: -Infinity, north: -Infinity };
+  for (const polygon of region.coordinates) {
+    for (const [longitude, latitude] of polygon[0] ?? []) {
+      box.west = Math.min(box.west, longitude);
+      box.east = Math.max(box.east, longitude);
+      box.south = Math.min(box.south, latitude);
+      box.north = Math.max(box.north, latitude);
+    }
+  }
+  return box;
+}
+
+export function countPointsByRegion(
+  points: readonly { longitude: number; latitude: number }[],
+  regions: readonly RegionShape[],
+): Record<string, number> {
+  const boxes = regions.map((region) => ({ region, box: regionBox(region) }));
+  const counts: Record<string, number> = {};
+  for (const point of points) {
+    const position = [point.longitude, point.latitude] as const;
+    const region = boxes.find(
+      ({ region: candidate, box }) =>
+        isWithinBounds(point, box) && isInsideRegion(position, candidate),
+    )?.region;
+    if (region) {
+      counts[region.id] = (counts[region.id] ?? 0) + 1;
+    }
+  }
+  return counts;
+}
+
+export function isWithinBounds(
+  point: { longitude: number; latitude: number },
+  bounds: ListingBounds,
+): boolean {
+  return (
+    point.latitude >= bounds.south &&
+    point.latitude <= bounds.north &&
+    point.longitude >= bounds.west &&
+    point.longitude <= bounds.east
+  );
+}

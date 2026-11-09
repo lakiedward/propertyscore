@@ -24,6 +24,6 @@ declare module '@tanstack/react-router' {
     router: ReturnType<typeof createAppRouter>;
   }
   interface StaticDataRouteOption {
-    isFullScreen?: boolean;
+    hasCompactFooter?: boolean;
   }
 }

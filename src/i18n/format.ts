@@ -81,6 +81,19 @@ export function formatPrice(amount: number, currency: Currency): string {
   });
 }
 
+export function formatPriceInThousands(amount: number, currency: Currency): string {
+  const parts = new Intl.NumberFormat(formatLocale(), {
+    style: 'currency',
+    currency,
+    currencyDisplay: PRICE_CURRENCY_DISPLAY[currentLocale()],
+    maximumFractionDigits: 0,
+  }).formatToParts(Math.round(amount / 1000));
+  const lastNumberIndex = parts.findLastIndex((part) => part.type === 'integer');
+  return parts
+    .map((part, index) => (index === lastNumberIndex ? `${part.value}k` : part.value))
+    .join('');
+}
+
 export type PriceParts = {
   amount: string;
   currency: string;

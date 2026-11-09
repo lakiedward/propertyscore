@@ -31,33 +31,99 @@
   },
   "explore": {
     "pageTitle": "Homes for sale and for rent",
-    "title": "Find your home.",
-    "count": {
-      "sale_one": "{{count}} home for sale in the map area",
-      "sale_other": "{{count}} homes for sale in the map area",
-      "rent_one": "{{count}} home for rent in the map area",
-      "rent_other": "{{count}} homes for rent in the map area"
+    "title": {
+      "sale": "Homes for sale",
+      "rent": "Homes for rent"
     },
-    "listLabel": "Homes in the map area",
-    "mapLabel": "Map of homes",
+    "mapLabel": "Map of homes in Romania. The list below the map shows the same homes.",
     "mapError": "The map could not load. The list of homes is still available.",
-    "loading": "Loading homes…",
-    "loadingMore": "Loading more homes…",
-    "emptyInView": {
-      "title": "No homes in the map area",
-      "description": "Move the map or zoom out to see more homes.",
-      "action": "Show all homes"
+    "filters": {
+      "transactionLabel": "Listing type",
+      "cityLabel": "City",
+      "allRomania": "All of Romania",
+      "priceLabel": "Maximum price",
+      "anyPrice": {
+        "sale": "Any price",
+        "rent": "Any rent"
+      },
+      "priceCap": {
+        "sale": "Up to {{price}}",
+        "rent": "Up to {{price}} / month"
+      },
+      "reset": "Reset"
     },
-    "emptyNone": {
-      "sale": "No homes for sale yet",
-      "rent": "No homes for rent yet",
-      "description": "Check back soon, or post the first listing yourself for free."
+    "shown_one": "{{count}} home shown",
+    "shown_other": "{{count}} homes shown",
+    "controls": {
+      "fullScreen": "Full-screen map",
+      "exitFullScreen": "Exit full screen",
+      "showRomania": "Show all of Romania",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out"
+    },
+    "region": {
+      "county_one": "{{name}} County · {{count}} home",
+      "county_other": "{{name}} County · {{count}} homes",
+      "bucharest_one": "Bucharest · {{count}} home",
+      "bucharest_other": "Bucharest · {{count}} homes"
+    },
+    "list": {
+      "inView_one": "{{count}} home in the map area",
+      "inView_other": "{{count}} homes in the map area",
+      "all_one": "{{count}} home",
+      "all_other": "{{count}} homes",
+      "scopeInView": {
+        "sale_one": "Out of {{count}} home for sale in Romania",
+        "sale_other": "Out of {{count}} homes for sale in Romania",
+        "rent_one": "Out of {{count}} home for rent in Romania",
+        "rent_other": "Out of {{count}} homes for rent in Romania"
+      },
+      "scopeAll": {
+        "sale": "For sale across Romania",
+        "rent": "For rent across Romania"
+      },
+      "searching": "Looking for homes…",
+      "label": "Homes",
+      "onlyInView": "Only what the map shows",
+      "sortLabel": "Sort",
+      "sort": {
+        "relevance": "Relevance",
+        "newest": "Newest",
+        "priceAsc": "Price, low to high",
+        "priceDesc": "Price, high to low",
+        "area": "Floor area"
+      },
+      "more": "Show more homes",
+      "shownOf": "Showing {{shown}} of {{total}}"
+    },
+    "empty": {
+      "outside": {
+        "title": "No homes in the map area",
+        "description": "Zoom out or move the map to another city.",
+        "action": "Show all of Romania"
+      },
+      "filters": {
+        "title": "No homes match these filters",
+        "description": "Try a higher price or remove one of the filters.",
+        "action": "Reset filters"
+      },
+      "none": {
+        "sale": "No homes for sale yet",
+        "rent": "No homes for rent yet",
+        "description": "Check back soon, or post the first listing yourself for free."
+      }
     },
     "showMap": "Map",
     "showList": "List",
     "cluster_one": "{{count}} home here, zoom in",
     "cluster_other": "{{count}} homes here, zoom in",
     "pin": "{{title}}, {{price}}",
-    "card": "{{title}}, {{price}}"
+    "card": "Show on map: {{title}}, {{address}}, {{price}}",
+    "address": "{{street}}, {{city}}",
+    "popup": {
+      "label": "Selected home",
+      "viewListing": "View listing"
+    },
+    "perMonthSuffix": "/ month"
   }
 }

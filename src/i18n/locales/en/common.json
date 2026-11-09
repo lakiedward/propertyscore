@@ -187,7 +187,8 @@
         "terms": "Terms",
         "privacy": "Privacy",
         "cookies": "Cookies"
-      }
+      },
+      "compactNote": "Home positions are approximate and have no cadastral value. Map © OpenFreeMap, © OpenMapTiles, © OpenStreetMap contributors; outlines from Natural Earth."
     }
   },
   "trust": {

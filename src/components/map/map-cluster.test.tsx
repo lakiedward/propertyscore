@@ -6,7 +6,12 @@ describe('MapCluster', () => {
   it('shows the count and expands the group when pressed', async () => {
     const onExpand = vi.fn();
     const { user } = await renderWithProviders(
-      <MapCluster label="12" accessibleName="12 locuințe, mărește harta" onExpand={onExpand} />,
+      <MapCluster
+        count={12}
+        label="12"
+        accessibleName="12 locuințe, mărește harta"
+        onExpand={onExpand}
+      />,
     );
 
     const bubble = screen.getByRole('button', { name: '12 locuințe, mărește harta' });

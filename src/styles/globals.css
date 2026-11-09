@@ -168,6 +168,9 @@
   --color-map-road-edge: var(--map-road-edge);
   --color-map-tree: var(--map-tree);
   --color-map-label: var(--map-label);
+  --color-map-outside: var(--map-outside);
+  --color-map-edge: var(--map-edge);
+  --color-map-count: var(--map-count);
   --color-category-education: var(--category-education);
   --color-category-education-surface: var(--category-education-surface);
   --color-category-education-fill: var(--category-education-fill);
@@ -286,6 +289,17 @@
   --shadow-tier-online: 0 14px 34px rgba(0, 0, 0, 0.2);
   --shadow-tier-physical: 0 22px 48px rgba(0, 0, 0, 0.3);
   --shadow-tier-chip: 0 4px 12px rgba(0, 0, 0, 0.22);
+  --shadow-map-bar: 0 10px 24px rgba(16, 63, 50, 0.16);
+  --shadow-map-control: 0 6px 16px rgba(16, 63, 50, 0.12);
+  --shadow-map-count: 0 6px 16px rgba(16, 63, 50, 0.2);
+  --shadow-map-toggle: 0 10px 24px rgba(16, 63, 50, 0.3);
+  --shadow-map-popup: 0 18px 40px rgba(16, 63, 50, 0.22);
+  --shadow-map-sheet: 0 -12px 32px rgba(16, 63, 50, 0.22);
+  --shadow-cluster: 0 0 0 5px rgba(16, 63, 50, 0.18), 0 6px 14px rgba(16, 63, 50, 0.3);
+  --shadow-pin-tag: 0 0 0 3px var(--ps-white), 0 6px 16px rgba(16, 63, 50, 0.38);
+  --shadow-pin-tag-active: 0 0 0 3px var(--ps-lime-300), 0 6px 16px rgba(16, 63, 50, 0.38);
+  --shadow-pin-tag-selected: 0 0 0 6px rgba(16, 63, 50, 0.16), 0 8px 18px rgba(16, 63, 50, 0.3);
+  --shadow-card-hover: 0 14px 30px rgba(16, 63, 50, 0.08);
 
   --font-weight-nav: 670;
   --font-weight-action: 750;
@@ -580,6 +594,7 @@
   --ps-map-road-edge: #d6dbd3;
   --ps-map-tree: #bfd4ae;
   --ps-map-label: #748273;
+  --ps-map-outside: #ecebe4;
 
   --background: var(--ps-cream-100);
   --foreground: var(--ps-ink-900);
@@ -713,6 +728,9 @@
   --map-road-edge: var(--ps-map-road-edge);
   --map-tree: var(--ps-map-tree);
   --map-label: var(--ps-map-label);
+  --map-outside: var(--ps-map-outside);
+  --map-edge: var(--ps-green-250);
+  --map-count: var(--ps-coral-600);
   --category-education: var(--ps-sky-600);
   --category-education-surface: var(--ps-sky-100);
   --category-education-fill: var(--ps-sky-300);

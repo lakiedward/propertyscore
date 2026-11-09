@@ -7,6 +7,7 @@ import {
   formatNumber,
   formatPercent,
   formatPrice,
+  formatPriceInThousands,
   formatPriceParts,
   formatRelative,
   parseLocaleNumber,
@@ -43,6 +44,7 @@ describe('format', () => {
     it('formats prices as whole amounts with the local currency symbol', () => {
       expect(plain(formatPrice(125000, 'EUR'))).toBe('125.000 €');
       expect(plain(formatPrice(500, 'RON'))).toBe('500 lei');
+      expect(plain(formatPriceInThousands(170500, 'EUR'))).toBe('171k €');
     });
 
     it('splits a price into its amount and currency', () => {
@@ -91,6 +93,7 @@ describe('format', () => {
     it('formats prices as whole amounts with the currency symbol', () => {
       expect(plain(formatPrice(125000, 'EUR'))).toBe('€125,000');
       expect(plain(formatPrice(500, 'RON'))).toBe('RON 500');
+      expect(plain(formatPriceInThousands(88000, 'EUR'))).toBe('€88k');
       expect(formatPriceParts(500, 'RON')).toEqual({
         amount: '500',
         currency: 'RON',

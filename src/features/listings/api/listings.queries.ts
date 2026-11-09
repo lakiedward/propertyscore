@@ -1,11 +1,12 @@
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
-import type { ListingFilters, ListingsInBoundsFilters, ListingTransaction } from '../listing.types';
+import type { ExplorerListingFilters, ListingFilters, ListingTransaction } from '../listing.types';
 import {
-  LISTINGS_IN_BOUNDS_PAGE_SIZE,
+  EXPLORER_PAGE_SIZE,
+  listExplorerListings,
   listListings,
-  listListingsInBounds,
   listMapPoints,
 } from './listings.api';
+import { getRomaniaRegions } from './romania-regions.api';
 
 const MAP_POINTS_STALE_MS = 60_000;
 
@@ -25,12 +26,19 @@ export const listingQueries = {
       queryFn: () => listMapPoints(transaction),
       staleTime: MAP_POINTS_STALE_MS,
     }),
-  inBounds: (filters: ListingsInBoundsFilters) =>
+  explorer: (filters: ExplorerListingFilters) =>
     infiniteQueryOptions({
-      queryKey: [...listingQueries.lists(), 'in-bounds', filters],
-      queryFn: ({ pageParam }) => listListingsInBounds({ ...filters, page: pageParam }),
+      queryKey: [...listingQueries.lists(), 'explorer', filters],
+      queryFn: ({ pageParam }) => listExplorerListings({ ...filters, page: pageParam }),
       initialPageParam: 0,
       getNextPageParam: (lastPage, pages) =>
-        pages.length * LISTINGS_IN_BOUNDS_PAGE_SIZE < lastPage.total ? pages.length : undefined,
+        pages.length * EXPLORER_PAGE_SIZE < lastPage.total ? pages.length : undefined,
+    }),
+  romaniaRegions: () =>
+    queryOptions({
+      queryKey: ['geo', 'romania-regions'] as const,
+      queryFn: getRomaniaRegions,
+      staleTime: Infinity,
+      gcTime: Infinity,
     }),
 };

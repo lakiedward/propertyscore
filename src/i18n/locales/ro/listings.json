@@ -34,29 +34,94 @@
   },
   "explore": {
     "pageTitle": "Locuințe de vânzare și de închiriat",
-    "title": "Găsește-ți locuința.",
-    "count": {
-      "sale_one": "{{count}} locuință de vânzare în zona hărții",
-      "sale_few": "{{count}} locuințe de vânzare în zona hărții",
-      "sale_other": "{{count}} de locuințe de vânzare în zona hărții",
-      "rent_one": "{{count}} locuință de închiriat în zona hărții",
-      "rent_few": "{{count}} locuințe de închiriat în zona hărții",
-      "rent_other": "{{count}} de locuințe de închiriat în zona hărții"
+    "title": {
+      "sale": "Locuințe de cumpărat",
+      "rent": "Locuințe de închiriat"
     },
-    "listLabel": "Locuințe în zona hărții",
-    "mapLabel": "Harta locuințelor",
+    "mapLabel": "Harta locuințelor din România. Lista de sub hartă conține aceleași locuințe.",
     "mapError": "Harta nu s-a putut încărca. Lista locuințelor rămâne disponibilă.",
-    "loading": "Se încarcă locuințele…",
-    "loadingMore": "Se încarcă mai multe locuințe…",
-    "emptyInView": {
-      "title": "Nicio locuință în zona hărții",
-      "description": "Mută harta sau micșorează ca să vezi mai multe locuințe.",
-      "action": "Arată toate locuințele"
+    "filters": {
+      "transactionLabel": "Tipul anunțurilor",
+      "cityLabel": "Oraș",
+      "allRomania": "Toată România",
+      "priceLabel": "Preț maxim",
+      "anyPrice": {
+        "sale": "Orice preț",
+        "rent": "Orice chirie"
+      },
+      "priceCap": {
+        "sale": "Până la {{price}}",
+        "rent": "Până la {{price}} / lună"
+      },
+      "reset": "Resetează"
     },
-    "emptyNone": {
-      "sale": "Nu sunt încă locuințe de vânzare",
-      "rent": "Nu sunt încă locuințe de închiriat",
-      "description": "Revino curând sau publică tu primul anunț, gratuit."
+    "shown_one": "{{count}} locuință afișată",
+    "shown_few": "{{count}} locuințe afișate",
+    "shown_other": "{{count}} de locuințe afișate",
+    "controls": {
+      "fullScreen": "Hartă pe tot ecranul",
+      "exitFullScreen": "Ieși din ecran complet",
+      "showRomania": "Arată toată România",
+      "zoomIn": "Mărește harta",
+      "zoomOut": "Micșorează harta"
+    },
+    "region": {
+      "county_one": "Județul {{name}} · {{count}} locuință",
+      "county_few": "Județul {{name}} · {{count}} locuințe",
+      "county_other": "Județul {{name}} · {{count}} de locuințe",
+      "bucharest_one": "Municipiul București · {{count}} locuință",
+      "bucharest_few": "Municipiul București · {{count}} locuințe",
+      "bucharest_other": "Municipiul București · {{count}} de locuințe"
+    },
+    "list": {
+      "inView_one": "{{count}} locuință în zona hărții",
+      "inView_few": "{{count}} locuințe în zona hărții",
+      "inView_other": "{{count}} de locuințe în zona hărții",
+      "all_one": "{{count}} locuință",
+      "all_few": "{{count}} locuințe",
+      "all_other": "{{count}} de locuințe",
+      "scopeInView": {
+        "sale_one": "Din {{count}} locuință de vânzare în România",
+        "sale_few": "Din {{count}} locuințe de vânzare în România",
+        "sale_other": "Din {{count}} de locuințe de vânzare în România",
+        "rent_one": "Din {{count}} locuință de închiriat în România",
+        "rent_few": "Din {{count}} locuințe de închiriat în România",
+        "rent_other": "Din {{count}} de locuințe de închiriat în România"
+      },
+      "scopeAll": {
+        "sale": "De vânzare în toată România",
+        "rent": "De închiriat în toată România"
+      },
+      "searching": "Căutăm locuințe…",
+      "label": "Locuințe",
+      "onlyInView": "Doar ce se vede pe hartă",
+      "sortLabel": "Sortează",
+      "sort": {
+        "relevance": "Relevanță",
+        "newest": "Cele mai noi",
+        "priceAsc": "Preț crescător",
+        "priceDesc": "Preț descrescător",
+        "area": "Suprafață"
+      },
+      "more": "Arată mai multe locuințe",
+      "shownOf": "Vezi {{shown}} din {{total}}"
+    },
+    "empty": {
+      "outside": {
+        "title": "Nicio locuință în zona hărții",
+        "description": "Micșorează harta sau mut-o spre alt oraș.",
+        "action": "Arată toată România"
+      },
+      "filters": {
+        "title": "Nicio locuință pentru aceste filtre",
+        "description": "Încearcă un preț mai mare sau scoate unul dintre filtre.",
+        "action": "Resetează filtrele"
+      },
+      "none": {
+        "sale": "Nu sunt încă locuințe de vânzare",
+        "rent": "Nu sunt încă locuințe de închiriat",
+        "description": "Revino curând sau publică tu primul anunț, gratuit."
+      }
     },
     "showMap": "Hartă",
     "showList": "Listă",
@@ -64,6 +129,12 @@
     "cluster_few": "{{count}} locuințe aici, mărește harta",
     "cluster_other": "{{count}} de locuințe aici, mărește harta",
     "pin": "{{title}}, {{price}}",
-    "card": "{{title}}, {{price}}"
+    "card": "Arată pe hartă: {{title}}, {{address}}, {{price}}",
+    "address": "{{street}}, {{city}}",
+    "popup": {
+      "label": "Locuința selectată",
+      "viewListing": "Vezi anunțul"
+    },
+    "perMonthSuffix": "/ lună"
   }
 }

@@ -9,3 +9,4 @@ supabase/.temp/
 SETUP_PLAN.md
 CLAUDE.md
 .claude/
+public/geo/

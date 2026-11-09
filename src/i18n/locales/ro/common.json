@@ -189,7 +189,8 @@
         "terms": "Termeni",
         "privacy": "Confidențialitate",
         "cookies": "Cookie-uri"
-      }
+      },
+      "compactNote": "Pozițiile locuințelor sunt orientative, fără rol cadastral. Hartă © OpenFreeMap, © OpenMapTiles, © colaboratorii OpenStreetMap; contururi Natural Earth."
     }
   },
   "trust": {

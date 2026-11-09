@@ -1,11 +1,11 @@
 import { createFileRoute, Outlet, useMatches } from '@tanstack/react-router';
 import { MainContent } from '@/components/layout/main-content';
 import { SiteFooter } from '@/components/layout/site-footer';
+import { SiteFooterCompact } from '@/components/layout/site-footer-compact';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SkipLink } from '@/components/layout/skip-link';
 import { homePathFor, useAuth } from '@/features/auth';
 import { LanguageSwitcher, UserMenu, useSyncProfileLocale } from '@/features/profile';
-import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/_site')({
   component: SiteLayout,
@@ -15,18 +15,12 @@ function SiteLayout() {
   const { user, roles } = useAuth();
   const userId = user?.id;
   const panelPath = homePathFor(roles);
-  const isFullScreen = useMatches({
-    select: (matches) => matches.some((match) => match.staticData.isFullScreen === true),
+  const hasCompactFooter = useMatches({
+    select: (matches) => matches.some((match) => match.staticData.hasCompactFooter === true),
   });
 
   return (
-    <div
-      className={cn(
-        'flex flex-col bg-background',
-        isFullScreen ? 'h-svh overflow-hidden' : 'min-h-svh',
-      )}
-      data-density="comfortable"
-    >
+    <div className="flex min-h-svh flex-col bg-background" data-density="comfortable">
       {userId ? <ProfileLocaleSync userId={userId} /> : null}
       <SkipLink />
       <SiteHeader
@@ -40,10 +34,10 @@ function SiteLayout() {
         }
         menuLanguageSwitcher={<LanguageSwitcher userId={userId} variant="segmented" />}
       />
-      <MainContent className={cn('flex-1', isFullScreen && 'min-h-0')}>
+      <MainContent className="flex-1">
         <Outlet />
       </MainContent>
-      {isFullScreen ? null : <SiteFooter />}
+      {hasCompactFooter ? <SiteFooterCompact /> : <SiteFooter />}
     </div>
   );
 }
