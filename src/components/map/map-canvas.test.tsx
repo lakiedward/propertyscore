@@ -12,7 +12,13 @@ const maplibre = vi.hoisted(() => {
 
   class FakeGeoJSONSource {
     setData = vi.fn(() => Promise.resolve());
+    getClusterExpansionZoom = vi.fn(() => Promise.resolve(16));
   }
+
+  type FakeFeature = {
+    geometry: { type: 'Point'; coordinates: [number, number] };
+    properties: Record<string, unknown>;
+  };
 
   class FakeNavigationControl {
     readonly position = 'top-right';
@@ -31,7 +37,10 @@ const maplibre = vi.hoisted(() => {
     static instances: FakeMap[] = [];
     readonly options: FakeMapOptions;
     readonly canvas = document.createElement('canvas');
-    readonly handlers = new Map<string, (event?: unknown) => void>();
+    readonly handlers = new Map<string, Set<(event?: unknown) => void>>();
+    styleLayers: { id: string }[] = [];
+    sourceFeatures: FakeFeature[] = [];
+    zoom = 14;
     readonly sources = new Map<string, FakeGeoJSONSource>();
     readonly layers = new Set<string>();
     setPaintProperty = vi.fn();
@@ -77,17 +86,48 @@ const maplibre = vi.hoisted(() => {
     }
 
     on(event: string, handler: (event?: unknown) => void) {
-      this.handlers.set(event, handler);
+      const handlers = this.handlers.get(event) ?? new Set();
+      handlers.add(handler);
+      this.handlers.set(event, handlers);
       return this;
     }
 
-    off(event: string) {
-      this.handlers.delete(event);
+    off(event: string, handler?: (event?: unknown) => void) {
+      if (handler) {
+        this.handlers.get(event)?.delete(handler);
+      } else {
+        this.handlers.delete(event);
+      }
       return this;
     }
 
     emit(event: string, payload?: unknown) {
-      this.handlers.get(event)?.(payload);
+      for (const handler of this.handlers.get(event) ?? []) {
+        handler(payload);
+      }
+    }
+
+    getStyle() {
+      return { layers: this.styleLayers };
+    }
+
+    getBounds() {
+      return {
+        getWest: () => 21.1,
+        getSouth: () => 45.7,
+        getEast: () => 21.4,
+        getNorth: () => 45.8,
+        contains: ([longitude, latitude]: [number, number]) =>
+          longitude >= 21.1 && longitude <= 21.4 && latitude >= 45.7 && latitude <= 45.8,
+      };
+    }
+
+    getZoom() {
+      return this.zoom;
+    }
+
+    querySourceFeatures() {
+      return this.sourceFeatures;
     }
 
     isStyleLoaded() {
@@ -128,15 +168,23 @@ const maplibre = vi.hoisted(() => {
   }
 
   class FakeMarker {
+    readonly element: HTMLElement;
+
+    constructor(options: { element: HTMLElement }) {
+      this.element = options.element;
+    }
+
     setLngLat() {
       return this;
     }
 
-    addTo() {
+    addTo(map: FakeMap) {
+      map.getContainer().append(this.element);
       return this;
     }
 
     remove() {
+      this.element.remove();
       return this;
     }
   }
@@ -361,5 +409,94 @@ describe('MapCanvas', () => {
     });
 
     expect(map.layers).toEqual(new Set(['green-areas', 'green-areas-casing']));
+  });
+
+  it('hides the point-of-interest icons and reports where the map stopped', async () => {
+    const onViewportChange = vi.fn();
+    await renderWithProviders(
+      <MapCanvas
+        label={LABEL}
+        center={CENTER}
+        zoom={14}
+        markers={[]}
+        onError={vi.fn()}
+        onViewportChange={onViewportChange}
+        hidesPointsOfInterest
+      />,
+    );
+    const map = lastMap();
+    map.styleLayers = [{ id: 'poi_r1' }, { id: 'road_primary' }];
+
+    act(() => {
+      map.emit('style.load');
+    });
+
+    expect(map.setLayoutProperty).toHaveBeenCalledWith('poi_r1', 'visibility', 'none');
+    expect(map.setLayoutProperty).not.toHaveBeenCalledWith('road_primary', 'visibility', 'none');
+    expect(onViewportChange).toHaveBeenLastCalledWith({
+      bounds: [
+        [21.1, 45.7],
+        [21.4, 45.8],
+      ],
+      zoom: 14,
+    });
+
+    map.zoom = 16;
+    act(() => {
+      map.emit('moveend');
+    });
+
+    expect(onViewportChange).toHaveBeenLastCalledWith(expect.objectContaining({ zoom: 16 }));
+  });
+
+  it('draws one pin per single point in view and one bubble per group, and zooms into a group', async () => {
+    const { user } = await renderWithProviders(
+      <MapCanvas
+        label={LABEL}
+        center={CENTER}
+        zoom={14}
+        markers={[]}
+        onError={vi.fn()}
+        clusters={{
+          points: [
+            { id: 'a', position: [21.2, 45.75] },
+            { id: 'b', position: [21.3, 45.76] },
+            { id: 'c', position: [21.31, 45.761] },
+          ],
+          renderPoint: (id) => <span>{`pin ${id}`}</span>,
+          renderCluster: ({ count, onExpand }) => (
+            <button type="button" onClick={onExpand}>
+              {`${String(count)} locuințe`}
+            </button>
+          ),
+        }}
+      />,
+    );
+    const map = lastMap();
+    act(() => {
+      map.emit('style.load');
+    });
+    map.sourceFeatures = [
+      { geometry: { type: 'Point', coordinates: [21.2, 45.75] }, properties: { id: 'a' } },
+      {
+        geometry: { type: 'Point', coordinates: [21.305, 45.76] },
+        properties: { cluster: true, cluster_id: 7, point_count: 2 },
+      },
+      { geometry: { type: 'Point', coordinates: [26.1, 44.4] }, properties: { id: 'far' } },
+    ];
+
+    act(() => {
+      map.emit('sourcedata', { sourceId: 'ps-clusters', isSourceLoaded: true });
+    });
+
+    expect(map.getSource('ps-clusters')).toBeDefined();
+    expect(screen.getByText('pin a')).toBeInTheDocument();
+    expect(screen.queryByText('pin far')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '2 locuințe' }));
+
+    await vi.waitFor(() => {
+      expect(map.easeTo).toHaveBeenCalledWith({ center: [21.305, 45.76], zoom: 16 });
+    });
   });
 });
