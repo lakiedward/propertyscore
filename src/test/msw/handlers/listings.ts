@@ -23,6 +23,21 @@ function eqValue(params: URLSearchParams, column: string): string | undefined {
   return params.get(column)?.replace(/^eq\./, '');
 }
 
+function withinRange(params: URLSearchParams, column: 'latitude' | 'longitude', value: number) {
+  return params.getAll(column).every((filter) => {
+    const dot = filter.indexOf('.');
+    const operator = filter.slice(0, dot);
+    const limit = Number(filter.slice(dot + 1));
+    if (operator === 'gte') {
+      return value >= limit;
+    }
+    if (operator === 'lte') {
+      return value <= limit;
+    }
+    return true;
+  });
+}
+
 function isSortKey(value: string): value is SortKey {
   return value === 'published_at' || value === 'id';
 }
@@ -55,7 +70,9 @@ export const listingHandlers = [
     const matching = SEEDED_LISTINGS.filter(
       (item) =>
         (status === undefined || item.status === status) &&
-        (transaction === undefined || item.transaction === transaction),
+        (transaction === undefined || item.transaction === transaction) &&
+        withinRange(params, 'latitude', item.latitude) &&
+        withinRange(params, 'longitude', item.longitude),
     ).sort(compareBy(params.get('order')));
     return listingsResponse(matching.slice(offset, offset + limit), matching.length, offset);
   }),

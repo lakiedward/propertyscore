@@ -4,7 +4,7 @@ import { buildListing } from '@/test/factories/listing';
 import { listingsResponse } from '@/test/msw/handlers/listings';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
-import { listListings } from './listings.api';
+import { listListings, listListingsInBounds, listMapPoints } from './listings.api';
 
 function recordRequests() {
   const requests: Request[] = [];
@@ -74,5 +74,57 @@ describe('listListings', () => {
 
     expect(error).toBeInstanceOf(AppError);
     expect((error as AppError).code).toBe('forbidden');
+  });
+});
+
+const TIMISOARA = { west: 21.1, south: 45.7, east: 21.35, north: 45.8 };
+
+describe('listMapPoints', () => {
+  afterEach(() => {
+    server.events.removeAllListeners();
+  });
+
+  it('asks only for the columns a pin needs, for the approved listings of one transaction', async () => {
+    const requests = recordRequests();
+
+    const points = await listMapPoints('sale');
+
+    const params = new URL(requests[0]?.url ?? '').searchParams;
+    expect(params.get('select')).toBe('id,title,price,currency,latitude,longitude');
+    expect(params.get('status')).toBe('eq.approved');
+    expect(params.get('transaction')).toBe('eq.sale');
+    expect(points.map((point) => point.title)).toEqual([
+      'Apartament cu 3 camere',
+      '3 camere cu balcon',
+    ]);
+  });
+});
+
+describe('listListingsInBounds', () => {
+  afterEach(() => {
+    server.events.removeAllListeners();
+  });
+
+  it('filters by the visible map area and asks for one page', async () => {
+    const requests = recordRequests();
+
+    const result = await listListingsInBounds({ transaction: 'sale', bounds: TIMISOARA, page: 1 });
+
+    const params = new URL(requests[0]?.url ?? '').searchParams;
+    expect(params.getAll('latitude')).toEqual(['gte.45.7', 'lte.45.8']);
+    expect(params.getAll('longitude')).toEqual(['gte.21.1', 'lte.21.35']);
+    expect(params.get('offset')).toBe('20');
+    expect(params.get('limit')).toBe('20');
+    expect(result.total).toBe(2);
+  });
+
+  it('returns nothing for an area without listings', async () => {
+    const result = await listListingsInBounds({
+      transaction: 'sale',
+      bounds: { west: 26, south: 44.3, east: 26.2, north: 44.5 },
+      page: 0,
+    });
+
+    expect(result).toEqual({ items: [], total: 0 });
   });
 });

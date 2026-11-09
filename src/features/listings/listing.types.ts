@@ -10,6 +10,18 @@ export type ListingFilters = {
   limit: number;
 };
 
+export type ListingBounds = {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+};
+
+export type ListingsInBoundsFilters = {
+  transaction: ListingTransaction;
+  bounds: ListingBounds;
+};
+
 export type Listing = Awaited<ReturnType<typeof listListings>>['items'][number];
 
 export type MyListing = Awaited<ReturnType<typeof getMyListing>>;
