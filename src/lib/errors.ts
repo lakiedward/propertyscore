@@ -23,6 +23,7 @@ export type AppErrorReason =
   | 'listing_incomplete'
   | 'listing_not_pending'
   | 'listing_photo_limit'
+  | 'listing_photos_changed'
   | 'decision_reason_invalid'
   | 'decision_message_required'
   | 'decision_message_too_long'

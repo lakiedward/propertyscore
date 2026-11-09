@@ -4,14 +4,18 @@ import { toListingPhotoFiles } from '../listing.images';
 import {
   addListingPhotoRow,
   createListing,
+  discardListingRevision,
   getMyListing,
   listCities,
   listMyListings,
   removeListingPhotoRow,
+  reorderListingPhotos,
+  startListingRevision,
   submitListing,
   updateListing,
 } from './my-listings.api';
 import {
+  isInListingFolder,
   listingPhotoPath,
   removeListingPhotoFiles,
   uploadListingPhotoFiles,
@@ -100,14 +104,78 @@ export function useAddListingPhotos() {
   });
 }
 
+type ReorderPhotosInput = { ownerId: string; listingId: string; photoIds: string[] };
+
+export function useReorderListingPhotos() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ listingId, photoIds }: ReorderPhotosInput) =>
+      reorderListingPhotos({ listingId, photoIds }),
+    meta: { silent: true },
+    onMutate: async ({ ownerId, listingId, photoIds }) => {
+      const { queryKey } = myListingQueries.detail(listingId, ownerId);
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData(queryKey);
+      queryClient.setQueryData(queryKey, (listing) => {
+        if (!listing) {
+          return listing;
+        }
+        const photos = photoIds.flatMap((id, position) => {
+          const photo = listing.photos.find((candidate) => candidate.id === id);
+          return photo ? [{ ...photo, position }] : [];
+        });
+        return { ...listing, photos };
+      });
+      return { queryKey, previous };
+    },
+    onError: (_error, _input, context) => {
+      if (context) {
+        queryClient.setQueryData(context.queryKey, context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: myListingQueries.all() }),
+  });
+}
+
+type RemovePhotoInput = { id: string; path: string; listingId: string };
+
 export function useRemoveListingPhoto() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (photo: { id: string; path: string }) => {
-      await removeListingPhotoRow(photo.id);
-      await removeListingPhotoFiles(photo.path).catch((error: unknown) => {
+    mutationFn: async ({ id, path, listingId }: RemovePhotoInput) => {
+      await removeListingPhotoRow(id);
+      if (!isInListingFolder(path, listingId)) {
+        return;
+      }
+      await removeListingPhotoFiles(path).catch((error: unknown) => {
         logger.warn('Could not remove the files of a deleted listing photo', { error });
       });
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: myListingQueries.all() }),
+  });
+}
+
+export function useStartListingRevision() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: startListingRevision,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: myListingQueries.lists() }),
+  });
+}
+
+type DiscardRevisionInput = { revisionId: string; photoPaths: readonly string[] };
+
+export function useDiscardListingRevision() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ revisionId, photoPaths }: DiscardRevisionInput) => {
+      const ownFiles = photoPaths.filter((path) => isInListingFolder(path, revisionId));
+      for (const path of ownFiles) {
+        await removeListingPhotoFiles(path).catch((error: unknown) => {
+          logger.warn('Could not remove the files of a discarded revision photo', { error });
+        });
+      }
+      await discardListingRevision(revisionId);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: myListingQueries.all() }),
   });

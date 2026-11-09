@@ -14,7 +14,10 @@ type ListingTextFieldName =
   | 'price'
   | 'floor'
   | 'building_floors'
-  | 'year_built';
+  | 'year_built'
+  | 'land_area_m2'
+  | 'balconies'
+  | 'parking_spaces';
 
 type ListingTextFieldProps = {
   control: Control<ListingFormValues>;

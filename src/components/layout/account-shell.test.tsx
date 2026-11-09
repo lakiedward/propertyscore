@@ -1,4 +1,5 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
+import roAuth from '@/i18n/locales/ro/auth.json';
 import roCommon from '@/i18n/locales/ro/common.json';
 import { SIDEBAR_COLLAPSED_STORAGE_KEY } from '@/hooks/use-sidebar-collapsed';
 import { signedInAs } from '@/test/factories/auth';
@@ -30,11 +31,24 @@ describe('AccountShell', { timeout: 20_000 }, () => {
       'aria-current',
     );
     expect(within(sidebar).getAllByRole('link')).toHaveLength(9);
-    expect(screen.getByText(`${NAV.label} / ${NAV.nav.reports}`)).toBeInTheDocument();
+    expect(screen.getByText(NAV.nav.reports, { selector: 'header span' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: NAV.nav.reports })).toBeInTheDocument();
     expect(
       await screen.findAllByRole('button', { name: buildProfile().full_name ?? '' }),
     ).toHaveLength(1);
+  });
+
+  it('leaves the panel after signing out, so the next sign-in does not reopen this page', async () => {
+    const { user, router } = await renderAppRoute('/account/reports', { auth: signedInAs() });
+
+    await user.click(await screen.findByRole('button', { name: buildProfile().full_name ?? '' }));
+    await user.click(await screen.findByRole('menuitem', { name: roCommon.actions.signOut }));
+    const dialog = await screen.findByRole('alertdialog', { name: roAuth.signOut.title });
+    await user.click(within(dialog).getByRole('button', { name: roAuth.signOut.confirm }));
+
+    await waitFor(() => {
+      expect(router.state.location.href).toBe('/');
+    });
   });
 
   it('collapses the sidebar and remembers it', async () => {

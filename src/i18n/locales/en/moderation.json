@@ -20,7 +20,7 @@
   },
   "queue": {
     "label": "Listings",
-    "priceArea": "{{price}} · {{area}}",
+    "priceArea": "{{type}} · {{price}} · {{area}}",
     "resubmitted": "Resubmitted",
     "empty": {
       "pending": {
@@ -31,7 +31,11 @@
         "title": "No listings here",
         "description": "Listings appear here after you make a decision."
       }
-    }
+    },
+    "revision": "Changes",
+    "heading": "Listings ({{count}})",
+    "hide": "Hide the list",
+    "show": "Show the list ({{count}})"
   },
   "when": {
     "today": "today · {{time}}",
@@ -46,7 +50,10 @@
       "date": "{{date}}",
       "unnamed": "Unnamed owner"
     },
-    "preview": "See the public page"
+    "location": "Location",
+    "address": "{{street}} · {{city}}",
+    "mapLabel": "Map with the place of the listing",
+    "mapError": "The map could not be loaded."
   },
   "checklist": {
     "title": "Checks",
@@ -93,7 +100,9 @@
       "confirm": "Block listing",
       "pending": "Blocking…"
     },
-    "pending": "Saving…"
+    "pending": "Saving…",
+    "withdrawTitle": "Take the listing off the site",
+    "withdrawText": "If you reject it now, it leaves the site, the owner gets the reason and can fix it and send it again. Their unsent or pending changes are dropped."
   },
   "reasons": {
     "photos": {
@@ -139,8 +148,25 @@
     "rejected": "Rejected {{date}}",
     "blocked": "Blocked {{date}}"
   },
-  "previewDialog": {
-    "title": "Public preview",
-    "description": "This is how the listing appears on the site once approved."
+  "revision": {
+    "title": "Changes to a published listing",
+    "description": "The published version stays on the site. If you approve, the changes replace it; if you reject, it stays as it is; if you block, the listing leaves the site.",
+    "changed": "Changed: {{changes}}.",
+    "noChanges": "Nothing changed compared to the published version.",
+    "changes": {
+      "propertyType": "property type",
+      "transaction": "transaction type",
+      "title": "title",
+      "description": "description",
+      "price": "price",
+      "area": "area",
+      "rooms": "rooms",
+      "floor": "floor",
+      "yearBuilt": "year built",
+      "address": "address",
+      "details": "property details",
+      "extras": "extra details",
+      "photos": "photos"
+    }
   }
 }

@@ -64,6 +64,10 @@
   --color-sidebar-control-hover: var(--sidebar-control-hover);
   --color-sidebar-group: var(--sidebar-group);
   --color-sidebar-icon: var(--sidebar-icon);
+  --color-sidebar-icon-tile: var(--sidebar-icon-tile);
+  --color-sidebar-icon-tile-active: var(--sidebar-icon-tile-active);
+  --color-sidebar-icon-active: var(--sidebar-icon-active);
+  --color-sidebar-band: var(--sidebar-band);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
@@ -73,7 +77,6 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-muted: var(--sidebar-muted);
   --color-sidebar-divider: var(--sidebar-divider);
-  --color-sidebar-chip: var(--sidebar-chip);
   --color-sidebar-count: var(--sidebar-count);
   --color-sidebar-count-foreground: var(--sidebar-count-foreground);
 
@@ -271,6 +274,8 @@
   --shadow-progress: 0 22px 50px rgba(16, 63, 50, 0.22);
   --shadow-published: 0 14px 30px rgba(16, 63, 50, 0.3);
   --shadow-segment: 0 1px 3px rgba(16, 63, 50, 0.12);
+  --shadow-sidebar: 8px 0 32px -12px rgba(16, 63, 50, 0.22);
+  --shadow-panel-header: 0 8px 32px -12px rgba(16, 63, 50, 0.22);
   --shadow-heart: 0 6px 16px rgba(16, 63, 50, 0.18);
   --shadow-panel: 0 1px 2px rgba(16, 63, 50, 0.06), 0 14px 36px rgba(16, 63, 50, 0.08);
   --shadow-preview: 0 18px 40px rgba(16, 63, 50, 0.14);
@@ -305,10 +310,6 @@
   --spacing-wordmark-gap: 0.14em;
   --text-logo-2xs: 12.5px;
   --text-nav-sm: 11px;
-  --text-nav: 14.5px;
-  --text-nav--line-height: 1.55;
-  --text-nav-count: 11.5px;
-  --text-nav-count--line-height: 1.55;
   --text-status: 12.5px;
   --text-status--line-height: 1.55;
   --text-logo-xs: 15px;
@@ -605,7 +606,7 @@
   --chart-5: var(--ps-green-400);
   --sidebar: var(--ps-green-800);
   --sidebar-foreground: color-mix(in srgb, var(--ps-white) 80%, transparent);
-  --sidebar-primary: var(--ps-lime-300);
+  --sidebar-primary: var(--ps-white);
   --sidebar-primary-foreground: var(--ps-green-800);
   --sidebar-accent: color-mix(in srgb, var(--ps-white) 8%, transparent);
   --sidebar-accent-foreground: var(--ps-white);
@@ -614,12 +615,15 @@
   --sidebar-control: color-mix(in srgb, var(--ps-white) 6%, transparent);
   --sidebar-control-hover: color-mix(in srgb, var(--ps-white) 12%, transparent);
   --sidebar-group: color-mix(in srgb, var(--ps-white) 42%, transparent);
-  --sidebar-icon: color-mix(in srgb, var(--ps-white) 62%, transparent);
+  --sidebar-icon: color-mix(in srgb, var(--ps-white) 80%, transparent);
+  --sidebar-icon-tile: color-mix(in srgb, var(--ps-white) 8%, transparent);
+  --sidebar-icon-tile-active: var(--ps-green-800);
+  --sidebar-icon-active: var(--ps-lime-300);
+  --sidebar-band: var(--ps-white);
   --sidebar-muted: color-mix(in srgb, var(--ps-white) 72%, transparent);
   --sidebar-divider: color-mix(in srgb, var(--ps-white) 10%, transparent);
-  --sidebar-chip: color-mix(in srgb, var(--ps-lime-300) 14%, transparent);
-  --sidebar-count: color-mix(in srgb, var(--ps-lime-300) 18%, transparent);
-  --sidebar-count-foreground: var(--ps-lime-300);
+  --sidebar-count: var(--ps-lime-300);
+  --sidebar-count-foreground: var(--ps-green-800);
 
   --primary-hover: var(--ps-green-700);
   --primary-pressed: var(--ps-green-900);

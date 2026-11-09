@@ -49,7 +49,22 @@ export function myListingsResponse(listings: readonly MyListing[]) {
       const id = params.get('id')?.replace(/^eq\./, '');
       return HttpResponse.json(listings.filter((listing) => listing.id === id));
     }
-    const rows = listings.map((listing) => toMyListingRow(listing));
+    const revisionOf = params.get('revision_of') ?? '';
+    if (revisionOf.startsWith('in.')) {
+      return HttpResponse.json(
+        listings
+          .filter((listing) => listing.revision_of && revisionOf.includes(listing.revision_of))
+          .map((listing) => ({
+            id: listing.id,
+            revision_of: listing.revision_of,
+            status: listing.status,
+            decisions: listing.decisions.slice(0, 1),
+          })),
+      );
+    }
+    const rows = listings
+      .filter((listing) => listing.revision_of === null)
+      .map((listing) => toMyListingRow(listing));
     const last = Math.max(rows.length - 1, 0);
     return HttpResponse.json(rows, {
       headers: { 'Content-Range': `0-${String(last)}/${String(rows.length)}` },
@@ -66,6 +81,14 @@ export const myListingHandlers = [
   }),
   http.post(supabaseUrl('/rest/v1/listings'), () =>
     HttpResponse.json({ id: 'c1000000-0000-4000-8000-000000009999' }),
+  ),
+  http.delete(supabaseUrl('/storage/v1/object/listing-photos'), () => HttpResponse.json([])),
+  http.post(supabaseUrl('/rest/v1/rpc/start_listing_revision'), () =>
+    HttpResponse.json('c1000000-0000-4000-8000-000000008888'),
+  ),
+  http.post(
+    supabaseUrl('/rest/v1/rpc/discard_listing_revision'),
+    () => new HttpResponse(null, { status: 204 }),
   ),
   http.post(supabaseUrl('/rest/v1/rpc/submit_listing'), ({ request }) =>
     HttpResponse.json({ id: new URL(request.url).pathname, status: 'pending_approval' }),

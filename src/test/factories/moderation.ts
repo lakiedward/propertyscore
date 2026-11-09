@@ -1,4 +1,5 @@
 import type { QueueListing, ReviewListing } from '@/features/moderation';
+import { APARTMENT_DETAILS } from './listing-details';
 
 const OWNER_ID = 'a0000000-0000-4000-8000-000000000003';
 
@@ -10,6 +11,8 @@ export function buildReviewListing(overrides: Partial<ReviewListing> = {}): Revi
   return {
     id,
     status: 'pending_approval',
+    revision_of: null,
+    original: null,
     transaction: 'sale',
     title: `Apartament 3 camere, Complex ${String(sequence)}`,
     street_label: 'Str. Gheorghe Lazăr, 12',
@@ -22,6 +25,9 @@ export function buildReviewListing(overrides: Partial<ReviewListing> = {}): Revi
     building_floors: 4,
     year_built: 1985,
     description: 'Apartament luminos, renovat în 2023, cu balcon închis și centrală proprie.',
+    latitude: 45.7469,
+    longitude: 21.2394,
+    ...APARTMENT_DETAILS,
     submitted_at: new Date(Date.UTC(2026, 10, 6, 9, 40) - sequence * 60_000).toISOString(),
     decided_at: null,
     owner: { full_name: 'Ioana Stan' },
@@ -40,6 +46,8 @@ export function toQueueListing(listing: ReviewListing): QueueListing {
   return {
     id: listing.id,
     status: listing.status,
+    revision_of: listing.revision_of,
+    property_type: listing.property_type,
     transaction: listing.transaction,
     title: listing.title,
     city: listing.city,

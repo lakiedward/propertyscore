@@ -25,6 +25,7 @@ describe('toAppError', () => {
     ['last_admin', undefined],
     ['rate_limited', undefined],
     ['reauthentication_needed', undefined],
+    ['listing_photos_changed', undefined],
   ])('maps the function error %s to its reason and the %s field', (message, field) => {
     const error = toAppError(postgrestError('P0001', message));
 

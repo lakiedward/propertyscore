@@ -7,9 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { SERVICE_PRICES } from '@/config/pricing';
 import { formatPrice } from '@/i18n/format';
-import { useSectionNav } from '@/hooks/use-section-nav';
 import { PANEL_LINK_KEYS, type PanelPath } from './panel-paths';
-import { HOME_SECTION, type HomeSectionId, type PublishSectionId } from './site-navigation';
+import { HOME_SECTION, type HomeSectionId } from './site-navigation';
 
 type SiteMenuProps = {
   accountPath?: PanelPath | undefined;
@@ -24,34 +23,17 @@ type MenuLink =
       meta?: string;
       transaction?: 'sale' | 'rent';
     }
-  | { key: string; label: string; to: '/publish'; hash?: PublishSectionId; meta?: string };
+  | { key: string; label: string; to: '/publish'; meta?: string };
 
 export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const sectionNav = useSectionNav();
 
   const handleNavigate = () => {
     setIsOpen(false);
   };
 
   const groups: { title: string; links: MenuLink[] }[] = [
-    {
-      title: t('site.menu.onThisPage'),
-      links:
-        sectionNav.page === '/publish'
-          ? sectionNav.links.map((link) => ({
-              key: link.id,
-              label: t(link.labelKey),
-              to: sectionNav.page,
-              hash: link.id,
-            }))
-          : sectionNav.links.map((link) => ({
-              key: link.id,
-              label: t(link.labelKey),
-              hash: link.id,
-            })),
-    },
     {
       title: t('site.menu.forSale.title'),
       links: [
@@ -171,7 +153,7 @@ export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
                 <Link
                   key={link.key}
                   {...('to' in link
-                    ? { to: link.to, hash: link.hash }
+                    ? { to: link.to }
                     : {
                         to: '/',
                         hash: link.hash,

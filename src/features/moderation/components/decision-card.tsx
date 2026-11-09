@@ -13,10 +13,16 @@ import { DecisionForm } from './decision-form';
 type DecisionCardProps = {
   listing: ReviewListing;
   canApprove: boolean;
+  isPublished?: boolean;
   onDecided: (decision: ListingDecision) => void;
 };
 
-export function DecisionCard({ listing, canApprove, onDecided }: DecisionCardProps) {
+export function DecisionCard({
+  listing,
+  canApprove,
+  isPublished = false,
+  onDecided,
+}: DecisionCardProps) {
   const { t } = useTranslation('moderation');
   const errorMessage = useErrorMessage();
   const headingId = useId();
@@ -54,8 +60,11 @@ export function DecisionCard({ listing, canApprove, onDecided }: DecisionCardPro
       className="flex flex-col gap-2.5 rounded-lg border border-border bg-card p-4.5"
     >
       <h2 id={headingId} className="text-body font-bold text-foreground">
-        {t('decision.title')}
+        {isPublished ? t('decision.withdrawTitle') : t('decision.title')}
       </h2>
+      {isPublished && !mode ? (
+        <p className="text-small text-muted-foreground">{t('decision.withdrawText')}</p>
+      ) : null}
       {mode ? (
         <DecisionForm
           key={mode}
@@ -75,21 +84,25 @@ export function DecisionCard({ listing, canApprove, onDecided }: DecisionCardPro
               <AlertDescription>{errorMessage(decide.error)}</AlertDescription>
             </Alert>
           ) : null}
-          <Button
-            type="button"
-            size="md"
-            disabled={!canApprove || decide.isPending}
-            aria-busy={decide.isPending}
-            aria-describedby={canApprove ? undefined : hintId}
-            onClick={approve}
-          >
-            <CheckIcon aria-hidden />
-            {decide.isPending ? t('decision.pending') : t('decision.approve')}
-          </Button>
-          {canApprove ? null : (
-            <p id={hintId} className="text-center text-meta text-muted-foreground">
-              {t('decision.approveHint')}
-            </p>
+          {isPublished ? null : (
+            <>
+              <Button
+                type="button"
+                size="md"
+                disabled={!canApprove || decide.isPending}
+                aria-busy={decide.isPending}
+                aria-describedby={canApprove ? undefined : hintId}
+                onClick={approve}
+              >
+                <CheckIcon aria-hidden />
+                {decide.isPending ? t('decision.pending') : t('decision.approve')}
+              </Button>
+              {canApprove ? null : (
+                <p id={hintId} className="text-center text-meta text-muted-foreground">
+                  {t('decision.approveHint')}
+                </p>
+              )}
+            </>
           )}
           <Button
             type="button"
@@ -104,19 +117,21 @@ export function DecisionCard({ listing, canApprove, onDecided }: DecisionCardPro
             <Undo2Icon aria-hidden />
             {t('decision.reject')}
           </Button>
-          <Button
-            type="button"
-            size="md"
-            variant="ghost"
-            disabled={decide.isPending}
-            onClick={() => {
-              decide.reset();
-              setMode('blocked');
-            }}
-          >
-            <BanIcon aria-hidden />
-            {t('decision.block')}
-          </Button>
+          {isPublished ? null : (
+            <Button
+              type="button"
+              size="md"
+              variant="ghost"
+              disabled={decide.isPending}
+              onClick={() => {
+                decide.reset();
+                setMode('blocked');
+              }}
+            >
+              <BanIcon aria-hidden />
+              {t('decision.block')}
+            </Button>
+          )}
         </div>
       )}
     </section>

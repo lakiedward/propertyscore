@@ -6,7 +6,11 @@ import { signedInAs } from '@/test/factories/auth';
 import { moderationListingsResponse, SEEDED_REVIEW_LISTINGS } from '@/test/msw/handlers/moderation';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
+import { buildReviewListing } from '@/test/factories/moderation';
 import { renderAppRoute } from '@/test/render';
+import { QUEUE_HIDDEN_STORAGE_KEY } from './moderation-page';
+
+vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 
 const [FIRST_LISTING] = SEEDED_REVIEW_LISTINGS;
 
@@ -161,5 +165,68 @@ describe('ModerationPage', { timeout: 20_000 }, () => {
     await renderAppRoute('/admin/listings', { auth: signedInAs('admin') });
 
     expect(await screen.findByText(ro.queue.empty.pending.title)).toBeInTheDocument();
+  });
+
+  it('rejects a published listing with a reason and takes it off the site', async () => {
+    const published = buildReviewListing({
+      status: 'approved',
+      title: 'Apartament publicat, Iosefin',
+      decided_at: '2026-11-05T10:00:00.000Z',
+      decisions: [
+        {
+          id: 'd2000000-0000-4000-8000-000000000001',
+          decision: 'approved',
+          reasons: [],
+          message: null,
+          created_at: '2026-11-05T10:00:00.000Z',
+        },
+      ],
+    });
+    server.use(moderationListingsResponse([published]));
+    const bodies = captureDecisions();
+    const { user } = await renderAppRoute('/admin/listings?status=approved', {
+      auth: signedInAs('admin'),
+    });
+
+    expect(
+      await screen.findByRole('heading', { name: ro.decision.withdrawTitle }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: ro.decision.approve })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: ro.decision.block })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: ro.decision.reject }));
+    await user.click(screen.getByRole('button', { name: ro.reasons.photos.label }));
+    await user.click(screen.getByRole('button', { name: ro.decision.form.rejected.submit }));
+
+    await waitFor(() => {
+      expect(bodies).toEqual([
+        {
+          p_listing_id: published.id,
+          p_decision: 'rejected',
+          p_reasons: ['photos'],
+          p_message: ro.reasons.photos.message,
+        },
+      ]);
+    });
+  });
+
+  it('hides the queue to give the listing the full width and brings it back', async () => {
+    window.localStorage.removeItem(QUEUE_HIDDEN_STORAGE_KEY);
+    const { user } = await openModeration();
+    const count = SEEDED_REVIEW_LISTINGS.length;
+
+    expect(screen.getByRole('navigation', { name: ro.queue.label })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: ro.queue.hide }));
+
+    expect(screen.queryByRole('navigation', { name: ro.queue.label })).not.toBeInTheDocument();
+    expect(window.localStorage.getItem(QUEUE_HIDDEN_STORAGE_KEY)).toBe('1');
+    expect(screen.getByRole('heading', { name: FIRST_LISTING?.title ?? '' })).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', { name: ro.queue.show.replace('{{count}}', String(count)) }),
+    );
+
+    expect(screen.getByRole('navigation', { name: ro.queue.label })).toBeInTheDocument();
+    window.localStorage.removeItem(QUEUE_HIDDEN_STORAGE_KEY);
   });
 });

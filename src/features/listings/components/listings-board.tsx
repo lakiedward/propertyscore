@@ -200,6 +200,7 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
                           />
                         }
                         meta={t('card.meta', {
+                          type: t(`common:listingDetails.propertyType.${listing.property_type}`),
                           street: listing.street_label,
                           count: listing.rooms,
                           area: formatNumber(listing.area_m2),

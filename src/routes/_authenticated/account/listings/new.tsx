@@ -19,12 +19,6 @@ export const Route = createFileRoute('/_authenticated/account/listings/new')({
 });
 
 function NewListingRoute() {
-  const { step } = Route.useSearch();
-  const navigate = Route.useNavigate();
-  return (
-    <ListingEditorPage
-      step={step}
-      onStepChange={(next) => void navigate({ search: { step: next } })}
-    />
-  );
+  const { section } = Route.useSearch();
+  return <ListingEditorPage section={section} />;
 }

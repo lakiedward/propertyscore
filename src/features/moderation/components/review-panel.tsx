@@ -20,31 +20,41 @@ export function ReviewPanel({ listing, toastMessage, onDecided }: ReviewPanelPro
   const canApprove = REVIEW_CHECKS.every((check) => checks[check]);
 
   return (
-    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
+      {toastMessage ? <InlineToast tone="success" message={toastMessage} /> : null}
       <ListingReviewCard listing={listing} />
-      <div className="flex flex-col gap-4 xl:sticky xl:top-[calc(var(--header-height)+16px)]">
-        {toastMessage ? <InlineToast tone="success" message={toastMessage} /> : null}
-        {isPending ? (
-          <>
-            <ReviewChecklist
-              listing={listing}
-              checks={checks}
-              onCheckedChange={(check, isChecked) => {
-                setChecks((current) => ({ ...current, [check]: isChecked }));
-              }}
-            />
+      {isPending ? (
+        <div className="flex flex-col gap-5">
+          <ReviewChecklist
+            listing={listing}
+            checks={checks}
+            onCheckedChange={(check, isChecked) => {
+              setChecks((current) => ({ ...current, [check]: isChecked }));
+            }}
+          />
+          <DecisionCard
+            listing={listing}
+            canApprove={canApprove}
+            onDecided={(decision) => {
+              onDecided(decision, listing.title);
+            }}
+          />
+        </div>
+      ) : (
+        <>
+          {latestDecision ? <DecidedCard decision={latestDecision} /> : null}
+          {listing.status === 'approved' ? (
             <DecisionCard
               listing={listing}
-              canApprove={canApprove}
+              canApprove={false}
+              isPublished
               onDecided={(decision) => {
                 onDecided(decision, listing.title);
               }}
             />
-          </>
-        ) : latestDecision ? (
-          <DecidedCard decision={latestDecision} />
-        ) : null}
-      </div>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }

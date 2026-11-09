@@ -16,12 +16,11 @@ import type { ListingFormValues } from '../listing-form.schemas';
 import { ListingPinField } from './listing-pin-field';
 import { ListingTextField } from './listing-text-field';
 
-type ListingAddressStepProps = {
+type ListingAddressSectionProps = {
   control: Control<ListingFormValues>;
-  isNew: boolean;
 };
 
-export function ListingAddressStep({ control, isNew }: ListingAddressStepProps) {
+export function ListingAddressSection({ control }: ListingAddressSectionProps) {
   const { t } = useTranslation('myListings');
   const validationMessage = useValidationMessage();
   const { data: cities } = useSuspenseQuery(myListingQueries.cities());
@@ -92,11 +91,6 @@ export function ListingAddressStep({ control, isNew }: ListingAddressStepProps) 
           </Field>
         )}
       />
-      {isNew ? (
-        <p className="rounded-md bg-surface-sunken px-4 py-3 text-small text-muted-foreground">
-          {t('wizard.address.draftNote')}
-        </p>
-      ) : null}
     </FieldGroup>
   );
 }

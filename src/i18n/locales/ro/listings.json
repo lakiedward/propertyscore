@@ -26,9 +26,9 @@
     "mapError": "Harta nu s-a putut încărca. Lista anunțurilor rămâne disponibilă."
   },
   "card": {
-    "meta_one": "{{street}} · {{count}} cameră · {{area}} m²",
-    "meta_few": "{{street}} · {{count}} camere · {{area}} m²",
-    "meta_other": "{{street}} · {{count}} de camere · {{area}} m²",
+    "meta_one": "{{type}} · {{street}} · {{count}} cameră · {{area}} m²",
+    "meta_few": "{{type}} · {{street}} · {{count}} camere · {{area}} m²",
+    "meta_other": "{{type}} · {{street}} · {{count}} de camere · {{area}} m²",
     "label": "{{title}}, {{price}}, {{badge}}"
   }
 }

@@ -8,6 +8,15 @@ export function toTrustKind(verification: ListingVerification): TrustKind {
   return verification;
 }
 
+export function moveId(ids: readonly string[], id: string, targetIndex: number): string[] {
+  const rest = ids.filter((candidate) => candidate !== id);
+  if (rest.length === ids.length) {
+    return [...ids];
+  }
+  const index = Math.min(Math.max(targetIndex, 0), rest.length);
+  return [...rest.slice(0, index), id, ...rest.slice(index)];
+}
+
 const EWKB_SRID_FLAG = 0x20000000;
 const EWKB_POINT_TYPE = 1;
 

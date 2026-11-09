@@ -1,5 +1,5 @@
-import { Link } from '@tanstack/react-router';
-import { EyeIcon, ImageOffIcon, PencilIcon } from 'lucide-react';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { ExternalLinkIcon, ImageOffIcon, PencilIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StatusPill } from '@/components/feedback/status-pill';
@@ -7,19 +7,26 @@ import { Button } from '@/components/ui/button';
 import { useListingPrice } from '@/hooks/use-listing-price';
 import { cn } from '@/lib/utils';
 import { getListingMediumUrl, getListingPhotoUrl } from '../api/listings.storage';
-import { isEditableStatus, OWNER_STATUS_META } from '../listing-status';
+import { useStartListingRevision } from '../api/my-listings.queries';
+import { isEditableStatus, OWNER_STATUS_META, type ListingStatus } from '../listing-status';
 import type { MyListingRow } from '../listing.types';
-import { MyListingPreview } from './my-listing-preview';
 
 type MyListingCardProps = {
   listing: MyListingRow;
-  ownerId: string;
 };
 
 const reasonBoxClass = {
   rejected: 'bg-warning-surface text-warning',
   blocked: 'bg-error-surface text-destructive',
 } as const;
+
+type RevisionNote = 'draft' | 'pending_approval' | 'rejected';
+
+function revisionNote(status: ListingStatus): RevisionNote | null {
+  return status === 'draft' || status === 'pending_approval' || status === 'rejected'
+    ? status
+    : null;
+}
 
 type Translate = ReturnType<typeof useTranslation<['myListings', 'common']>>['t'];
 
@@ -35,16 +42,39 @@ function floorShort(floor: number | null, total: number | null, t: Translate): s
     : t('list.floorShort', { floor, total });
 }
 
-export function MyListingCard({ listing, ownerId }: MyListingCardProps) {
+export function MyListingCard({ listing }: MyListingCardProps) {
   const { t } = useTranslation(['myListings', 'common']);
   const { price, area } = useListingPrice(listing);
   const titleId = useId();
   const meta = OWNER_STATUS_META[listing.status];
   const [decision] = listing.decisions;
+  const navigate = useNavigate();
+  const startRevision = useStartListingRevision();
   const isEditable = isEditableStatus(listing.status);
+  const isApproved = listing.status === 'approved';
+  const { revision } = listing;
+  const [revisionDecision] = revision?.decisions ?? [];
+  const note = revision ? revisionNote(revision.status) : null;
+  const canEditApproved = isApproved && revision?.status !== 'pending_approval';
+
+  const openRevision = (revisionId: string) =>
+    navigate({ to: '/account/listings/$listingId', params: { listingId: revisionId } });
+
+  const handleEditApproved = () => {
+    if (revision) {
+      void openRevision(revision.id);
+      return;
+    }
+    startRevision.mutate(listing.id, {
+      onSuccess: (revisionId) => {
+        void openRevision(revisionId);
+      },
+    });
+  };
   const reasonStatus =
     listing.status === 'rejected' || listing.status === 'blocked' ? listing.status : null;
   const facts = [
+    t(`common:listingDetails.propertyType.${listing.property_type}`),
     area,
     t('common:listingSummary.facts.rooms', { count: listing.rooms }),
     floorShort(listing.floor, listing.building_floors, t),
@@ -92,15 +122,54 @@ export function MyListingCard({ listing, ownerId }: MyListingCardProps) {
             <strong className="font-bold">{t('list.reasonLabel')}</strong> {decision.message}
           </p>
         ) : null}
-        <div className="flex flex-wrap gap-2 pt-1">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/account/listings/$listingId" params={{ listingId: listing.id }}>
-              {isEditable ? <PencilIcon aria-hidden /> : <EyeIcon aria-hidden />}
-              {isEditable ? t('list.edit') : t('list.view')}
-            </Link>
-          </Button>
-          {isEditable ? <MyListingPreview listingId={listing.id} ownerId={ownerId} /> : null}
-        </div>
+        {isApproved && note ? (
+          <p
+            className={cn(
+              'rounded-md px-3 py-2.5 text-small leading-copy whitespace-pre-line',
+              note === 'rejected' ? reasonBoxClass.rejected : 'bg-info-surface text-info-ink',
+            )}
+          >
+            {t(`list.revision.${note}`)}
+            {note === 'rejected' && revisionDecision?.message ? (
+              <>
+                {' '}
+                <strong className="font-bold">{t('list.reasonLabel')}</strong>{' '}
+                {revisionDecision.message}
+              </>
+            ) : null}
+          </p>
+        ) : null}
+        {isEditable || isApproved ? (
+          <div className="mt-auto flex flex-wrap justify-end gap-2 pt-1">
+            {isEditable ? (
+              <Button asChild variant="outline" size="sm">
+                <Link to="/account/listings/$listingId" params={{ listingId: listing.id }}>
+                  <PencilIcon aria-hidden />
+                  {t('list.edit')}
+                </Link>
+              </Button>
+            ) : null}
+            {canEditApproved ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={startRevision.isPending}
+                aria-busy={startRevision.isPending}
+                onClick={handleEditApproved}
+              >
+                <PencilIcon aria-hidden />
+                {revision ? t('list.continueEdit') : t('list.edit')}
+              </Button>
+            ) : null}
+            {isApproved ? (
+              <Button type="button" variant="ghost" size="sm">
+                <ExternalLinkIcon aria-hidden />
+                {t('list.view')}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </article>
   );

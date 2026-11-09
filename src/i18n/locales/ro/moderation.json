@@ -20,7 +20,7 @@
   },
   "queue": {
     "label": "Anunțuri",
-    "priceArea": "{{price}} · {{area}}",
+    "priceArea": "{{type}} · {{price}} · {{area}}",
     "resubmitted": "Retrimis",
     "empty": {
       "pending": {
@@ -31,7 +31,11 @@
         "title": "Niciun anunț aici",
         "description": "Anunțurile apar aici după ce iei o decizie."
       }
-    }
+    },
+    "revision": "Modificări",
+    "heading": "Anunțuri ({{count}})",
+    "hide": "Ascunde lista",
+    "show": "Arată lista ({{count}})"
   },
   "when": {
     "today": "azi · {{time}}",
@@ -46,7 +50,10 @@
       "date": "{{date}}",
       "unnamed": "Proprietar fără nume"
     },
-    "preview": "Vezi pagina publică"
+    "location": "Localizare",
+    "address": "{{street}} · {{city}}",
+    "mapLabel": "Harta cu locul anunțului",
+    "mapError": "Harta nu s-a putut încărca."
   },
   "checklist": {
     "title": "Verificări",
@@ -94,7 +101,9 @@
       "confirm": "Blochează anunțul",
       "pending": "Se blochează…"
     },
-    "pending": "Se salvează…"
+    "pending": "Se salvează…",
+    "withdrawTitle": "Retrage anunțul de pe site",
+    "withdrawText": "Dacă îl respingi acum, iese de pe site, proprietarul primește motivul și îl poate corecta și retrimite. Modificările lui netrimise sau în verificare se pierd."
   },
   "reasons": {
     "photos": {
@@ -140,8 +149,25 @@
     "rejected": "Respins {{date}}",
     "blocked": "Blocat {{date}}"
   },
-  "previewDialog": {
-    "title": "Previzualizare publică",
-    "description": "Așa apare anunțul pe site după aprobare."
+  "revision": {
+    "title": "Modificări la un anunț publicat",
+    "description": "Versiunea publicată rămâne pe site. Dacă aprobi, modificările o înlocuiesc; dacă respingi, rămâne cea de acum; dacă blochezi, anunțul iese de pe site.",
+    "changed": "S-au schimbat: {{changes}}.",
+    "noChanges": "Nu s-a schimbat nimic față de versiunea publicată.",
+    "changes": {
+      "propertyType": "tipul proprietății",
+      "transaction": "tipul tranzacției",
+      "title": "titlul",
+      "description": "descrierea",
+      "price": "prețul",
+      "area": "suprafața",
+      "rooms": "camerele",
+      "floor": "etajul",
+      "yearBuilt": "anul construcției",
+      "address": "adresa",
+      "details": "detaliile proprietății",
+      "extras": "criteriile suplimentare",
+      "photos": "fotografiile"
+    }
   }
 }

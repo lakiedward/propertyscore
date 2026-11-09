@@ -37,6 +37,22 @@ export function ListingSummary({ content, titleId }: ListingSummaryProps) {
             </li>
           ))}
         </ul>
+        {content.details.length > 0 ? (
+          <section aria-label={content.detailsHeading} className="flex flex-col gap-2">
+            <h3 className="text-label font-bold text-foreground">{content.detailsHeading}</h3>
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+              {content.details.map((detail) => (
+                <div
+                  key={detail.key}
+                  className="flex flex-col gap-0.5 border-b border-border-subtle pb-2"
+                >
+                  <dt className="text-meta text-muted-foreground">{detail.label}</dt>
+                  <dd className="text-body-sm font-semibold text-foreground">{detail.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ) : null}
         {content.description ? (
           <p className="text-body-sm leading-[1.6] whitespace-pre-line text-foreground">
             {content.description}

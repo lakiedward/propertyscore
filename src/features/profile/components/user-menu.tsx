@@ -54,8 +54,6 @@ const avatarVariants = cva(
   },
 );
 
-const ITEM_CLASS = 'min-h-11 gap-2.5 px-3 text-body-sm [&_svg]:size-4.5';
-
 type UserMenuProps = {
   user: User;
   tone: NonNullable<VariantProps<typeof triggerVariants>['tone']>;
@@ -98,7 +96,7 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
             <ChevronDownIcon aria-hidden className="size-4" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-65 p-1.5">
+        <DropdownMenuContent align="end" className="w-65">
           <DropdownMenuLabel className="mb-1 flex min-w-0 flex-col border-b border-border-subtle px-3 py-2.5">
             <strong title={name} className="truncate text-body-sm font-bold text-foreground">
               {name}
@@ -108,14 +106,14 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
             </span>
           </DropdownMenuLabel>
           {panelPath ? (
-            <DropdownMenuItem asChild className={ITEM_CLASS}>
+            <DropdownMenuItem asChild>
               <Link to={panelPath}>
                 <LayoutDashboardIcon aria-hidden />
                 {t(PANEL_LINK_KEYS[panelPath])}
               </Link>
             </DropdownMenuItem>
           ) : null}
-          <DropdownMenuItem asChild className={ITEM_CLASS}>
+          <DropdownMenuItem asChild>
             <Link to="/account/settings">
               <SettingsIcon aria-hidden />
               {t('panel.account.nav.settings')}
@@ -123,7 +121,7 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
           </DropdownMenuItem>
           <DropdownMenuItem
             lang={otherLocale}
-            className={ITEM_CLASS}
+
             onSelect={() => {
               changeLanguage(otherLocale);
             }}
@@ -133,7 +131,7 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
           </DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
-            className={ITEM_CLASS}
+
             onSelect={() => {
               setIsSignOutOpen(true);
             }}

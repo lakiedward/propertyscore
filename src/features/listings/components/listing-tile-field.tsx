@@ -1,40 +1,46 @@
-import { KeyRoundIcon, TagIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Controller, type Control } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { ListingFormValues } from '../listing-form.schemas';
 
-const TYPES = [
-  { value: 'sale', icon: TagIcon },
-  { value: 'rent', icon: KeyRoundIcon },
-] as const;
+type TileName = 'transaction' | 'property_type';
 
-type ListingTypeStepProps = {
+type ListingTileFieldProps<N extends TileName> = {
   control: Control<ListingFormValues>;
+  name: N;
   labelledBy: string;
+  options: readonly {
+    value: ListingFormValues[N];
+    icon: LucideIcon;
+    label: string;
+    hint: string;
+  }[];
 };
 
-export function ListingTypeStep({ control, labelledBy }: ListingTypeStepProps) {
-  const { t } = useTranslation('myListings');
-
+export function ListingTileField<N extends TileName>({
+  control,
+  name,
+  labelledBy,
+  options,
+}: ListingTileFieldProps<N>) {
   return (
     <Controller
-      name="transaction"
+      name={name}
       control={control}
       render={({ field }) => (
         <ToggleGroup
           type="single"
           value={field.value}
           onValueChange={(value) => {
-            const type = TYPES.find((item) => item.value === value);
-            if (type) {
-              field.onChange(type.value);
+            const option = options.find((item) => item.value === value);
+            if (option) {
+              field.onChange(option.value);
             }
           }}
           aria-labelledby={labelledBy}
           className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2"
         >
-          {TYPES.map(({ value, icon: Icon }) => (
+          {options.map(({ value, icon: Icon, label, hint }) => (
             <ToggleGroupItem
               key={value}
               value={value}
@@ -44,12 +50,8 @@ export function ListingTypeStep({ control, labelledBy }: ListingTypeStepProps) {
                 <Icon aria-hidden className="size-5.5" />
               </span>
               <span className="flex flex-col">
-                <span className="text-[17px] leading-snug font-bold text-foreground">
-                  {t(`wizard.type.${value}.label`)}
-                </span>
-                <span className="text-small font-normal text-muted-foreground">
-                  {t(`wizard.type.${value}.hint`)}
-                </span>
+                <span className="text-[17px] leading-snug font-bold text-foreground">{label}</span>
+                <span className="text-small font-normal text-muted-foreground">{hint}</span>
               </span>
             </ToggleGroupItem>
           ))}

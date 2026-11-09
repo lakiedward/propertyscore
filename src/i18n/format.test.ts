@@ -3,6 +3,7 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
+  formatList,
   formatNumber,
   formatPercent,
   formatPrice,
@@ -70,6 +71,10 @@ describe('format', () => {
       expect(formatRelative(new Date('2026-10-11T12:00:00Z'), now)).toBe('ieri');
     });
 
+    it('joins a list with the Romanian conjunction', () => {
+      expect(formatList(['Apă', 'Canalizare', 'Gaze'])).toBe('Apă, Canalizare și Gaze');
+    });
+
     it('parses numbers typed with Romanian separators', () => {
       expect(parseLocaleNumber('1.250,50')).toBe(1250.5);
       expect(parseLocaleNumber(' 42 ')).toBe(42);
@@ -109,6 +114,10 @@ describe('format', () => {
 
     it('formats dates with the time in 24-hour style', () => {
       expect(plain(formatDateTime(new Date(2026, 2, 5, 14, 30)))).toBe('5 Mar 2026, 14:30');
+    });
+
+    it('joins a list with the English conjunction', () => {
+      expect(formatList(['Water', 'Sewerage', 'Gas'])).toBe('Water, Sewerage and Gas');
     });
 
     it('parses numbers typed with English separators', () => {

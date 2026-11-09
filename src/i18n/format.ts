@@ -53,6 +53,10 @@ export function formatNumber(value: number, options?: Intl.NumberFormatOptions):
   return new Intl.NumberFormat(formatLocale(), options).format(value);
 }
 
+export function formatList(values: readonly string[]): string {
+  return new Intl.ListFormat(formatLocale(), { style: 'long', type: 'conjunction' }).format(values);
+}
+
 export function formatPercent(value: number, maximumFractionDigits = 0): string {
   return formatNumber(value, { style: 'percent', maximumFractionDigits });
 }

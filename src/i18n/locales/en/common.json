@@ -81,6 +81,7 @@
       "listing_incomplete": "Add a description and at least 5 photos before you submit the listing.",
       "listing_not_pending": "The listing has already been reviewed.",
       "listing_photo_limit": "You can add at most 20 photos.",
+      "listing_photos_changed": "The photos changed in the meantime. Reload the page and try again.",
       "decision_reason_invalid": "Choose at least one reason.",
       "decision_message_required": "Write a message for the owner.",
       "decision_message_too_long": "The message can have at most 2,000 characters.",
@@ -131,7 +132,6 @@
       "nav": "Main menu",
       "close": "Close the menu",
       "home": "Home",
-      "onThisPage": "On this page",
       "forSale": {
         "title": "For sale",
         "all": "All homes for sale"
@@ -269,7 +269,6 @@
         "admin": "Admin"
       }
     },
-    "crumb": "{{area}} / {{page}}",
     "backToSite": "Back to site"
   },
   "listingSummary": {
@@ -287,11 +286,149 @@
       "floorOnly": "Floor {{floor}}",
       "groundFloor": "Ground floor",
       "basement": "Basement",
-      "yearBuilt": "Built {{year}}"
+      "yearBuilt": "Built {{year}}",
+      "bathrooms_one": "{{count}} bathroom",
+      "bathrooms_other": "{{count}} bathrooms",
+      "landArea": "{{area}} of land",
+      "levels_one": "{{count}} floor above ground",
+      "levels_other": "{{count}} floors above ground"
     },
     "morePhotos_one": "+{{count}} photo",
     "morePhotos_other": "+{{count}} photos",
     "photoAlt": "Photo {{index}} of {{total}}: {{title}}",
-    "noPhotos": "The listing has no photos."
+    "noPhotos": "The listing has no photos.",
+    "typeDeal": {
+      "apartment": {
+        "sale": "Apartment for sale",
+        "rent": "Apartment for rent"
+      },
+      "house": {
+        "sale": "House for sale",
+        "rent": "House for rent"
+      }
+    }
+  },
+  "listingDetails": {
+    "propertyType": {
+      "apartment": "Apartment",
+      "house": "House"
+    },
+    "fields": {
+      "bathrooms": "Bathrooms",
+      "partitioning": "Layout",
+      "comfort": "Comfort class",
+      "buildingType": "Building type",
+      "houseType": "House type",
+      "landArea": "Land area",
+      "levels": "The house has",
+      "interiorCondition": "Interior condition",
+      "heating": "Heating",
+      "cooling": "Cooling",
+      "furnishing": "Furnishing",
+      "pets": "Pets",
+      "balconies": "Balconies / terraces / loggias",
+      "parkingSpaces": "Parking spaces / garages",
+      "utilities": "Utilities",
+      "buildingServices": "Building services",
+      "pool": "Pool",
+      "yard": "Yard / garden",
+      "features": "Features"
+    },
+    "flags": {
+      "hasBasement": "Basement",
+      "hasSemibasement": "Semi-basement",
+      "hasAttic": "Attic",
+      "isPassiveHouse": "Passive house",
+      "hasElevator": "Lift",
+      "hasSharedYard": "Shared yard"
+    },
+    "options": {
+      "partitioning": {
+        "detached": "Detached rooms",
+        "semi_detached": "Semi-detached rooms",
+        "non_detached": "Connected rooms",
+        "circular": "Circular"
+      },
+      "comfort": {
+        "first": "1",
+        "second": "2",
+        "third": "3",
+        "luxury": "Luxury"
+      },
+      "buildingType": {
+        "apartment_block": "Apartment block",
+        "house_villa": "House / villa"
+      },
+      "houseType": {
+        "detached": "Detached",
+        "duplex": "Duplex",
+        "triplex": "Triplex",
+        "terraced": "Terraced",
+        "other": "Other"
+      },
+      "interiorCondition": {
+        "renovated": "Renovated",
+        "good": "Good condition",
+        "needs_renovation": "Needs renovation"
+      },
+      "heating": {
+        "building_boiler": "Building boiler",
+        "own_boiler": "Own boiler",
+        "convector": "Convector",
+        "infrared_panels": "Infrared panels",
+        "district_heating": "District heating",
+        "heat_pump": "Heat pump",
+        "solar_panels": "Solar panels"
+      },
+      "cooling": {
+        "air_conditioning": "Air conditioning",
+        "fan_heaters": "Fan heaters",
+        "fan_coils": "Fan coils"
+      },
+      "furnishing": {
+        "furnished": "Furnished",
+        "unfurnished": "Unfurnished",
+        "partly_furnished": "Partly furnished"
+      },
+      "pets": {
+        "allowed": "Pets allowed",
+        "not_allowed": "No pets"
+      },
+      "utilities": {
+        "water": "Water",
+        "sewerage": "Sewerage",
+        "gas": "Gas",
+        "electricity": "Electricity",
+        "cable_tv": "Cable TV",
+        "internet": "Internet"
+      },
+      "buildingServices": {
+        "administration": "Administration",
+        "cleaning": "Cleaning",
+        "security": "Security guard",
+        "video_surveillance": "Video surveillance"
+      },
+      "pool": {
+        "own": "Own pool",
+        "shared": "Shared pool"
+      },
+      "yard": {
+        "yard": "Yard",
+        "shared_yard": "Shared yard",
+        "garden": "Garden"
+      }
+    },
+    "comfortValue": "Comfort class {{value}}",
+    "heading": "Details"
+  },
+  "photoGallery": {
+    "title": "Photos ({{count}})",
+    "description": "Every photo of the listing. Choose one to see it large.",
+    "counter": "{{index}} / {{total}}",
+    "all": "All photos ({{count}})",
+    "open": "Open photo {{index}}",
+    "close": "Close the gallery",
+    "previous": "Previous photo",
+    "next": "Next photo"
   }
 }

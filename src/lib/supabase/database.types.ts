@@ -79,14 +79,14 @@ isOneToOne: false
                   ]
                 },"listings": {
                   Row: {
-                    "area_m2": number,"building_floors": number | null,"city": string,"created_at": string,"currency": string,"decided_at": string | null,"description": string | null,"floor": number | null,"id": string,"latitude": number,"longitude": number,"owner_id": string,"photo_path": string | null,"price": number,"published_at": string | null,"rooms": number,"smartcheck_score": number | null,"status": Database["public"]['Enums']["listing_status"],"street_label": string,"submitted_at": string | null,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at": string,"verification": Database["public"]['Enums']["listing_verification"],"year_built": number | null
+                    "area_m2": number,"balconies": number | null,"bathrooms": number | null,"building_floors": number | null,"building_services": (Database["public"]['Enums']["listing_building_service"])[],"building_type": Database["public"]['Enums']["listing_building_type"] | null,"city": string,"comfort": Database["public"]['Enums']["listing_comfort"] | null,"cooling": Database["public"]['Enums']["listing_cooling"] | null,"created_at": string,"currency": string,"decided_at": string | null,"description": string | null,"floor": number | null,"furnishing": Database["public"]['Enums']["listing_furnishing"] | null,"has_attic": boolean,"has_basement": boolean,"has_elevator": boolean,"has_semibasement": boolean,"has_shared_yard": boolean,"heating": Database["public"]['Enums']["listing_heating"] | null,"house_type": Database["public"]['Enums']["listing_house_type"] | null,"id": string,"interior_condition": Database["public"]['Enums']["listing_interior_condition"] | null,"is_passive_house": boolean,"land_area_m2": number | null,"latitude": number,"longitude": number,"owner_id": string,"parking_spaces": number | null,"partitioning": Database["public"]['Enums']["listing_partitioning"] | null,"pets": Database["public"]['Enums']["listing_pets"] | null,"photo_path": string | null,"pool": Database["public"]['Enums']["listing_pool"] | null,"price": number,"property_type": Database["public"]['Enums']["listing_property_type"],"published_at": string | null,"revision_of": string | null,"rooms": number,"smartcheck_score": number | null,"status": Database["public"]['Enums']["listing_status"],"street_label": string,"submitted_at": string | null,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at": string,"utilities": (Database["public"]['Enums']["listing_utility"])[],"verification": Database["public"]['Enums']["listing_verification"],"yard": Database["public"]['Enums']["listing_yard"] | null,"year_built": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "area_m2": number,"building_floors"?: number | null,"city": string,"created_at"?: string,"currency": string,"decided_at"?: string | null,"description"?: string | null,"floor"?: number | null,"id"?: string,"latitude": number,"longitude": number,"owner_id"?: string,"photo_path"?: string | null,"price": number,"published_at"?: string | null,"rooms": number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label": string,"submitted_at"?: string | null,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"verification"?: Database["public"]['Enums']["listing_verification"],"year_built"?: number | null
+                    "area_m2": number,"balconies"?: number | null,"bathrooms"?: number | null,"building_floors"?: number | null,"building_services"?: (Database["public"]['Enums']["listing_building_service"])[],"building_type"?: Database["public"]['Enums']["listing_building_type"] | null,"city": string,"comfort"?: Database["public"]['Enums']["listing_comfort"] | null,"cooling"?: Database["public"]['Enums']["listing_cooling"] | null,"created_at"?: string,"currency": string,"decided_at"?: string | null,"description"?: string | null,"floor"?: number | null,"furnishing"?: Database["public"]['Enums']["listing_furnishing"] | null,"has_attic"?: boolean,"has_basement"?: boolean,"has_elevator"?: boolean,"has_semibasement"?: boolean,"has_shared_yard"?: boolean,"heating"?: Database["public"]['Enums']["listing_heating"] | null,"house_type"?: Database["public"]['Enums']["listing_house_type"] | null,"id"?: string,"interior_condition"?: Database["public"]['Enums']["listing_interior_condition"] | null,"is_passive_house"?: boolean,"land_area_m2"?: number | null,"latitude": number,"longitude": number,"owner_id"?: string,"parking_spaces"?: number | null,"partitioning"?: Database["public"]['Enums']["listing_partitioning"] | null,"pets"?: Database["public"]['Enums']["listing_pets"] | null,"photo_path"?: string | null,"pool"?: Database["public"]['Enums']["listing_pool"] | null,"price": number,"property_type"?: Database["public"]['Enums']["listing_property_type"],"published_at"?: string | null,"revision_of"?: string | null,"rooms": number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label": string,"submitted_at"?: string | null,"title": string,"transaction": Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"utilities"?: (Database["public"]['Enums']["listing_utility"])[],"verification"?: Database["public"]['Enums']["listing_verification"],"yard"?: Database["public"]['Enums']["listing_yard"] | null,"year_built"?: number | null
                   }
                   Update: {
-                    "area_m2"?: number,"building_floors"?: number | null,"city"?: string,"created_at"?: string,"currency"?: string,"decided_at"?: string | null,"description"?: string | null,"floor"?: number | null,"id"?: string,"latitude"?: number,"longitude"?: number,"owner_id"?: string,"photo_path"?: string | null,"price"?: number,"published_at"?: string | null,"rooms"?: number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label"?: string,"submitted_at"?: string | null,"title"?: string,"transaction"?: Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"verification"?: Database["public"]['Enums']["listing_verification"],"year_built"?: number | null
+                    "area_m2"?: number,"balconies"?: number | null,"bathrooms"?: number | null,"building_floors"?: number | null,"building_services"?: (Database["public"]['Enums']["listing_building_service"])[],"building_type"?: Database["public"]['Enums']["listing_building_type"] | null,"city"?: string,"comfort"?: Database["public"]['Enums']["listing_comfort"] | null,"cooling"?: Database["public"]['Enums']["listing_cooling"] | null,"created_at"?: string,"currency"?: string,"decided_at"?: string | null,"description"?: string | null,"floor"?: number | null,"furnishing"?: Database["public"]['Enums']["listing_furnishing"] | null,"has_attic"?: boolean,"has_basement"?: boolean,"has_elevator"?: boolean,"has_semibasement"?: boolean,"has_shared_yard"?: boolean,"heating"?: Database["public"]['Enums']["listing_heating"] | null,"house_type"?: Database["public"]['Enums']["listing_house_type"] | null,"id"?: string,"interior_condition"?: Database["public"]['Enums']["listing_interior_condition"] | null,"is_passive_house"?: boolean,"land_area_m2"?: number | null,"latitude"?: number,"longitude"?: number,"owner_id"?: string,"parking_spaces"?: number | null,"partitioning"?: Database["public"]['Enums']["listing_partitioning"] | null,"pets"?: Database["public"]['Enums']["listing_pets"] | null,"photo_path"?: string | null,"pool"?: Database["public"]['Enums']["listing_pool"] | null,"price"?: number,"property_type"?: Database["public"]['Enums']["listing_property_type"],"published_at"?: string | null,"revision_of"?: string | null,"rooms"?: number,"smartcheck_score"?: number | null,"status"?: Database["public"]['Enums']["listing_status"],"street_label"?: string,"submitted_at"?: string | null,"title"?: string,"transaction"?: Database["public"]['Enums']["listing_transaction"],"updated_at"?: string,"utilities"?: (Database["public"]['Enums']["listing_utility"])[],"verification"?: Database["public"]['Enums']["listing_verification"],"yard"?: Database["public"]['Enums']["listing_yard"] | null,"year_built"?: number | null
                   }
                   Relationships: [
                     {
@@ -94,6 +94,12 @@ isOneToOne: false
       columns: ["owner_id"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_revision_of_fkey"
+      columns: ["revision_of"]
+isOneToOne: false
+      referencedRelation: "listings"
       referencedColumns: ["id"]
     }
                   ]
@@ -245,10 +251,16 @@ isOneToOne: false
 "delete_own_account":
 { Args: { "confirmation": string }; Returns: string
                            },
+"discard_listing_revision":
+{ Args: { "p_revision_id": string }; Returns: undefined
+                           },
 "listing_moderation_counts":
 { Args: Record<PropertyKey, never>; Returns: {
               "status": Database["public"]['Enums']["listing_status"],"total": number
             }[]
+                           },
+"reorder_listing_photos":
+{ Args: { "p_listing_id": string,"p_photo_ids": (string)[] }; Returns: undefined
                            },
 "resolve_report_share_link":
 { Args: { "p_report_id": string,"p_token": string }; Returns: {
@@ -258,23 +270,49 @@ isOneToOne: false
 "revoke_report_share_link":
 { Args: { "p_report_id": string }; Returns: undefined
                            },
+"start_listing_revision":
+{ Args: { "p_listing_id": string }; Returns: string
+                           },
 "submit_listing":
 { Args: { "p_listing_id": string }; Returns: {
               "area_m2": number,
+"balconies": number | null,
+"bathrooms": number | null,
 "building_floors": number | null,
+"building_services": (Database["public"]['Enums']["listing_building_service"])[],
+"building_type": Database["public"]['Enums']["listing_building_type"] | null,
 "city": string,
+"comfort": Database["public"]['Enums']["listing_comfort"] | null,
+"cooling": Database["public"]['Enums']["listing_cooling"] | null,
 "created_at": string,
 "currency": string,
 "decided_at": string | null,
 "description": string | null,
 "floor": number | null,
+"furnishing": Database["public"]['Enums']["listing_furnishing"] | null,
+"has_attic": boolean,
+"has_basement": boolean,
+"has_elevator": boolean,
+"has_semibasement": boolean,
+"has_shared_yard": boolean,
+"heating": Database["public"]['Enums']["listing_heating"] | null,
+"house_type": Database["public"]['Enums']["listing_house_type"] | null,
 "id": string,
+"interior_condition": Database["public"]['Enums']["listing_interior_condition"] | null,
+"is_passive_house": boolean,
+"land_area_m2": number | null,
 "latitude": number,
 "longitude": number,
 "owner_id": string,
+"parking_spaces": number | null,
+"partitioning": Database["public"]['Enums']["listing_partitioning"] | null,
+"pets": Database["public"]['Enums']["listing_pets"] | null,
 "photo_path": string | null,
+"pool": Database["public"]['Enums']["listing_pool"] | null,
 "price": number,
+"property_type": Database["public"]['Enums']["listing_property_type"],
 "published_at": string | null,
+"revision_of": string | null,
 "rooms": number,
 "smartcheck_score": number | null,
 "status": Database["public"]['Enums']["listing_status"],
@@ -283,7 +321,9 @@ isOneToOne: false
 "title": string,
 "transaction": Database["public"]['Enums']["listing_transaction"],
 "updated_at": string,
+"utilities": (Database["public"]['Enums']["listing_utility"])[],
 "verification": Database["public"]['Enums']["listing_verification"],
+"yard": Database["public"]['Enums']["listing_yard"] | null,
 "year_built": number | null
             }
                           SetofOptions: {
@@ -294,7 +334,7 @@ isOneToOne: false
       } }
           }
           Enums: {
-            "app_role": "user"|"admin","listing_decision": "approved"|"rejected"|"blocked","listing_decision_reason": "photos"|"personal_data"|"price_area"|"description"|"contact_details"|"duplicate"|"unavailable"|"rules","listing_status": "draft"|"pending_approval"|"approved"|"rejected"|"blocked","listing_transaction": "sale"|"rent","listing_verification": "physical"|"smartcheck"|"none","online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
+            "app_role": "user"|"admin","listing_building_service": "administration"|"cleaning"|"security"|"video_surveillance","listing_building_type": "apartment_block"|"house_villa","listing_comfort": "first"|"second"|"third"|"luxury","listing_cooling": "air_conditioning"|"fan_heaters"|"fan_coils","listing_decision": "approved"|"rejected"|"blocked","listing_decision_reason": "photos"|"personal_data"|"price_area"|"description"|"contact_details"|"duplicate"|"unavailable"|"rules","listing_furnishing": "furnished"|"unfurnished"|"partly_furnished","listing_heating": "building_boiler"|"own_boiler"|"convector"|"infrared_panels"|"district_heating"|"heat_pump"|"solar_panels","listing_house_type": "detached"|"duplex"|"triplex"|"terraced"|"other","listing_interior_condition": "renovated"|"good"|"needs_renovation","listing_partitioning": "detached"|"semi_detached"|"non_detached"|"circular","listing_pets": "allowed"|"not_allowed","listing_pool": "own"|"shared","listing_property_type": "apartment"|"house","listing_status": "draft"|"pending_approval"|"approved"|"rejected"|"blocked","listing_transaction": "sale"|"rent","listing_utility": "water"|"sewerage"|"gas"|"electricity"|"cable_tv"|"internet","listing_verification": "physical"|"smartcheck"|"none","listing_yard": "yard"|"shared_yard"|"garden","online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -414,7 +454,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "app_role": ["user", "admin"],"listing_decision": ["approved", "rejected", "blocked"],"listing_decision_reason": ["photos", "personal_data", "price_area", "description", "contact_details", "duplicate", "unavailable", "rules"],"listing_status": ["draft", "pending_approval", "approved", "rejected", "blocked"],"listing_transaction": ["sale", "rent"],"listing_verification": ["physical", "smartcheck", "none"],"online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
+            "app_role": ["user", "admin"],"listing_building_service": ["administration", "cleaning", "security", "video_surveillance"],"listing_building_type": ["apartment_block", "house_villa"],"listing_comfort": ["first", "second", "third", "luxury"],"listing_cooling": ["air_conditioning", "fan_heaters", "fan_coils"],"listing_decision": ["approved", "rejected", "blocked"],"listing_decision_reason": ["photos", "personal_data", "price_area", "description", "contact_details", "duplicate", "unavailable", "rules"],"listing_furnishing": ["furnished", "unfurnished", "partly_furnished"],"listing_heating": ["building_boiler", "own_boiler", "convector", "infrared_panels", "district_heating", "heat_pump", "solar_panels"],"listing_house_type": ["detached", "duplex", "triplex", "terraced", "other"],"listing_interior_condition": ["renovated", "good", "needs_renovation"],"listing_partitioning": ["detached", "semi_detached", "non_detached", "circular"],"listing_pets": ["allowed", "not_allowed"],"listing_pool": ["own", "shared"],"listing_property_type": ["apartment", "house"],"listing_status": ["draft", "pending_approval", "approved", "rejected", "blocked"],"listing_transaction": ["sale", "rent"],"listing_utility": ["water", "sewerage", "gas", "electricity", "cable_tv", "internet"],"listing_verification": ["physical", "smartcheck", "none"],"listing_yard": ["yard", "shared_yard", "garden"],"online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
           }
         }
 } as const

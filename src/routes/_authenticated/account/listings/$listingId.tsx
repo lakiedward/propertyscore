@@ -1,7 +1,8 @@
-import { createFileRoute, notFound } from '@tanstack/react-router';
+import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
 import { panelPageHead } from '@/components/layout/panel-page-head';
 import { PendingPage } from '@/components/layout/pending-page';
 import {
+  isEditableStatus,
   ListingEditorPage,
   listingEditorSearchSchema,
   myListingQueries,
@@ -13,19 +14,23 @@ export const Route = createFileRoute('/_authenticated/account/listings/$listingI
   validateSearch: listingEditorSearchSchema,
   beforeLoad: () => loadFeatureNamespaces(['myListings']),
   loader: async ({ context, params }) => {
-    try {
-      await Promise.all([
-        context.queryClient.query({
-          ...myListingQueries.detail(params.listingId, context.user.id),
-          staleTime: 'static',
-        }),
-        context.queryClient.query({ ...myListingQueries.cities(), staleTime: 'static' }),
-      ]);
-    } catch (error) {
-      if (isAppError(error) && error.code === 'not_found') {
-        throw notFound();
-      }
-      throw error;
+    const listing = await Promise.all([
+      context.queryClient.query({
+        ...myListingQueries.detail(params.listingId, context.user.id),
+        staleTime: 'static',
+      }),
+      context.queryClient.query({ ...myListingQueries.cities(), staleTime: 'static' }),
+    ]).then(
+      ([detail]) => detail,
+      (error: unknown) => {
+        if (isAppError(error) && error.code === 'not_found') {
+          throw notFound();
+        }
+        throw error;
+      },
+    );
+    if (!isEditableStatus(listing.status)) {
+      throw redirect({ to: '/account/listings' });
     }
   },
   head: panelPageHead('panel.account.nav.listings'),
@@ -35,13 +40,6 @@ export const Route = createFileRoute('/_authenticated/account/listings/$listingI
 
 function ListingRoute() {
   const { listingId } = Route.useParams();
-  const { step } = Route.useSearch();
-  const navigate = Route.useNavigate();
-  return (
-    <ListingEditorPage
-      listingId={listingId}
-      step={step}
-      onStepChange={(next) => void navigate({ search: { step: next } })}
-    />
-  );
+  const { section } = Route.useSearch();
+  return <ListingEditorPage listingId={listingId} section={section} />;
 }

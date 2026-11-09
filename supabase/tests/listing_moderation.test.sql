@@ -32,6 +32,8 @@ values
   ('d0000000-0000-4000-8000-000000000007', '11111111-1111-1111-1111-111111111111', 'pending_approval', 'sale',
    'De blocat', 'Str. Școlii, 7', 'Timișoara', 3, 70, 120000, 'EUR', 45.75, 21.22, 'Descriere.', now() - interval '30 minutes', null, null);
 
+update public.listings set floor = 2;
+
 insert into public.listing_photos (listing_id, owner_id, path, position)
 select
   listing.id,

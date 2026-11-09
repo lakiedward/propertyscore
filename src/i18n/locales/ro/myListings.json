@@ -17,10 +17,13 @@
     "floorOnlyShort": "et. {{floor}}",
     "groundFloorShort": "parter",
     "reasonLabel": "Motiv:",
-    "preview": "Previzualizează",
-    "previewTitle": "Previzualizare",
-    "previewDescription": "Așa apare anunțul pe site după aprobare.",
-    "photoMissing": "Fără fotografie"
+    "photoMissing": "Fără fotografie",
+    "continueEdit": "Continuă editarea",
+    "revision": {
+      "draft": "Ai modificări netrimise. Pe site rămâne versiunea publicată până le trimiți și le aprobăm.",
+      "pending_approval": "Modificările tale sunt în verificare. Pe site rămâne versiunea publicată până le aprobăm.",
+      "rejected": "Modificările tale au fost respinse; pe site rămâne versiunea publicată."
+    }
   },
   "status": {
     "draft": "Ciornă",
@@ -30,28 +33,25 @@
     "blocked": "Blocat"
   },
   "notice": {
-    "draft": {
-      "title": "Ciornă",
-      "description": "Completează anunțul, adaugă cel puțin 5 fotografii și trimite-l spre verificare."
-    },
-    "pending_approval": {
-      "title": "Anunțul este în verificare",
-      "description": "Îl verificăm în cel mult 24 de ore. Până atunci nu îl poți modifica."
-    },
-    "approved": {
-      "title": "Anunțul este publicat",
-      "description": "Apare pe site și pe harta proprietăților."
-    },
     "rejected": {
       "title": "Anunțul a fost respins",
       "description": "Fă modificările cerute și retrimite anunțul spre verificare."
     },
-    "blocked": {
-      "title": "Anunțul a fost blocat",
-      "description": "Anunțul nu mai poate fi modificat sau retrimis."
-    },
     "reason": "Motiv: {{message}}",
-    "decidedAt": "Decizie din {{date}}"
+    "decidedAt": "Decizie din {{date}}",
+    "revisionRejected": {
+      "title": "Modificările au fost respinse",
+      "description": "Pe site rămâne versiunea publicată. Fă modificările cerute și trimite-le din nou."
+    },
+    "revision": {
+      "title": "Editezi un anunț publicat",
+      "description": "Pe site rămâne versiunea publicată până aprobăm modificările. Salvează-le ca ciornă sau trimite-le spre verificare.",
+      "discard": "Renunță la modificări",
+      "discardTitle": "Renunți la modificări?",
+      "discardDescription": "Ștergem modificările și fotografiile noi. Anunțul publicat rămâne neschimbat.",
+      "discarding": "Se renunță…",
+      "discarded": "Ai renunțat la modificări."
+    }
   },
   "editor": {
     "newTitle": "Anunț nou",
@@ -65,7 +65,30 @@
     "submitting": "Se trimite…",
     "saved": "Ciorna a fost salvată.",
     "submitted": "Anunțul a fost trimis spre verificare.",
-    "resubmitted": "Anunțul a fost retrimis spre verificare."
+    "resubmitted": "Anunțul a fost retrimis spre verificare.",
+    "submitChanges": "Trimite modificările spre verificare",
+    "changesSubmitted": "Modificările au fost trimise spre verificare. Pe site rămâne versiunea publicată până le aprobăm."
+  },
+  "sections": {
+    "type": "Tip anunț",
+    "details": "Detalii proprietate",
+    "photos": "Fotografii",
+    "address": "Localizare",
+    "text": "Titlu și descriere",
+    "contact": "Contact",
+    "required": "obligatoriu",
+    "complete": "Completat",
+    "missing_one": "{{count}} câmp de completat",
+    "missing_few": "{{count}} câmpuri de completat",
+    "missing_other": "{{count}} de câmpuri de completat",
+    "photosMissing_one": "Mai adaugă {{count}} fotografie",
+    "photosMissing_few": "Mai adaugă {{count}} fotografii",
+    "photosMissing_other": "Mai adaugă {{count}} de fotografii",
+    "markedErrors": "Completează câmpurile marcate cu roșu.",
+    "propertyType": "Tip proprietate",
+    "transactionType": "Tip tranzacție",
+    "extras": "Criterii suplimentare",
+    "optional": "opțional"
   },
   "form": {
     "details": "Detalii",
@@ -104,11 +127,10 @@
       "RON": "RON"
     },
     "floor": {
-      "label": "Etaj",
-      "hint": "0 pentru parter, -1 pentru demisol. Opțional."
+      "label": "Etaj"
     },
     "buildingFloors": {
-      "label": "Etaje în clădire",
+      "label": "Nr. niveluri peste parter",
       "hint": "Opțional."
     },
     "yearBuilt": {
@@ -135,33 +157,20 @@
     "count_other": "{{count}} de fotografii din {{max}}",
     "add": "Adaugă fotografii",
     "adding": "Se încarcă…",
+    "dropHint": "Trage fotografiile aici sau apasă ca să le alegi. JPG, PNG sau WebP, cel mult {{max}}.",
     "remove": "Șterge fotografia {{index}}",
+    "reorderHint": "Trage o fotografie peste alta sau folosește săgețile ca să schimbi ordinea.",
+    "moveEarlier": "Mută fotografia {{index}} mai în față",
+    "moveLater": "Mută fotografia {{index}} mai în spate",
+    "moved": "Fotografia este acum pe poziția {{position}} din {{total}}.",
     "cover": "Copertă",
     "alt": "Fotografia {{index}} a anunțului",
-    "saveFirst": "Salvează ciorna ca să poți adăuga fotografii.",
     "invalidType": "Poți încărca doar imagini JPG, PNG sau WebP.",
+    "uploadFailed": "Ciorna a fost salvată, dar nu toate fotografiile s-au încărcat ({{reason}}). Verifică-le și adaugă-le pe cele care lipsesc.",
     "tooLarge": "Fotografia este prea mare după conversie (peste 5 MB)."
   },
   "wizard": {
     "subtitle": "Nu ai nevoie de raport ca să publici. Salvăm anunțul ca ciornă până îl trimiți.",
-    "stepOf": "Pasul {{step}} din {{total}}",
-    "stepsLabel": "Pașii anunțului",
-    "steps": {
-      "type": "Tip",
-      "text": "Titlu și descriere",
-      "details": "Detalii",
-      "address": "Adresă",
-      "photos": "Fotografii",
-      "contact": "Contact"
-    },
-    "titles": {
-      "type": "Ce fel de anunț?",
-      "text": "Titlu și descriere",
-      "details": "Detalii",
-      "address": "Unde e locuința?",
-      "photos": "Fotografii",
-      "contact": "Cum te contactează cumpărătorii"
-    },
     "type": {
       "sale": {
         "label": "Vânzare",
@@ -186,12 +195,17 @@
       "areaSuffix": "m²",
       "rooms": "Camere",
       "roomsMore": "5+",
-      "roomsExact": "Număr exact de camere"
+      "roomsExact": "Număr exact de camere",
+      "choose": "Alege",
+      "notSpecified": "Nespecificat",
+      "floorBasement": "Demisol",
+      "floorGround": "Parter",
+      "floorNumber": "Etaj {{floor}}",
+      "bathroomsMore": "4+"
     },
     "address": {
       "street": "Adresa exactă",
-      "pin": "Ce vezi tu · pin exact",
-      "draftNote": "Când treci mai departe, salvăm anunțul ca ciornă și poți adăuga fotografiile."
+      "pin": "Ce vezi tu · pin exact"
     },
     "photosNote": "Poți trimite anunțul spre verificare doar cu cel puțin 5 fotografii.",
     "contact": {
@@ -202,13 +216,15 @@
       "email": "Email",
       "ready": "Anunțul intră la verificare. Îți arătăm aici răspunsul echipei, de obicei în cel mult 24 de ore."
     },
-    "back": "Înapoi",
-    "continue": "Continuă",
-    "stepErrors": "Completează câmpurile marcate înainte să continui."
-  },
-  "overview": {
-    "previewLabel": "Previzualizare · așa arată pe site",
-    "contactTitle": "Așa te vor contacta cumpărătorii",
-    "readOnly": "Anunțul nu poate fi modificat acum."
+    "propertyType": {
+      "apartment": {
+        "label": "Apartament",
+        "hint": "În bloc sau vilă"
+      },
+      "house": {
+        "label": "Casă",
+        "hint": "Cu teren propriu"
+      }
+    }
   }
 }

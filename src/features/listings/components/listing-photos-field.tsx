@@ -1,77 +1,134 @@
-import { ImagePlusIcon, Trash2Icon } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { ArrowLeftIcon, ArrowRightIcon, Trash2Icon } from 'lucide-react';
+import { useState, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MediaUpload } from '@/components/media/media-upload';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useErrorMessage } from '@/i18n/error-message';
-import { getListingMediumUrl } from '../api/listings.storage';
-import { useAddListingPhotos, useRemoveListingPhoto } from '../api/my-listings.queries';
+import { LISTING_MAX_PHOTOS } from '../listing-form.schemas';
 import { LISTING_PHOTO_TYPES } from '../listing.images';
+import { moveId } from '../listing.utils';
 
-const MAX_PHOTOS = 20;
-
-type ListingPhoto = { id: string; path: string };
+export type ListingPhotoItem = { id: string; src: string };
 
 type ListingPhotosFieldProps = {
-  ownerId: string;
-  listingId: string | null;
-  photos: readonly ListingPhoto[];
+  photos: readonly ListingPhotoItem[];
   isEditable: boolean;
+  isAdding: boolean;
+  isBusy: boolean;
+  error: unknown;
+  onAdd: (files: File[]) => void;
+  onRemove: (id: string) => void;
+  onReorder: (ids: string[]) => void;
 };
+
+function isLeavingItem(event: DragEvent<HTMLLIElement>): boolean {
+  const next = event.relatedTarget;
+  return !(next instanceof Node && event.currentTarget.contains(next));
+}
 
 function isAcceptedType(file: File): boolean {
   return LISTING_PHOTO_TYPES.some((type) => type === file.type);
 }
 
 export function ListingPhotosField({
-  ownerId,
-  listingId,
   photos,
   isEditable,
+  isAdding,
+  isBusy,
+  error,
+  onAdd,
+  onRemove,
+  onReorder,
 }: ListingPhotosFieldProps) {
   const { t } = useTranslation('myListings');
   const errorMessage = useErrorMessage();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [typeError, setTypeError] = useState(false);
-  const addPhotos = useAddListingPhotos();
-  const removePhoto = useRemoveListingPhoto();
-  const canAdd = isEditable && listingId !== null && photos.length < MAX_PHOTOS;
-  const error = addPhotos.error ?? removePhoto.error;
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState('');
+  const canAdd = isEditable && photos.length < LISTING_MAX_PHOTOS;
+  const canReorder = isEditable && photos.length > 1;
+  const ids = photos.map((photo) => photo.id);
 
-  const handleFiles = (files: FileList | null) => {
-    if (!files || !listingId) {
+  const move = (id: string, targetIndex: number) => {
+    const next = moveId(ids, id, targetIndex);
+    if (next.join() === ids.join()) {
       return;
     }
-    const selected = [...files];
-    const accepted = selected.filter(isAcceptedType).slice(0, MAX_PHOTOS - photos.length);
+    onReorder(next);
+    setAnnouncement(t('photos.moved', { position: next.indexOf(id) + 1, total: next.length }));
+  };
+
+  const endDrag = () => {
+    setDraggedId(null);
+    setOverId(null);
+  };
+
+  const handleFiles = (selected: File[]) => {
+    const accepted = selected.filter(isAcceptedType).slice(0, LISTING_MAX_PHOTOS - photos.length);
     setTypeError(selected.some((file) => !isAcceptedType(file)));
     if (accepted.length > 0) {
-      addPhotos.mutate({ ownerId, listingId, files: accepted, nextPosition: photos.length });
+      onAdd(accepted);
     }
   };
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <p className="text-small text-muted-foreground">{t('photos.description')}</p>
+        <div className="flex flex-col gap-0.5">
+          <p className="text-small text-muted-foreground">{t('photos.description')}</p>
+          {canReorder ? (
+            <p className="text-small text-muted-foreground">{t('photos.reorderHint')}</p>
+          ) : null}
+        </div>
         <span className="text-meta text-muted-foreground tabular-nums">
-          {t('photos.count', { count: photos.length, max: MAX_PHOTOS })}
+          {t('photos.count', { count: photos.length, max: LISTING_MAX_PHOTOS })}
         </span>
       </div>
-      {listingId === null ? (
-        <p className="rounded-md bg-surface-sunken px-4 py-3 text-small text-muted-foreground">
-          {t('photos.saveFirst')}
-        </p>
-      ) : null}
       {photos.length > 0 ? (
         <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           {photos.map((photo, index) => (
-            <li key={photo.id} className="relative overflow-hidden rounded-md bg-surface-alt">
+            <li
+              key={photo.id}
+              draggable={canReorder && !isBusy}
+              data-dragging={draggedId === photo.id ? true : undefined}
+              data-over={overId === photo.id && draggedId !== photo.id ? true : undefined}
+              onDragStart={(event) => {
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', photo.id);
+                setDraggedId(photo.id);
+              }}
+              onDragOver={(event) => {
+                if (draggedId === null) {
+                  return;
+                }
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+                setOverId(photo.id);
+              }}
+              onDragLeave={(event) => {
+                if (isLeavingItem(event)) {
+                  setOverId((current) => (current === photo.id ? null : current));
+                }
+              }}
+              onDrop={(event) => {
+                if (draggedId === null) {
+                  return;
+                }
+                event.preventDefault();
+                move(draggedId, index);
+                endDrag();
+              }}
+              onDragEnd={endDrag}
+              className="relative overflow-hidden rounded-md bg-surface-alt transition-opacity duration-(--duration-fast) data-dragging:cursor-grabbing data-dragging:opacity-40 data-over:ring-3 data-over:ring-primary data-over:ring-offset-2 [&[draggable=true]]:cursor-grab"
+            >
               <img
-                src={getListingMediumUrl(photo.path)}
+                src={photo.src}
                 alt={t('photos.alt', { index: index + 1 })}
                 loading="lazy"
                 decoding="async"
+                draggable={false}
                 className="aspect-4/3 w-full object-cover"
               />
               {index === 0 ? (
@@ -86,18 +143,51 @@ export function ListingPhotosField({
                   variant="inverse"
                   className="absolute top-2 right-2 shadow-sm"
                   aria-label={t('photos.remove', { index: index + 1 })}
-                  disabled={removePhoto.isPending || addPhotos.isPending}
+                  disabled={isBusy}
                   onClick={() => {
-                    removePhoto.mutate(photo);
+                    onRemove(photo.id);
                   }}
                 >
                   <Trash2Icon aria-hidden />
                 </Button>
               ) : null}
+              {canReorder ? (
+                <div className="absolute right-2 bottom-2 flex gap-1">
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="inverse"
+                    className="shadow-sm"
+                    aria-label={t('photos.moveEarlier', { index: index + 1 })}
+                    disabled={isBusy || index === 0}
+                    onClick={() => {
+                      move(photo.id, index - 1);
+                    }}
+                  >
+                    <ArrowLeftIcon aria-hidden />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="inverse"
+                    className="shadow-sm"
+                    aria-label={t('photos.moveLater', { index: index + 1 })}
+                    disabled={isBusy || index === photos.length - 1}
+                    onClick={() => {
+                      move(photo.id, index + 1);
+                    }}
+                  >
+                    <ArrowRightIcon aria-hidden />
+                  </Button>
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>
       ) : null}
+      <p aria-live="polite" className="sr-only">
+        {announcement}
+      </p>
       {typeError ? (
         <Alert tone="warning">
           <AlertDescription>{t('photos.invalidType')}</AlertDescription>
@@ -109,30 +199,15 @@ export function ListingPhotosField({
         </Alert>
       ) : null}
       {canAdd ? (
-        <div>
-          <input
-            ref={inputRef}
-            type="file"
-            accept={LISTING_PHOTO_TYPES.join(',')}
-            multiple
-            hidden
-            onChange={(event) => {
-              handleFiles(event.target.files);
-              event.target.value = '';
-            }}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            disabled={addPhotos.isPending}
-            aria-busy={addPhotos.isPending}
-            onClick={() => inputRef.current?.click()}
-          >
-            <ImagePlusIcon aria-hidden />
-            {addPhotos.isPending ? t('photos.adding') : t('photos.add')}
-          </Button>
-        </div>
+        <MediaUpload
+          label={isAdding ? t('photos.adding') : t('photos.add')}
+          hint={t('photos.dropHint', { max: LISTING_MAX_PHOTOS })}
+          accept={LISTING_PHOTO_TYPES.join(',')}
+          isBusy={isAdding}
+          isDisabled={isBusy}
+          isInvalid={typeError}
+          onAdd={handleFiles}
+        />
       ) : null}
     </div>
   );

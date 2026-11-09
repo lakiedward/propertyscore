@@ -1,4 +1,10 @@
-import { dayBucket, decisionMessage, pricePerSquareMeter } from './moderation.utils';
+import { buildReviewListing } from '@/test/factories/moderation';
+import {
+  dayBucket,
+  decisionMessage,
+  listingChanges,
+  pricePerSquareMeter,
+} from './moderation.utils';
 
 describe('moderation.utils', () => {
   const now = new Date(2026, 10, 6, 12, 0);
@@ -16,5 +22,18 @@ describe('moderation.utils', () => {
 
   it('joins the reason messages into one note', () => {
     expect(decisionMessage(['Unu.', 'Doi.'])).toBe('Unu. Doi.');
+  });
+
+  it('names what changed between the published listing and its revision', () => {
+    const original = buildReviewListing();
+    const revision = {
+      ...original,
+      price: original.price + 5000,
+      heating: 'heat_pump' as const,
+      photos: [...original.photos].reverse(),
+    };
+
+    expect(listingChanges(revision, original)).toEqual(['price', 'extras', 'photos']);
+    expect(listingChanges(original, original)).toEqual([]);
   });
 });

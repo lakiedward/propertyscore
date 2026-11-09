@@ -31,8 +31,6 @@ export const FONT_SIZES = [
   'score-2xl',
   'logo-2xs',
   'nav-sm',
-  'nav',
-  'nav-count',
   'status',
   'logo-xs',
   'logo-sm',

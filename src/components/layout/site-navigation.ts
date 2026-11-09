@@ -29,7 +29,7 @@ export const PUBLISH_SECTION = {
   questions: 'questions',
 } as const;
 
-export type PublishSectionId = (typeof PUBLISH_SECTION)[keyof typeof PUBLISH_SECTION];
+type PublishSectionId = (typeof PUBLISH_SECTION)[keyof typeof PUBLISH_SECTION];
 
 const PUBLISH_SECTION_LINKS = [
   { id: 'account', labelKey: 'site.publishSections.account' },

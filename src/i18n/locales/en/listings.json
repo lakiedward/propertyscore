@@ -24,8 +24,8 @@
     "mapError": "The map could not load. The list of listings is still available."
   },
   "card": {
-    "meta_one": "{{street}} · {{count}} room · {{area}} m²",
-    "meta_other": "{{street}} · {{count}} rooms · {{area}} m²",
+    "meta_one": "{{type}} · {{street}} · {{count}} room · {{area}} m²",
+    "meta_other": "{{type}} · {{street}} · {{count}} rooms · {{area}} m²",
     "label": "{{title}}, {{price}}, {{badge}}"
   }
 }

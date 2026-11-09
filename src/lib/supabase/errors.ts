@@ -57,6 +57,7 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   listing_incomplete: 'listing_incomplete',
   listing_not_pending: 'listing_not_pending',
   listing_photo_limit: 'listing_photo_limit',
+  listing_photos_changed: 'listing_photos_changed',
   decision_reason_invalid: 'decision_reason_invalid',
   decision_message_required: 'decision_message_required',
   decision_message_too_long: 'decision_message_too_long',

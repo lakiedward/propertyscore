@@ -1,48 +1,45 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { getRouteApi, Link } from '@tanstack/react-router';
-import { ArrowLeftIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { getRouteApi, Link, useNavigate } from '@tanstack/react-router';
+import { ArrowLeftIcon, Undo2Icon } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { StatusPill } from '@/components/feedback/status-pill';
-import { myListingQueries } from '../api/my-listings.queries';
-import { isEditableStatus, OWNER_STATUS_META, type ListingStatus } from '../listing-status';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { myListingQueries, useDiscardListingRevision } from '../api/my-listings.queries';
+import { OWNER_STATUS_META, type ListingStatus } from '../listing-status';
+import type { MyListing } from '../listing.types';
 import { ListingDecisionNotice } from './listing-decision-notice';
-import { ListingOverview } from './listing-overview';
-import { ListingWizard } from './listing-wizard';
+import type { EditorSection } from '../listing-editor.sections';
+import { ListingEditorForm } from './listing-editor-form';
 
 const authenticatedRoute = getRouteApi('/_authenticated');
 
 type ListingEditorPageProps = {
   listingId?: string;
-  step: number;
-  onStepChange: (step: number) => void;
+  section: EditorSection | undefined;
 };
 
-export function ListingEditorPage({ listingId, step, onStepChange }: ListingEditorPageProps) {
+export function ListingEditorPage({ listingId, section }: ListingEditorPageProps) {
   const { t } = useTranslation('myListings');
   const { user } = authenticatedRoute.useRouteContext();
 
   if (!listingId) {
     return (
       <EditorLayout title={t('editor.newTitle')} subtitle={t('wizard.subtitle')}>
-        <ListingWizard
+        <ListingEditorForm
           listing={null}
           ownerId={user.id}
           email={user.email}
-          step={step}
-          onStepChange={onStepChange}
+          initialSection={section}
         />
       </EditorLayout>
     );
   }
   return (
-    <ExistingListing
-      listingId={listingId}
-      ownerId={user.id}
-      email={user.email}
-      step={step}
-      onStepChange={onStepChange}
-    />
+    <ExistingListing listingId={listingId} ownerId={user.id} email={user.email} section={section} />
   );
 }
 
@@ -50,41 +47,80 @@ type ExistingListingProps = {
   listingId: string;
   ownerId: string;
   email: string | undefined;
-  step: number;
-  onStepChange: (step: number) => void;
+  section: EditorSection | undefined;
 };
 
-function ExistingListing({ listingId, ownerId, email, step, onStepChange }: ExistingListingProps) {
+function ExistingListing({ listingId, ownerId, email, section }: ExistingListingProps) {
   const { t } = useTranslation('myListings');
   const { data: listing } = useSuspenseQuery(myListingQueries.detail(listingId, ownerId));
   const [latestDecision] = listing.decisions;
+  const isRevision = listing.revision_of !== null;
 
-  if (!isEditableStatus(listing.status)) {
-    return (
-      <EditorLayout title={listing.title} status={listing.status}>
-        <ListingDecisionNotice status={listing.status} decision={latestDecision} />
-        <ListingOverview listing={listing} ownerId={ownerId} email={email} />
-      </EditorLayout>
-    );
-  }
   return (
     <EditorLayout
       title={t('editor.editTitle')}
-      subtitle={t('wizard.subtitle')}
+      subtitle={isRevision ? undefined : t('wizard.subtitle')}
       status={listing.status}
     >
+      {isRevision ? <RevisionNotice listing={listing} /> : null}
       {listing.status === 'rejected' ? (
-        <ListingDecisionNotice status={listing.status} decision={latestDecision} />
+        <ListingDecisionNotice decision={latestDecision} isRevision={isRevision} />
       ) : null}
-      <ListingWizard
+      <ListingEditorForm
         key={`${listing.id}-${listing.status}`}
         listing={listing}
         ownerId={ownerId}
         email={email}
-        step={step}
-        onStepChange={onStepChange}
+        initialSection={section}
       />
     </EditorLayout>
+  );
+}
+
+function RevisionNotice({ listing }: { listing: MyListing }) {
+  const { t } = useTranslation(['myListings', 'common']);
+  const navigate = useNavigate();
+  const discard = useDiscardListingRevision();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  const handleDiscard = () => {
+    discard.mutate(
+      { revisionId: listing.id, photoPaths: listing.photos.map((photo) => photo.path) },
+      {
+        onSuccess: () => {
+          setIsConfirmOpen(false);
+          toast.success(t('notice.revision.discarded'));
+          void navigate({ to: '/account/listings' });
+        },
+      },
+    );
+  };
+
+  return (
+    <Alert tone="info">
+      <AlertTitle>{t('notice.revision.title')}</AlertTitle>
+      <AlertDescription className="flex flex-col items-start gap-3">
+        <span>{t('notice.revision.description')}</span>
+        <ConfirmDialog
+          isOpen={isConfirmOpen}
+          onOpenChange={setIsConfirmOpen}
+          title={t('notice.revision.discardTitle')}
+          description={t('notice.revision.discardDescription')}
+          confirmLabel={t('notice.revision.discard')}
+          pendingLabel={t('notice.revision.discarding')}
+          confirmIcon={Undo2Icon}
+          tone="destructive"
+          isPending={discard.isPending}
+          onConfirm={handleDiscard}
+          trigger={
+            <Button type="button" variant="outline" size="sm">
+              <Undo2Icon aria-hidden />
+              {t('notice.revision.discard')}
+            </Button>
+          }
+        />
+      </AlertDescription>
+    </Alert>
   );
 }
 

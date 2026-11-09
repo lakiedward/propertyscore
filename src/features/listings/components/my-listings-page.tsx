@@ -37,7 +37,7 @@ export function MyListingsPage() {
         <ul aria-label={t('list.label')} className="flex flex-col gap-3.5">
           {data.items.map((listing) => (
             <li key={listing.id}>
-              <MyListingCard listing={listing} ownerId={user.id} />
+              <MyListingCard listing={listing} />
             </li>
           ))}
         </ul>

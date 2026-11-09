@@ -12,11 +12,11 @@ import {
 } from '../listing-form.schemas';
 import { ListingTextField } from './listing-text-field';
 
-type ListingTextStepProps = {
+type ListingTextSectionProps = {
   control: Control<ListingFormValues>;
 };
 
-export function ListingTextStep({ control }: ListingTextStepProps) {
+export function ListingTextSection({ control }: ListingTextSectionProps) {
   const { t } = useTranslation('myListings');
   const validationMessage = useValidationMessage();
   const descriptionId = useId();

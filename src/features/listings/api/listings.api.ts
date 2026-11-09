@@ -3,7 +3,7 @@ import { toAppError } from '@/lib/supabase/errors';
 import type { ListingFilters } from '../listing.types';
 
 const LISTING_COLUMNS =
-  'id, transaction, title, street_label, city, rooms, area_m2, price, currency, latitude, longitude, verification, smartcheck_score, photo_path' as const;
+  'id, property_type, transaction, title, street_label, city, rooms, area_m2, price, currency, latitude, longitude, verification, smartcheck_score, photo_path' as const;
 
 export async function listListings({ transaction, limit }: ListingFilters) {
   const { data, error, count } = await supabase

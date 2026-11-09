@@ -17,10 +17,13 @@
     "floorOnlyShort": "fl. {{floor}}",
     "groundFloorShort": "ground floor",
     "reasonLabel": "Reason:",
-    "preview": "Preview",
-    "previewTitle": "Preview",
-    "previewDescription": "This is how the listing appears on the site once approved.",
-    "photoMissing": "No photo"
+    "photoMissing": "No photo",
+    "continueEdit": "Continue editing",
+    "revision": {
+      "draft": "You have unsent changes. The published version stays on the site until you send them and we approve them.",
+      "pending_approval": "Your changes are being reviewed. The published version stays on the site until we approve them.",
+      "rejected": "Your changes were rejected; the published version stays on the site."
+    }
   },
   "status": {
     "draft": "Draft",
@@ -30,28 +33,25 @@
     "blocked": "Blocked"
   },
   "notice": {
-    "draft": {
-      "title": "Draft",
-      "description": "Complete the listing, add at least 5 photos and send it for review."
-    },
-    "pending_approval": {
-      "title": "The listing is in review",
-      "description": "We review it within 24 hours. You cannot change it until then."
-    },
-    "approved": {
-      "title": "The listing is published",
-      "description": "It appears on the site and on the property map."
-    },
     "rejected": {
       "title": "The listing was rejected",
       "description": "Make the requested changes and send the listing for review again."
     },
-    "blocked": {
-      "title": "The listing was blocked",
-      "description": "The listing can no longer be changed or resubmitted."
-    },
     "reason": "Reason: {{message}}",
-    "decidedAt": "Decision from {{date}}"
+    "decidedAt": "Decision from {{date}}",
+    "revisionRejected": {
+      "title": "Your changes were rejected",
+      "description": "The published version stays on the site. Make the requested changes and send them again."
+    },
+    "revision": {
+      "title": "You are editing a published listing",
+      "description": "The published version stays on the site until we approve your changes. Save them as a draft or send them for review.",
+      "discard": "Discard changes",
+      "discardTitle": "Discard your changes?",
+      "discardDescription": "We delete the changes and the new photos. The published listing stays as it is.",
+      "discarding": "Discarding…",
+      "discarded": "You discarded your changes."
+    }
   },
   "editor": {
     "newTitle": "New listing",
@@ -65,7 +65,28 @@
     "submitting": "Sending…",
     "saved": "The draft was saved.",
     "submitted": "The listing was sent for review.",
-    "resubmitted": "The listing was sent for review again."
+    "resubmitted": "The listing was sent for review again.",
+    "submitChanges": "Send the changes for review",
+    "changesSubmitted": "Your changes were sent for review. The published version stays on the site until we approve them."
+  },
+  "sections": {
+    "type": "Listing type",
+    "details": "Property details",
+    "photos": "Photos",
+    "address": "Location",
+    "text": "Title and description",
+    "contact": "Contact",
+    "required": "required",
+    "complete": "Complete",
+    "missing_one": "{{count}} field to fill in",
+    "missing_other": "{{count}} fields to fill in",
+    "photosMissing_one": "Add {{count}} more photo",
+    "photosMissing_other": "Add {{count}} more photos",
+    "markedErrors": "Fill in the fields marked in red.",
+    "propertyType": "Property type",
+    "transactionType": "Transaction type",
+    "extras": "Extra details",
+    "optional": "optional"
   },
   "form": {
     "details": "Details",
@@ -104,11 +125,10 @@
       "RON": "RON"
     },
     "floor": {
-      "label": "Floor",
-      "hint": "0 for the ground floor, -1 for the basement. Optional."
+      "label": "Floor"
     },
     "buildingFloors": {
-      "label": "Floors in the building",
+      "label": "Floors above ground",
       "hint": "Optional."
     },
     "yearBuilt": {
@@ -134,33 +154,20 @@
     "count_other": "{{count}} photos of {{max}}",
     "add": "Add photos",
     "adding": "Uploading…",
+    "dropHint": "Drag your photos here or click to choose them. JPG, PNG or WebP, up to {{max}}.",
     "remove": "Remove photo {{index}}",
+    "reorderHint": "Drag a photo onto another or use the arrows to change the order.",
+    "moveEarlier": "Move photo {{index}} earlier",
+    "moveLater": "Move photo {{index}} later",
+    "moved": "The photo is now in position {{position}} of {{total}}.",
     "cover": "Cover",
     "alt": "Photo {{index}} of the listing",
-    "saveFirst": "Save the draft to add photos.",
     "invalidType": "You can upload only JPG, PNG or WebP images.",
+    "uploadFailed": "The draft was saved, but not every photo was uploaded ({{reason}}). Check them and add the missing ones.",
     "tooLarge": "The photo is too large after conversion (over 5 MB)."
   },
   "wizard": {
     "subtitle": "You don't need a report to publish. We keep the listing as a draft until you send it.",
-    "stepOf": "Step {{step}} of {{total}}",
-    "stepsLabel": "Listing steps",
-    "steps": {
-      "type": "Type",
-      "text": "Title and description",
-      "details": "Details",
-      "address": "Address",
-      "photos": "Photos",
-      "contact": "Contact"
-    },
-    "titles": {
-      "type": "What kind of listing?",
-      "text": "Title and description",
-      "details": "Details",
-      "address": "Where is the home?",
-      "photos": "Photos",
-      "contact": "How buyers contact you"
-    },
     "type": {
       "sale": {
         "label": "Sale",
@@ -185,12 +192,17 @@
       "areaSuffix": "m²",
       "rooms": "Rooms",
       "roomsMore": "5+",
-      "roomsExact": "Exact number of rooms"
+      "roomsExact": "Exact number of rooms",
+      "choose": "Choose",
+      "notSpecified": "Not specified",
+      "floorBasement": "Basement",
+      "floorGround": "Ground floor",
+      "floorNumber": "Floor {{floor}}",
+      "bathroomsMore": "4+"
     },
     "address": {
       "street": "Exact address",
-      "pin": "What you see · exact pin",
-      "draftNote": "When you continue, we save the listing as a draft and you can add the photos."
+      "pin": "What you see · exact pin"
     },
     "photosNote": "You can send the listing for review only with at least 5 photos.",
     "contact": {
@@ -201,13 +213,15 @@
       "email": "Email",
       "ready": "The listing goes to review. We show the team's answer here, usually within 24 hours."
     },
-    "back": "Back",
-    "continue": "Continue",
-    "stepErrors": "Complete the marked fields before you continue."
-  },
-  "overview": {
-    "previewLabel": "Preview · how it looks on the site",
-    "contactTitle": "How buyers will contact you",
-    "readOnly": "The listing cannot be changed right now."
+    "propertyType": {
+      "apartment": {
+        "label": "Apartment",
+        "hint": "In a block or villa"
+      },
+      "house": {
+        "label": "House",
+        "hint": "With its own land"
+      }
+    }
   }
 }

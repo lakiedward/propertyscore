@@ -6,10 +6,10 @@ import type { DecisionInput, ModerationCounts, ModerationStatus } from '../moder
 const QUEUE_LIMIT = 50;
 
 const QUEUE_COLUMNS =
-  'id, status, transaction, title, city, price, currency, area_m2, photo_path, submitted_at, decided_at' as const;
+  'id, status, revision_of, property_type, transaction, title, city, price, currency, area_m2, photo_path, submitted_at, decided_at' as const;
 
 const REVIEW_COLUMNS =
-  'id, status, transaction, title, street_label, city, rooms, area_m2, price, currency, floor, building_floors, year_built, description, submitted_at, decided_at, owner:profiles!listings_owner_profile_fkey(full_name), photos:listing_photos(id, path, position, created_at), decisions:listing_decisions(id, decision, reasons, message, created_at)' as const;
+  'id, status, revision_of, transaction, title, street_label, city, latitude, longitude, rooms, area_m2, price, currency, floor, building_floors, year_built, description, property_type, bathrooms, partitioning, comfort, building_type, house_type, land_area_m2, has_basement, has_semibasement, has_attic, interior_condition, heating, cooling, furnishing, pets, is_passive_house, balconies, parking_spaces, utilities, building_services, has_elevator, has_shared_yard, pool, yard, submitted_at, decided_at, owner:profiles!listings_owner_profile_fkey(full_name), photos:listing_photos(id, path, position, created_at), decisions:listing_decisions(id, decision, reasons, message, created_at)' as const;
 
 const EMPTY_COUNTS: ModerationCounts = {
   pending_approval: 0,
@@ -56,6 +56,20 @@ export async function getModerationListing(id: string) {
     .maybeSingle();
   if (error) throw toAppError(error);
   if (!data) throw new AppError('not_found', `Listing ${id} is not in moderation`);
+  return {
+    ...data,
+    original: data.revision_of ? await getPublishedListing(data.revision_of) : null,
+  };
+}
+
+async function getPublishedListing(id: string) {
+  const { data, error } = await supabase
+    .from('listings')
+    .select(REVIEW_COLUMNS)
+    .eq('id', id)
+    .order('position', { referencedTable: 'listing_photos', ascending: true })
+    .maybeSingle();
+  if (error) throw toAppError(error);
   return data;
 }
 

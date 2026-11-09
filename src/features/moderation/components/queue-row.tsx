@@ -16,7 +16,7 @@ type QueueRowProps = {
 };
 
 export function QueueRow({ listing, isSelected, onSelect }: QueueRowProps) {
-  const { t } = useTranslation('moderation');
+  const { t } = useTranslation(['moderation', 'common']);
   const { price, area } = useListingPrice(listing);
   const status = toModerationStatus(listing.status);
   const meta = STATUS_META[status];
@@ -49,10 +49,19 @@ export function QueueRow({ listing, isSelected, onSelect }: QueueRowProps) {
           {listing.title}
         </strong>
         <span className="text-caption leading-copy text-muted-foreground tabular-nums">
-          {t('queue.priceArea', { price, area })}
+          {t('queue.priceArea', {
+            type: t(`common:listingDetails.propertyType.${listing.property_type}`),
+            price,
+            area,
+          })}
         </span>
         <span className="flex flex-wrap items-center gap-2">
           <StatusPill shape="tag" tone={meta.tone} icon={meta.icon} label={t(`status.${status}`)} />
+          {listing.revision_of ? (
+            <span className="rounded-sm bg-info-surface px-2 py-0.5 text-meta font-bold text-info-ink">
+              {t('queue.revision')}
+            </span>
+          ) : null}
           {eventAt ? (
             <span className="text-meta text-muted-foreground">
               {t(`when.${dayBucket(eventAt)}`, {

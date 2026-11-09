@@ -5,13 +5,23 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { parseLocaleNumber } from '@/i18n/format';
 import { useValidationMessage } from '@/i18n/validation';
 import type { ListingFormValues } from '../listing-form.schemas';
+import {
+  BUILDING_TYPES,
+  COMFORTS,
+  floorChoices,
+  HOUSE_TYPES,
+  MAX_BATHROOM_CHOICE,
+  PARTITIONINGS,
+} from '../listing-property.options';
+import { ListingCheckboxFields } from './listing-checkbox-fields';
 import { ListingSegmentedField } from './listing-segmented-field';
+import { ListingSelectField } from './listing-select-field';
 import { ListingTextField } from './listing-text-field';
 
 const ROOM_CHOICES = ['1', '2', '3', '4'] as const;
 const MANY_ROOMS = '5';
 
-type ListingDetailsStepProps = {
+type ListingDetailsSectionProps = {
   control: Control<ListingFormValues>;
 };
 
@@ -23,8 +33,14 @@ function roomChoice(rooms: string): string {
   return value >= Number(MANY_ROOMS) ? MANY_ROOMS : String(value);
 }
 
-export function ListingDetailsStep({ control }: ListingDetailsStepProps) {
-  const { t } = useTranslation('myListings');
+const BATHROOM_CHOICES = Array.from({ length: MAX_BATHROOM_CHOICE }, (_, index) =>
+  String(index + 1),
+);
+
+export function ListingDetailsSection({ control }: ListingDetailsSectionProps) {
+  const { t } = useTranslation(['myListings', 'common']);
+  const propertyType = useWatch({ control, name: 'property_type' });
+  const isApartment = propertyType === 'apartment';
   const validationMessage = useValidationMessage();
   const currency = useWatch({ control, name: 'currency' });
   const transaction = useWatch({ control, name: 'transaction' });
@@ -107,14 +123,91 @@ export function ListingDetailsStep({ control }: ListingDetailsStepProps) {
           />
         </div>
       ) : null}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <ListingTextField
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <ListingSegmentedField
           control={control}
-          name="floor"
-          label={t('form.floor.label')}
-          hint={t('form.floor.hint')}
-          inputMode="numeric"
+          name="bathrooms"
+          legend={t('common:listingDetails.fields.bathrooms')}
+          isClearable
+          options={BATHROOM_CHOICES.map((choice) => ({
+            value: choice,
+            label:
+              Number(choice) === MAX_BATHROOM_CHOICE ? t('wizard.details.bathroomsMore') : choice,
+          }))}
         />
+        {isApartment ? (
+          <ListingSegmentedField
+            control={control}
+            name="comfort"
+            legend={t('common:listingDetails.fields.comfort')}
+            isClearable
+            options={COMFORTS.map((comfort) => ({
+              value: comfort,
+              label: t(`common:listingDetails.options.comfort.${comfort}`),
+            }))}
+          />
+        ) : (
+          <ListingTextField
+            control={control}
+            name="land_area_m2"
+            label={t('common:listingDetails.fields.landArea')}
+            suffix={t('wizard.details.areaSuffix')}
+            inputMode="decimal"
+          />
+        )}
+      </div>
+      {isApartment ? (
+        <>
+          <ListingSegmentedField
+            control={control}
+            name="partitioning"
+            legend={t('common:listingDetails.fields.partitioning')}
+            isClearable
+            options={PARTITIONINGS.map((partitioning) => ({
+              value: partitioning,
+              label: t(`common:listingDetails.options.partitioning.${partitioning}`),
+            }))}
+          />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <ListingSelectField
+              control={control}
+              name="floor"
+              label={t('form.floor.label')}
+              isRequired
+              options={floorChoices().map((floor) => ({
+                value: String(floor),
+                label:
+                  floor < 0
+                    ? t('wizard.details.floorBasement')
+                    : floor === 0
+                      ? t('wizard.details.floorGround')
+                      : t('wizard.details.floorNumber', { floor }),
+              }))}
+            />
+            <ListingSelectField
+              control={control}
+              name="building_type"
+              label={t('common:listingDetails.fields.buildingType')}
+              options={BUILDING_TYPES.map((type) => ({
+                value: type,
+                label: t(`common:listingDetails.options.buildingType.${type}`),
+              }))}
+            />
+          </div>
+        </>
+      ) : (
+        <ListingSelectField
+          control={control}
+          name="house_type"
+          label={t('common:listingDetails.fields.houseType')}
+          isRequired
+          options={HOUSE_TYPES.map((type) => ({
+            value: type,
+            label: t(`common:listingDetails.options.houseType.${type}`),
+          }))}
+        />
+      )}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <ListingTextField
           control={control}
           name="building_floors"
@@ -130,6 +223,25 @@ export function ListingDetailsStep({ control }: ListingDetailsStepProps) {
           inputMode="numeric"
         />
       </div>
+      {isApartment ? null : (
+        <ListingCheckboxFields
+          control={control}
+          legend={t('common:listingDetails.fields.levels')}
+          options={[
+            {
+              kind: 'flag',
+              name: 'has_basement',
+              label: t('common:listingDetails.flags.hasBasement'),
+            },
+            {
+              kind: 'flag',
+              name: 'has_semibasement',
+              label: t('common:listingDetails.flags.hasSemibasement'),
+            },
+            { kind: 'flag', name: 'has_attic', label: t('common:listingDetails.flags.hasAttic') },
+          ]}
+        />
+      )}
     </FieldGroup>
   );
 }

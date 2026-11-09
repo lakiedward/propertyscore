@@ -32,6 +32,10 @@ export function getListingMediumUrl(photoPath: string): string {
   return getListingPhotoUrl(variantPath(photoPath, 'medium'));
 }
 
+export function isInListingFolder(photoPath: string, listingId: string): boolean {
+  return photoPath.split('/')[1] === listingId;
+}
+
 export function listingPhotoPath(ownerId: string, listingId: string, photoId: string): string {
   return `${ownerId}/${listingId}/${photoId}.webp`;
 }
