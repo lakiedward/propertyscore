@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
+import { ArrowRightIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
@@ -85,6 +87,19 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
             ? t(`board.count.${transaction}`, { count: query.data.total, city: firstItem.city })
             : null}
         </p>
+        <Link
+          to="/listings"
+          search={{ transaction }}
+          className="ml-auto inline-flex items-center gap-2 rounded-full text-small font-extrabold text-brand hover:text-link-hover focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+        >
+          {t('board.viewAll')}
+          <span
+            aria-hidden
+            className="grid size-7.5 place-items-center rounded-full bg-cta text-brand"
+          >
+            <ArrowRightIcon className="size-4" />
+          </span>
+        </Link>
       </div>
 
       {hasError ? (

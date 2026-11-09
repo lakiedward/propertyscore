@@ -18,6 +18,7 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
+import { Route as SiteListingsRouteImport } from './routes/_site/listings'
 import { Route as SitePublishRouteImport } from './routes/_site/publish'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account/index'
 import { Route as AuthenticatedAccountAppointmentsRouteImport } from './routes/_authenticated/account/appointments'
@@ -88,6 +89,11 @@ const PublicSignUpRoute = PublicSignUpRouteImport.update({
 const SiteIndexRoute = SiteIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => SiteRouteRoute,
+} as any)
+const SiteListingsRoute = SiteListingsRouteImport.update({
+  id: '/listings',
+  path: '/listings',
   getParentRoute: () => SiteRouteRoute,
 } as any)
 const SitePublishRoute = SitePublishRouteImport.update({
@@ -265,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/listings': typeof SiteListingsRoute
   '/publish': typeof SitePublishRoute
   '/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/account/favorites': typeof AuthenticatedAccountFavoritesRoute
@@ -299,6 +306,7 @@ export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/listings': typeof SiteListingsRoute
   '/publish': typeof SitePublishRoute
   '/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/account/favorites': typeof AuthenticatedAccountFavoritesRoute
@@ -339,6 +347,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_public/login': typeof PublicLoginRoute
   '/_public/sign-up': typeof PublicSignUpRoute
+  '/_site/listings': typeof SiteListingsRoute
   '/_site/publish': typeof SitePublishRoute
   '/_site/': typeof SiteIndexRoute
   '/_authenticated/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
@@ -378,6 +387,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/sign-up'
+    | '/listings'
     | '/publish'
     | '/account/appointments'
     | '/account/favorites'
@@ -412,6 +422,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/sign-up'
+    | '/listings'
     | '/publish'
     | '/account/appointments'
     | '/account/favorites'
@@ -451,6 +462,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_public/login'
     | '/_public/sign-up'
+    | '/_site/listings'
     | '/_site/publish'
     | '/_site/'
     | '/_authenticated/account/appointments'
@@ -553,6 +565,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof SiteIndexRouteImport
+      parentRoute: typeof SiteRouteRoute
+    }
+    '/_site/listings': {
+      id: '/_site/listings'
+      path: '/listings'
+      fullPath: '/listings'
+      preLoaderRoute: typeof SiteListingsRouteImport
       parentRoute: typeof SiteRouteRoute
     }
     '/_site/publish': {
@@ -882,11 +901,13 @@ const ReportRouteRouteWithChildren = ReportRouteRoute._addFileChildren(
 )
 
 interface SiteRouteRouteChildren {
+  SiteListingsRoute: typeof SiteListingsRoute
   SitePublishRoute: typeof SitePublishRoute
   SiteIndexRoute: typeof SiteIndexRoute
 }
 
 const SiteRouteRouteChildren: SiteRouteRouteChildren = {
+  SiteListingsRoute: SiteListingsRoute,
   SitePublishRoute: SitePublishRoute,
   SiteIndexRoute: SiteIndexRoute,
 }

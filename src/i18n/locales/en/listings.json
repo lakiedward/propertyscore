@@ -21,11 +21,43 @@
       "title": "The listings did not load",
       "description": "Check your connection and try again."
     },
-    "mapError": "The map could not load. The list of listings is still available."
+    "mapError": "The map could not load. The list of listings is still available.",
+    "viewAll": "See all homes"
   },
   "card": {
     "meta_one": "{{type}} · {{street}} · {{count}} room · {{area}} m²",
     "meta_other": "{{type}} · {{street}} · {{count}} rooms · {{area}} m²",
     "label": "{{title}}, {{price}}, {{badge}}"
+  },
+  "explore": {
+    "pageTitle": "Homes for sale and for rent",
+    "title": "Find your home.",
+    "count": {
+      "sale_one": "{{count}} home for sale in the map area",
+      "sale_other": "{{count}} homes for sale in the map area",
+      "rent_one": "{{count}} home for rent in the map area",
+      "rent_other": "{{count}} homes for rent in the map area"
+    },
+    "listLabel": "Homes in the map area",
+    "mapLabel": "Map of homes",
+    "mapError": "The map could not load. The list of homes is still available.",
+    "loading": "Loading homes…",
+    "loadingMore": "Loading more homes…",
+    "emptyInView": {
+      "title": "No homes in the map area",
+      "description": "Move the map or zoom out to see more homes.",
+      "action": "Show all homes"
+    },
+    "emptyNone": {
+      "sale": "No homes for sale yet",
+      "rent": "No homes for rent yet",
+      "description": "Check back soon, or post the first listing yourself for free."
+    },
+    "showMap": "Map",
+    "showList": "List",
+    "cluster_one": "{{count}} home here, zoom in",
+    "cluster_other": "{{count}} homes here, zoom in",
+    "pin": "{{title}}, {{price}}",
+    "card": "{{title}}, {{price}}"
   }
 }

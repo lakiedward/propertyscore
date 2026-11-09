@@ -84,6 +84,7 @@ type MapCanvasProps = {
   center: LngLat;
   zoom: number;
   bounds?: LngLatBounds | undefined;
+  boundsRequestId?: number;
   focus?: MapFocus | undefined;
   markers: readonly MapMarkerItem[];
   overlays?: readonly MapOverlay[];
@@ -130,6 +131,7 @@ export function MapCanvas({
   center,
   zoom,
   bounds,
+  boundsRequestId = 0,
   focus,
   markers,
   overlays = [],
@@ -270,7 +272,7 @@ export function MapCanvas({
     if (map) {
       fitToBounds(map);
     }
-  }, [map, boundsKey]);
+  }, [map, boundsKey, boundsRequestId]);
 
   const pickPosition = useEffectEvent((position: LngLat) => {
     onPick?.(position);

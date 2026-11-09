@@ -7,7 +7,7 @@ const LISTING_COLUMNS =
 
 const MAP_POINT_COLUMNS = 'id, title, price, currency, latitude, longitude' as const;
 
-export const MAP_POINTS_LIMIT = 2000;
+const MAP_POINTS_LIMIT = 2000;
 
 export const LISTINGS_IN_BOUNDS_PAGE_SIZE = 20;
 

@@ -23,12 +23,47 @@
       "title": "Anunțurile nu s-au încărcat",
       "description": "Verifică conexiunea și încearcă din nou."
     },
-    "mapError": "Harta nu s-a putut încărca. Lista anunțurilor rămâne disponibilă."
+    "mapError": "Harta nu s-a putut încărca. Lista anunțurilor rămâne disponibilă.",
+    "viewAll": "Vezi toate locuințele"
   },
   "card": {
     "meta_one": "{{type}} · {{street}} · {{count}} cameră · {{area}} m²",
     "meta_few": "{{type}} · {{street}} · {{count}} camere · {{area}} m²",
     "meta_other": "{{type}} · {{street}} · {{count}} de camere · {{area}} m²",
     "label": "{{title}}, {{price}}, {{badge}}"
+  },
+  "explore": {
+    "pageTitle": "Locuințe de vânzare și de închiriat",
+    "title": "Găsește-ți locuința.",
+    "count": {
+      "sale_one": "{{count}} locuință de vânzare în zona hărții",
+      "sale_few": "{{count}} locuințe de vânzare în zona hărții",
+      "sale_other": "{{count}} de locuințe de vânzare în zona hărții",
+      "rent_one": "{{count}} locuință de închiriat în zona hărții",
+      "rent_few": "{{count}} locuințe de închiriat în zona hărții",
+      "rent_other": "{{count}} de locuințe de închiriat în zona hărții"
+    },
+    "listLabel": "Locuințe în zona hărții",
+    "mapLabel": "Harta locuințelor",
+    "mapError": "Harta nu s-a putut încărca. Lista locuințelor rămâne disponibilă.",
+    "loading": "Se încarcă locuințele…",
+    "loadingMore": "Se încarcă mai multe locuințe…",
+    "emptyInView": {
+      "title": "Nicio locuință în zona hărții",
+      "description": "Mută harta sau micșorează ca să vezi mai multe locuințe.",
+      "action": "Arată toate locuințele"
+    },
+    "emptyNone": {
+      "sale": "Nu sunt încă locuințe de vânzare",
+      "rent": "Nu sunt încă locuințe de închiriat",
+      "description": "Revino curând sau publică tu primul anunț, gratuit."
+    },
+    "showMap": "Hartă",
+    "showList": "Listă",
+    "cluster_one": "{{count}} locuință aici, mărește harta",
+    "cluster_few": "{{count}} locuințe aici, mărește harta",
+    "cluster_other": "{{count}} de locuințe aici, mărește harta",
+    "pin": "{{title}}, {{price}}",
+    "card": "{{title}}, {{price}}"
   }
 }

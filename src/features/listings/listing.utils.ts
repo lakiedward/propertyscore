@@ -1,11 +1,36 @@
 import type { TrustKind } from '@/components/trust/trust.utils';
-import type { ListingVerification } from './listing.types';
+import type { LngLatBounds } from '@/components/map/map.config';
+import type { ListingBounds, ListingVerification } from './listing.types';
 
 export function toTrustKind(verification: ListingVerification): TrustKind {
   if (verification === 'smartcheck') {
     return 'online';
   }
   return verification;
+}
+
+const BOUNDS_STEP = 10_000;
+
+export function toListingBounds([[west, south], [east, north]]: LngLatBounds): ListingBounds {
+  return {
+    west: Math.floor(west * BOUNDS_STEP) / BOUNDS_STEP,
+    south: Math.floor(south * BOUNDS_STEP) / BOUNDS_STEP,
+    east: Math.ceil(east * BOUNDS_STEP) / BOUNDS_STEP,
+    north: Math.ceil(north * BOUNDS_STEP) / BOUNDS_STEP,
+  };
+}
+
+export function sameListingBounds(
+  left: ListingBounds | undefined,
+  right: ListingBounds | undefined,
+): boolean {
+  return (
+    right !== undefined &&
+    left?.west === right.west &&
+    left.south === right.south &&
+    left.east === right.east &&
+    left.north === right.north
+  );
 }
 
 export function moveId(ids: readonly string[], id: string, targetIndex: number): string[] {

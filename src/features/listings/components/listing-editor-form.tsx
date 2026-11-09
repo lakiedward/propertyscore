@@ -204,14 +204,18 @@ export function ListingEditorForm({
     return ordered.length === 0;
   };
 
-  const validateDraft = async () => {
+  const invalidFields = async (): Promise<string[]> => {
     await form.trigger();
-    return revealInvalidSections(Object.keys(form.formState.errors));
+    const result = listingFormSchema.safeParse(form.getValues());
+    return result.success
+      ? []
+      : [...new Set(result.error.issues.map((issue) => String(issue.path[0])))];
   };
 
+  const validateDraft = async () => revealInvalidSections(await invalidFields());
+
   const validateForReview = async () => {
-    await form.trigger();
-    const fields = Object.keys(form.formState.errors);
+    const fields = await invalidFields();
     if (form.getValues('description').trim() === '') {
       form.setError('description', { type: 'required', message: validationMessage('required') });
       fields.push('description');

@@ -23,7 +23,7 @@ describe('SiteHeader', () => {
     );
   });
 
-  it('links the sections of the publish page while on it', async () => {
+  it('links the sections of the publish page in the header but not in the menu', async () => {
     const { user } = await renderHeader(undefined, '/publish');
 
     const sections = screen.getByRole('navigation', { name: roCommon.site.sections.label });
@@ -37,8 +37,8 @@ describe('SiteHeader', () => {
     await user.click(screen.getByRole('button', { name: roCommon.site.header.openMenu }));
     const menu = await screen.findByRole('dialog', { name: roCommon.site.menu.label });
     expect(
-      within(menu).getByRole('link', { name: roCommon.site.publishSections.verified }),
-    ).toHaveAttribute('href', '/publish#verified');
+      within(menu).queryByRole('link', { name: roCommon.site.publishSections.verified }),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the account menu instead of the sign-in link when signed in', async () => {
