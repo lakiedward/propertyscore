@@ -68,7 +68,7 @@ describe('SiteHeader', () => {
     const menu = await screen.findByRole('dialog', { name: roCommon.site.menu.label });
     expect(
       within(menu).getByRole('link', { name: roCommon.site.menu.forRent.all }),
-    ).toHaveAttribute('href', '/?transaction=rent#listings');
+    ).toHaveAttribute('href', '/listings?transaction=rent');
 
     await user.keyboard('{Escape}');
 

@@ -16,14 +16,9 @@ type SiteMenuProps = {
 };
 
 type MenuLink =
-  | {
-      key: string;
-      label: string;
-      hash: HomeSectionId;
-      meta?: string;
-      transaction?: 'sale' | 'rent';
-    }
-  | { key: string; label: string; to: '/publish'; meta?: string };
+  | { key: string; label: string; hash: HomeSectionId; meta?: string }
+  | { key: string; label: string; to: '/publish'; meta?: string }
+  | { key: string; label: string; to: '/listings'; transaction: 'sale' | 'rent'; meta?: string };
 
 export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
   const { t } = useTranslation();
@@ -40,7 +35,7 @@ export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
         {
           key: 'sale',
           label: t('site.menu.forSale.all'),
-          hash: HOME_SECTION.listings,
+          to: '/listings',
           transaction: 'sale',
         },
       ],
@@ -51,7 +46,7 @@ export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
         {
           key: 'rent',
           label: t('site.menu.forRent.all'),
-          hash: HOME_SECTION.listings,
+          to: '/listings',
           transaction: 'rent',
         },
       ],
@@ -152,13 +147,11 @@ export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
               {group.links.map((link) => (
                 <Link
                   key={link.key}
-                  {...('to' in link
-                    ? { to: link.to }
-                    : {
-                        to: '/',
-                        hash: link.hash,
-                        search: link.transaction ? { transaction: link.transaction } : undefined,
-                      })}
+                  {...('transaction' in link
+                    ? { to: link.to, search: { transaction: link.transaction } }
+                    : 'to' in link
+                      ? { to: link.to }
+                      : { to: '/', hash: link.hash })}
                   onClick={handleNavigate}
                   className="flex min-h-touch items-center justify-between gap-3 rounded-md px-1 text-body text-on-inverse-muted hover:text-on-inverse focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
                 >
