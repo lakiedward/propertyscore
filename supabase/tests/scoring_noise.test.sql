@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(19);
+select plan(20);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -27,6 +27,24 @@ select is(
   (select jsonb_typeof(params -> 'noise') from public.scoring_versions where kind = 'online' and label = 'v1'),
   'object',
   'The v1 formula carries the noise parameters'
+);
+
+select results_eq(
+  $$
+    select
+      active.label,
+      active.params -> 'noise' -> 'scale_lden',
+      active.params -> 'noise' -> 'scale_lnight',
+      (active.params -> 'noise') - 'scale_lden' - 'scale_lnight'
+        = (previous.params -> 'noise') - 'scale_lden' - 'scale_lnight',
+      (active.params - 'noise') = (previous.params - 'noise'),
+      active.weights = previous.weights
+    from public.scoring_versions active
+    join public.scoring_versions previous on previous.kind = active.kind and previous.label = 'v2'
+    where active.kind = 'online' and active.is_active
+  $$,
+  $$ values ('v3'::text, '[45, 75]'::jsonb, '[37, 65]'::jsonb, true, true, true) $$,
+  'The active v3 formula scores noise from 45 dB by day and 37 dB at night and keeps everything else from v2'
 );
 
 insert into private.noise_datasets (id, city_id, source_type, indicator, round, provider)

@@ -1,8 +1,8 @@
 import { parseNoiseParams } from './noise.params.ts';
 
 export const NOISE_PARAMS = parseNoiseParams({
-  scale_lden: [40, 75],
-  scale_lnight: [35, 65],
+  scale_lden: [45, 75],
+  scale_lnight: [37, 65],
   night_weight: 0.3,
   intermittent_penalty_db: 3,
   intermittent_kinds: ['rail', 'air'],

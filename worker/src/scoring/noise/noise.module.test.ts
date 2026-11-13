@@ -30,11 +30,11 @@ describe('scoreCells', () => {
 
     expect(scored).toMatchObject({
       cellId: 'cell-a',
-      score: 51,
+      score: 57,
       inputs: { lden: 57.5, precision: 'street', dataset_ids: ['road-lden'] },
     });
     expect(scored?.inputs.points).toHaveLength(7);
-    expect(empty).toMatchObject({ cellId: 'cell-b', score: 73 });
+    expect(empty).toMatchObject({ cellId: 'cell-b', score: 83 });
   });
 
   it('leaves cells empty with a reason when the city has no noise data', () => {
@@ -109,11 +109,11 @@ describe.skipIf(!databaseUrl)('noise scoring against the local database', () => 
     await sql.end({ timeout: 5 });
   });
 
-  it('reads the formula parameters the migration added to v1', async () => {
+  it('reads the formula parameters of the active version', async () => {
     const [version] = await sql<{ noise: unknown }[]>`
       select params -> 'noise' as noise
       from public.scoring_versions
-      where kind = 'online' and label = 'v1'
+      where kind = 'online' and is_active
     `;
     expect(parseNoiseParams(version?.noise)).toEqual(NOISE_PARAMS);
   });
