@@ -7,6 +7,7 @@ import {
   isRecentLinkSignIn,
   postSignInPath,
   rolesFromAccessToken,
+  settingsPathFor,
   signInMethodFromAccessToken,
   toE164Phone,
 } from './auth.utils';
@@ -85,6 +86,17 @@ describe('auth.utils', () => {
     });
   });
 
+  describe('settingsPathFor', () => {
+    it('opens the settings inside the admin panel for admins', () => {
+      expect(settingsPathFor(['admin'])).toBe('/admin/settings');
+    });
+
+    it('opens the settings inside the user panel for everyone else', () => {
+      expect(settingsPathFor(['user'])).toBe('/account/settings');
+      expect(settingsPathFor([])).toBe('/account/settings');
+    });
+  });
+
   describe('postSignInPath', () => {
     it('keeps a safe redirect inside the site', () => {
       expect(postSignInPath(['admin'], '/check/result/abc?tab=green')).toBe(
@@ -116,6 +128,7 @@ describe('auth.utils', () => {
 
     it('opens the settings for an email change link', () => {
       expect(emailLinkTarget('email_change', undefined, ['user'])).toBe('/account/settings');
+      expect(emailLinkTarget('email_change', undefined, ['admin'])).toBe('/admin/settings');
     });
 
     it('follows the redirect carried by a confirmation link', () => {

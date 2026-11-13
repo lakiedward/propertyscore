@@ -43,11 +43,15 @@ export type SectionNav =
   | { page: '/'; links: typeof HOME_SECTION_LINKS }
   | { page: '/publish'; links: typeof PUBLISH_SECTION_LINKS };
 
+const HOME_PATH = '/';
 const PUBLISH_PATH = '/publish';
 
-export function sectionNavFor(pathname: string): SectionNav {
+export function sectionNavFor(pathname: string): SectionNav | undefined {
+  if (pathname === HOME_PATH) {
+    return { page: HOME_PATH, links: HOME_SECTION_LINKS };
+  }
   if (pathname === PUBLISH_PATH) {
     return { page: PUBLISH_PATH, links: PUBLISH_SECTION_LINKS };
   }
-  return { page: '/', links: HOME_SECTION_LINKS };
+  return undefined;
 }

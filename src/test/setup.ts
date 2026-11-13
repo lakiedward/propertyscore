@@ -50,6 +50,7 @@ beforeAll(() => {
   vi.stubGlobal('ResizeObserver', ResizeObserverStub);
   vi.stubGlobal('matchMedia', matchMediaStub);
   Element.prototype.scrollIntoView = vi.fn();
+  window.scrollTo = vi.fn();
   server.listen({ onUnhandledRequest: 'error' });
 });
 

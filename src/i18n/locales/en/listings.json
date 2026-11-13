@@ -124,6 +124,7 @@
       "label": "Selected home",
       "viewListing": "View listing"
     },
-    "perMonthSuffix": "/ month"
+    "perMonthSuffix": "/ month",
+    "mapNote": "Home positions are approximate and have no cadastral value. Map © OpenFreeMap, © OpenMapTiles, © OpenStreetMap contributors; outlines from Natural Earth."
   }
 }

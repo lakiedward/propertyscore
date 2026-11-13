@@ -155,7 +155,8 @@
         "publish": "Publică anunț gratuit",
         "partners": "Pentru agenți și agenții"
       },
-      "language": "Limba"
+      "language": "Limba",
+      "onThisPage": "Pe această pagină"
     },
     "footer": {
       "tagline": "Știi mai multe. Alegi informat. Verificăm locuința la fața locului și explicăm zona din date publice.",
@@ -189,8 +190,7 @@
         "terms": "Termeni",
         "privacy": "Confidențialitate",
         "cookies": "Cookie-uri"
-      },
-      "compactNote": "Pozițiile locuințelor sunt orientative, fără rol cadastral. Hartă © OpenFreeMap, © OpenMapTiles, © colaboratorii OpenStreetMap; contururi Natural Earth."
+      }
     }
   },
   "trust": {
@@ -207,7 +207,9 @@
     "zoomOut": "Micșorează",
     "title": "Hartă",
     "toggleAttribution": "Afișează sau ascunde sursele hărții",
-    "mapFeedback": "Trimite feedback despre hartă"
+    "mapFeedback": "Trimite feedback despre hartă",
+    "cooperativeDesktop": "Ține apăsat Ctrl sau ⌘ și derulează ca să mărești sau să micșorezi harta",
+    "cooperativeMobile": "Folosește două degete ca să miști harta"
   },
   "price": {
     "perMonth": "{{price}} / lună"
@@ -239,7 +241,8 @@
       "groups": {
         "today": "Azi",
         "portal": "Portal",
-        "business": "Business"
+        "business": "Business",
+        "account": "Cont"
       },
       "nav": {
         "dashboard": "Panou",
@@ -253,7 +256,8 @@
         "scoring": "Scoring",
         "analytics": "Analytics",
         "products": "Produse",
-        "content": "Conținut"
+        "content": "Conținut",
+        "settings": "Setări"
       },
       "pageTitle": "{{page}} · Admin",
       "pendingListings_one": "{{count}} anunț de verificat",
@@ -437,6 +441,12 @@
     "open": "Deschide fotografia {{index}}",
     "close": "Închide galeria",
     "previous": "Fotografia anterioară",
-    "next": "Fotografia următoare"
+    "next": "Fotografia următoare",
+    "zoom": {
+      "label": "Mărire",
+      "in": "Mărește fotografia",
+      "out": "Micșorează fotografia",
+      "reset": "Mărire {{value}}, revino la dimensiunea inițială"
+    }
   }
 }

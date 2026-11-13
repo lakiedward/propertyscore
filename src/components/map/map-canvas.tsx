@@ -5,6 +5,7 @@ import {
   Map as MapLibreMap,
   Marker,
   NavigationControl,
+  prewarm,
   setWorkerUrl,
 } from 'maplibre-gl';
 import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
@@ -25,6 +26,7 @@ import { themeColor } from './map.theme';
 import { useMapRegions } from './use-map-regions';
 
 setWorkerUrl(mapWorkerUrl);
+prewarm();
 
 type MapGeometry =
   | { type: 'LineString'; coordinates: LngLat[] }
@@ -133,6 +135,7 @@ type MapCanvasProps = {
   onViewportChange?: (viewport: MapViewport) => void;
   hidesPointsOfInterest?: boolean;
   isScrollZoomEnabled?: boolean;
+  hasCooperativeGestures?: boolean;
   isPrintable?: boolean;
   hasNavigationControl?: boolean;
   className?: string;
@@ -145,6 +148,8 @@ type MapLabels = {
   title: string;
   toggleAttribution: string;
   mapFeedback: string;
+  cooperativeDesktop: string;
+  cooperativeMobile: string;
 };
 
 function labelElement(container: HTMLElement, selector: string, text: string) {
@@ -155,8 +160,17 @@ function labelElement(container: HTMLElement, selector: string, text: string) {
   }
 }
 
+function setText(container: HTMLElement, selector: string, text: string) {
+  const element = container.querySelector(selector);
+  if (element) {
+    element.textContent = text;
+  }
+}
+
 function applyLabels(map: MapLibreMap, labels: MapLabels) {
   const container = map.getContainer();
+  setText(container, '.maplibregl-desktop-message', labels.cooperativeDesktop);
+  setText(container, '.maplibregl-mobile-message', labels.cooperativeMobile);
   labelElement(container, '.maplibregl-ctrl-zoom-in', labels.zoomIn);
   labelElement(container, '.maplibregl-ctrl-zoom-out', labels.zoomOut);
   labelElement(container, '.maplibregl-ctrl-attrib-button', labels.toggleAttribution);
@@ -180,6 +194,7 @@ export function MapCanvas({
   onViewportChange,
   hidesPointsOfInterest = false,
   isScrollZoomEnabled = false,
+  hasCooperativeGestures = false,
   isPrintable = false,
   hasNavigationControl = true,
   className,
@@ -197,6 +212,7 @@ export function MapCanvas({
     isPrintable,
     hidesPointsOfInterest,
     isScrollZoomEnabled,
+    hasCooperativeGestures,
     hasNavigationControl,
   });
   const labels: MapLabels = {
@@ -205,6 +221,8 @@ export function MapCanvas({
     title: t('map.title'),
     toggleAttribution: t('map.toggleAttribution'),
     mapFeedback: t('map.mapFeedback'),
+    cooperativeDesktop: t('map.cooperativeDesktop'),
+    cooperativeMobile: t('map.cooperativeMobile'),
   };
   const reportError = useEffectEvent(() => {
     onError();
@@ -226,6 +244,7 @@ export function MapCanvas({
         zoom: initialView.current.zoom,
         attributionControl: false,
         scrollZoom: initialView.current.isScrollZoomEnabled,
+        cooperativeGestures: initialView.current.hasCooperativeGestures,
         canvasContextAttributes: { preserveDrawingBuffer: initialView.current.isPrintable },
         locale: {
           'Map.Title': initialLabels.title,
@@ -233,6 +252,9 @@ export function MapCanvas({
           'NavigationControl.ZoomOut': initialLabels.zoomOut,
           'AttributionControl.ToggleAttribution': initialLabels.toggleAttribution,
           'AttributionControl.MapFeedback': initialLabels.mapFeedback,
+          'CooperativeGesturesHandler.WindowsHelpText': initialLabels.cooperativeDesktop,
+          'CooperativeGesturesHandler.MacHelpText': initialLabels.cooperativeDesktop,
+          'CooperativeGesturesHandler.MobileHelpText': initialLabels.cooperativeMobile,
         },
       });
     } catch {
@@ -281,22 +303,33 @@ export function MapCanvas({
   }, []);
 
   useEffect(() => {
-    if (map) {
-      applyLabels(map, {
-        zoomIn: labels.zoomIn,
-        zoomOut: labels.zoomOut,
-        title: labels.title,
-        toggleAttribution: labels.toggleAttribution,
-        mapFeedback: labels.mapFeedback,
-      });
+    if (!map) {
+      return;
     }
+    if (hasCooperativeGestures) {
+      map.cooperativeGestures.enable();
+    } else {
+      map.cooperativeGestures.disable();
+    }
+    applyLabels(map, {
+      zoomIn: labels.zoomIn,
+      zoomOut: labels.zoomOut,
+      title: labels.title,
+      toggleAttribution: labels.toggleAttribution,
+      mapFeedback: labels.mapFeedback,
+      cooperativeDesktop: labels.cooperativeDesktop,
+      cooperativeMobile: labels.cooperativeMobile,
+    });
   }, [
     map,
+    hasCooperativeGestures,
     labels.zoomIn,
     labels.zoomOut,
     labels.title,
     labels.toggleAttribution,
     labels.mapFeedback,
+    labels.cooperativeDesktop,
+    labels.cooperativeMobile,
   ]);
 
   useEffect(() => {

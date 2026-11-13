@@ -67,7 +67,8 @@ export function ModerationPage() {
           <div
             className={cn(
               'grid grid-cols-1 gap-5 lg:items-start',
-              !isQueueHidden && 'lg:grid-cols-[300px_minmax(0,1fr)]',
+              !isQueueHidden &&
+                'lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)] 2xl:grid-cols-[440px_minmax(0,1fr)]',
             )}
           >
             {isQueueHidden ? null : (

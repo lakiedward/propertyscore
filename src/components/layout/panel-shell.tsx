@@ -29,7 +29,7 @@ type PanelShellProps = {
 };
 
 const SIDEBAR_CLASS =
-  'sticky top-0 z-101 hidden h-svh shrink-0 flex-col gap-3.5 overflow-auto border-r border-sidebar-border bg-sidebar px-3 py-4 text-sidebar-foreground shadow-sidebar md:flex';
+  'sticky top-0 z-101 hidden h-svh shrink-0 flex-col gap-3.5 overflow-hidden border-r border-sidebar-border bg-sidebar px-3 py-4 text-sidebar-foreground shadow-sidebar md:flex';
 
 const GROUP_TITLE_CLASS =
   'px-2.5 pb-1.5 text-meta leading-copy font-extrabold tracking-[0.1em] text-sidebar-group uppercase';
@@ -85,7 +85,7 @@ export function PanelShell({
       <div className={cn(SIDEBAR_CLASS, isCollapsed ? 'w-19' : 'w-68')}>
         <div
           className={cn(
-            'flex min-h-11 items-center gap-2.5 px-1',
+            'flex min-h-11 shrink-0 items-center gap-2.5 px-1',
             isCollapsed ? 'justify-center' : 'justify-between',
           )}
         >
@@ -113,7 +113,10 @@ export function PanelShell({
             )}
           </button>
         </div>
-        <nav aria-label={navLabel} className="flex flex-col gap-3.5">
+        <nav
+          aria-label={navLabel}
+          className="-mx-3 -my-1 scrollbar-none flex min-h-0 flex-1 flex-col gap-3.5 overflow-x-hidden overflow-y-auto px-3 py-1"
+        >
           {groups.map((group) => (
             <div key={group.id} className="flex flex-col gap-1">
               {isCollapsed ? null : <p className={GROUP_TITLE_CLASS}>{group.title}</p>}
@@ -128,7 +131,7 @@ export function PanelShell({
             </div>
           ))}
         </nav>
-        <div className="mt-auto border-t border-sidebar-divider pt-3.5">
+        <div className="shrink-0 border-t border-sidebar-divider pt-3.5">
           <Link
             to="/"
             title={isCollapsed ? t('panel.backToSite') : undefined}

@@ -8,7 +8,8 @@ import { formatPrice } from '@/i18n/format';
 import { HOME_SECTION, type HomeSectionId } from './site-navigation';
 
 type FooterLink =
-  | { key: string; label: string; hash: HomeSectionId; transaction?: 'sale' | 'rent' }
+  | { key: string; label: string; hash: HomeSectionId }
+  | { key: string; label: string; to: '/listings'; transaction: 'sale' | 'rent' }
   | { key: string; label: string; to: '/login' | '/account' | '/publish' };
 
 const LEGAL_KEYS = ['terms', 'privacy', 'cookies'] as const;
@@ -60,16 +61,21 @@ export function SiteFooter() {
         {
           key: 'buy',
           label: t('site.footer.homes.buy'),
-          hash: HOME_SECTION.listings,
+          to: '/listings',
           transaction: 'sale',
         },
         {
           key: 'rent',
           label: t('site.footer.homes.rent'),
-          hash: HOME_SECTION.listings,
+          to: '/listings',
           transaction: 'rent',
         },
-        { key: 'map', label: t('site.footer.homes.map'), hash: HOME_SECTION.listings },
+        {
+          key: 'map',
+          label: t('site.footer.homes.map'),
+          to: '/listings',
+          transaction: 'sale',
+        },
         { key: 'publish', label: t('site.footer.homes.publish'), to: '/publish' },
       ],
     },
@@ -128,20 +134,16 @@ export function SiteFooter() {
             <ul className="flex flex-col gap-2.5">
               {column.links.map((link) => (
                 <li key={link.key}>
-                  {'to' in link ? (
-                    <Link to={link.to} className={FOOTER_LINK_CLASS}>
-                      {link.label}
-                    </Link>
-                  ) : (
-                    <Link
-                      to="/"
-                      hash={link.hash}
-                      search={link.transaction ? { transaction: link.transaction } : undefined}
-                      className={FOOTER_LINK_CLASS}
-                    >
-                      {link.label}
-                    </Link>
-                  )}
+                  <Link
+                    {...('transaction' in link
+                      ? { to: link.to, search: { transaction: link.transaction } }
+                      : 'to' in link
+                        ? { to: link.to }
+                        : { to: '/', hash: link.hash })}
+                    className={FOOTER_LINK_CLASS}
+                  >
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>

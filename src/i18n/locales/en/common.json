@@ -153,7 +153,8 @@
         "publish": "Post a free listing",
         "partners": "For agents and agencies"
       },
-      "language": "Language"
+      "language": "Language",
+      "onThisPage": "On this page"
     },
     "footer": {
       "tagline": "Know more. Choose with confidence. We inspect the home on site and explain the area from public data.",
@@ -187,8 +188,7 @@
         "terms": "Terms",
         "privacy": "Privacy",
         "cookies": "Cookies"
-      },
-      "compactNote": "Home positions are approximate and have no cadastral value. Map © OpenFreeMap, © OpenMapTiles, © OpenStreetMap contributors; outlines from Natural Earth."
+      }
     }
   },
   "trust": {
@@ -205,7 +205,9 @@
     "zoomOut": "Zoom out",
     "title": "Map",
     "toggleAttribution": "Show or hide map sources",
-    "mapFeedback": "Send map feedback"
+    "mapFeedback": "Send map feedback",
+    "cooperativeDesktop": "Hold Ctrl or ⌘ and scroll to zoom the map",
+    "cooperativeMobile": "Use two fingers to move the map"
   },
   "price": {
     "perMonth": "{{price}} / month"
@@ -237,7 +239,8 @@
       "groups": {
         "today": "Today",
         "portal": "Portal",
-        "business": "Business"
+        "business": "Business",
+        "account": "Account"
       },
       "nav": {
         "dashboard": "Dashboard",
@@ -251,7 +254,8 @@
         "scoring": "Scoring",
         "analytics": "Analytics",
         "products": "Products",
-        "content": "Content"
+        "content": "Content",
+        "settings": "Settings"
       },
       "pageTitle": "{{page}} · Admin",
       "pendingListings_one": "{{count}} listing to review",
@@ -430,6 +434,12 @@
     "open": "Open photo {{index}}",
     "close": "Close the gallery",
     "previous": "Previous photo",
-    "next": "Next photo"
+    "next": "Next photo",
+    "zoom": {
+      "label": "Zoom",
+      "in": "Zoom in",
+      "out": "Zoom out",
+      "reset": "Zoom {{value}}, back to the original size"
+    }
   }
 }

@@ -20,6 +20,13 @@ export function toListingBounds([[west, south], [east, north]]: LngLatBounds): L
   };
 }
 
+export function containsBounds(
+  [[west, south], [east, north]]: LngLatBounds,
+  [[innerWest, innerSouth], [innerEast, innerNorth]]: LngLatBounds,
+): boolean {
+  return west <= innerWest && south <= innerSouth && east >= innerEast && north >= innerNorth;
+}
+
 export function sameListingBounds(
   left: ListingBounds | undefined,
   right: ListingBounds | undefined,

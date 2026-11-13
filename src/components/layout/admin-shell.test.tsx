@@ -18,7 +18,7 @@ describe('AdminShell', { timeout: 20_000 }, () => {
       'aria-current',
       'page',
     );
-    expect(within(sidebar).getAllByRole('link')).toHaveLength(12);
+    expect(within(sidebar).getAllByRole('link')).toHaveLength(13);
     expect(screen.getAllByText(roCommon.panel.userMenu.role.admin).length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: roCommon.panel.backToSite })).toHaveAttribute(
       'href',
@@ -41,6 +41,38 @@ describe('AdminShell', { timeout: 20_000 }, () => {
         { timeout: 5_000 },
       ),
     ).toBeInTheDocument();
+  });
+
+  it('opens the settings inside the admin panel', async () => {
+    await renderAppRoute('/admin/settings', { auth: signedInAs('admin') });
+
+    const [sidebar] = await screen.findAllByRole('navigation', { name: NAV.navLabel });
+    if (!sidebar) {
+      throw new Error('The admin sidebar is missing');
+    }
+    expect(await within(sidebar).findByRole('link', { name: NAV.nav.settings })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(
+      await screen.findByRole('heading', { level: 1, name: NAV.nav.settings }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps an admin out of the user panel', async () => {
+    const { router } = await renderAppRoute('/account/listings', { auth: signedInAs('admin') });
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/admin');
+    });
+  });
+
+  it('sends an admin from the user settings to the admin settings', async () => {
+    const { router } = await renderAppRoute('/account/settings', { auth: signedInAs('admin') });
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/admin/settings');
+    });
   });
 
   it('hides the admin panel from a regular user', async () => {

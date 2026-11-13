@@ -1,11 +1,15 @@
-import { createFileRoute, Outlet, useMatches } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { MainContent } from '@/components/layout/main-content';
 import { SiteFooter } from '@/components/layout/site-footer';
-import { SiteFooterCompact } from '@/components/layout/site-footer-compact';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SkipLink } from '@/components/layout/skip-link';
 import { homePathFor, useAuth } from '@/features/auth';
-import { LanguageSwitcher, UserMenu, useSyncProfileLocale } from '@/features/profile';
+import {
+  LanguageSwitcher,
+  SiteMenuAccount,
+  UserMenu,
+  useSyncProfileLocale,
+} from '@/features/profile';
 
 export const Route = createFileRoute('/_site')({
   component: SiteLayout,
@@ -15,9 +19,6 @@ function SiteLayout() {
   const { user, roles } = useAuth();
   const userId = user?.id;
   const panelPath = homePathFor(roles);
-  const hasCompactFooter = useMatches({
-    select: (matches) => matches.some((match) => match.staticData.hasCompactFooter === true),
-  });
 
   return (
     <div className="flex min-h-svh flex-col bg-background" data-density="comfortable">
@@ -29,6 +30,7 @@ function SiteLayout() {
             ? {
                 path: panelPath,
                 menu: <UserMenu user={user} tone="light" panelPath={panelPath} isNameHidden />,
+                menuSection: <SiteMenuAccount user={user} panelPath={panelPath} />,
               }
             : undefined
         }
@@ -37,7 +39,7 @@ function SiteLayout() {
       <MainContent className="flex-1">
         <Outlet />
       </MainContent>
-      {hasCompactFooter ? <SiteFooterCompact /> : <SiteFooter />}
+      <SiteFooter />
     </div>
   );
 }

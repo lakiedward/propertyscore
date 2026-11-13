@@ -1,5 +1,4 @@
 import type { User } from '@supabase/supabase-js';
-import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { cva, type VariantProps } from 'class-variance-authority';
 import {
@@ -19,11 +18,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PANEL_LINK_KEYS, type PanelPath } from '@/components/layout/panel-paths';
-import { SignOutDialog, type AppRole } from '@/features/auth';
+import { settingsPathFor, SignOutDialog, useAuth, type AppRole } from '@/features/auth';
 import { SUPPORTED_LOCALES } from '@/i18n/i18n';
 import { useLocale } from '@/i18n/use-locale';
 import { cn } from '@/lib/utils';
-import { profileQueries } from '../api/profile.queries';
+import { useAccountIdentity } from '../hooks/use-account-identity';
 import { useChangeLocale } from '../hooks/use-change-locale';
 import { initialsOf } from '../profile.utils';
 
@@ -64,13 +63,12 @@ type UserMenuProps = {
 
 export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false }: UserMenuProps) {
   const { t } = useTranslation();
-  const { data: profile } = useQuery(profileQueries.detail(user.id));
+  const { roles } = useAuth();
+  const { name, email } = useAccountIdentity(user);
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
   const locale = useLocale();
   const changeLanguage = useChangeLocale(user.id);
   const otherLocale = SUPPORTED_LOCALES.find((option) => option !== locale) ?? locale;
-  const email = user.email ?? '';
-  const name = profile?.full_name ?? email;
 
   return (
     <>
@@ -114,7 +112,7 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
             </DropdownMenuItem>
           ) : null}
           <DropdownMenuItem asChild>
-            <Link to="/account/settings">
+            <Link to={settingsPathFor(roles)}>
               <SettingsIcon aria-hidden />
               {t('panel.account.nav.settings')}
             </Link>

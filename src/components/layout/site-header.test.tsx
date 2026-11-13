@@ -23,7 +23,7 @@ describe('SiteHeader', () => {
     );
   });
 
-  it('links the sections of the publish page in the header but not in the menu', async () => {
+  it('links the sections of the publish page in the header and in the menu for small screens', async () => {
     const { user } = await renderHeader(undefined, '/publish');
 
     const sections = screen.getByRole('navigation', { name: roCommon.site.sections.label });
@@ -37,8 +37,43 @@ describe('SiteHeader', () => {
     await user.click(screen.getByRole('button', { name: roCommon.site.header.openMenu }));
     const menu = await screen.findByRole('dialog', { name: roCommon.site.menu.label });
     expect(
-      within(menu).queryByRole('link', { name: roCommon.site.publishSections.verified }),
+      within(menu).getByRole('heading', { name: roCommon.site.menu.onThisPage }),
+    ).toBeInTheDocument();
+    expect(
+      within(menu).getByRole('link', { name: roCommon.site.publishSections.verified }),
+    ).toHaveAttribute('href', '/publish#verified');
+    expect(
+      within(menu).queryByRole('link', { name: roCommon.site.sections.pricing }),
     ).not.toBeInTheDocument();
+  });
+
+  it('puts the header buttons in the menu for small screens', async () => {
+    const { user } = await renderHeader(undefined, '/listings');
+
+    await user.click(screen.getByRole('button', { name: roCommon.site.header.openMenu }));
+    const menu = await screen.findByRole('dialog', { name: roCommon.site.menu.label });
+    expect(within(menu).getByRole('link', { name: roCommon.site.header.physical })).toHaveAttribute(
+      'href',
+      '/#physical',
+    );
+    expect(
+      within(menu).getByRole('link', { name: roCommon.site.header.smartCheck }),
+    ).toHaveAttribute('href', '/#smart-check');
+    expect(
+      within(menu).getAllByRole('link', { name: roCommon.site.header.publish })[0],
+    ).toHaveAttribute('href', '/publish');
+    expect(
+      within(menu).queryByRole('heading', { name: roCommon.site.menu.onThisPage }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('hides the section links on pages without sections', async () => {
+    await renderHeader(undefined, '/listings');
+
+    expect(
+      screen.queryByRole('navigation', { name: roCommon.site.sections.label }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: roCommon.site.header.signIn })).toBeInTheDocument();
   });
 
   it('shows the account menu instead of the sign-in link when signed in', async () => {

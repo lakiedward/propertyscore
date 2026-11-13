@@ -37,6 +37,18 @@ describe('ListingsExplorerPage', { timeout: 20_000 }, () => {
     expect(within(map).getAllByRole('button')).toHaveLength(2);
   });
 
+  it('opens at the top of the page, with the map first', async () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo');
+    scrollTo.mockClear();
+
+    await renderAppRoute('/listings');
+
+    await waitFor(() => {
+      expect(scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: 'instant' });
+    });
+    scrollTo.mockRestore();
+  });
+
   it('opens the selected home on the map and closes it again', async () => {
     const { user } = await renderAppRoute('/listings');
 

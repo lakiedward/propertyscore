@@ -14,7 +14,7 @@ export {
 } from './auth-context';
 export { AuthProvider } from './auth-provider';
 export type { AppRole } from './auth.types';
-export { homePathFor, isRecentLinkSignIn } from './auth.utils';
+export { homePathFor, isRecentLinkSignIn, settingsPathFor } from './auth.utils';
 export { AuthCallbackPage } from './components/auth-callback-page';
 export { AuthConfirmPage } from './components/auth-confirm-page';
 export { AuthLayout } from './components/auth-layout';

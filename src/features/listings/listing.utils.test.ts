@@ -1,4 +1,5 @@
 import {
+  containsBounds,
   countPointsByRegion,
   isWithinBounds,
   moveId,
@@ -7,6 +8,31 @@ import {
 } from './listing.utils';
 
 describe('listing utils', () => {
+  it('tells whether the map area holds the whole of another area', () => {
+    const romania: [[number, number], [number, number]] = [
+      [20.26, 43.62],
+      [29.7, 48.27],
+    ];
+    expect(
+      containsBounds(
+        [
+          [19.94, 43.54],
+          [30.02, 48.34],
+        ],
+        romania,
+      ),
+    ).toBe(true);
+    expect(
+      containsBounds(
+        [
+          [21.1, 45.7],
+          [21.3, 45.8],
+        ],
+        romania,
+      ),
+    ).toBe(false);
+  });
+
   it('maps the verification to the trust badge kind', () => {
     expect(toTrustKind('physical')).toBe('physical');
     expect(toTrustKind('smartcheck')).toBe('online');

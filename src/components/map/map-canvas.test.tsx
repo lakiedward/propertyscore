@@ -37,6 +37,7 @@ const maplibre = vi.hoisted(() => {
   type FakeMapOptions = {
     container: HTMLElement;
     locale: Record<string, string>;
+    cooperativeGestures?: boolean;
   };
 
   class FakeMap {
@@ -61,6 +62,7 @@ const maplibre = vi.hoisted(() => {
     readonly addedLayers: { id: string; type?: string; filter?: unknown }[] = [];
     resize = vi.fn();
     remove = vi.fn();
+    readonly cooperativeGestures = { enable: vi.fn(), disable: vi.fn() };
 
     constructor(options: FakeMapOptions) {
       if (control.shouldThrow) {
@@ -306,6 +308,31 @@ function MapHarness() {
   );
 }
 
+function CooperativeHarness() {
+  const [isCooperative, setIsCooperative] = useState(true);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setIsCooperative(false);
+        }}
+      >
+        free
+      </button>
+      <MapCanvas
+        label={LABEL}
+        center={CENTER}
+        zoom={14}
+        markers={[]}
+        isScrollZoomEnabled
+        hasCooperativeGestures={isCooperative}
+        onError={vi.fn()}
+      />
+    </>
+  );
+}
+
 describe('MapCanvas', () => {
   afterEach(() => {
     maplibre.control.shouldThrow = false;
@@ -369,6 +396,25 @@ describe('MapCanvas', () => {
     expect(screen.getByRole('button', { name: enCommon.map.zoomIn })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: enCommon.map.zoomOut })).toBeInTheDocument();
     expect(lastMap().canvas).toHaveAttribute('aria-label', enCommon.map.title);
+  });
+
+  it('lets the page scroll over the map until cooperative gestures are turned off', async () => {
+    const { user } = await renderWithProviders(<CooperativeHarness />);
+    const map = lastMap();
+
+    expect(map.options.cooperativeGestures).toBe(true);
+    expect(map.options.locale['CooperativeGesturesHandler.WindowsHelpText']).toBe(
+      roCommon.map.cooperativeDesktop,
+    );
+    expect(map.options.locale['CooperativeGesturesHandler.MobileHelpText']).toBe(
+      roCommon.map.cooperativeMobile,
+    );
+    expect(map.cooperativeGestures.enable).toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'free' }));
+
+    expect(map.cooperativeGestures.disable).toHaveBeenCalledOnce();
+    expect(maplibre.FakeMap.instances).toHaveLength(1);
   });
 
   it('keeps overlays, bounds and focus in sync with its props', async () => {

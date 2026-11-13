@@ -135,6 +135,7 @@
       "label": "Locuința selectată",
       "viewListing": "Vezi anunțul"
     },
-    "perMonthSuffix": "/ lună"
+    "perMonthSuffix": "/ lună",
+    "mapNote": "Pozițiile locuințelor sunt orientative, fără rol cadastral. Hartă © OpenFreeMap, © OpenMapTiles, © colaboratorii OpenStreetMap; contururi Natural Earth."
   }
 }

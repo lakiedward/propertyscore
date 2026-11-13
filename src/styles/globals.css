@@ -687,6 +687,7 @@
   --info-foreground: var(--ps-white);
   --info-surface: var(--ps-blue-50);
   --info-border: var(--ps-blue-100);
+  --info-highlight: var(--ps-blue-300);
   --success: var(--ps-teal-600);
   --success-surface: var(--ps-teal-50);
   --success-border: var(--ps-teal-200);
@@ -916,8 +917,8 @@
 @utility marker-info {
   background-image: linear-gradient(
     transparent 62%,
-    var(--info-border) 62%,
-    var(--info-border) 92%,
+    var(--info-highlight) 62%,
+    var(--info-highlight) 92%,
     transparent 92%
   );
   box-decoration-break: clone;

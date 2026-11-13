@@ -6,6 +6,7 @@ import {
   EXPLORER_CITY_IDS,
   EXPLORER_SORTS,
 } from '@/config/listings-explorer';
+import { preloadMapCanvas } from '@/components/map/load-map-canvas';
 import { ListingsExplorerPage, listingQueries } from '@/features/listings';
 import { i18n, loadFeatureNamespaces } from '@/i18n/i18n';
 import { pageTitle } from '@/i18n/page-title';
@@ -20,16 +21,23 @@ const listingsSearchSchema = z.object({
 
 export const Route = createFileRoute('/_site/listings')({
   validateSearch: listingsSearchSchema,
-  loaderDeps: ({ search }) => ({ transaction: search.transaction ?? DEFAULT_TRANSACTION }),
+  loaderDeps: ({ search }) => ({
+    transaction: search.transaction ?? DEFAULT_TRANSACTION,
+    maxPrice: search.price,
+    sort: search.sort ?? DEFAULT_EXPLORER_SORT,
+  }),
   beforeLoad: () => loadFeatureNamespaces(['listings']),
   loader: ({ context, deps }) => {
+    preloadMapCanvas();
+    void context.queryClient
+      .infiniteQuery(listingQueries.explorer({ ...deps, bounds: undefined }))
+      .catch(() => undefined);
     void context.queryClient
       .query(listingQueries.mapPoints(deps.transaction))
       .catch(() => undefined);
     void context.queryClient.query(listingQueries.romaniaRegions()).catch(() => undefined);
   },
   head: () => ({ meta: [{ title: pageTitle(i18n.t('listings:explore.pageTitle')) }] }),
-  staticData: { hasCompactFooter: true },
   component: ListingsRoute,
 });
 

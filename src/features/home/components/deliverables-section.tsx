@@ -110,7 +110,7 @@ export function DeliverablesSection() {
                   i18nKey="deliverables.titleAccent"
                   components={{
                     home: <span className="marker-cta text-brand" />,
-                    area: <span className="marker-info text-info" />,
+                    zone: <span className="marker-info text-info" />,
                   }}
                 />
               }

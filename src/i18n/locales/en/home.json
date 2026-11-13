@@ -353,7 +353,7 @@
   },
   "deliverables": {
     "titleLead": "One package.",
-    "titleAccent": "<home>The home</home> and <area>the area</area>, explained.",
+    "titleAccent": "<home>The home</home> and <zone>the area</zone>, explained.",
     "lead": "<strong>With the inspection you also get {{smartCheck}}, at no extra cost.</strong> The visit report shows the condition of the home, and the online report shows what the area is like. Both the buyer and the seller receive them.",
     "bundle": {
       "label": "The {{price}} package: {{physical}} with {{smartCheck}} included",
@@ -624,7 +624,7 @@
   },
   "pricing": {
     "titleLead": "Choose how much you want to know.",
-    "titleAccent": "About the <area>area</area> or about the <home>home</home>.",
+    "titleAccent": "About the <zone>area</zone> or about the <home>home</home>.",
     "lead": "<strong>Start with {{smartCheck}} to compare addresses.</strong> Once you have found the right home, {{physical}} shows its condition and what to clarify before you decide. {{smartCheck}} is included.",
     "physical": {
       "summary": "The condition of the home, checked on site. Plus everything {{smartCheck}} tells you.",

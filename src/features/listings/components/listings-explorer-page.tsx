@@ -93,9 +93,17 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
       maxPrice,
       sort,
     }),
-    enabled: !tracksMapArea || bounds !== undefined,
     placeholderData: keepPreviousData,
   });
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isFullScreen) {
@@ -291,6 +299,7 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
           regions={mapRegions}
           hidesPointsOfInterest
           isScrollZoomEnabled
+          hasCooperativeGestures={!isFullScreen}
           hasNavigationControl={false}
           onViewportChange={handleViewportChange}
           clusters={{
@@ -413,6 +422,9 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
           onSelect={handleCardSelect}
           onHoverChange={setHoveredId}
         />
+        <p className="mt-10 max-w-162.5 text-meta leading-copy text-muted-foreground">
+          {t('explore.mapNote')}
+        </p>
       </div>
       {selectedPoint && isNarrow ? (
         <div

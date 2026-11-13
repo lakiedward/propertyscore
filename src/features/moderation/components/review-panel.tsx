@@ -20,7 +20,7 @@ export function ReviewPanel({ listing, toastMessage, onDecided }: ReviewPanelPro
   const canApprove = REVIEW_CHECKS.every((check) => checks[check]);
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
+    <div className="flex w-full flex-col gap-5">
       {toastMessage ? <InlineToast tone="success" message={toastMessage} /> : null}
       <ListingReviewCard listing={listing} />
       {isPending ? (
