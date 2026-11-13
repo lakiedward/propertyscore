@@ -64,6 +64,10 @@
   --color-sidebar-control-hover: var(--sidebar-control-hover);
   --color-sidebar-group: var(--sidebar-group);
   --color-sidebar-icon: var(--sidebar-icon);
+  --color-sidebar-icon-tile: var(--sidebar-icon-tile);
+  --color-sidebar-icon-tile-active: var(--sidebar-icon-tile-active);
+  --color-sidebar-icon-active: var(--sidebar-icon-active);
+  --color-sidebar-band: var(--sidebar-band);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
@@ -71,6 +75,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-divider: var(--sidebar-divider);
+  --color-sidebar-count: var(--sidebar-count);
+  --color-sidebar-count-foreground: var(--sidebar-count-foreground);
 
   --color-primary-hover: var(--primary-hover);
   --color-primary-pressed: var(--primary-pressed);
@@ -160,6 +168,9 @@
   --color-map-road-edge: var(--map-road-edge);
   --color-map-tree: var(--map-tree);
   --color-map-label: var(--map-label);
+  --color-map-outside: var(--map-outside);
+  --color-map-edge: var(--map-edge);
+  --color-map-count: var(--map-count);
   --color-category-education: var(--category-education);
   --color-category-education-surface: var(--category-education-surface);
   --color-category-education-fill: var(--category-education-fill);
@@ -200,6 +211,8 @@
   --color-step-sky-solid: var(--step-sky-solid);
   --color-step-sky-ink: var(--step-sky-ink);
   --color-step-leaf-soft: var(--step-leaf-soft);
+  --color-surface-selected: var(--surface-selected);
+  --color-photo-overlay: var(--photo-overlay);
   --color-step-leaf-surface: var(--step-leaf-surface);
   --color-step-leaf-solid: var(--step-leaf-solid);
   --color-step-leaf-ink: var(--step-leaf-ink);
@@ -263,6 +276,9 @@
   --shadow-listing-hero: 0 30px 70px rgba(110, 42, 22, 0.24);
   --shadow-progress: 0 22px 50px rgba(16, 63, 50, 0.22);
   --shadow-published: 0 14px 30px rgba(16, 63, 50, 0.3);
+  --shadow-segment: 0 1px 3px rgba(16, 63, 50, 0.12);
+  --shadow-sidebar: 8px 0 32px -12px rgba(16, 63, 50, 0.22);
+  --shadow-panel-header: 0 8px 32px -12px rgba(16, 63, 50, 0.22);
   --shadow-heart: 0 6px 16px rgba(16, 63, 50, 0.18);
   --shadow-panel: 0 1px 2px rgba(16, 63, 50, 0.06), 0 14px 36px rgba(16, 63, 50, 0.08);
   --shadow-preview: 0 18px 40px rgba(16, 63, 50, 0.14);
@@ -273,6 +289,17 @@
   --shadow-tier-online: 0 14px 34px rgba(0, 0, 0, 0.2);
   --shadow-tier-physical: 0 22px 48px rgba(0, 0, 0, 0.3);
   --shadow-tier-chip: 0 4px 12px rgba(0, 0, 0, 0.22);
+  --shadow-map-bar: 0 10px 24px rgba(16, 63, 50, 0.16);
+  --shadow-map-control: 0 6px 16px rgba(16, 63, 50, 0.12);
+  --shadow-map-count: 0 6px 16px rgba(16, 63, 50, 0.2);
+  --shadow-map-toggle: 0 10px 24px rgba(16, 63, 50, 0.3);
+  --shadow-map-popup: 0 18px 40px rgba(16, 63, 50, 0.22);
+  --shadow-map-sheet: 0 -12px 32px rgba(16, 63, 50, 0.22);
+  --shadow-cluster: 0 0 0 5px rgba(16, 63, 50, 0.18), 0 6px 14px rgba(16, 63, 50, 0.3);
+  --shadow-pin-tag: 0 0 0 3px var(--ps-white), 0 6px 16px rgba(16, 63, 50, 0.38);
+  --shadow-pin-tag-active: 0 0 0 3px var(--ps-lime-300), 0 6px 16px rgba(16, 63, 50, 0.38);
+  --shadow-pin-tag-selected: 0 0 0 6px rgba(16, 63, 50, 0.16), 0 8px 18px rgba(16, 63, 50, 0.3);
+  --shadow-card-hover: 0 14px 30px rgba(16, 63, 50, 0.08);
 
   --font-weight-nav: 670;
   --font-weight-action: 750;
@@ -297,6 +324,8 @@
   --spacing-wordmark-gap: 0.14em;
   --text-logo-2xs: 12.5px;
   --text-nav-sm: 11px;
+  --text-status: 12.5px;
+  --text-status--line-height: 1.55;
   --text-logo-xs: 15px;
   --text-logo-inline: 14px;
   --text-logo-sm: 19px;
@@ -565,6 +594,7 @@
   --ps-map-road-edge: #d6dbd3;
   --ps-map-tree: #bfd4ae;
   --ps-map-label: #748273;
+  --ps-map-outside: #ecebe4;
 
   --background: var(--ps-cream-100);
   --foreground: var(--ps-ink-900);
@@ -590,7 +620,7 @@
   --chart-4: var(--ps-amber-400);
   --chart-5: var(--ps-green-400);
   --sidebar: var(--ps-green-800);
-  --sidebar-foreground: color-mix(in srgb, var(--ps-white) 86%, transparent);
+  --sidebar-foreground: color-mix(in srgb, var(--ps-white) 80%, transparent);
   --sidebar-primary: var(--ps-white);
   --sidebar-primary-foreground: var(--ps-green-800);
   --sidebar-accent: color-mix(in srgb, var(--ps-white) 8%, transparent);
@@ -599,8 +629,16 @@
   --sidebar-ring: var(--ps-lime-300);
   --sidebar-control: color-mix(in srgb, var(--ps-white) 6%, transparent);
   --sidebar-control-hover: color-mix(in srgb, var(--ps-white) 12%, transparent);
-  --sidebar-group: color-mix(in srgb, var(--ps-white) 50%, transparent);
-  --sidebar-icon: var(--ps-lime-300);
+  --sidebar-group: color-mix(in srgb, var(--ps-white) 42%, transparent);
+  --sidebar-icon: color-mix(in srgb, var(--ps-white) 80%, transparent);
+  --sidebar-icon-tile: color-mix(in srgb, var(--ps-white) 8%, transparent);
+  --sidebar-icon-tile-active: var(--ps-green-800);
+  --sidebar-icon-active: var(--ps-lime-300);
+  --sidebar-band: var(--ps-white);
+  --sidebar-muted: color-mix(in srgb, var(--ps-white) 72%, transparent);
+  --sidebar-divider: color-mix(in srgb, var(--ps-white) 10%, transparent);
+  --sidebar-count: var(--ps-lime-300);
+  --sidebar-count-foreground: var(--ps-green-800);
 
   --primary-hover: var(--ps-green-700);
   --primary-pressed: var(--ps-green-900);
@@ -649,6 +687,7 @@
   --info-foreground: var(--ps-white);
   --info-surface: var(--ps-blue-50);
   --info-border: var(--ps-blue-100);
+  --info-highlight: var(--ps-blue-300);
   --success: var(--ps-teal-600);
   --success-surface: var(--ps-teal-50);
   --success-border: var(--ps-teal-200);
@@ -690,6 +729,9 @@
   --map-road-edge: var(--ps-map-road-edge);
   --map-tree: var(--ps-map-tree);
   --map-label: var(--ps-map-label);
+  --map-outside: var(--ps-map-outside);
+  --map-edge: var(--ps-green-250);
+  --map-count: var(--ps-coral-600);
   --category-education: var(--ps-sky-600);
   --category-education-surface: var(--ps-sky-100);
   --category-education-fill: var(--ps-sky-300);
@@ -730,6 +772,8 @@
   --step-sky-solid: var(--ps-sky-600);
   --step-sky-ink: var(--ps-sky-800);
   --step-leaf-soft: var(--ps-leaf-50);
+  --surface-selected: var(--ps-leaf-50);
+  --photo-overlay: color-mix(in srgb, var(--ps-ink-900) 62%, transparent);
   --step-leaf-surface: var(--ps-leaf-100);
   --step-leaf-solid: var(--ps-leaf-600);
   --step-leaf-ink: var(--ps-leaf-800);
@@ -873,8 +917,8 @@
 @utility marker-info {
   background-image: linear-gradient(
     transparent 62%,
-    var(--info-border) 62%,
-    var(--info-border) 92%,
+    var(--info-highlight) 62%,
+    var(--info-highlight) 92%,
     transparent 92%
   );
   box-decoration-break: clone;

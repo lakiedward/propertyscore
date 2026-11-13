@@ -50,12 +50,67 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   last_admin: 'last_admin',
   rate_limited: 'rate_limited',
   reauthentication_needed: 'reauthentication_needed',
+  listing_not_found: 'listing_not_found',
+  listing_already_pending: 'listing_already_pending',
+  listing_blocked: 'listing_blocked',
+  listing_invalid_transition: 'listing_invalid_transition',
+  listing_incomplete: 'listing_incomplete',
+  listing_not_pending: 'listing_not_pending',
+  listing_photo_limit: 'listing_photo_limit',
+  listing_photos_changed: 'listing_photos_changed',
+  decision_reason_invalid: 'decision_reason_invalid',
+  decision_message_required: 'decision_message_required',
+  decision_message_too_long: 'decision_message_too_long',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
   invalid_password: 'confirmation',
   email_mismatch: 'confirmation',
+  decision_reason_invalid: 'reasons',
+  decision_message_required: 'message',
+  decision_message_too_long: 'message',
 };
+
+const CHECK_CONSTRAINTS: Readonly<Record<string, { reason: AppErrorReason; field: string }>> = {
+  listings_floor_within_building: { reason: 'listing_floor_above_building', field: 'floor' },
+};
+
+const CHECKED_TABLES = ['listings'] as const;
+
+const COLUMN_FIELDS: Readonly<Record<string, string>> = {
+  latitude: 'pin',
+  longitude: 'pin',
+};
+
+function checkConstraintField(constraint: string): string | undefined {
+  for (const table of CHECKED_TABLES) {
+    const prefix = `${table}_`;
+    if (constraint.startsWith(prefix) && constraint.endsWith('_check')) {
+      const column = constraint.slice(prefix.length, -'_check'.length);
+      return COLUMN_FIELDS[column] ?? column;
+    }
+  }
+  return undefined;
+}
+
+function fromCheckViolation(error: PostgrestLikeError): AppError | undefined {
+  const constraint = /check constraint "([^"]+)"/u.exec(error.message)?.[1];
+  if (!constraint) {
+    return undefined;
+  }
+  const known = CHECK_CONSTRAINTS[constraint];
+  if (known) {
+    return new AppError('validation', error.message, { cause: error, ...known });
+  }
+  const field = checkConstraintField(constraint);
+  return field
+    ? new AppError('validation', error.message, {
+        cause: error,
+        reason: 'value_out_of_range',
+        field,
+      })
+    : undefined;
+}
 
 const AUTH_UNAUTHENTICATED = new Set([
   'session_not_found',
@@ -116,6 +171,10 @@ function fromAuthError(error: {
 }
 
 function fromPostgrestError(error: PostgrestLikeError) {
+  const checkViolation = error.code === '23514' ? fromCheckViolation(error) : undefined;
+  if (checkViolation) {
+    return checkViolation;
+  }
   const reason = error.code === 'P0001' ? RPC_REASONS[error.message] : undefined;
   if (reason) {
     return new AppError('validation', error.message, {

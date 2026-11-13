@@ -1,0 +1,227 @@
+{
+  "pageTitle": "My listings",
+  "list": {
+    "title": "My listings",
+    "description": "Create a listing, send it for review and see the team's answer here.",
+    "add": "Add listing",
+    "label": "Your listings",
+    "edit": "Edit",
+    "view": "View listing",
+    "empty": {
+      "title": "You have no listings yet",
+      "description": "Add your first listing; we keep it as a draft until you send it for review."
+    },
+    "eyebrow": "Sale and rent",
+    "addressCity": "{{street}} · {{city}}",
+    "floorShort": "fl. {{floor}}/{{total}}",
+    "floorOnlyShort": "fl. {{floor}}",
+    "groundFloorShort": "ground floor",
+    "reasonLabel": "Reason:",
+    "photoMissing": "No photo",
+    "continueEdit": "Continue editing",
+    "revision": {
+      "draft": "You have unsent changes. The published version stays on the site until you send them and we approve them.",
+      "pending_approval": "Your changes are being reviewed. The published version stays on the site until we approve them.",
+      "rejected": "Your changes were rejected; the published version stays on the site."
+    }
+  },
+  "status": {
+    "draft": "Draft",
+    "pending_approval": "In review",
+    "approved": "Published",
+    "rejected": "Rejected",
+    "blocked": "Blocked"
+  },
+  "notice": {
+    "rejected": {
+      "title": "The listing was rejected",
+      "description": "Make the requested changes and send the listing for review again."
+    },
+    "reason": "Reason: {{message}}",
+    "decidedAt": "Decision from {{date}}",
+    "revisionRejected": {
+      "title": "Your changes were rejected",
+      "description": "The published version stays on the site. Make the requested changes and send them again."
+    },
+    "revision": {
+      "title": "You are editing a published listing",
+      "description": "The published version stays on the site until we approve your changes. Save them as a draft or send them for review.",
+      "discard": "Discard changes",
+      "discardTitle": "Discard your changes?",
+      "discardDescription": "We delete the changes and the new photos. The published listing stays as it is.",
+      "discarding": "Discarding…",
+      "discarded": "You discarded your changes."
+    }
+  },
+  "editor": {
+    "newTitle": "New listing",
+    "editTitle": "Edit listing",
+    "back": "My listings",
+    "save": "Save draft",
+    "saveChanges": "Save changes",
+    "submit": "Send for review",
+    "resubmit": "Send for review again",
+    "saving": "Saving…",
+    "submitting": "Sending…",
+    "saved": "The draft was saved.",
+    "submitted": "The listing was sent for review.",
+    "resubmitted": "The listing was sent for review again.",
+    "submitChanges": "Send the changes for review",
+    "changesSubmitted": "Your changes were sent for review. The published version stays on the site until we approve them."
+  },
+  "sections": {
+    "type": "Listing type",
+    "details": "Property details",
+    "photos": "Photos",
+    "address": "Location",
+    "text": "Title and description",
+    "contact": "Contact",
+    "required": "required",
+    "complete": "Complete",
+    "missing_one": "{{count}} field to fill in",
+    "missing_other": "{{count}} fields to fill in",
+    "photosMissing_one": "Add {{count}} more photo",
+    "photosMissing_other": "Add {{count}} more photos",
+    "markedErrors": "Fill in the fields marked in red.",
+    "propertyType": "Property type",
+    "transactionType": "Transaction type",
+    "extras": "Extra details",
+    "optional": "optional"
+  },
+  "form": {
+    "details": "Details",
+    "location": "Address and place on the map",
+    "descriptionSection": "Description",
+    "transaction": {
+      "label": "Listing type",
+      "sale": "Sale",
+      "rent": "Rent"
+    },
+    "title": {
+      "label": "Title",
+      "placeholder": "e.g. 3-room apartment, Complex"
+    },
+    "city": {
+      "label": "City",
+      "placeholder": "Choose the city"
+    },
+    "street": {
+      "label": "Street and number",
+      "placeholder": "e.g. 12 Gheorghe Lazăr St."
+    },
+    "rooms": {
+      "label": "Rooms"
+    },
+    "area": {
+      "label": "Usable area"
+    },
+    "price": {
+      "label": "Price",
+      "rentHint": "For rent, the price is per month."
+    },
+    "currency": {
+      "label": "Currency",
+      "EUR": "EUR",
+      "RON": "RON"
+    },
+    "floor": {
+      "label": "Floor"
+    },
+    "buildingFloors": {
+      "label": "Floors above ground",
+      "hint": "Optional."
+    },
+    "yearBuilt": {
+      "label": "Year built",
+      "hint": "Optional."
+    },
+    "description": {
+      "label": "Description",
+      "hint": "The condition of the home, its amenities, what is nearby. No phone numbers."
+    },
+    "pin": {
+      "label": "Place on the map",
+      "hint": "Tap the map to put the pin at the exact address.",
+      "mapLabel": "Map to choose the place",
+      "mapError": "The map could not load. Reload the page.",
+      "missing": "Choose the place on the map."
+    }
+  },
+  "photos": {
+    "title": "Photos",
+    "description": "At least 5 clear photos, with no people or documents. The first one is the cover.",
+    "count_one": "{{count}} photo of {{max}}",
+    "count_other": "{{count}} photos of {{max}}",
+    "add": "Add photos",
+    "adding": "Uploading…",
+    "dropHint": "Drag your photos here or click to choose them. JPG, PNG or WebP, up to {{max}}.",
+    "remove": "Remove photo {{index}}",
+    "reorderHint": "Drag a photo onto another or use the arrows to change the order.",
+    "moveEarlier": "Move photo {{index}} earlier",
+    "moveLater": "Move photo {{index}} later",
+    "moved": "The photo is now in position {{position}} of {{total}}.",
+    "cover": "Cover",
+    "alt": "Photo {{index}} of the listing",
+    "invalidType": "You can upload only JPG, PNG or WebP images.",
+    "uploadFailed": "The draft was saved, but not every photo was uploaded ({{reason}}). Check them and add the missing ones.",
+    "tooLarge": "The photo is too large after conversion (over 5 MB)."
+  },
+  "wizard": {
+    "subtitle": "You don't need a report to publish. We keep the listing as a draft until you send it.",
+    "type": {
+      "sale": {
+        "label": "Sale",
+        "hint": "Total price"
+      },
+      "rent": {
+        "label": "Rent",
+        "hint": "Monthly rent"
+      }
+    },
+    "text": {
+      "titleHint": "Type, rooms and area. {{count}} / {{max}} characters.",
+      "descriptionHint": "{{count}} / {{max}} characters · say what is true, without superlatives."
+    },
+    "details": {
+      "priceSale": "Total price",
+      "priceRent": "Monthly rent",
+      "currencyEUR": "EUR (€)",
+      "currencyRON": "RON (lei)",
+      "suffixEUR": "€",
+      "suffixRON": "lei",
+      "areaSuffix": "m²",
+      "rooms": "Rooms",
+      "roomsMore": "5+",
+      "roomsExact": "Exact number of rooms",
+      "choose": "Choose",
+      "notSpecified": "Not specified",
+      "floorBasement": "Basement",
+      "floorGround": "Ground floor",
+      "floorNumber": "Floor {{floor}}",
+      "bathroomsMore": "4+"
+    },
+    "address": {
+      "street": "Exact address",
+      "pin": "What you see · exact pin"
+    },
+    "photosNote": "You can send the listing for review only with at least 5 photos.",
+    "contact": {
+      "phone": "Contact phone",
+      "phoneHint": "The number in your account.",
+      "noPhone": "You have not added a phone number yet.",
+      "settings": "Change it in Settings",
+      "email": "Email",
+      "ready": "The listing goes to review. We show the team's answer here, usually within 24 hours."
+    },
+    "propertyType": {
+      "apartment": {
+        "label": "Apartment",
+        "hint": "In a block or villa"
+      },
+      "house": {
+        "label": "House",
+        "hint": "With its own land"
+      }
+    }
+  }
+}

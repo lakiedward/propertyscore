@@ -4,6 +4,13 @@ export type PanelArea = keyof typeof PANEL_PATHS;
 
 export type PanelPath = (typeof PANEL_PATHS)[PanelArea];
 
+export const SETTINGS_PATHS = {
+  account: '/account/settings',
+  admin: '/admin/settings',
+} as const satisfies Record<PanelArea, string>;
+
+export type SettingsPath = (typeof SETTINGS_PATHS)[PanelArea];
+
 export const PANEL_LINK_KEYS = {
   '/account': 'panel.link.account',
   '/admin': 'panel.link.admin',

@@ -4,6 +4,7 @@ type ListingRow = Pick<
   Tables<'listings'>,
   | 'id'
   | 'status'
+  | 'property_type'
   | 'transaction'
   | 'title'
   | 'street_label'
@@ -28,7 +29,8 @@ export function buildListing(overrides: Partial<ListingRow> = {}): ListingRow {
   sequence += 1;
   return {
     id: `b0000000-0000-4000-8000-${String(sequence).padStart(12, '0')}`,
-    status: 'published',
+    status: 'approved',
+    property_type: 'apartment',
     transaction: 'sale',
     title: `Apartament cu 2 camere ${String(sequence)}`,
     street_label: 'Str. Școlii, 12',

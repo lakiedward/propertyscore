@@ -88,7 +88,7 @@ insert into public.listings (
 select
   seed.id,
   'a0000000-0000-4000-8000-000000000001'::uuid,
-  'published',
+  'approved',
   seed.transaction::public.listing_transaction,
   seed.title,
   seed.street_label,
@@ -118,3 +118,18 @@ from (
     ('b0000000-0000-4000-8000-000000000011'::uuid, 11, 'rent', '2 camere, balcon', 'Str. Eminescu, 2', 2, 60, 480, 45.7615, 21.2281, 'physical', null),
     ('b0000000-0000-4000-8000-000000000012'::uuid, 12, 'rent', 'Apartament cu 3 camere', 'Str. Brediceanu, 7', 3, 72, 590, 45.7562, 21.2174, 'none', null)
 ) as seed (id, position, transaction, title, street_label, rooms, area_m2, price, latitude, longitude, verification, smartcheck_score);
+
+update public.listings
+set
+  property_type = 'house',
+  title = seed.title,
+  house_type = seed.house_type::public.listing_house_type,
+  land_area_m2 = seed.land_area_m2,
+  building_floors = seed.building_floors,
+  bathrooms = seed.bathrooms
+from (
+  values
+    ('b0000000-0000-4000-8000-000000000004'::uuid, 'Casă cu 4 camere și terasă', 'detached', 420, 1, 2),
+    ('b0000000-0000-4000-8000-000000000009'::uuid, 'Casă cu 3 camere și parcare', 'duplex', 260, 1, 2)
+) as seed (id, title, house_type, land_area_m2, building_floors, bathrooms)
+where listings.id = seed.id;

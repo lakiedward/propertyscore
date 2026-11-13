@@ -47,7 +47,7 @@ afterEach(() => {
 });
 
 describe('ListingsBoard', () => {
-  it('lists the published listings for sale with their count', async () => {
+  it('lists the approved listings for sale with their count', async () => {
     await renderWithProviders(<ListingsBoard transaction="sale" onTransactionChange={vi.fn()} />);
 
     const buttons = await findListingButtons();
@@ -97,12 +97,15 @@ describe('ListingsBoard', () => {
   it('names the trust level of every card', async () => {
     await renderWithProviders(<ListingsBoard transaction="sale" onTransactionChange={vi.fn()} />);
     await findListingButtons();
+    const list = screen.getByRole('list', { name: roListings.board.listLabel });
 
     expect(
-      screen.getByRole('button', { name: (name) => name.includes(roCommon.trust.physical) }),
+      within(list).getByRole('button', {
+        name: (name) => name.includes(roCommon.trust.physical),
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', {
+      within(list).getByRole('button', {
         name: (name) => name.includes(fill(roCommon.trust.smartcheck, { score: 74 })),
       }),
     ).toBeInTheDocument();
@@ -112,8 +115,9 @@ describe('ListingsBoard', () => {
     serveListings([buildListing({ verification: 'smartcheck', smartcheck_score: null })]);
     await renderWithProviders(<ListingsBoard transaction="sale" onTransactionChange={vi.fn()} />);
 
+    const list = await screen.findByRole('list', { name: roListings.board.listLabel });
     expect(
-      await screen.findByRole('button', {
+      await within(list).findByRole('button', {
         name: (name) => name.includes(roCommon.trust.smartcheckNoScore),
       }),
     ).toBeInTheDocument();
@@ -168,7 +172,7 @@ describe('ListingsBoard', () => {
     expect(await findListingButtons()).toHaveLength(2);
   });
 
-  it('shows the empty state without a count when nothing is published', async () => {
+  it('shows the empty state without a count when nothing is approved', async () => {
     serveListings([]);
     await renderWithProviders(<ListingsBoard transaction="sale" onTransactionChange={vi.fn()} />);
 

@@ -1,0 +1,230 @@
+{
+  "pageTitle": "Anunțurile mele",
+  "list": {
+    "title": "Anunțurile mele",
+    "description": "Creezi anunțul, îl trimiți spre verificare și vezi aici răspunsul echipei.",
+    "add": "Adaugă anunț",
+    "label": "Anunțurile tale",
+    "edit": "Editează",
+    "view": "Vezi anunțul",
+    "empty": {
+      "title": "Nu ai încă niciun anunț",
+      "description": "Adaugă primul anunț; îl salvăm ca ciornă până îl trimiți spre verificare."
+    },
+    "eyebrow": "Vânzare și închiriere",
+    "addressCity": "{{street}} · {{city}}",
+    "floorShort": "et. {{floor}}/{{total}}",
+    "floorOnlyShort": "et. {{floor}}",
+    "groundFloorShort": "parter",
+    "reasonLabel": "Motiv:",
+    "photoMissing": "Fără fotografie",
+    "continueEdit": "Continuă editarea",
+    "revision": {
+      "draft": "Ai modificări netrimise. Pe site rămâne versiunea publicată până le trimiți și le aprobăm.",
+      "pending_approval": "Modificările tale sunt în verificare. Pe site rămâne versiunea publicată până le aprobăm.",
+      "rejected": "Modificările tale au fost respinse; pe site rămâne versiunea publicată."
+    }
+  },
+  "status": {
+    "draft": "Ciornă",
+    "pending_approval": "În verificare",
+    "approved": "Publicat",
+    "rejected": "Respins",
+    "blocked": "Blocat"
+  },
+  "notice": {
+    "rejected": {
+      "title": "Anunțul a fost respins",
+      "description": "Fă modificările cerute și retrimite anunțul spre verificare."
+    },
+    "reason": "Motiv: {{message}}",
+    "decidedAt": "Decizie din {{date}}",
+    "revisionRejected": {
+      "title": "Modificările au fost respinse",
+      "description": "Pe site rămâne versiunea publicată. Fă modificările cerute și trimite-le din nou."
+    },
+    "revision": {
+      "title": "Editezi un anunț publicat",
+      "description": "Pe site rămâne versiunea publicată până aprobăm modificările. Salvează-le ca ciornă sau trimite-le spre verificare.",
+      "discard": "Renunță la modificări",
+      "discardTitle": "Renunți la modificări?",
+      "discardDescription": "Ștergem modificările și fotografiile noi. Anunțul publicat rămâne neschimbat.",
+      "discarding": "Se renunță…",
+      "discarded": "Ai renunțat la modificări."
+    }
+  },
+  "editor": {
+    "newTitle": "Anunț nou",
+    "editTitle": "Editează anunțul",
+    "back": "Anunțurile mele",
+    "save": "Salvează ciorna",
+    "saveChanges": "Salvează modificările",
+    "submit": "Trimite spre verificare",
+    "resubmit": "Retrimite spre verificare",
+    "saving": "Se salvează…",
+    "submitting": "Se trimite…",
+    "saved": "Ciorna a fost salvată.",
+    "submitted": "Anunțul a fost trimis spre verificare.",
+    "resubmitted": "Anunțul a fost retrimis spre verificare.",
+    "submitChanges": "Trimite modificările spre verificare",
+    "changesSubmitted": "Modificările au fost trimise spre verificare. Pe site rămâne versiunea publicată până le aprobăm."
+  },
+  "sections": {
+    "type": "Tip anunț",
+    "details": "Detalii proprietate",
+    "photos": "Fotografii",
+    "address": "Localizare",
+    "text": "Titlu și descriere",
+    "contact": "Contact",
+    "required": "obligatoriu",
+    "complete": "Completat",
+    "missing_one": "{{count}} câmp de completat",
+    "missing_few": "{{count}} câmpuri de completat",
+    "missing_other": "{{count}} de câmpuri de completat",
+    "photosMissing_one": "Mai adaugă {{count}} fotografie",
+    "photosMissing_few": "Mai adaugă {{count}} fotografii",
+    "photosMissing_other": "Mai adaugă {{count}} de fotografii",
+    "markedErrors": "Completează câmpurile marcate cu roșu.",
+    "propertyType": "Tip proprietate",
+    "transactionType": "Tip tranzacție",
+    "extras": "Criterii suplimentare",
+    "optional": "opțional"
+  },
+  "form": {
+    "details": "Detalii",
+    "location": "Adresă și loc pe hartă",
+    "descriptionSection": "Descriere",
+    "transaction": {
+      "label": "Tip anunț",
+      "sale": "Vânzare",
+      "rent": "Închiriere"
+    },
+    "title": {
+      "label": "Titlu",
+      "placeholder": "de ex. Apartament 3 camere, Complex"
+    },
+    "city": {
+      "label": "Oraș",
+      "placeholder": "Alege orașul"
+    },
+    "street": {
+      "label": "Stradă și număr",
+      "placeholder": "de ex. Str. Gheorghe Lazăr, 12"
+    },
+    "rooms": {
+      "label": "Camere"
+    },
+    "area": {
+      "label": "Suprafață utilă"
+    },
+    "price": {
+      "label": "Preț",
+      "rentHint": "Pentru închiriere, prețul este pe lună."
+    },
+    "currency": {
+      "label": "Monedă",
+      "EUR": "EUR",
+      "RON": "RON"
+    },
+    "floor": {
+      "label": "Etaj"
+    },
+    "buildingFloors": {
+      "label": "Nr. niveluri peste parter",
+      "hint": "Opțional."
+    },
+    "yearBuilt": {
+      "label": "Anul construcției",
+      "hint": "Opțional."
+    },
+    "description": {
+      "label": "Descriere",
+      "hint": "Starea locuinței, dotările, ce e aproape. Fără numere de telefon."
+    },
+    "pin": {
+      "label": "Locul pe hartă",
+      "hint": "Apasă pe hartă ca să pui pinul la adresa exactă.",
+      "mapLabel": "Hartă pentru alegerea locului",
+      "mapError": "Harta nu s-a putut încărca. Reîncarcă pagina.",
+      "missing": "Alege locul pe hartă."
+    }
+  },
+  "photos": {
+    "title": "Fotografii",
+    "description": "Minim 5 fotografii clare, fără persoane sau acte. Prima este coperta.",
+    "count_one": "{{count}} fotografie din {{max}}",
+    "count_few": "{{count}} fotografii din {{max}}",
+    "count_other": "{{count}} de fotografii din {{max}}",
+    "add": "Adaugă fotografii",
+    "adding": "Se încarcă…",
+    "dropHint": "Trage fotografiile aici sau apasă ca să le alegi. JPG, PNG sau WebP, cel mult {{max}}.",
+    "remove": "Șterge fotografia {{index}}",
+    "reorderHint": "Trage o fotografie peste alta sau folosește săgețile ca să schimbi ordinea.",
+    "moveEarlier": "Mută fotografia {{index}} mai în față",
+    "moveLater": "Mută fotografia {{index}} mai în spate",
+    "moved": "Fotografia este acum pe poziția {{position}} din {{total}}.",
+    "cover": "Copertă",
+    "alt": "Fotografia {{index}} a anunțului",
+    "invalidType": "Poți încărca doar imagini JPG, PNG sau WebP.",
+    "uploadFailed": "Ciorna a fost salvată, dar nu toate fotografiile s-au încărcat ({{reason}}). Verifică-le și adaugă-le pe cele care lipsesc.",
+    "tooLarge": "Fotografia este prea mare după conversie (peste 5 MB)."
+  },
+  "wizard": {
+    "subtitle": "Nu ai nevoie de raport ca să publici. Salvăm anunțul ca ciornă până îl trimiți.",
+    "type": {
+      "sale": {
+        "label": "Vânzare",
+        "hint": "Preț total"
+      },
+      "rent": {
+        "label": "Închiriere",
+        "hint": "Chirie lunară"
+      }
+    },
+    "text": {
+      "titleHint": "Tip, camere și zona. {{count}} / {{max}} caractere.",
+      "descriptionHint": "{{count}} / {{max}} caractere · spune ce e adevărat, fără superlative."
+    },
+    "details": {
+      "priceSale": "Preț total",
+      "priceRent": "Chirie lunară",
+      "currencyEUR": "EUR (€)",
+      "currencyRON": "RON (lei)",
+      "suffixEUR": "€",
+      "suffixRON": "lei",
+      "areaSuffix": "m²",
+      "rooms": "Camere",
+      "roomsMore": "5+",
+      "roomsExact": "Număr exact de camere",
+      "choose": "Alege",
+      "notSpecified": "Nespecificat",
+      "floorBasement": "Demisol",
+      "floorGround": "Parter",
+      "floorNumber": "Etaj {{floor}}",
+      "bathroomsMore": "4+"
+    },
+    "address": {
+      "street": "Adresa exactă",
+      "pin": "Ce vezi tu · pin exact"
+    },
+    "photosNote": "Poți trimite anunțul spre verificare doar cu cel puțin 5 fotografii.",
+    "contact": {
+      "phone": "Telefon de contact",
+      "phoneHint": "Numărul din contul tău.",
+      "noPhone": "Nu ai adăugat încă un număr de telefon.",
+      "settings": "Schimbă-l din Setări",
+      "email": "Email",
+      "ready": "Anunțul intră la verificare. Îți arătăm aici răspunsul echipei, de obicei în cel mult 24 de ore."
+    },
+    "propertyType": {
+      "apartment": {
+        "label": "Apartament",
+        "hint": "În bloc sau vilă"
+      },
+      "house": {
+        "label": "Casă",
+        "hint": "Cu teren propriu"
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import roHome from '@/i18n/locales/ro/home.json';
 import { renderWithProviders } from '@/test/render';
 import { SAMPLE_REPORT } from '../data/sample-report';
@@ -14,7 +14,7 @@ describe('ZoneMapExample', () => {
     const { user } = await renderWithProviders(<ZoneMapExample />);
 
     expect(await screen.findByRole('region', { name: map.mapLabel })).toBeInTheDocument();
-    expect(screen.getByText(new RegExp(pharmacy))).toBeInTheDocument();
+    expect(within(screen.getByRole('list')).getByText(new RegExp(pharmacy))).toBeInTheDocument();
 
     await user.click(screen.getByRole('radio', { name: map.layers.safety }));
 

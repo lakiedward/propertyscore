@@ -36,7 +36,7 @@ export function PricingSection() {
                 t={t}
                 i18nKey="pricing.titleAccent"
                 components={{
-                  area: <span className="marker-info text-info" />,
+                  zone: <span className="marker-info text-info" />,
                   home: <span className="marker-cta text-brand" />,
                 }}
               />

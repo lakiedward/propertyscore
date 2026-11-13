@@ -22,10 +22,13 @@ export function HomeHero() {
   );
 
   return (
-    <section aria-labelledby="home-title" className="overflow-hidden bg-background pt-16 pb-26">
+    <section
+      aria-labelledby="home-title"
+      className="overflow-hidden bg-background pt-6 pb-26 w820:pt-16"
+    >
       <div className="page-wrap grid grid-cols-1 gap-7 w820:grid-cols-[1fr_1.04fr] w820:gap-7.5 w1080:gap-12.5">
         <div>
-          <h1 id="home-title" className="mt-4.75 mb-5 text-display text-brand">
+          <h1 id="home-title" className="mb-5 text-display text-brand w820:mt-4.75">
             <span className="block">{t('hero.titleLead')}</span>
             <span className="marker-under">{t('hero.titleAccent')}</span>
           </h1>

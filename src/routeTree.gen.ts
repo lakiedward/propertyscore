@@ -18,12 +18,12 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
+import { Route as SiteListingsRouteImport } from './routes/_site/listings'
 import { Route as SitePublishRouteImport } from './routes/_site/publish'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account/index'
 import { Route as AuthenticatedAccountAppointmentsRouteImport } from './routes/_authenticated/account/appointments'
 import { Route as AuthenticatedAccountFavoritesRouteImport } from './routes/_authenticated/account/favorites'
 import { Route as AuthenticatedAccountInvoicesRouteImport } from './routes/_authenticated/account/invoices'
-import { Route as AuthenticatedAccountListingsRouteImport } from './routes/_authenticated/account/listings'
 import { Route as AuthenticatedAccountProductsRouteImport } from './routes/_authenticated/account/products'
 import { Route as AuthenticatedAccountReportsRouteImport } from './routes/_authenticated/account/reports'
 import { Route as AuthenticatedAccountRequestsRouteImport } from './routes/_authenticated/account/requests'
@@ -39,11 +39,15 @@ import { Route as AuthenticatedAdminPartnersRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminPaymentsRouteImport } from './routes/_authenticated/admin/payments'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
 import { Route as AuthenticatedAdminScoringRouteImport } from './routes/_authenticated/admin/scoring'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth/callback'
 import { Route as PublicAuthConfirmRouteImport } from './routes/_public/auth/confirm'
 import { Route as PublicPasswordResetIndexRouteImport } from './routes/_public/password-reset/index'
 import { Route as PublicPasswordResetNewRouteImport } from './routes/_public/password-reset/new'
+import { Route as AuthenticatedAccountListingsIndexRouteImport } from './routes/_authenticated/account/listings/index'
+import { Route as AuthenticatedAccountListingsListingIdRouteImport } from './routes/_authenticated/account/listings/$listingId'
+import { Route as AuthenticatedAccountListingsNewRouteImport } from './routes/_authenticated/account/listings/new'
 import { Route as ReportCheckResultReportIdRouteImport } from './routes/_report/check/result.$reportId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -88,6 +92,11 @@ const SiteIndexRoute = SiteIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SiteRouteRoute,
 } as any)
+const SiteListingsRoute = SiteListingsRouteImport.update({
+  id: '/listings',
+  path: '/listings',
+  getParentRoute: () => SiteRouteRoute,
+} as any)
 const SitePublishRoute = SitePublishRouteImport.update({
   id: '/publish',
   path: '/publish',
@@ -115,12 +124,6 @@ const AuthenticatedAccountInvoicesRoute =
   AuthenticatedAccountInvoicesRouteImport.update({
     id: '/invoices',
     path: '/invoices',
-    getParentRoute: () => AuthenticatedAccountRouteRoute,
-  } as any)
-const AuthenticatedAccountListingsRoute =
-  AuthenticatedAccountListingsRouteImport.update({
-    id: '/listings',
-    path: '/listings',
     getParentRoute: () => AuthenticatedAccountRouteRoute,
   } as any)
 const AuthenticatedAccountProductsRoute =
@@ -212,6 +215,12 @@ const AuthenticatedAdminScoringRoute =
     path: '/scoring',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -238,6 +247,24 @@ const PublicPasswordResetNewRoute = PublicPasswordResetNewRouteImport.update({
   path: '/password-reset/new',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const AuthenticatedAccountListingsIndexRoute =
+  AuthenticatedAccountListingsIndexRouteImport.update({
+    id: '/listings/',
+    path: '/listings/',
+    getParentRoute: () => AuthenticatedAccountRouteRoute,
+  } as any)
+const AuthenticatedAccountListingsListingIdRoute =
+  AuthenticatedAccountListingsListingIdRouteImport.update({
+    id: '/listings/$listingId',
+    path: '/listings/$listingId',
+    getParentRoute: () => AuthenticatedAccountRouteRoute,
+  } as any)
+const AuthenticatedAccountListingsNewRoute =
+  AuthenticatedAccountListingsNewRouteImport.update({
+    id: '/listings/new',
+    path: '/listings/new',
+    getParentRoute: () => AuthenticatedAccountRouteRoute,
+  } as any)
 const ReportCheckResultReportIdRoute =
   ReportCheckResultReportIdRouteImport.update({
     id: '/check/result/$reportId',
@@ -251,11 +278,11 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/listings': typeof SiteListingsRoute
   '/publish': typeof SitePublishRoute
   '/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/account/favorites': typeof AuthenticatedAccountFavoritesRoute
   '/account/invoices': typeof AuthenticatedAccountInvoicesRoute
-  '/account/listings': typeof AuthenticatedAccountListingsRoute
   '/account/products': typeof AuthenticatedAccountProductsRoute
   '/account/reports': typeof AuthenticatedAccountReportsRoute
   '/account/requests': typeof AuthenticatedAccountRequestsRoute
@@ -270,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/scoring': typeof AuthenticatedAdminScoringRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
@@ -277,17 +305,20 @@ export interface FileRoutesByFullPath {
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
+  '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
   '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
+  '/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/listings': typeof SiteListingsRoute
   '/publish': typeof SitePublishRoute
   '/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/account/favorites': typeof AuthenticatedAccountFavoritesRoute
   '/account/invoices': typeof AuthenticatedAccountInvoicesRoute
-  '/account/listings': typeof AuthenticatedAccountListingsRoute
   '/account/products': typeof AuthenticatedAccountProductsRoute
   '/account/reports': typeof AuthenticatedAccountReportsRoute
   '/account/requests': typeof AuthenticatedAccountRequestsRoute
@@ -302,6 +333,7 @@ export interface FileRoutesByTo {
   '/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/scoring': typeof AuthenticatedAdminScoringRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
@@ -309,7 +341,10 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/password-reset': typeof PublicPasswordResetIndexRoute
+  '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
+  '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
   '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
+  '/account/listings': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -321,12 +356,12 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_public/login': typeof PublicLoginRoute
   '/_public/sign-up': typeof PublicSignUpRoute
+  '/_site/listings': typeof SiteListingsRoute
   '/_site/publish': typeof SitePublishRoute
   '/_site/': typeof SiteIndexRoute
   '/_authenticated/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/_authenticated/account/favorites': typeof AuthenticatedAccountFavoritesRoute
   '/_authenticated/account/invoices': typeof AuthenticatedAccountInvoicesRoute
-  '/_authenticated/account/listings': typeof AuthenticatedAccountListingsRoute
   '/_authenticated/account/products': typeof AuthenticatedAccountProductsRoute
   '/_authenticated/account/reports': typeof AuthenticatedAccountReportsRoute
   '/_authenticated/account/requests': typeof AuthenticatedAccountRequestsRoute
@@ -341,6 +376,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/admin/scoring': typeof AuthenticatedAdminScoringRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
   '/_public/auth/confirm': typeof PublicAuthConfirmRoute
@@ -348,7 +384,10 @@ export interface FileRoutesById {
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_public/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/_authenticated/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
+  '/_authenticated/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
   '/_report/check/result/$reportId': typeof ReportCheckResultReportIdRoute
+  '/_authenticated/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -358,11 +397,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/sign-up'
+    | '/listings'
     | '/publish'
     | '/account/appointments'
     | '/account/favorites'
     | '/account/invoices'
-    | '/account/listings'
     | '/account/products'
     | '/account/reports'
     | '/account/requests'
@@ -377,6 +416,7 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/products'
     | '/admin/scoring'
+    | '/admin/settings'
     | '/admin/users'
     | '/auth/callback'
     | '/auth/confirm'
@@ -384,17 +424,20 @@ export interface FileRouteTypes {
     | '/account/'
     | '/admin/'
     | '/password-reset/'
+    | '/account/listings/$listingId'
+    | '/account/listings/new'
     | '/check/result/$reportId'
+    | '/account/listings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/sign-up'
+    | '/listings'
     | '/publish'
     | '/account/appointments'
     | '/account/favorites'
     | '/account/invoices'
-    | '/account/listings'
     | '/account/products'
     | '/account/reports'
     | '/account/requests'
@@ -409,6 +452,7 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/products'
     | '/admin/scoring'
+    | '/admin/settings'
     | '/admin/users'
     | '/auth/callback'
     | '/auth/confirm'
@@ -416,7 +460,10 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/password-reset'
+    | '/account/listings/$listingId'
+    | '/account/listings/new'
     | '/check/result/$reportId'
+    | '/account/listings'
   id:
     | '__root__'
     | '/_authenticated'
@@ -427,12 +474,12 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_public/login'
     | '/_public/sign-up'
+    | '/_site/listings'
     | '/_site/publish'
     | '/_site/'
     | '/_authenticated/account/appointments'
     | '/_authenticated/account/favorites'
     | '/_authenticated/account/invoices'
-    | '/_authenticated/account/listings'
     | '/_authenticated/account/products'
     | '/_authenticated/account/reports'
     | '/_authenticated/account/requests'
@@ -447,6 +494,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/payments'
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/scoring'
+    | '/_authenticated/admin/settings'
     | '/_authenticated/admin/users'
     | '/_public/auth/callback'
     | '/_public/auth/confirm'
@@ -454,7 +502,10 @@ export interface FileRouteTypes {
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
     | '/_public/password-reset/'
+    | '/_authenticated/account/listings/$listingId'
+    | '/_authenticated/account/listings/new'
     | '/_report/check/result/$reportId'
+    | '/_authenticated/account/listings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -529,6 +580,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteIndexRouteImport
       parentRoute: typeof SiteRouteRoute
     }
+    '/_site/listings': {
+      id: '/_site/listings'
+      path: '/listings'
+      fullPath: '/listings'
+      preLoaderRoute: typeof SiteListingsRouteImport
+      parentRoute: typeof SiteRouteRoute
+    }
     '/_site/publish': {
       id: '/_site/publish'
       path: '/publish'
@@ -562,13 +620,6 @@ declare module '@tanstack/react-router' {
       path: '/invoices'
       fullPath: '/account/invoices'
       preLoaderRoute: typeof AuthenticatedAccountInvoicesRouteImport
-      parentRoute: typeof AuthenticatedAccountRouteRoute
-    }
-    '/_authenticated/account/listings': {
-      id: '/_authenticated/account/listings'
-      path: '/listings'
-      fullPath: '/account/listings'
-      preLoaderRoute: typeof AuthenticatedAccountListingsRouteImport
       parentRoute: typeof AuthenticatedAccountRouteRoute
     }
     '/_authenticated/account/products': {
@@ -676,6 +727,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminScoringRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/users'
@@ -711,6 +769,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicPasswordResetNewRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_authenticated/account/listings/': {
+      id: '/_authenticated/account/listings/'
+      path: '/listings'
+      fullPath: '/account/listings/'
+      preLoaderRoute: typeof AuthenticatedAccountListingsIndexRouteImport
+      parentRoute: typeof AuthenticatedAccountRouteRoute
+    }
+    '/_authenticated/account/listings/$listingId': {
+      id: '/_authenticated/account/listings/$listingId'
+      path: '/listings/$listingId'
+      fullPath: '/account/listings/$listingId'
+      preLoaderRoute: typeof AuthenticatedAccountListingsListingIdRouteImport
+      parentRoute: typeof AuthenticatedAccountRouteRoute
+    }
+    '/_authenticated/account/listings/new': {
+      id: '/_authenticated/account/listings/new'
+      path: '/listings/new'
+      fullPath: '/account/listings/new'
+      preLoaderRoute: typeof AuthenticatedAccountListingsNewRouteImport
+      parentRoute: typeof AuthenticatedAccountRouteRoute
+    }
     '/_report/check/result/$reportId': {
       id: '/_report/check/result/$reportId'
       path: '/check/result/$reportId'
@@ -725,12 +804,14 @@ interface AuthenticatedAccountRouteRouteChildren {
   AuthenticatedAccountAppointmentsRoute: typeof AuthenticatedAccountAppointmentsRoute
   AuthenticatedAccountFavoritesRoute: typeof AuthenticatedAccountFavoritesRoute
   AuthenticatedAccountInvoicesRoute: typeof AuthenticatedAccountInvoicesRoute
-  AuthenticatedAccountListingsRoute: typeof AuthenticatedAccountListingsRoute
   AuthenticatedAccountProductsRoute: typeof AuthenticatedAccountProductsRoute
   AuthenticatedAccountReportsRoute: typeof AuthenticatedAccountReportsRoute
   AuthenticatedAccountRequestsRoute: typeof AuthenticatedAccountRequestsRoute
   AuthenticatedAccountSettingsRoute: typeof AuthenticatedAccountSettingsRoute
   AuthenticatedAccountIndexRoute: typeof AuthenticatedAccountIndexRoute
+  AuthenticatedAccountListingsListingIdRoute: typeof AuthenticatedAccountListingsListingIdRoute
+  AuthenticatedAccountListingsNewRoute: typeof AuthenticatedAccountListingsNewRoute
+  AuthenticatedAccountListingsIndexRoute: typeof AuthenticatedAccountListingsIndexRoute
 }
 
 const AuthenticatedAccountRouteRouteChildren: AuthenticatedAccountRouteRouteChildren =
@@ -739,12 +820,16 @@ const AuthenticatedAccountRouteRouteChildren: AuthenticatedAccountRouteRouteChil
       AuthenticatedAccountAppointmentsRoute,
     AuthenticatedAccountFavoritesRoute: AuthenticatedAccountFavoritesRoute,
     AuthenticatedAccountInvoicesRoute: AuthenticatedAccountInvoicesRoute,
-    AuthenticatedAccountListingsRoute: AuthenticatedAccountListingsRoute,
     AuthenticatedAccountProductsRoute: AuthenticatedAccountProductsRoute,
     AuthenticatedAccountReportsRoute: AuthenticatedAccountReportsRoute,
     AuthenticatedAccountRequestsRoute: AuthenticatedAccountRequestsRoute,
     AuthenticatedAccountSettingsRoute: AuthenticatedAccountSettingsRoute,
     AuthenticatedAccountIndexRoute: AuthenticatedAccountIndexRoute,
+    AuthenticatedAccountListingsListingIdRoute:
+      AuthenticatedAccountListingsListingIdRoute,
+    AuthenticatedAccountListingsNewRoute: AuthenticatedAccountListingsNewRoute,
+    AuthenticatedAccountListingsIndexRoute:
+      AuthenticatedAccountListingsIndexRoute,
   }
 
 const AuthenticatedAccountRouteRouteWithChildren =
@@ -763,6 +848,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminPaymentsRoute: typeof AuthenticatedAdminPaymentsRoute
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
   AuthenticatedAdminScoringRoute: typeof AuthenticatedAdminScoringRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -779,6 +865,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminPaymentsRoute: AuthenticatedAdminPaymentsRoute,
     AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
     AuthenticatedAdminScoringRoute: AuthenticatedAdminScoringRoute,
+    AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
     AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }
@@ -836,11 +923,13 @@ const ReportRouteRouteWithChildren = ReportRouteRoute._addFileChildren(
 )
 
 interface SiteRouteRouteChildren {
+  SiteListingsRoute: typeof SiteListingsRoute
   SitePublishRoute: typeof SitePublishRoute
   SiteIndexRoute: typeof SiteIndexRoute
 }
 
 const SiteRouteRouteChildren: SiteRouteRouteChildren = {
+  SiteListingsRoute: SiteListingsRoute,
   SitePublishRoute: SitePublishRoute,
   SiteIndexRoute: SiteIndexRoute,
 }

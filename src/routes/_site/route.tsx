@@ -4,7 +4,12 @@ import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SkipLink } from '@/components/layout/skip-link';
 import { homePathFor, useAuth } from '@/features/auth';
-import { LanguageSwitcher, UserMenu, useSyncProfileLocale } from '@/features/profile';
+import {
+  LanguageSwitcher,
+  SiteMenuAccount,
+  UserMenu,
+  useSyncProfileLocale,
+} from '@/features/profile';
 
 export const Route = createFileRoute('/_site')({
   component: SiteLayout,
@@ -25,6 +30,7 @@ function SiteLayout() {
             ? {
                 path: panelPath,
                 menu: <UserMenu user={user} tone="light" panelPath={panelPath} isNameHidden />,
+                menuSection: <SiteMenuAccount user={user} panelPath={panelPath} />,
               }
             : undefined
         }

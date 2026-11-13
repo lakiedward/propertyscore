@@ -73,7 +73,20 @@
       "reauthentication_needed": "Pentru siguranță, autentifică-te din nou, apoi reia acțiunea.",
       "invalid_password": "Parola nu este corectă.",
       "email_mismatch": "Adresa de email nu se potrivește cu cea a contului.",
-      "last_admin": "Ești singurul administrator. Numește alt administrator înainte să îți ștergi contul."
+      "last_admin": "Ești singurul administrator. Numește alt administrator înainte să îți ștergi contul.",
+      "listing_not_found": "Nu am găsit anunțul.",
+      "listing_already_pending": "Anunțul a fost deja trimis spre verificare.",
+      "listing_blocked": "Anunțul a fost blocat și nu mai poate fi modificat sau retrimis.",
+      "listing_invalid_transition": "Anunțul nu mai poate fi modificat în această stare.",
+      "listing_incomplete": "Adaugă o descriere și cel puțin 5 fotografii înainte să trimiți anunțul.",
+      "listing_not_pending": "Anunțul a fost deja verificat.",
+      "listing_photo_limit": "Poți adăuga cel mult 20 de fotografii.",
+      "listing_photos_changed": "Fotografiile s-au schimbat între timp. Reîncarcă pagina și încearcă din nou.",
+      "decision_reason_invalid": "Alege cel puțin un motiv.",
+      "decision_message_required": "Scrie un mesaj pentru proprietar.",
+      "decision_message_too_long": "Mesajul poate avea cel mult 2.000 de caractere.",
+      "listing_floor_above_building": "Etajul nu poate fi mai mare decât numărul de etaje ale clădirii.",
+      "value_out_of_range": "Valoarea este în afara limitelor permise."
     }
   },
   "validation": {
@@ -121,7 +134,6 @@
       "nav": "Meniu principal",
       "close": "Închide meniul",
       "home": "Acasă",
-      "onThisPage": "Pe această pagină",
       "forSale": {
         "title": "De vânzare",
         "all": "Toate anunțurile de vânzare"
@@ -143,7 +155,8 @@
         "publish": "Publică anunț gratuit",
         "partners": "Pentru agenți și agenții"
       },
-      "language": "Limba"
+      "language": "Limba",
+      "onThisPage": "Pe această pagină"
     },
     "footer": {
       "tagline": "Știi mai multe. Alegi informat. Verificăm locuința la fața locului și explicăm zona din date publice.",
@@ -194,7 +207,9 @@
     "zoomOut": "Micșorează",
     "title": "Hartă",
     "toggleAttribution": "Afișează sau ascunde sursele hărții",
-    "mapFeedback": "Trimite feedback despre hartă"
+    "mapFeedback": "Trimite feedback despre hartă",
+    "cooperativeDesktop": "Ține apăsat Ctrl sau ⌘ și derulează ca să mărești sau să micșorezi harta",
+    "cooperativeMobile": "Folosește două degete ca să miști harta"
   },
   "price": {
     "perMonth": "{{price}} / lună"
@@ -226,7 +241,8 @@
       "groups": {
         "today": "Azi",
         "portal": "Portal",
-        "business": "Business"
+        "business": "Business",
+        "account": "Cont"
       },
       "nav": {
         "dashboard": "Panou",
@@ -240,9 +256,13 @@
         "scoring": "Scoring",
         "analytics": "Analytics",
         "products": "Produse",
-        "content": "Conținut"
+        "content": "Conținut",
+        "settings": "Setări"
       },
-      "pageTitle": "{{page}} · Admin"
+      "pageTitle": "{{page}} · Admin",
+      "pendingListings_one": "{{count}} anunț de verificat",
+      "pendingListings_few": "{{count}} anunțuri de verificat",
+      "pendingListings_other": "{{count}} de anunțuri de verificat"
     },
     "expandMenu": "Extinde meniul",
     "collapseMenu": "Restrânge meniul",
@@ -257,6 +277,176 @@
         "admin": "Admin"
       }
     },
-    "crumb": "{{area}} / {{page}}"
+    "backToSite": "Înapoi la site"
+  },
+  "listingSummary": {
+    "transaction": {
+      "sale": "De vânzare",
+      "rent": "De închiriat"
+    },
+    "dealCity": "{{deal}} · {{city}}",
+    "pricePerMonth": "{{price}} / lună",
+    "area": "{{value}} m²",
+    "facts": {
+      "rooms_one": "{{count}} cameră",
+      "rooms_few": "{{count}} camere",
+      "rooms_other": "{{count}} de camere",
+      "floor": "Etaj {{floor}} din {{total}}",
+      "floorOnly": "Etaj {{floor}}",
+      "groundFloor": "Parter",
+      "basement": "Demisol",
+      "yearBuilt": "Construit {{year}}",
+      "bathrooms_one": "{{count}} baie",
+      "bathrooms_few": "{{count}} băi",
+      "bathrooms_other": "{{count}} de băi",
+      "landArea": "Teren {{area}}",
+      "levels_one": "{{count}} nivel peste parter",
+      "levels_few": "{{count}} niveluri peste parter",
+      "levels_other": "{{count}} de niveluri peste parter"
+    },
+    "morePhotos_one": "+{{count}} poză",
+    "morePhotos_few": "+{{count}} poze",
+    "morePhotos_other": "+{{count}} de poze",
+    "photoAlt": "Fotografia {{index}} din {{total}}: {{title}}",
+    "noPhotos": "Anunțul nu are fotografii.",
+    "typeDeal": {
+      "apartment": {
+        "sale": "Apartament de vânzare",
+        "rent": "Apartament de închiriat"
+      },
+      "house": {
+        "sale": "Casă de vânzare",
+        "rent": "Casă de închiriat"
+      }
+    }
+  },
+  "listingDetails": {
+    "propertyType": {
+      "apartment": "Apartament",
+      "house": "Casă"
+    },
+    "fields": {
+      "bathrooms": "Nr. băi",
+      "partitioning": "Compartimentare",
+      "comfort": "Confort",
+      "buildingType": "Tip imobil",
+      "houseType": "Tip locuință",
+      "landArea": "Suprafață teren",
+      "levels": "Locuința are",
+      "interiorCondition": "Stare interior",
+      "heating": "Sistem încălzire",
+      "cooling": "Climatizare",
+      "furnishing": "Mobilare",
+      "pets": "Animale de companie",
+      "balconies": "Nr. balcoane / terase / logii",
+      "parkingSpaces": "Nr. parcări / garaje",
+      "utilities": "Utilități",
+      "buildingServices": "Servicii imobil",
+      "pool": "Piscină",
+      "yard": "Curte / grădină",
+      "features": "Dotări"
+    },
+    "flags": {
+      "hasBasement": "Subsol",
+      "hasSemibasement": "Demisol",
+      "hasAttic": "Mansardă",
+      "isPassiveHouse": "Casă pasivă",
+      "hasElevator": "Lift",
+      "hasSharedYard": "Curte comună"
+    },
+    "options": {
+      "partitioning": {
+        "detached": "Decomandat",
+        "semi_detached": "Semidecomandat",
+        "non_detached": "Nedecomandat",
+        "circular": "Circular"
+      },
+      "comfort": {
+        "first": "1",
+        "second": "2",
+        "third": "3",
+        "luxury": "Lux"
+      },
+      "buildingType": {
+        "apartment_block": "Bloc de apartamente",
+        "house_villa": "Casă / vilă"
+      },
+      "houseType": {
+        "detached": "Individuală",
+        "duplex": "Duplex",
+        "triplex": "Triplex",
+        "terraced": "Înșiruită",
+        "other": "Altele"
+      },
+      "interiorCondition": {
+        "renovated": "Renovat",
+        "good": "Stare bună",
+        "needs_renovation": "Necesită renovare"
+      },
+      "heating": {
+        "building_boiler": "Centrală imobil",
+        "own_boiler": "Centrală proprie",
+        "convector": "Convector",
+        "infrared_panels": "Panouri infraroșu",
+        "district_heating": "Termoficare",
+        "heat_pump": "Pompă de căldură",
+        "solar_panels": "Panouri solare"
+      },
+      "cooling": {
+        "air_conditioning": "Aer condiționat",
+        "fan_heaters": "Aeroterme",
+        "fan_coils": "Ventiloconvectoare"
+      },
+      "furnishing": {
+        "furnished": "Mobilat",
+        "unfurnished": "Nemobilat",
+        "partly_furnished": "Parțial mobilat"
+      },
+      "pets": {
+        "allowed": "Acceptă animale de companie",
+        "not_allowed": "Nu acceptă animale de companie"
+      },
+      "utilities": {
+        "water": "Apă",
+        "sewerage": "Canalizare",
+        "gas": "Gaze",
+        "electricity": "Electricitate",
+        "cable_tv": "CATV",
+        "internet": "Internet"
+      },
+      "buildingServices": {
+        "administration": "Administrare",
+        "cleaning": "Menaj",
+        "security": "Pază",
+        "video_surveillance": "Supraveghere video"
+      },
+      "pool": {
+        "own": "Piscină proprie",
+        "shared": "Piscină comună"
+      },
+      "yard": {
+        "yard": "Curte",
+        "shared_yard": "Curte comună",
+        "garden": "Grădină"
+      }
+    },
+    "comfortValue": "Confort {{value}}",
+    "heading": "Detalii"
+  },
+  "photoGallery": {
+    "title": "Fotografii ({{count}})",
+    "description": "Toate fotografiile anunțului. Alege una ca s-o vezi mare.",
+    "counter": "{{index}} / {{total}}",
+    "all": "Toate fotografiile ({{count}})",
+    "open": "Deschide fotografia {{index}}",
+    "close": "Închide galeria",
+    "previous": "Fotografia anterioară",
+    "next": "Fotografia următoare",
+    "zoom": {
+      "label": "Mărire",
+      "in": "Mărește fotografia",
+      "out": "Micșorează fotografia",
+      "reset": "Mărire {{value}}, revino la dimensiunea inițială"
+    }
   }
 }

@@ -11,14 +11,15 @@ import { FieldGroup } from '@/components/ui/field';
 import { isAppError } from '@/lib/errors';
 import { SettingsSection } from '@/components/layout/settings-section';
 import { useDeleteOwnAccount } from '../api/auth.queries';
+import { useAuth } from '../auth-context';
 import { deleteAccountFormSchema, type DeleteAccountFormValues } from '../auth.schemas';
+import { settingsPathFor } from '../auth.utils';
 import { useFormError } from '../hooks/use-form-error';
 import { useSocialSignIn } from '../hooks/use-social-sign-in';
 import { AuthTextField } from './auth-text-field';
 import { FormErrorNotice } from './form-error-notice';
 import { SocialSignInNotice } from './social-sign-in-notice';
 
-const SETTINGS_PATH = '/account/settings';
 const REAUTHENTICATION_PROVIDER = 'google';
 
 type DeleteAccountSectionProps = {
@@ -30,7 +31,8 @@ export function DeleteAccountSection({ email, hasPassword }: DeleteAccountSectio
   const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const deleteAccount = useDeleteOwnAccount();
-  const social = useSocialSignIn(SETTINGS_PATH);
+  const { roles } = useAuth();
+  const social = useSocialSignIn(settingsPathFor(roles));
   const [isOpen, setIsOpen] = useState(false);
   const formId = useId();
   const form = useForm<DeleteAccountFormValues>({

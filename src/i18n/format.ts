@@ -2,6 +2,10 @@ import { currentLocale, type Locale } from './i18n';
 
 export type Currency = 'RON' | 'EUR';
 
+export function toCurrency(value: string): Currency {
+  return value === 'EUR' ? 'EUR' : 'RON';
+}
+
 const FORMAT_LOCALES: Readonly<Record<Locale, string>> = {
   ro: 'ro-RO',
   en: 'en-GB',
@@ -49,6 +53,10 @@ export function formatNumber(value: number, options?: Intl.NumberFormatOptions):
   return new Intl.NumberFormat(formatLocale(), options).format(value);
 }
 
+export function formatList(values: readonly string[]): string {
+  return new Intl.ListFormat(formatLocale(), { style: 'long', type: 'conjunction' }).format(values);
+}
+
 export function formatPercent(value: number, maximumFractionDigits = 0): string {
   return formatNumber(value, { style: 'percent', maximumFractionDigits });
 }
@@ -71,6 +79,19 @@ export function formatPrice(amount: number, currency: Currency): string {
     currencyDisplay: PRICE_CURRENCY_DISPLAY[currentLocale()],
     maximumFractionDigits: 0,
   });
+}
+
+export function formatPriceInThousands(amount: number, currency: Currency): string {
+  const parts = new Intl.NumberFormat(formatLocale(), {
+    style: 'currency',
+    currency,
+    currencyDisplay: PRICE_CURRENCY_DISPLAY[currentLocale()],
+    maximumFractionDigits: 0,
+  }).formatToParts(Math.round(amount / 1000));
+  const lastNumberIndex = parts.findLastIndex((part) => part.type === 'integer');
+  return parts
+    .map((part, index) => (index === lastNumberIndex ? `${part.value}k` : part.value))
+    .join('');
 }
 
 export type PriceParts = {
