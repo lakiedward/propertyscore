@@ -178,7 +178,7 @@ select results_eq(
       result -> 'green' -> 'parks'
     from public.online_reports where id = 'd0000000-0000-4000-8000-000000000002'
   $$,
-  $$ values ('sibiu'::text, '2026-10-31'::text, 'v2'::text, 69, 51, true, 50, 60, 60, 40, 80, 40, 20, '[]'::jsonb) $$,
+  $$ values ('sibiu'::text, '2026-10-31'::text, 'v3'::text, 69, 51, true, 50, 60, 60, 40, 80, 40, 20, '[]'::jsonb) $$,
   'The frozen result holds the city, the sources, the percentiles with ties at the middle rank, the city ranges and averages and the score sections'
 );
 

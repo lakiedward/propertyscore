@@ -25,10 +25,10 @@ select results_eq(
       params -> 'seismic' -> 'building_periods' -> 1 ->> 'until_year',
       params -> 'questions' -> 'always' ->> 0
     from public.scoring_versions
-    where kind = 'online' and label = 'v2' and is_active
+    where kind = 'online' and label = 'v3' and is_active
   $$,
   $$ values ('12'::text, '1990'::text, '1977'::text, 'bedroom_facade_side'::text) $$,
-  'The v2 formula carries the floor and building-period filters, the seismic design periods and the viewing questions'
+  'The active v3 formula carries the floor and building-period filters, the seismic design periods and the viewing questions'
 );
 
 select ok(
