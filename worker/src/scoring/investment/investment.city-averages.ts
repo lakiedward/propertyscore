@@ -1,4 +1,4 @@
-import { monthEnd, shiftDate, shiftMonths } from './investment.dates.ts';
+import { monthEnd, monthStart, shiftDate, shiftMonths } from './investment.dates.ts';
 
 export type CityAverage = {
   source: string;
@@ -185,7 +185,7 @@ function selectRent(query: CityAverageQuery): CityAverageRentBlock | null {
 }
 
 function grossYield(sale: CityAverageSaleBlock, rent: CityAverageRentBlock | null): number | null {
-  if (!rent) return null;
+  if (rent?.source.period !== sale.source.period) return null;
   if (sale.estimate_eur && rent.average_eur && rent.basis !== 'all') {
     return roundOneDecimal(((12 * rent.average_eur) / sale.estimate_eur) * 100);
   }
@@ -196,7 +196,7 @@ function grossYield(sale: CityAverageSaleBlock, rent: CityAverageRentBlock | nul
 function cityGrossYield(query: CityAverageQuery): number | null {
   const sale = latestRows(query, 'sale', (average) => average.eurM2 !== null)?.all;
   const rent = latestRows(query, 'rent', (average) => average.eurM2 !== null)?.all;
-  if (!sale?.eurM2 || !rent?.eurM2) return null;
+  if (!sale?.eurM2 || !rent?.eurM2 || sale.period !== rent.period) return null;
   return roundOneDecimal(((12 * rent.eurM2) / sale.eurM2) * 100);
 }
 
@@ -212,12 +212,17 @@ function distinctSources(sources: readonly CityAverageSource[]): CityAverageSour
   );
 }
 
+export function cityAverageHistoryStart(cutoffDate: string, windowDays: number): string {
+  return shiftMonths(monthStart(shiftDate(cutoffDate, -windowDays)), -12);
+}
+
 export function assessCityAverages(query: CityAverageQuery): CityAverageMarket | null {
   const sale = saleBlock(query);
   if (!sale) return null;
   const rent = selectRent(query);
+  const periodEnd = monthEnd(sale.source.period);
   return {
-    referenceDate: monthEnd(sale.source.period),
+    referenceDate: periodEnd < query.cutoffDate ? periodEnd : query.cutoffDate,
     sale,
     rent,
     grossYieldPct: grossYield(sale, rent),

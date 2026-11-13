@@ -11,7 +11,8 @@ import {
   readMarketContext,
   type MarketContext,
 } from './investment.db.ts';
-import { monthStart, shiftDate } from './investment.dates.ts';
+import { cityAverageHistoryStart } from './investment.city-averages.ts';
+import { shiftDate } from './investment.dates.ts';
 import {
   buildInvestmentReport,
   EMPTY_CITY_SUMMARY,
@@ -36,11 +37,7 @@ export async function assessInvestmentAtAddress(
   const cutoffDate = context.cutoff.toISOString().slice(0, 10);
   const [referenceDate, cityAverages] = await Promise.all([
     marketReferenceDate(sql, context),
-    listCityAverages(
-      sql,
-      context,
-      monthStart(shiftDate(cutoffDate, -(params.window_days + DAYS_IN_YEAR))),
-    ),
+    listCityAverages(sql, context, cityAverageHistoryStart(cutoffDate, params.window_days)),
   ]);
   const window = referenceDate
     ? { from: shiftDate(referenceDate, -params.window_days), to: referenceDate }

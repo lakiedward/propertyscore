@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { CityAverage } from './investment.city-averages.ts';
+import { cityAverageHistoryStart, type CityAverage } from './investment.city-averages.ts';
 import {
   buildInvestmentReport,
   EMPTY_CITY_SUMMARY,
@@ -205,7 +205,46 @@ describe('buildInvestmentReport with city averages', () => {
       }),
     );
 
-    expect(report.sale).toMatchObject({ precision: 'city_average' });
-    expect(report.sources.map((source) => source.scope)).toEqual(['city_average', 'city_average']);
+    expect(report).toMatchObject({
+      status: 'context',
+      sale: { precision: 'city_average' },
+      city: { sale_count: 0 },
+    });
+    expect(report.sources.map((source) => source.scope)).toEqual([
+      'listings',
+      'city_average',
+      'city_average',
+    ]);
+  });
+
+  it('computes no yield from a sale and a rent of different months', () => {
+    const report = buildInvestmentReport(
+      inputs({
+        cityAverages: SAMPLE_AVERAGES.map((item) =>
+          item.transaction === 'rent' ? { ...item, period: '2026-08-01' } : item,
+        ),
+      }),
+    );
+
+    expect(report.rent).toMatchObject({ average_eur: 560 });
+    expect(report.yield).toEqual({ gross_pct: null, city_gross_pct: null });
+  });
+
+  it('dates a current-month average no later than the snapshot', () => {
+    const report = buildInvestmentReport(
+      inputs({
+        cutoffDate: '2026-09-05',
+        declared: { areaM2: 84, rooms: null, floor: null, constructionYear: null },
+      }),
+    );
+
+    expect(report.reference_date).toBe('2026-09-05');
+  });
+});
+
+describe('cityAverageHistoryStart', () => {
+  it('reaches the month a year before the oldest fresh month, across a leap day', () => {
+    expect(cityAverageHistoryStart('2024-05-29', 90)).toBe('2023-02-01');
+    expect(cityAverageHistoryStart('2026-10-02', 90)).toBe('2025-07-01');
   });
 });

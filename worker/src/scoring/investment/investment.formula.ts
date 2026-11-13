@@ -578,7 +578,10 @@ function cityAverageReport(inputs: InvestmentInputs, market: CityAverageMarket):
     sale: market.sale,
     rent: market.rent,
     yield: { gross_pct: market.grossYieldPct, city_gross_pct: market.cityGrossYieldPct },
-    sources: market.sources.map((source) => ({ ...source, scope: 'city_average' as const })),
+    sources: [
+      ...inputs.sources,
+      ...market.sources.map((source) => ({ ...source, scope: 'city_average' as const })),
+    ],
   };
 }
 
