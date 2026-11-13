@@ -95,7 +95,9 @@ function designInputs(overrides: Partial<InvestmentInputs> = {}): InvestmentInpu
       }),
       rent: city({ count: 400, p50EurM2: 7.7, p50Eur: 520 }),
     },
-    sources: [{ source: 'imobiliare', period: '2026-09-01' }],
+    sources: [{ source: 'imobiliare', period: '2026-09-01', scope: 'listings', url: null }],
+    cutoffDate: '2026-10-02',
+    cityAverages: [],
     ...overrides,
   };
 }
@@ -135,8 +137,7 @@ describe('buildInvestmentReport', () => {
     );
     const report = buildInvestmentReport(designInputs({ sale }));
 
-    expect(report.sale?.radius_m).toBe(1200);
-    expect(report.sale?.count).toBe(21);
+    expect(report.sale).toMatchObject({ radius_m: 1200, count: 21 });
   });
 
   it('falls back to the city figures without a histogram when the area is sparse', () => {
@@ -281,7 +282,7 @@ describe('buildInvestmentReport', () => {
     );
     const report = buildInvestmentReport(designInputs({ sale }));
 
-    expect(report.sale?.days_listed).toBe(45);
+    expect(report.sale).toMatchObject({ days_listed: 45 });
   });
 });
 

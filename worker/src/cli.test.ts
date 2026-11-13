@@ -136,3 +136,33 @@ describe('parseCommand for the Health sources import', () => {
     ).toThrow(expect.objectContaining({ code: 'invalid_valid_from' }));
   });
 });
+
+describe('parseCommand for the city averages import', () => {
+  it('reads the source, the file and the exchange rate', () => {
+    expect(
+      parseCommand(
+        [
+          'import-city-averages',
+          '--source',
+          'imobiliare_index',
+          '--file',
+          '/data/city-averages.csv',
+          '--eur-ron',
+          '4.97',
+        ],
+        NOW,
+      ),
+    ).toEqual({
+      command: 'import-city-averages',
+      source: 'imobiliare_index',
+      filePath: '/data/city-averages.csv',
+      eurRonRate: 4.97,
+    });
+  });
+
+  it('names the invalid fields', () => {
+    expect(() => parseCommand(['import-city-averages', '--source', 'Imobiliare'], NOW)).toThrow(
+      expect.objectContaining({ code: 'invalid_city_averages_import' }),
+    );
+  });
+});

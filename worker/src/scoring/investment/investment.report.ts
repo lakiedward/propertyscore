@@ -3,6 +3,7 @@ import { sectionParams } from '../../report/cell-category.ts';
 import { readDeclaredDetails } from '../../report/declared.ts';
 import type { ReportSection } from '../../report/report-section.ts';
 import {
+  listCityAverages,
   listComparables,
   listMarketSources,
   marketReferenceDate,
@@ -10,10 +11,11 @@ import {
   readMarketContext,
   type MarketContext,
 } from './investment.db.ts';
+import { cityAverageHistoryStart } from './investment.city-averages.ts';
+import { shiftDate } from './investment.dates.ts';
 import {
   buildInvestmentReport,
   EMPTY_CITY_SUMMARY,
-  shiftDate,
   type DeclaredHome,
   type InvestmentReport,
 } from './investment.formula.ts';
@@ -32,7 +34,11 @@ export async function assessInvestmentAtAddress(
   },
 ): Promise<InvestmentReport> {
   const { params } = input;
-  const referenceDate = await marketReferenceDate(sql, context);
+  const cutoffDate = context.cutoff.toISOString().slice(0, 10);
+  const [referenceDate, cityAverages] = await Promise.all([
+    marketReferenceDate(sql, context),
+    listCityAverages(sql, context, cityAverageHistoryStart(cutoffDate, params.window_days)),
+  ]);
   const window = referenceDate
     ? { from: shiftDate(referenceDate, -params.window_days), to: referenceDate }
     : null;
@@ -46,6 +52,8 @@ export async function assessInvestmentAtAddress(
       rent: [],
       city: { sale: EMPTY_CITY_SUMMARY, rent: EMPTY_CITY_SUMMARY },
       sources: [],
+      cutoffDate,
+      cityAverages,
     });
   }
 
@@ -74,6 +82,8 @@ export async function assessInvestmentAtAddress(
     rent,
     city,
     sources,
+    cutoffDate,
+    cityAverages,
   });
 }
 
