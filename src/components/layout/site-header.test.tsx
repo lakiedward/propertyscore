@@ -42,9 +42,11 @@ describe('SiteHeader', () => {
     expect(
       within(menu).getByRole('link', { name: roCommon.site.publishSections.verified }),
     ).toHaveAttribute('href', '/publish#verified');
-    expect(
-      within(menu).queryByRole('link', { name: roCommon.site.sections.pricing }),
-    ).not.toBeInTheDocument();
+    const pricingLinks = within(menu).getAllByRole('link', {
+      name: roCommon.site.menu.services.pricing,
+    });
+    expect(pricingLinks).toHaveLength(1);
+    expect(pricingLinks[0]).toHaveAttribute('href', '/#pricing');
   });
 
   it('puts the header buttons in the menu for small screens', async () => {

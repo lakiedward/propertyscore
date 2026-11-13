@@ -233,6 +233,7 @@ const maplibre = vi.hoisted(() => {
       AttributionControl: FakeAttributionControl,
       GeoJSONSource: FakeGeoJSONSource,
       setWorkerUrl: vi.fn(),
+      prewarm: vi.fn(),
     },
   };
 });
