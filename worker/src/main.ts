@@ -10,6 +10,7 @@ import { insertReport } from './report/report.db.ts';
 import { REPORT_SECTIONS } from './report/sections.ts';
 import { importHealthSources } from './scoring/health/import-health-sources.ts';
 import { createValhallaClient, type ValhallaClient } from './routing/valhalla.ts';
+import { importCityAverages } from './scoring/investment/city-averages-import.ts';
 import { readActiveInvestmentParams } from './scoring/investment/investment.db.ts';
 import { importMarketListings } from './scoring/investment/market-import.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
@@ -109,6 +110,22 @@ async function runCommand(
       });
       logger.info('import-market-listings done', {
         import_id: result.importId,
+        accepted: result.accepted,
+      });
+      return;
+    }
+    case 'import-city-averages': {
+      const result = await importCityAverages({
+        sql,
+        source: command.source,
+        filePath: command.filePath,
+        eurRonRate: command.eurRonRate,
+        params: await readActiveInvestmentParams(sql),
+        logger,
+      });
+      logger.info('import-city-averages done', {
+        import_id: result.importId,
+        period: result.period,
         accepted: result.accepted,
       });
       return;

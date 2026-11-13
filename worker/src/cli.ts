@@ -42,11 +42,19 @@ export type ImportMarketListingsCommand = {
   eurRonRate: number | null;
 };
 
+export type ImportCityAveragesCommand = {
+  command: 'import-city-averages';
+  source: string;
+  filePath: string;
+  eurRonRate: number | null;
+};
+
 export type WorkerCommand =
   | BuildSnapshotCommand
   | GenerateReportCommand
   | CreateReportCommand
   | ImportMarketListingsCommand
+  | ImportCityAveragesCommand
   | ImportHealthSourcesCommand;
 
 const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -63,9 +71,17 @@ const createReportSchema = z.object({
   locale: z.enum(['ro', 'en']).default('ro'),
 });
 
+const MARKET_SOURCE = /^[a-z][a-z0-9_]{1,39}$/;
+
 const importMarketListingsSchema = z.object({
-  source: z.string().regex(/^[a-z][a-z0-9_]{1,39}$/),
+  source: z.string().regex(MARKET_SOURCE),
   period: z.string().regex(PERIOD),
+  file: z.string().min(1),
+  'eur-ron': z.coerce.number().positive().optional(),
+});
+
+const importCityAveragesSchema = z.object({
+  source: z.string().regex(MARKET_SOURCE),
   file: z.string().min(1),
   'eur-ron': z.coerce.number().positive().optional(),
 });
@@ -192,6 +208,31 @@ function parseImportMarketListings(argv: readonly string[]): ImportMarketListing
   };
 }
 
+function parseImportCityAverages(argv: readonly string[]): ImportCityAveragesCommand {
+  const { values } = parseArgs({
+    args: [...argv],
+    options: {
+      source: { type: 'string' },
+      file: { type: 'string' },
+      'eur-ron': { type: 'string' },
+    },
+  });
+  const parsed = importCityAveragesSchema.safeParse(values);
+  if (!parsed.success) {
+    const fields = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
+    throw new WorkerError(
+      'invalid_city_averages_import',
+      `import-city-averages needs valid: ${fields}`,
+    );
+  }
+  return {
+    command: 'import-city-averages',
+    source: parsed.data.source,
+    filePath: parsed.data.file,
+    eurRonRate: parsed.data['eur-ron'] ?? null,
+  };
+}
+
 export function parseCommand(argv: readonly string[], now: Date): WorkerCommand {
   const [command, ...rest] = argv;
   switch (command) {
@@ -205,6 +246,8 @@ export function parseCommand(argv: readonly string[], now: Date): WorkerCommand 
       return parseImportHealthSources(rest, now);
     case 'import-market-listings':
       return parseImportMarketListings(rest);
+    case 'import-city-averages':
+      return parseImportCityAverages(rest);
     default:
       throw new WorkerError('unknown_command', `Unknown command: ${command ?? '(none)'}`);
   }

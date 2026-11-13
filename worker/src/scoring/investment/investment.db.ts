@@ -1,19 +1,29 @@
 import type { Sql } from '../../db/sql.ts';
 import { WorkerError } from '../../lib/errors.ts';
+import type { CityAverage } from './investment.city-averages.ts';
 import {
   EMPTY_CITY_SUMMARY,
   type CityMarketSummary,
   type MarketListing,
   type MarketSourcePeriod,
 } from './investment.formula.ts';
+import type { CityAverageRow } from './city-averages-import.ts';
 import type { MarketListingRow } from './market-import.ts';
 import { parseInvestmentParams, type InvestmentParams } from './investment.params.ts';
 
 type Transaction = 'sale' | 'rent';
 
+type MarketImportContent = 'listings' | 'city_averages';
+
 export async function beginMarketImport(
   sql: Sql,
-  input: { source: string; period: string; sha256: string; eurRonRate: number | null },
+  input: {
+    source: string;
+    period: string;
+    sha256: string;
+    eurRonRate: number | null;
+    content: MarketImportContent;
+  },
 ): Promise<string> {
   return sql.begin(async (transaction) => {
     const [existing] = await transaction<{ id: string; completed_at: Date | null }[]>`
@@ -27,16 +37,18 @@ export async function beginMarketImport(
     }
     if (existing) {
       await transaction`delete from private.market_listings where import_id = ${existing.id}`;
+      await transaction`delete from private.market_city_averages where import_id = ${existing.id}`;
       await transaction`
         update private.market_imports
-        set period = ${input.period}, eur_ron_rate = ${input.eurRonRate}, accepted_count = 0, rejected = '{}'
+        set period = ${input.period}, eur_ron_rate = ${input.eurRonRate}, content = ${input.content},
+          accepted_count = 0, rejected = '{}'
         where id = ${existing.id}
       `;
       return existing.id;
     }
     const [created] = await transaction<{ id: string }[]>`
-      insert into private.market_imports (source, period, file_sha256, eur_ron_rate)
-      values (${input.source}, ${input.period}, ${input.sha256}, ${input.eurRonRate})
+      insert into private.market_imports (source, period, file_sha256, eur_ron_rate, content)
+      values (${input.source}, ${input.period}, ${input.sha256}, ${input.eurRonRate}, ${input.content})
       returning id
     `;
     if (!created)
@@ -53,6 +65,17 @@ export async function insertMarketListings(
 ): Promise<number> {
   const [result] = await sql<{ inserted: number }[]>`
     select private.insert_market_listings(${importId}, ${cityBufferM}, ${sql.json(rows)}::jsonb) as inserted
+  `;
+  return result?.inserted ?? 0;
+}
+
+export async function insertCityAverages(
+  sql: Sql,
+  importId: string,
+  rows: readonly CityAverageRow[],
+): Promise<number> {
+  const [result] = await sql<{ inserted: number }[]>`
+    select private.insert_market_city_averages(${importId}, ${sql.json(rows)}::jsonb) as inserted
   `;
   return result?.inserted ?? 0;
 }
@@ -204,7 +227,7 @@ export async function listMarketSources(
   window: { from: string; to: string },
 ): Promise<MarketSourcePeriod[]> {
   return sql<MarketSourcePeriod[]>`
-    select i.source, max(i.period)::text as period
+    select i.source, max(i.period)::text as period, 'listings' as scope, null as url
     from private.market_imports i
     where i.completed_at is not null
       and i.completed_at <= ${context.cutoff}
@@ -218,6 +241,41 @@ export async function listMarketSources(
     group by i.source
     order by i.source
   `;
+}
+
+export async function listCityAverages(
+  sql: Sql,
+  context: MarketContext,
+  fromPeriod: string,
+): Promise<CityAverage[]> {
+  const rows = await sql<
+    {
+      source: string;
+      period: string;
+      transaction: CityAverage['transaction'];
+      property_type: CityAverage['propertyType'];
+      rooms_min: number | null;
+      rooms_max: number | null;
+      eur_m2: string | null;
+      eur_month: string | null;
+      source_url: string | null;
+    }[]
+  >`
+    select source, period::text as period, transaction, property_type, rooms_min, rooms_max,
+      eur_m2, eur_month, source_url
+    from private.market_city_averages_at(${context.cityId}, ${context.cutoff}, ${fromPeriod}::date)
+  `;
+  return rows.map((row) => ({
+    source: row.source,
+    period: row.period,
+    transaction: row.transaction,
+    propertyType: row.property_type,
+    roomsMin: row.rooms_min,
+    roomsMax: row.rooms_max,
+    eurM2: row.eur_m2 === null ? null : Number(row.eur_m2),
+    eurMonth: row.eur_month === null ? null : Number(row.eur_month),
+    sourceUrl: row.source_url,
+  }));
 }
 
 export async function readActiveInvestmentParams(sql: Sql): Promise<InvestmentParams> {
