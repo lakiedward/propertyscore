@@ -72,10 +72,11 @@ begin
     import_id, city_id, period, transaction, property_type, rooms_min, rooms_max,
     price_m2, price_month, currency, eur_m2, eur_month, source_url
   )
-  select
+  select distinct on (c.id, r.period, r.transaction, r.property_type, r.rooms_min, r.rooms_max)
     p_import_id, c.id, r.period, r.transaction, r.property_type, r.rooms_min, r.rooms_max,
     r.price_m2, r.price_month, r.currency, r.eur_m2, r.eur_month, r.source_url
-  from jsonb_to_recordset(p_rows) as r (
+  from jsonb_array_elements(p_rows) with ordinality as element (value, position)
+  cross join lateral jsonb_to_record(element.value) as r (
     city text,
     period date,
     transaction private.market_transaction,
@@ -90,6 +91,7 @@ begin
     source_url text
   )
   join public.cities c on c.slug = r.city and c.has_online_coverage
+  order by c.id, r.period, r.transaction, r.property_type, r.rooms_min, r.rooms_max, element.position
   on conflict on constraint market_city_averages_import_key do nothing;
 
   get diagnostics v_inserted = row_count;
