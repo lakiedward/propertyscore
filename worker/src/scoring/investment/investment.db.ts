@@ -7,13 +7,14 @@ import {
   type MarketListing,
   type MarketSourcePeriod,
 } from './investment.formula.ts';
+import type { AreaStatisticRow, CoveredCity } from './area-statistics.ts';
 import type { CityAverageRow } from './city-averages-import.ts';
 import type { MarketListingRow } from './market-import.ts';
 import { parseInvestmentParams, type InvestmentParams } from './investment.params.ts';
 
 type Transaction = 'sale' | 'rent';
 
-type MarketImportContent = 'listings' | 'city_averages';
+type MarketImportContent = 'listings' | 'city_averages' | 'area_statistics';
 
 export async function beginMarketImport(
   sql: Sql,
@@ -38,6 +39,7 @@ export async function beginMarketImport(
     if (existing) {
       await transaction`delete from private.market_listings where import_id = ${existing.id}`;
       await transaction`delete from private.market_city_averages where import_id = ${existing.id}`;
+      await transaction`delete from private.market_area_statistics where import_id = ${existing.id}`;
       await transaction`
         update private.market_imports
         set period = ${input.period}, eur_ron_rate = ${input.eurRonRate}, content = ${input.content},
@@ -78,6 +80,45 @@ export async function insertCityAverages(
     select private.insert_market_city_averages(${importId}, ${sql.json(rows)}::jsonb) as inserted
   `;
   return result?.inserted ?? 0;
+}
+
+export async function insertAreaStatistics(
+  sql: Sql,
+  importId: string,
+  rows: readonly AreaStatisticRow[],
+): Promise<number> {
+  const [result] = await sql<{ inserted: number }[]>`
+    select private.insert_market_area_statistics(${importId}, ${sql.json(rows)}::jsonb) as inserted
+  `;
+  return result?.inserted ?? 0;
+}
+
+export async function hasCompletedMarketImport(
+  sql: Sql,
+  source: string,
+  period: string,
+): Promise<boolean> {
+  const [row] = await sql<{ is_imported: boolean }[]>`
+    select exists (
+      select 1
+      from private.market_imports
+      where source = ${source} and period = ${period}::date and completed_at is not null
+    ) as is_imported
+  `;
+  return row?.is_imported ?? false;
+}
+
+export async function listCoveredCities(
+  sql: Sql,
+  citySlugs: readonly string[],
+): Promise<CoveredCity[]> {
+  return sql<CoveredCity[]>`
+    select slug, name
+    from public.cities
+    where has_online_coverage
+      and (${citySlugs.length === 0} or slug = any(${[...citySlugs]}::text[]))
+    order by position
+  `;
 }
 
 export async function discardMarketImport(sql: Sql, importId: string): Promise<void> {

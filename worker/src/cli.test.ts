@@ -166,3 +166,37 @@ describe('parseCommand for the city averages import', () => {
     );
   });
 });
+
+describe('parseCommand import-market-statistics', () => {
+  it('reads every source for every covered city in the current month by default', () => {
+    expect(parseCommand(['import-market-statistics'], NOW)).toEqual({
+      command: 'import-market-statistics',
+      sources: ['apartamente_org', 'apartamente_org_index', 'imospot_index'],
+      citySlugs: [],
+      period: '2026-11-01',
+    });
+  });
+
+  it('narrows the sources and the cities, keeping the source order', () => {
+    expect(
+      parseCommand(
+        [
+          'import-market-statistics',
+          '--source',
+          'imospot_index',
+          '--source',
+          'apartamente_org',
+          '--city',
+          'timisoara',
+        ],
+        NOW,
+      ),
+    ).toMatchObject({ sources: ['apartamente_org', 'imospot_index'], citySlugs: ['timisoara'] });
+  });
+
+  it('refuses a source without an agreement', () => {
+    expect(() =>
+      parseCommand(['import-market-statistics', '--source', 'imobiliare_ro'], NOW),
+    ).toThrow(expect.objectContaining({ code: 'invalid_market_statistics_import' }));
+  });
+});

@@ -21,6 +21,7 @@ const envSchema = z
       .optional(),
     AIR_EEA_PM25_MAP_URL: z.url({ protocol: /^https$/ }).optional(),
     AIR_EEA_NO2_MAP_URL: z.url({ protocol: /^https$/ }).optional(),
+    MARKET_SOURCE_CONTACT: z.union([z.email(), z.url({ protocol: /^https$/ })]).optional(),
   })
   .refine((env) => !env.SOURCE_MIRROR_URL || env.OSM_EXTRACT_API_KEY, {
     path: ['OSM_EXTRACT_API_KEY'],

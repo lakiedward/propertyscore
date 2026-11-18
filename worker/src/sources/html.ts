@@ -19,7 +19,7 @@ function decodeEntities(text: string): string {
   });
 }
 
-function cellText(html: string): string {
+export function htmlText(html: string): string {
   return decodeEntities(html.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]*>/g, ' '))
     .replace(/\s+/g, ' ')
     .trim();
@@ -30,7 +30,7 @@ export function htmlTableRows(html: string): string[][] {
   const rows: string[][] = [];
   for (const row of body.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)) {
     const cells = [...(row[1] ?? '').matchAll(/<t[hd]\b[^>]*>([\s\S]*?)<\/t[hd]>/gi)].map((cell) =>
-      cellText(cell[1] ?? ''),
+      htmlText(cell[1] ?? ''),
     );
     if (cells.some((cell) => cell !== '')) rows.push(cells);
   }

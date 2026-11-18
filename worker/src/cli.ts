@@ -4,6 +4,10 @@ import { z } from 'zod';
 
 import { WorkerError } from './lib/errors.ts';
 import { CATEGORY_KEYS, type CategoryKey } from './scoring/categories.ts';
+import {
+  MARKET_STATISTICS_SOURCES,
+  type MarketStatisticsSource,
+} from './scoring/investment/area-statistics-import.ts';
 
 export type BuildSnapshotCommand = {
   command: 'build-snapshot';
@@ -49,12 +53,20 @@ export type ImportCityAveragesCommand = {
   eurRonRate: number | null;
 };
 
+export type ImportMarketStatisticsCommand = {
+  command: 'import-market-statistics';
+  sources: MarketStatisticsSource[];
+  citySlugs: string[];
+  period: string;
+};
+
 export type WorkerCommand =
   | BuildSnapshotCommand
   | GenerateReportCommand
   | CreateReportCommand
   | ImportMarketListingsCommand
   | ImportCityAveragesCommand
+  | ImportMarketStatisticsCommand
   | ImportHealthSourcesCommand;
 
 const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -71,6 +83,8 @@ const createReportSchema = z.object({
   locale: z.enum(['ro', 'en']).default('ro'),
 });
 
+const CITY_SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
 const MARKET_SOURCE = /^[a-z][a-z0-9_]{1,39}$/;
 
 const importMarketListingsSchema = z.object({
@@ -84,6 +98,11 @@ const importCityAveragesSchema = z.object({
   source: z.string().regex(MARKET_SOURCE),
   file: z.string().min(1),
   'eur-ron': z.coerce.number().positive().optional(),
+});
+
+const importMarketStatisticsSchema = z.object({
+  source: z.array(z.enum(MARKET_STATISTICS_SOURCES)).default([...MARKET_STATISTICS_SOURCES]),
+  city: z.array(z.string().regex(CITY_SLUG)).default([]),
 });
 
 function isCategoryKey(value: string): value is CategoryKey {
@@ -233,6 +252,33 @@ function parseImportCityAverages(argv: readonly string[]): ImportCityAveragesCom
   };
 }
 
+function parseImportMarketStatistics(
+  argv: readonly string[],
+  now: Date,
+): ImportMarketStatisticsCommand {
+  const { values } = parseArgs({
+    args: [...argv],
+    options: {
+      source: { type: 'string', multiple: true },
+      city: { type: 'string', multiple: true },
+    },
+  });
+  const parsed = importMarketStatisticsSchema.safeParse(values);
+  if (!parsed.success) {
+    const fields = parsed.error.issues.map((issue) => issue.path[0]).join(', ');
+    throw new WorkerError(
+      'invalid_market_statistics_import',
+      `import-market-statistics needs valid: ${fields}`,
+    );
+  }
+  return {
+    command: 'import-market-statistics',
+    sources: MARKET_STATISTICS_SOURCES.filter((source) => parsed.data.source.includes(source)),
+    citySlugs: parsed.data.city,
+    period: `${currentPeriod(now)}-01`,
+  };
+}
+
 export function parseCommand(argv: readonly string[], now: Date): WorkerCommand {
   const [command, ...rest] = argv;
   switch (command) {
@@ -248,6 +294,8 @@ export function parseCommand(argv: readonly string[], now: Date): WorkerCommand 
       return parseImportMarketListings(rest);
     case 'import-city-averages':
       return parseImportCityAverages(rest);
+    case 'import-market-statistics':
+      return parseImportMarketStatistics(rest, now);
     default:
       throw new WorkerError('unknown_command', `Unknown command: ${command ?? '(none)'}`);
   }
