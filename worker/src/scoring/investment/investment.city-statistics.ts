@@ -56,7 +56,7 @@ export type CityStatisticsRentBlock = {
   property_type: 'apartment';
   price_kind: PriceKind;
   count: number | null;
-  basis: 'per_m2' | 'all';
+  basis: 'per_m2' | 'median_over_area' | 'all';
   median_eur: number | null;
   median_eur_m2: number | null;
   estimate_eur: number | null;
@@ -135,11 +135,12 @@ function sourceRank(source: string, sourceOrder: readonly string[]): number {
   return index < 0 ? sourceOrder.length : index;
 }
 
-function byPreference<Row extends { source: string }>(
+function byPreference<Row extends { source: string; period: string }>(
   sourceOrder: readonly string[],
   isComplete: (row: Row) => boolean,
 ): (a: Row, b: Row) => number {
   return (a, b) =>
+    b.period.localeCompare(a.period) ||
     Number(isComplete(b)) - Number(isComplete(a)) ||
     sourceRank(a.source, sourceOrder) - sourceRank(b.source, sourceOrder) ||
     a.source.localeCompare(b.source);
@@ -181,29 +182,33 @@ function saleBlock(query: CityStatisticsQuery, row: CityStatistic, medianEurM2: 
   return block;
 }
 
-function rentPerM2(row: CityStatistic): number | null {
-  if (row.medianEurM2 !== null) return row.medianEurM2;
+type RentPerM2 = { eurM2: number; basis: 'per_m2' | 'median_over_area' };
+
+function rentPerM2(row: CityStatistic): RentPerM2 | null {
+  if (row.medianEurM2 !== null) return { eurM2: row.medianEurM2, basis: 'per_m2' };
   if (row.medianEur === null || row.medianAreaM2 === null) return null;
-  return row.medianEur / row.medianAreaM2;
+  return { eurM2: row.medianEur / row.medianAreaM2, basis: 'median_over_area' };
 }
 
 function selectRent(
   query: CityStatisticsQuery,
-): { block: CityStatisticsRentBlock; eurM2: number | null } | null {
+): { block: CityStatisticsRentBlock; row: CityStatistic; eurM2: number | null } | null {
   const [row] = wholeMarket(query, 'rent')
     .filter((statistic) => statistic.zoneSlug === null)
     .sort(byPreference(query.sourceOrder, (statistic) => rentPerM2(statistic) !== null));
   if (!row) return null;
-  const eurM2 = rentPerM2(row);
+  const perM2 = rentPerM2(row);
+  const eurM2 = perM2?.eurM2 ?? null;
   const { areaM2 } = query;
   return {
     eurM2,
+    row,
     block: {
       precision: 'city_statistics',
       property_type: PROPERTY_TYPE,
       price_kind: 'asking',
       count: countOf(row),
-      basis: eurM2 === null ? 'all' : 'per_m2',
+      basis: perM2?.basis ?? 'all',
       median_eur: row.medianEur === null ? null : Math.round(row.medianEur),
       median_eur_m2: eurM2 === null ? null : roundDecimals(eurM2, 2),
       estimate_eur:
@@ -211,6 +216,25 @@ function selectRent(
       source: sourceOf(row),
     },
   };
+}
+
+function grossYield(
+  query: CityStatisticsQuery,
+  sale: CityStatistic,
+  rent: { row: CityStatistic; eurM2: number | null } | null,
+): number | null {
+  const rentEurM2 = rent?.eurM2 ?? null;
+  if (!rent || rentEurM2 === null) return null;
+  const sameSource = wholeMarket(query, 'sale').find(
+    (statistic) =>
+      statistic.zoneSlug === null &&
+      statistic.source === rent.row.source &&
+      statistic.period === rent.row.period &&
+      statistic.medianEurM2 !== null,
+  );
+  const basis = sameSource ?? (sale.period === rent.row.period ? sale : null);
+  if (!basis?.medianEurM2) return null;
+  return roundDecimals(((12 * rentEurM2) / basis.medianEurM2) * 100, 1);
 }
 
 function nearbyLocalities(query: CityStatisticsQuery, saleSource: string): NearbyLocality[] {
@@ -300,8 +324,7 @@ export function assessCityStatistics(query: CityStatisticsQuery): CityStatistics
     referenceDate: described < query.cutoffDate ? described : query.cutoffDate,
     sale,
     rent: rent?.block ?? null,
-    grossYieldPct:
-      rent?.eurM2 == null ? null : roundDecimals(((12 * rent.eurM2) / medianEurM2) * 100, 1),
+    grossYieldPct: grossYield(query, row, rent),
     nearby,
     history: saleHistory(query, row.source),
     sources: distinctSources([

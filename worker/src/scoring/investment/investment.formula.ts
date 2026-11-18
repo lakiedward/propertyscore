@@ -599,7 +599,7 @@ function cityStatisticsReport(
     reference_date: market.referenceDate,
     sale: market.sale,
     rent: market.rent,
-    yield: { gross_pct: market.grossYieldPct, city_gross_pct: market.grossYieldPct },
+    yield: { gross_pct: market.grossYieldPct, city_gross_pct: null },
     nearby: market.nearby,
     history: market.history,
     sources: [

@@ -193,6 +193,17 @@ describe('assessCityStatistics', () => {
     expect(market?.sources.map((source) => source.url)).toEqual([IMOSPOT_URL, RENT_PAGE]);
   });
 
+  it('prefers the newest month to a source with an interval', () => {
+    const market = assess({
+      statistics: [{ ...IMOSPOT_SALE, period: '2026-10-01' }, PAGE_SALE, PAGE_RENT],
+    });
+
+    expect(market?.sale).toMatchObject({
+      p25_eur_m2: null,
+      source: { source: 'apartamente_org', period: '2026-11-01' },
+    });
+  });
+
   it('shows no history from a single month', () => {
     expect(assess({ history: HISTORY.slice(0, 1) })?.history).toBeNull();
   });
@@ -230,8 +241,30 @@ describe('assessCityStatistics', () => {
       ],
     });
 
-    expect(market?.rent).toMatchObject({ basis: 'per_m2', median_eur_m2: 7.5, estimate_eur: 435 });
+    expect(market?.rent).toMatchObject({
+      basis: 'median_over_area',
+      median_eur_m2: 7.5,
+      estimate_eur: 435,
+    });
     expect(market?.grossYieldPct).toBe(4.5);
+  });
+
+  it('divides the rent by the sale price of the same source and month', () => {
+    const market = assess({
+      statistics: [IMOSPOT_SALE, { ...PAGE_SALE, medianEurM2: 2100 }, PAGE_RENT],
+    });
+
+    expect(market?.sale).toMatchObject({ median_eur_m2: 1984 });
+    expect(market?.grossYieldPct).toBe(5.4);
+  });
+
+  it('computes no yield from a sale and a rent of different months', () => {
+    const market = assess({
+      statistics: [{ ...IMOSPOT_SALE, period: '2026-10-01' }, PAGE_RENT],
+    });
+
+    expect(market?.rent).toMatchObject({ median_eur_m2: 9.52 });
+    expect(market?.grossYieldPct).toBeNull();
   });
 
   it('computes no yield from a rent known only as a monthly median', () => {

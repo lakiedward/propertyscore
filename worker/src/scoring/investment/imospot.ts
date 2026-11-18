@@ -93,7 +93,10 @@ export async function parseImospotIndexCsv(
     const p75 = parsePositiveNumber(raw.p75_eur_mp);
     const hasInterval = transaction === 'sale' && p25 !== null && p75 !== null;
     const neighbourhood = placeKey(raw.cartier);
-    if (place.locality !== null && neighbourhood !== '') continue;
+    if (place.locality !== null && neighbourhood !== '') {
+      skipped += 1;
+      continue;
+    }
     const zone =
       place.locality ?? (neighbourhood === '' ? null : { slug: neighbourhood, name: raw.cartier });
     rows.push({

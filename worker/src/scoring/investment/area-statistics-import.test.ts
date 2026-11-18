@@ -10,7 +10,7 @@ import {
   SMALL_ZONE_PAGE,
 } from './area-statistics.fixtures.ts';
 import { checkAreaStatistic, placeKey, type AreaStatisticRow } from './area-statistics.ts';
-import { readActiveInvestmentParams } from './investment.db.ts';
+import { readActiveInvestmentParams, readMarketContext } from './investment.db.ts';
 import type { InvestmentParams } from './investment.params.ts';
 import { assessInvestmentAtAddress } from './investment.report.ts';
 
@@ -261,7 +261,7 @@ describe.skipIf(!databaseUrl)('market statistics import', () => {
         basis: 'per_m2',
         source: { source: 'apartamente_org_index', period: PREVIOUS_PERIOD },
       },
-      yield: { gross_pct: 5, city_gross_pct: 5 },
+      yield: { gross_pct: 5, city_gross_pct: null },
       history: null,
       sources: [
         {
@@ -288,6 +288,83 @@ describe.skipIf(!databaseUrl)('market statistics import', () => {
     );
 
     expect(report).toMatchObject({ status: 'no_data', reason: 'no_market_data', nearby: [] });
+  });
+
+  it('reads the statistics as they were when the report was created', async () => {
+    const snapshotFinishedAt = new Date('2020-01-01T00:00:00Z');
+    const [snapshot] = await sql<{ id: string }[]>`
+      insert into public.score_snapshots (scoring_version_id, period, status, finished_at, error_code)
+      select id, '2020-01-01', 'failed', ${snapshotFinishedAt}, 'vitest_market_context'
+      from public.scoring_versions
+      where kind = 'online' and is_active
+      returning id
+    `;
+    const [report] = await sql<{ id: string; created_at: Date }[]>`
+      insert into public.online_reports (owner_id, city_id, location, address_text)
+      select u.id, ${cityId}, extensions.st_point(21.2303, 45.7546, 4326)::extensions.geography,
+        'Vitest market context'
+      from auth.users u
+      order by u.created_at
+      limit 1
+      returning id, created_at
+    `;
+    try {
+      const snapshotId = snapshot?.id ?? '';
+      expect(await readMarketContext(sql, snapshotId, 'timisoara', report?.id)).toEqual({
+        cityId,
+        cutoff: snapshotFinishedAt,
+        statisticsCutoff: report?.created_at,
+      });
+      expect(await readMarketContext(sql, snapshotId, 'timisoara', undefined)).toEqual({
+        cityId,
+        cutoff: snapshotFinishedAt,
+        statisticsCutoff: snapshotFinishedAt,
+      });
+    } finally {
+      await sql`delete from public.online_reports where id = ${report?.id ?? null}`;
+      await sql`delete from public.score_snapshots where id = ${snapshot?.id ?? null}`;
+    }
+  });
+
+  it('refuses a past month for a source that agreed only to its current figures', async () => {
+    await expect(
+      importAreaStatistics({
+        sql,
+        sources: ['apartamente_org'],
+        citySlugs: ['timisoara'],
+        contact: CONTACT,
+        period: '2020-01-01',
+        isRetry: false,
+        params,
+        logger: silentLogger,
+        fetch: stubFetch,
+        minIntervalMs: 0,
+      }),
+    ).rejects.toMatchObject({ code: 'past_edition_not_agreed' });
+  });
+
+  it('reads only the requested edition of a past month', async () => {
+    await sql`delete from private.market_statistics_runs where run_month = '2020-01-01'`;
+    requested.length = 0;
+    await expect(
+      importAreaStatistics({
+        sql,
+        sources: ['imospot_index'],
+        citySlugs: ['timisoara'],
+        contact: CONTACT,
+        period: '2020-01-01',
+        isRetry: false,
+        params,
+        logger: silentLogger,
+        fetch: stubFetch,
+        minIntervalMs: 0,
+      }),
+    ).rejects.toMatchObject({ code: 'source_edition_missing' });
+    await sql`delete from private.market_statistics_runs where run_month = '2020-01-01'`;
+    expect(requested.map((request) => new URL(request.url).pathname)).toEqual([
+      '/robots.txt',
+      '/indicele-imospot/2020-01.csv',
+    ]);
   });
 
   it('sends no request for a source already read this month', async () => {

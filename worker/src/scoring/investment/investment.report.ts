@@ -39,9 +39,7 @@ export async function assessInvestmentAtAddress(
 ): Promise<InvestmentReport> {
   const { params } = input;
   const cutoffDate = context.cutoff.toISOString().slice(0, 10);
-  const statisticsCutoffDate = (context.statisticsCutoff ?? context.cutoff)
-    .toISOString()
-    .slice(0, 10);
+  const statisticsCutoffDate = context.statisticsCutoff.toISOString().slice(0, 10);
   const [referenceDate, cityAverages, cityStatistics, citySaleHistory] = await Promise.all([
     marketReferenceDate(sql, context),
     listCityAverages(sql, context, cityAverageHistoryStart(cutoffDate, params.window_days)),

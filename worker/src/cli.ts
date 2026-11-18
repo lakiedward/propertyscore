@@ -6,6 +6,7 @@ import { WorkerError } from './lib/errors.ts';
 import { CATEGORY_KEYS, type CategoryKey } from './scoring/categories.ts';
 import {
   MARKET_STATISTICS_SOURCES,
+  PAST_EDITION_SOURCES,
   type MarketStatisticsSource,
 } from './scoring/investment/area-statistics-import.ts';
 
@@ -107,8 +108,6 @@ const importMarketStatisticsSchema = z.object({
   period: z.string().regex(PERIOD).optional(),
   retry: z.boolean().default(false),
 });
-
-const PAST_EDITION_SOURCES: readonly string[] = ['imospot_index'];
 
 function isCategoryKey(value: string): value is CategoryKey {
   return CATEGORY_KEYS.some((key) => key === value);

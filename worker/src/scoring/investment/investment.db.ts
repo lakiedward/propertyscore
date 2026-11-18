@@ -170,7 +170,7 @@ export async function completeMarketImport(
   `;
 }
 
-export type MarketContext = { cityId: string; cutoff: Date; statisticsCutoff?: Date };
+export type MarketContext = { cityId: string; cutoff: Date; statisticsCutoff: Date };
 
 export async function readMarketContext(
   sql: Sql,
@@ -394,7 +394,7 @@ export async function listCityStatistics(
       property_type, rooms_min, observed_on::text as observed_on, listing_count, apartment_count,
       median_eur, median_eur_m2, p25_eur_m2, p75_eur_m2, median_area_m2, source_url
     from private.market_area_statistics_at(
-      ${context.cityId}, ${context.statisticsCutoff ?? context.cutoff}, ${fromPeriod}::date
+      ${context.cityId}, ${context.statisticsCutoff}, ${fromPeriod}::date
     )
     where zone_slug is null or is_nearby_locality
   `;
@@ -429,7 +429,7 @@ export async function listCitySaleHistory(
   >`
     select source, period::text as period, median_eur_m2, source_url
     from private.market_city_sale_history(
-      ${context.cityId}, ${context.statisticsCutoff ?? context.cutoff}, ${fromPeriod}::date
+      ${context.cityId}, ${context.statisticsCutoff}, ${fromPeriod}::date
     )
   `;
   return rows.map((row) => ({

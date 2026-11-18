@@ -66,6 +66,13 @@ describe('parseImospotIndexCsv', () => {
     expect(result.rows.some((row) => row.zone_slug === 'cristian')).toBe(false);
   });
 
+  it('counts a neighbourhood of a nearby locality as skipped', async () => {
+    const withNeighbourhood = IMOSPOT_CSV.replace('Giroc,Timis,,', 'Giroc,Timis,Centru,');
+    const result = await parseImospotIndexCsv(withNeighbourhood, '2026-11-01', CITIES);
+    expect(result.skipped).toBe(2);
+    expect(result.rows.some((row) => row.zone_slug === 'giroc')).toBe(false);
+  });
+
   it('asks only for the monthly index file', () => {
     const path = imospotIndexCsvPath('2026-11-01');
     expect(path).toBe('/indicele-imospot/2026-11.csv');
