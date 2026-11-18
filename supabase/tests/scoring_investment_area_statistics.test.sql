@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(24);
 
 select ok(
   (select relrowsecurity from pg_class where oid = 'private.market_area_statistics'::regclass),
@@ -56,11 +56,12 @@ select is(
     'c0000000-0000-4000-8000-000000000003',
     '[
       {"city": "timisoara", "transaction": "sale", "property_type": "apartment", "median_eur_m2": 1969.7, "source_url": "https://example.test/index/2026-09"},
-      {"city": "sibiu", "transaction": "sale", "property_type": "apartment", "median_eur_m2": 2012.99, "source_url": "https://example.test/index/2026-09"}
+      {"city": "sibiu", "transaction": "sale", "property_type": "apartment", "median_eur_m2": 2012.99, "source_url": "https://example.test/index/2026-09"},
+      {"city": "timisoara", "zone_slug": "giroc", "zone_name": "Giroc", "is_nearby_locality": true, "transaction": "sale", "property_type": "apartment", "listing_count": 171, "median_eur": 103000, "median_eur_m2": 1917, "p25_eur_m2": 1754, "p75_eur_m2": 2128, "median_area_m2": 53, "source_url": "https://example.test/index/2026-09"}
     ]'::jsonb
   ),
-  2,
-  'A second source keeps its own figures for the same city'
+  3,
+  'A second source keeps its own figures for the same city, and a locality next to it'
 );
 
 select throws_ok(
@@ -153,6 +154,7 @@ select results_eq(
   $$
     values
       ('sample_index'::text, '2026-09-01'::date, null::text, 'sale'::text, null::smallint, null::numeric, 1969.70::numeric, null::date, 'https://example.test/index/2026-09'::text),
+      ('sample_index'::text, '2026-09-01'::date, 'giroc'::text, 'sale'::text, null::smallint, 103000::numeric, 1917::numeric, null::date, 'https://example.test/index/2026-09'::text),
       ('sample_pages'::text, '2026-09-01'::date, null::text, 'sale'::text, null::smallint, 109900::numeric, 1984.13::numeric, '2026-09-18'::date, 'https://example.test/vanzare/timisoara'::text),
       ('sample_pages'::text, '2026-09-01'::date, null::text, 'sale'::text, 4::smallint, 169900::numeric, 1850::numeric, '2026-09-18'::date, 'https://example.test/vanzare/timisoara'::text),
       ('sample_pages'::text, '2026-09-01'::date, 'cetate'::text, 'rent'::text, null::smallint, 450::numeric, null::numeric, '2026-09-18'::date, 'https://example.test/chirii/timisoara/cetate'::text),
@@ -166,6 +168,7 @@ select results_eq(
     $$
       select source, period, median_eur_m2
       from private.market_area_statistics_at(%L, '2026-11-01 00:00:00+00', '2026-06-01')
+      where zone_slug is null
       order by source
     $$,
     :'timisoara_id'
@@ -185,6 +188,67 @@ select is(
   ),
   0,
   'Imports older than the requested start are left out'
+);
+
+select results_eq(
+  format(
+    $$
+      select zone_slug, is_nearby_locality, median_area_m2
+      from private.market_area_statistics_at(%L, '2026-10-01 00:00:00+00', '2026-06-01')
+      where source = 'sample_index'
+      order by zone_slug nulls first
+    $$,
+    :'timisoara_id'
+  ),
+  $$
+    values
+      (null::text, false, null::numeric),
+      ('giroc'::text, true, 53::numeric)
+  $$,
+  'A report tells the localities next to the city from its zones and reads the median area a source gives'
+);
+
+select throws_ok(
+  format(
+    $$
+      insert into private.market_area_statistics (import_id, city_id, is_nearby_locality, transaction, property_type, rooms_min, median_eur, source_url)
+      values ('c0000000-0000-4000-8000-000000000001', %L, true, 'rent', 'apartment', 2, 400, 'https://example.test/chirii/timisoara')
+    $$,
+    :'timisoara_id'
+  ),
+  '23514',
+  null,
+  'A nearby locality is a named zone'
+);
+
+select results_eq(
+  format(
+    $$
+      select source, period, median_eur_m2, source_url
+      from private.market_city_sale_history(%L, '2026-11-01 00:00:00+00', '2026-06-01')
+      order by source, period
+    $$,
+    :'timisoara_id'
+  ),
+  $$
+    values
+      ('sample_index'::text, '2026-09-01'::date, 1969.70::numeric, 'https://example.test/index/2026-09'::text),
+      ('sample_pages'::text, '2026-09-01'::date, 1984.13::numeric, 'https://example.test/vanzare/timisoara'::text),
+      ('sample_pages'::text, '2026-10-01'::date, 2001::numeric, 'https://example.test/vanzare/timisoara'::text)
+  $$,
+  'The history of a city is its whole-market sale median, one month per source, without zones, localities or rooms bands'
+);
+
+select results_eq(
+  format(
+    $$
+      select source, period
+      from private.market_city_sale_history(%L, '2026-10-01 00:00:00+00', '2026-10-01')
+    $$,
+    :'timisoara_id'
+  ),
+  $$ select null::text, null::date where false $$,
+  'The history leaves out the months before its start and the imports completed after the cutoff'
 );
 
 insert into private.market_statistics_runs (source, run_month)

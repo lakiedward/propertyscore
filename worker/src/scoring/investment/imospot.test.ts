@@ -13,11 +13,12 @@ describe('parseImospotIndexCsv', () => {
   it('keeps the apartments of covered cities and their neighbourhoods', async () => {
     const result = await parseImospotIndexCsv(IMOSPOT_CSV, '2026-11-01', CITIES);
     expect(result.skipped).toBe(1);
-    expect(result.rows).toHaveLength(4);
+    expect(result.rows).toHaveLength(6);
     expect(result.rows[1]).toEqual({
       city: 'timisoara',
       zone_slug: null,
       zone_name: null,
+      is_nearby_locality: false,
       transaction: 'sale',
       property_type: 'apartment',
       rooms_min: null,
@@ -31,6 +32,7 @@ describe('parseImospotIndexCsv', () => {
       median_eur_m2: 1984,
       p25_eur_m2: 1748,
       p75_eur_m2: 2318,
+      median_area_m2: 53,
       source_url: 'https://www.imospot.ro/indicele-imospot',
     });
     expect(result.rows[2]).toMatchObject({
@@ -44,6 +46,24 @@ describe('parseImospotIndexCsv', () => {
       median_eur_m2: null,
       p25_eur_m2: null,
     });
+  });
+
+  it('keeps the localities next to a covered city as its nearby localities', async () => {
+    const result = await parseImospotIndexCsv(IMOSPOT_CSV, '2026-11-01', CITIES);
+    const localities = result.rows.filter((row) => row.is_nearby_locality);
+    expect(localities).toHaveLength(2);
+    expect(localities[1]).toMatchObject({
+      city: 'timisoara',
+      zone_slug: 'dumbravita',
+      zone_name: 'Dumbrăvița',
+      transaction: 'sale',
+      listing_count: 43,
+      median_eur_m2: 2310,
+      p25_eur_m2: 2059,
+      p75_eur_m2: 2458,
+      median_area_m2: 60,
+    });
+    expect(result.rows.some((row) => row.zone_slug === 'cristian')).toBe(false);
   });
 
   it('asks only for the monthly index file', () => {

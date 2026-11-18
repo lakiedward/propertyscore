@@ -94,5 +94,8 @@ export const IMOSPOT_CSV = `\uFEFFperioada,categorie,oras,judet,cartier,valoare_
 2026-11,"Apartamente de vânzare",Braşov,Brasov,,2200,EUR/mp,1900,2500,125000,57,300,8,,"Indicele Imospot, imospot.ro/indicele-imospot"
 2026-11,"Case și vile de vânzare",Timişoara,Timis,,1500,EUR/mp,1200,1800,250000,160,90,6,,"Indicele Imospot, imospot.ro/indicele-imospot"
 2026-11,"Apartamente de închiriat",București,Bucuresti,,580,EUR/luna,,,580,56,991,25,-1.7,"Indicele Imospot, imospot.ro/indicele-imospot"
+2026-11,"Apartamente de vânzare",Giroc,Timis,,1917,EUR/mp,1754,2128,103000,53,171,8,-0.2,"Indicele Imospot, imospot.ro/indicele-imospot"
+2026-11,"Apartamente de vânzare",Dumbrăviţa,Timis,,2310,EUR/mp,2059,2458,132400,60,43,4,,"Indicele Imospot, imospot.ro/indicele-imospot"
+2026-11,"Apartamente de vânzare",Cristian,Brasov,,1700,EUR/mp,1500,1900,95000,56,30,3,,"Indicele Imospot, imospot.ro/indicele-imospot"
 2026-10,"Apartamente de vânzare","Târgu Mureş",Mures,,1912,EUR/mp,1703,2164,109000,57,208,5,,"Indicele Imospot, imospot.ro/indicele-imospot"
 `;

@@ -1,6 +1,7 @@
 import type { Sql } from '../../db/sql.ts';
 import { WorkerError } from '../../lib/errors.ts';
 import type { CityAverage } from './investment.city-averages.ts';
+import type { CitySaleMonth, CityStatistic } from './investment.city-statistics.ts';
 import {
   EMPTY_CITY_SUMMARY,
   type CityMarketSummary,
@@ -169,21 +170,30 @@ export async function completeMarketImport(
   `;
 }
 
-export type MarketContext = { cityId: string; cutoff: Date };
+export type MarketContext = { cityId: string; cutoff: Date; statisticsCutoff?: Date };
 
 export async function readMarketContext(
   sql: Sql,
   snapshotId: string,
   citySlug: string,
+  reportId: string | undefined,
 ): Promise<MarketContext | undefined> {
-  const [row] = await sql<{ city_id: string; finished_at: Date | null }[]>`
-    select c.id as city_id, s.finished_at
+  const [row] = await sql<
+    { city_id: string; finished_at: Date | null; report_created_at: Date | null }[]
+  >`
+    select c.id as city_id, s.finished_at,
+      (select r.created_at from public.online_reports r where r.id = ${reportId ?? null}::uuid)
+        as report_created_at
     from public.score_snapshots s
     cross join public.cities c
     where s.id = ${snapshotId} and c.slug = ${citySlug}
   `;
   if (!row?.finished_at) return undefined;
-  return { cityId: row.city_id, cutoff: row.finished_at };
+  return {
+    cityId: row.city_id,
+    cutoff: row.finished_at,
+    statisticsCutoff: row.report_created_at ?? row.finished_at,
+  };
 }
 
 export async function marketReferenceDate(
@@ -346,6 +356,86 @@ export async function listCityAverages(
     roomsMax: row.rooms_max,
     eurM2: row.eur_m2 === null ? null : Number(row.eur_m2),
     eurMonth: row.eur_month === null ? null : Number(row.eur_month),
+    sourceUrl: row.source_url,
+  }));
+}
+
+function numberOrNull(value: string | null): number | null {
+  return value === null ? null : Number(value);
+}
+
+export async function listCityStatistics(
+  sql: Sql,
+  context: MarketContext,
+  fromPeriod: string,
+): Promise<CityStatistic[]> {
+  const rows = await sql<
+    {
+      source: string;
+      period: string;
+      zone_slug: string | null;
+      zone_name: string | null;
+      is_nearby_locality: boolean;
+      transaction: CityStatistic['transaction'];
+      property_type: CityStatistic['propertyType'];
+      rooms_min: number | null;
+      observed_on: string | null;
+      listing_count: number | null;
+      apartment_count: number | null;
+      median_eur: string | null;
+      median_eur_m2: string | null;
+      p25_eur_m2: string | null;
+      p75_eur_m2: string | null;
+      median_area_m2: string | null;
+      source_url: string;
+    }[]
+  >`
+    select source, period::text as period, zone_slug, zone_name, is_nearby_locality, transaction,
+      property_type, rooms_min, observed_on::text as observed_on, listing_count, apartment_count,
+      median_eur, median_eur_m2, p25_eur_m2, p75_eur_m2, median_area_m2, source_url
+    from private.market_area_statistics_at(
+      ${context.cityId}, ${context.statisticsCutoff ?? context.cutoff}, ${fromPeriod}::date
+    )
+    where zone_slug is null or is_nearby_locality
+  `;
+  return rows.map((row) => ({
+    source: row.source,
+    period: row.period,
+    zoneSlug: row.zone_slug,
+    zoneName: row.zone_name,
+    isNearbyLocality: row.is_nearby_locality,
+    transaction: row.transaction,
+    propertyType: row.property_type,
+    roomsMin: row.rooms_min,
+    observedOn: row.observed_on,
+    listingCount: row.listing_count,
+    apartmentCount: row.apartment_count,
+    medianEur: numberOrNull(row.median_eur),
+    medianEurM2: numberOrNull(row.median_eur_m2),
+    p25EurM2: numberOrNull(row.p25_eur_m2),
+    p75EurM2: numberOrNull(row.p75_eur_m2),
+    medianAreaM2: numberOrNull(row.median_area_m2),
+    sourceUrl: row.source_url,
+  }));
+}
+
+export async function listCitySaleHistory(
+  sql: Sql,
+  context: MarketContext,
+  fromPeriod: string,
+): Promise<CitySaleMonth[]> {
+  const rows = await sql<
+    { source: string; period: string; median_eur_m2: string; source_url: string }[]
+  >`
+    select source, period::text as period, median_eur_m2, source_url
+    from private.market_city_sale_history(
+      ${context.cityId}, ${context.statisticsCutoff ?? context.cutoff}, ${fromPeriod}::date
+    )
+  `;
+  return rows.map((row) => ({
+    source: row.source,
+    period: row.period,
+    medianEurM2: Number(row.median_eur_m2),
     sourceUrl: row.source_url,
   }));
 }

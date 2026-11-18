@@ -98,6 +98,10 @@ function designInputs(overrides: Partial<InvestmentInputs> = {}): InvestmentInpu
     sources: [{ source: 'imobiliare', period: '2026-09-01', scope: 'listings', url: null }],
     cutoffDate: '2026-10-02',
     cityAverages: [],
+    cityStatistics: [],
+    citySaleHistory: [],
+    statisticsCutoffDate: '2026-10-02',
+    statisticSourceOrder: [],
     ...overrides,
   };
 }
@@ -269,7 +273,7 @@ describe('buildInvestmentReport', () => {
     );
     const report = buildInvestmentReport(designInputs({ salePreviousYear }));
 
-    expect(report.sale?.change_12m_pct).toBe(6);
+    expect(report.sale).toMatchObject({ change_12m_pct: 6 });
   });
 
   it('measures how long the listings that disappeared stayed online', () => {

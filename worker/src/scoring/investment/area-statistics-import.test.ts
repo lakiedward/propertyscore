@@ -12,6 +12,7 @@ import {
 import { checkAreaStatistic, placeKey, type AreaStatisticRow } from './area-statistics.ts';
 import { readActiveInvestmentParams } from './investment.db.ts';
 import type { InvestmentParams } from './investment.params.ts';
+import { assessInvestmentAtAddress } from './investment.report.ts';
 
 const databaseUrl = process.env.DATABASE_URL;
 const silentLogger = createLogger('error', () => undefined);
@@ -30,6 +31,7 @@ const ROW: AreaStatisticRow = {
   city: 'timisoara',
   zone_slug: 'cetate',
   zone_name: 'Cetate',
+  is_nearby_locality: false,
   transaction: 'sale',
   property_type: 'apartment',
   rooms_min: null,
@@ -43,6 +45,7 @@ const ROW: AreaStatisticRow = {
   median_eur_m2: 1833.33,
   p25_eur_m2: null,
   p75_eur_m2: null,
+  median_area_m2: null,
   source_url: 'https://apartamente.org/apartamente-de-vanzare/timisoara/cetate',
 };
 
@@ -180,7 +183,7 @@ describe.skipIf(!databaseUrl)('market statistics import', () => {
         rejected: { zone_without_data: 2, city_without_data: 1 },
       },
       { source: 'apartamente_org_index', period: PREVIOUS_PERIOD, accepted: 2, requests: 2 },
-      { source: 'imospot_index', period: PERIOD, accepted: 1, requests: 2 },
+      { source: 'imospot_index', period: PERIOD, accepted: 3, requests: 2 },
     ]);
     expect(
       requested.every((request) => request.userAgent === `PropertyScore/1.0 (+${CONTACT})`),
@@ -208,7 +211,7 @@ describe.skipIf(!databaseUrl)('market statistics import', () => {
       order by source, transaction, zone_slug nulls first, rooms_min nulls first
     `;
 
-    expect(rows).toHaveLength(7);
+    expect(rows).toHaveLength(9);
     expect(rows[0]).toEqual({
       source: 'apartamente_org',
       period: PERIOD,
@@ -225,6 +228,66 @@ describe.skipIf(!databaseUrl)('market statistics import', () => {
       observed_on: null,
       source_url: 'https://www.imospot.ro/indicele-imospot',
     });
+  });
+
+  it('fills the Investment context of a report created after the import', async () => {
+    const report = await assessInvestmentAtAddress(
+      sql,
+      { cityId, cutoff: new Date('2020-01-01T00:00:00Z'), statisticsCutoff: new Date() },
+      {
+        params,
+        latitude: 45.7546,
+        longitude: 21.2303,
+        declared: { areaM2: 58, rooms: 2, floor: null, constructionYear: null },
+      },
+    );
+
+    expect(report).toMatchObject({
+      status: 'context',
+      reason: null,
+      sale: {
+        precision: 'city_statistics',
+        price_kind: 'asking',
+        count: 952,
+        median_eur_m2: 1984,
+        p25_eur_m2: 1748,
+        p75_eur_m2: 2318,
+        typical: { area_m2: 53, price_eur: 107000 },
+        estimate_eur: 115000,
+        source: { source: 'imospot_index', period: PERIOD },
+      },
+      rent: {
+        precision: 'city_statistics',
+        basis: 'per_m2',
+        source: { source: 'apartamente_org_index', period: PREVIOUS_PERIOD },
+      },
+      yield: { gross_pct: 5, city_gross_pct: 5 },
+      history: null,
+      sources: [
+        {
+          source: 'imospot_index',
+          scope: 'city_statistics',
+          url: 'https://www.imospot.ro/indicele-imospot',
+        },
+        { source: 'apartamente_org_index', scope: 'city_statistics' },
+      ],
+    });
+    expect(report.nearby.map((locality) => locality.name)).toEqual(['Giroc', 'Dumbrăvița']);
+  });
+
+  it('keeps a report created before the import without figures', async () => {
+    const report = await assessInvestmentAtAddress(
+      sql,
+      { cityId, cutoff: new Date(), statisticsCutoff: new Date('2020-01-01T00:00:00Z') },
+      {
+        params,
+        latitude: 45.7546,
+        longitude: 21.2303,
+        declared: { areaM2: 58, rooms: 2, floor: null, constructionYear: null },
+      },
+    );
+
+    expect(report).toMatchObject({ status: 'no_data', reason: 'no_market_data', nearby: [] });
   });
 
   it('sends no request for a source already read this month', async () => {

@@ -201,6 +201,24 @@ describe('parseCommand import-market-statistics', () => {
     ).toMatchObject({ sources: ['apartamente_org', 'imospot_index'], citySlugs: ['timisoara'] });
   });
 
+  it('reads a past edition only of the index that allows it', () => {
+    expect(
+      parseCommand(
+        ['import-market-statistics', '--source', 'imospot_index', '--period', '2026-08'],
+        NOW,
+      ),
+    ).toMatchObject({ sources: ['imospot_index'], period: '2026-08-01' });
+    expect(() => parseCommand(['import-market-statistics', '--period', '2026-08'], NOW)).toThrow(
+      expect.objectContaining({ code: 'past_edition_not_agreed' }),
+    );
+    expect(() =>
+      parseCommand(
+        ['import-market-statistics', '--source', 'imospot_index', '--period', '2026-12'],
+        NOW,
+      ),
+    ).toThrow(expect.objectContaining({ code: 'invalid_period' }));
+  });
+
   it('refuses a source without an agreement', () => {
     expect(() =>
       parseCommand(['import-market-statistics', '--source', 'imobiliare_ro'], NOW),

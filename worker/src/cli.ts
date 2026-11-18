@@ -104,8 +104,11 @@ const importCityAveragesSchema = z.object({
 const importMarketStatisticsSchema = z.object({
   source: z.array(z.enum(MARKET_STATISTICS_SOURCES)).default([...MARKET_STATISTICS_SOURCES]),
   city: z.array(z.string().regex(CITY_SLUG)).default([]),
+  period: z.string().regex(PERIOD).optional(),
   retry: z.boolean().default(false),
 });
+
+const PAST_EDITION_SOURCES: readonly string[] = ['imospot_index'];
 
 function isCategoryKey(value: string): value is CategoryKey {
   return CATEGORY_KEYS.some((key) => key === value);
@@ -263,6 +266,7 @@ function parseImportMarketStatistics(
     options: {
       source: { type: 'string', multiple: true },
       city: { type: 'string', multiple: true },
+      period: { type: 'string' },
       retry: { type: 'boolean' },
     },
   });
@@ -274,11 +278,23 @@ function parseImportMarketStatistics(
       `import-market-statistics needs valid: ${fields}`,
     );
   }
+  const sources = MARKET_STATISTICS_SOURCES.filter((source) => parsed.data.source.includes(source));
+  const thisMonth = currentPeriod(now);
+  const period = parsed.data.period ?? thisMonth;
+  if (period > thisMonth) {
+    throw new WorkerError('invalid_period', `Period ${period} has not started yet`);
+  }
+  if (period < thisMonth && sources.some((source) => !PAST_EDITION_SOURCES.includes(source))) {
+    throw new WorkerError(
+      'past_edition_not_agreed',
+      `Only ${PAST_EDITION_SOURCES.join(', ')} may be read for a past month`,
+    );
+  }
   return {
     command: 'import-market-statistics',
-    sources: MARKET_STATISTICS_SOURCES.filter((source) => parsed.data.source.includes(source)),
+    sources,
     citySlugs: parsed.data.city,
-    period: `${currentPeriod(now)}-01`,
+    period: `${period}-01`,
     isRetry: parsed.data.retry,
   };
 }
