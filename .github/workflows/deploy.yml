@@ -25,7 +25,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec supabase link --project-ref "$SUPABASE_PROJECT_ID"
-      - run: pnpm exec supabase db push --include-all
+      - run: pnpm exec supabase db push
 
   site:
     needs: migrate
