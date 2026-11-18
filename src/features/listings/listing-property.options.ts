@@ -22,7 +22,7 @@ export const POOLS = ENUMS.listing_pool;
 export const YARDS = ENUMS.listing_yard;
 
 const LOWEST_FLOOR = -1;
-const HIGHEST_FLOOR = 40;
+export const HIGHEST_FLOOR = 40;
 export const MAX_BATHROOM_CHOICE = 4;
 
 const APARTMENT_UTILITIES: readonly ListingUtility[] = ['water', 'sewerage', 'gas'];

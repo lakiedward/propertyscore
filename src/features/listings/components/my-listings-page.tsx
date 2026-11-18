@@ -1,8 +1,9 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useSuspenseInfiniteQuery } from '@tanstack/react-query';
 import { getRouteApi, Link } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
+import { PanelPageHeader } from '@/components/layout/panel-page-header';
 import { Button } from '@/components/ui/button';
 import { myListingQueries } from '../api/my-listings.queries';
 import { MyListingCard } from './my-listing-card';
@@ -12,7 +13,8 @@ const authenticatedRoute = getRouteApi('/_authenticated');
 export function MyListingsPage() {
   const { t } = useTranslation('myListings');
   const { user } = authenticatedRoute.useRouteContext();
-  const { data } = useSuspenseQuery(myListingQueries.list(user.id));
+  const listings = useSuspenseInfiniteQuery(myListingQueries.list(user.id));
+  const items = listings.data.pages.flatMap((page) => page.items);
   const addListing = (
     <Button asChild size="md">
       <Link to="/account/listings/new">
@@ -24,23 +26,34 @@ export function MyListingsPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <p className="text-eyebrow leading-copy font-bold tracking-eyebrow text-muted-foreground uppercase">
-            {t('list.eyebrow')}
-          </p>
-          <h1 className="text-h2 leading-heading text-foreground">{t('list.title')}</h1>
-        </div>
-        {data.items.length > 0 ? addListing : null}
-      </header>
-      {data.items.length > 0 ? (
-        <ul aria-label={t('list.label')} className="flex flex-col gap-3.5">
-          {data.items.map((listing) => (
-            <li key={listing.id}>
-              <MyListingCard listing={listing} />
-            </li>
-          ))}
-        </ul>
+      <PanelPageHeader
+        eyebrow={t('list.eyebrow')}
+        title={t('list.title')}
+        actions={items.length > 0 ? addListing : null}
+      />
+      {items.length > 0 ? (
+        <>
+          <ul aria-label={t('list.label')} className="flex flex-col gap-3.5">
+            {items.map((listing) => (
+              <li key={listing.id}>
+                <MyListingCard listing={listing} />
+              </li>
+            ))}
+          </ul>
+          {listings.hasNextPage ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              className="self-center"
+              disabled={listings.isFetchingNextPage}
+              aria-busy={listings.isFetchingNextPage}
+              onClick={() => void listings.fetchNextPage()}
+            >
+              {t('list.more')}
+            </Button>
+          ) : null}
+        </>
       ) : (
         <EmptyState
           kind="empty"

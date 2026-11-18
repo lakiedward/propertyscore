@@ -1,8 +1,8 @@
-import { render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen, within } from '@testing-library/react';
 import { formatPercent } from '@/i18n/format';
 import roCommon from '@/i18n/locales/ro/common.json';
 import { PhotoMosaic } from './photo-mosaic';
+import { renderWithProviders } from '@/test/render';
 
 const zoomResetName = (scale: number) =>
   roCommon.photoGallery.zoom.reset.replace('{{value}}', formatPercent(scale));
@@ -15,8 +15,10 @@ const PHOTOS = Array.from({ length: 5 }, (_, index) => ({
 }));
 
 describe('PhotoMosaic', () => {
-  it('shows one large photo, two small ones and the hidden count', () => {
-    render(<PhotoMosaic photos={PHOTOS} moreLabel="+2 poze" emptyLabel="Fără fotografii" />);
+  it('shows one large photo, two small ones and the hidden count', async () => {
+    await renderWithProviders(
+      <PhotoMosaic photos={PHOTOS} moreLabel="+2 poze" emptyLabel="Fără fotografii" />,
+    );
 
     expect(screen.getAllByRole('img')).toHaveLength(3);
     expect(screen.getByRole('img', { name: 'Fotografia 1' })).toBeInTheDocument();
@@ -24,8 +26,9 @@ describe('PhotoMosaic', () => {
   });
 
   it('opens a photo large and steps through the others', async () => {
-    const user = userEvent.setup();
-    render(<PhotoMosaic photos={PHOTOS} moreLabel="+2 poze" emptyLabel="Fără fotografii" />);
+    const { user } = await renderWithProviders(
+      <PhotoMosaic photos={PHOTOS} moreLabel="+2 poze" emptyLabel="Fără fotografii" />,
+    );
 
     await user.click(
       screen.getByRole('button', { name: roCommon.photoGallery.open.replace('{{index}}', '2') }),
@@ -44,8 +47,9 @@ describe('PhotoMosaic', () => {
   });
 
   it('shows every photo in the library view from the extra count', async () => {
-    const user = userEvent.setup();
-    render(<PhotoMosaic photos={PHOTOS} moreLabel="+2 poze" emptyLabel="Fără fotografii" />);
+    const { user } = await renderWithProviders(
+      <PhotoMosaic photos={PHOTOS} moreLabel="+2 poze" emptyLabel="Fără fotografii" />,
+    );
 
     await user.click(
       screen.getByRole('button', { name: roCommon.photoGallery.all.replace('{{count}}', '5') }),
@@ -64,8 +68,9 @@ describe('PhotoMosaic', () => {
   });
 
   it('zooms the large photo with the buttons and the keyboard and resets it on the next photo', async () => {
-    const user = userEvent.setup();
-    render(<PhotoMosaic photos={PHOTOS} emptyLabel="Fără fotografii" />);
+    const { user } = await renderWithProviders(
+      <PhotoMosaic photos={PHOTOS} emptyLabel="Fără fotografii" />,
+    );
 
     await user.click(
       screen.getByRole('button', { name: roCommon.photoGallery.open.replace('{{index}}', '1') }),
@@ -107,8 +112,8 @@ describe('PhotoMosaic', () => {
     expect(within(gallery).getByRole('button', { name: zoomResetName(1) })).toBeInTheDocument();
   });
 
-  it('loads the large file for the main photo and the small one for the side photos', () => {
-    render(<PhotoMosaic photos={PHOTOS} emptyLabel="Fără fotografii" />);
+  it('loads the large file for the main photo and the small one for the side photos', async () => {
+    await renderWithProviders(<PhotoMosaic photos={PHOTOS} emptyLabel="Fără fotografii" />);
 
     expect(screen.getByRole('img', { name: 'Fotografia 1' })).toHaveAttribute(
       'src',
@@ -120,8 +125,8 @@ describe('PhotoMosaic', () => {
     );
   });
 
-  it('shows the empty label when there is no photo', () => {
-    render(<PhotoMosaic photos={[]} emptyLabel="Fără fotografii" />);
+  it('shows the empty label when there is no photo', async () => {
+    await renderWithProviders(<PhotoMosaic photos={[]} emptyLabel="Fără fotografii" />);
 
     expect(screen.getByText('Fără fotografii')).toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();

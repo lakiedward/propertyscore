@@ -12,10 +12,7 @@ export function useListingPrice(listing: PricedListing) {
   const { t } = useTranslation();
   const amount = formatPrice(listing.price, toCurrency(listing.currency));
   return {
-    price:
-      listing.transaction === 'rent'
-        ? t('listingSummary.pricePerMonth', { price: amount })
-        : amount,
+    price: listing.transaction === 'rent' ? t('price.perMonth', { price: amount }) : amount,
     area: t('listingSummary.area', { value: formatNumber(listing.area_m2) }),
   };
 }

@@ -115,9 +115,6 @@
     },
     "showMap": "Map",
     "showList": "List",
-    "cluster_one": "{{count}} home here, zoom in",
-    "cluster_other": "{{count}} homes here, zoom in",
-    "pin": "{{title}}, {{price}}",
     "card": "Show on map: {{title}}, {{address}}, {{price}}",
     "address": "{{street}}, {{city}}",
     "popup": {

@@ -3,8 +3,11 @@ import { supabase } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';
 import type { ListingWrite } from '../listing-form.schemas';
 import { parseEwkbPoint } from '../listing.utils';
+import { LISTING_DETAIL_SELECT } from '@/config/listing-details';
 
-const MY_LISTINGS_LIMIT = 50;
+export const MY_LISTINGS_PAGE_SIZE = 50;
+
+const CITY_COLUMNS = 'id, name, center' as const;
 
 const MY_LISTING_ROW_COLUMNS =
   'id, status, property_type, transaction, title, street_label, city, rooms, floor, building_floors, price, currency, area_m2, photo_path, updated_at, decisions:listing_decisions(id, decision, message, created_at)' as const;
@@ -13,19 +16,20 @@ const MY_LISTING_REVISION_COLUMNS =
   'id, revision_of, status, decisions:listing_decisions(id, decision, message, created_at)' as const;
 
 const MY_LISTING_COLUMNS =
-  'id, owner_id, status, revision_of, transaction, title, street_label, city, rooms, area_m2, price, currency, floor, building_floors, year_built, description, latitude, longitude, property_type, bathrooms, partitioning, comfort, building_type, house_type, land_area_m2, has_basement, has_semibasement, has_attic, interior_condition, heating, cooling, furnishing, pets, is_passive_house, balconies, parking_spaces, utilities, building_services, has_elevator, has_shared_yard, pool, yard, photos:listing_photos(id, path, position, created_at), decisions:listing_decisions(id, decision, reasons, message, created_at)' as const;
+  `id, owner_id, status, revision_of, transaction, title, street_label, city, rooms, area_m2, price, currency, floor, building_floors, year_built, description, latitude, longitude, ${LISTING_DETAIL_SELECT}, photos:listing_photos(id, path, position, created_at), decisions:listing_decisions(id, decision, reasons, message, created_at)` as const;
 
-export async function listMyListings(ownerId: string) {
-  const { data, error, count } = await supabase
+export async function listMyListings(ownerId: string, page = 0) {
+  const from = page * MY_LISTINGS_PAGE_SIZE;
+  const { data, error } = await supabase
     .from('listings')
-    .select(MY_LISTING_ROW_COLUMNS, { count: 'exact' })
+    .select(MY_LISTING_ROW_COLUMNS)
     .eq('owner_id', ownerId)
     .is('revision_of', null)
     .order('updated_at', { ascending: false })
     .order('id', { ascending: false })
     .order('created_at', { referencedTable: 'listing_decisions', ascending: false })
     .limit(1, { referencedTable: 'listing_decisions' })
-    .range(0, MY_LISTINGS_LIMIT - 1);
+    .range(from, from + MY_LISTINGS_PAGE_SIZE - 1);
   if (error) throw toAppError(error);
   const revisions = await listMyRevisions(
     ownerId,
@@ -36,7 +40,7 @@ export async function listMyListings(ownerId: string) {
       ...listing,
       revision: revisions.find((revision) => revision.revision_of === listing.id) ?? null,
     })),
-    total: count ?? data.length,
+    hasMore: data.length === MY_LISTINGS_PAGE_SIZE,
   };
 }
 
@@ -116,7 +120,7 @@ export async function submitListing(id: string) {
 export async function listCities() {
   const { data, error } = await supabase
     .from('cities')
-    .select('id, name, center')
+    .select(CITY_COLUMNS)
     .order('position', { ascending: true });
   if (error) throw toAppError(error);
   return data.flatMap((city) => {
@@ -154,6 +158,16 @@ export async function reorderListingPhotos({
 }
 
 export async function removeListingPhotoRow(id: string) {
-  const { error } = await supabase.from('listing_photos').delete().eq('id', id);
+  const { data, error } = await supabase
+    .from('listing_photos')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
   if (error) throw toAppError(error);
+  if (!data) {
+    throw new AppError('validation', 'The photo can no longer be removed', {
+      reason: 'listing_invalid_transition',
+    });
+  }
 }

@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
 import { useId } from 'react';
 import { Controller, useWatch, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -11,21 +10,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useValidationMessage } from '@/i18n/validation';
-import { myListingQueries } from '../api/my-listings.queries';
+import type { listCities } from '../api/my-listings.api';
 import type { ListingFormValues } from '../listing-form.schemas';
 import { ListingPinField } from './listing-pin-field';
 import { ListingTextField } from './listing-text-field';
 
 type ListingAddressSectionProps = {
   control: Control<ListingFormValues>;
+  cities: Awaited<ReturnType<typeof listCities>>;
 };
 
-export function ListingAddressSection({ control }: ListingAddressSectionProps) {
+export function ListingAddressSection({ control, cities }: ListingAddressSectionProps) {
   const { t } = useTranslation('myListings');
   const validationMessage = useValidationMessage();
-  const { data: cities } = useSuspenseQuery(myListingQueries.cities());
   const cityId = useId();
-  const pinId = useId();
+  const pinLabelId = useId();
   const pinHintId = useId();
   const cityName = useWatch({ control, name: 'city' });
   const cityCenter = cities.find((city) => city.name === cityName)?.center;
@@ -43,6 +42,7 @@ export function ListingAddressSection({ control }: ListingAddressSectionProps) {
               </FieldLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger
+                  ref={field.ref}
                   id={cityId}
                   aria-invalid={fieldState.invalid}
                   onBlur={field.onBlur}
@@ -74,12 +74,12 @@ export function ListingAddressSection({ control }: ListingAddressSectionProps) {
         control={control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor={pinId} className="text-label">
+            <FieldLabel id={pinLabelId} className="text-label">
               {t('wizard.address.pin')}
             </FieldLabel>
             <FieldDescription id={pinHintId}>{t('form.pin.hint')}</FieldDescription>
             <ListingPinField
-              id={pinId}
+              labelledBy={pinLabelId}
               value={field.value}
               cityCenter={cityCenter}
               isDisabled={false}

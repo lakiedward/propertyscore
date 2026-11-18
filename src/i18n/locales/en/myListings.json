@@ -1,8 +1,6 @@
 {
-  "pageTitle": "My listings",
   "list": {
     "title": "My listings",
-    "description": "Create a listing, send it for review and see the team's answer here.",
     "add": "Add listing",
     "label": "Your listings",
     "edit": "Edit",
@@ -16,14 +14,17 @@
     "floorShort": "fl. {{floor}}/{{total}}",
     "floorOnlyShort": "fl. {{floor}}",
     "groundFloorShort": "ground floor",
-    "reasonLabel": "Reason:",
     "photoMissing": "No photo",
     "continueEdit": "Continue editing",
     "revision": {
       "draft": "You have unsent changes. The published version stays on the site until you send them and we approve them.",
       "pending_approval": "Your changes are being reviewed. The published version stays on the site until we approve them.",
-      "rejected": "Your changes were rejected; the published version stays on the site."
-    }
+      "rejected": "Your changes were rejected; the published version stays on the site.",
+      "rejectedWithReason": "Your changes were rejected; the published version stays on the site. <strong>Reason:</strong> <message/>"
+    },
+    "reason": "<strong>Reason:</strong> <message/>",
+    "basementShort": "basement",
+    "more": "Show more listings"
   },
   "status": {
     "draft": "Draft",
@@ -86,17 +87,10 @@
     "propertyType": "Property type",
     "transactionType": "Transaction type",
     "extras": "Extra details",
-    "optional": "optional"
+    "optional": "optional",
+    "optionalTag": "(optional)"
   },
   "form": {
-    "details": "Details",
-    "location": "Address and place on the map",
-    "descriptionSection": "Description",
-    "transaction": {
-      "label": "Listing type",
-      "sale": "Sale",
-      "rent": "Rent"
-    },
     "title": {
       "label": "Title",
       "placeholder": "e.g. 3-room apartment, Complex"
@@ -106,23 +100,13 @@
       "placeholder": "Choose the city"
     },
     "street": {
-      "label": "Street and number",
       "placeholder": "e.g. 12 Gheorghe Lazăr St."
-    },
-    "rooms": {
-      "label": "Rooms"
     },
     "area": {
       "label": "Usable area"
     },
-    "price": {
-      "label": "Price",
-      "rentHint": "For rent, the price is per month."
-    },
     "currency": {
-      "label": "Currency",
-      "EUR": "EUR",
-      "RON": "RON"
+      "label": "Currency"
     },
     "floor": {
       "label": "Floor"
@@ -136,11 +120,9 @@
       "hint": "Optional."
     },
     "description": {
-      "label": "Description",
-      "hint": "The condition of the home, its amenities, what is nearby. No phone numbers."
+      "label": "Description"
     },
     "pin": {
-      "label": "Place on the map",
       "hint": "Tap the map to put the pin at the exact address.",
       "mapLabel": "Map to choose the place",
       "mapError": "The map could not load. Reload the page.",
@@ -148,7 +130,6 @@
     }
   },
   "photos": {
-    "title": "Photos",
     "description": "At least 5 clear photos, with no people or documents. The first one is the cover.",
     "count_one": "{{count}} photo of {{max}}",
     "count_other": "{{count}} photos of {{max}}",
@@ -163,8 +144,7 @@
     "cover": "Cover",
     "alt": "Photo {{index}} of the listing",
     "invalidType": "You can upload only JPG, PNG or WebP images.",
-    "uploadFailed": "The draft was saved, but not every photo was uploaded ({{reason}}). Check them and add the missing ones.",
-    "tooLarge": "The photo is too large after conversion (over 5 MB)."
+    "uploadFailed": "The draft was saved, but not every photo was uploaded ({{reason}}). Check them and add the missing ones."
   },
   "wizard": {
     "subtitle": "You don't need a report to publish. We keep the listing as a draft until you send it.",
@@ -204,7 +184,6 @@
       "street": "Exact address",
       "pin": "What you see · exact pin"
     },
-    "photosNote": "You can send the listing for review only with at least 5 photos.",
     "contact": {
       "phone": "Contact phone",
       "phoneHint": "The number in your account.",

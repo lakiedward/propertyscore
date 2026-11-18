@@ -1,31 +1,14 @@
-import { containsBounds, moveId, parseEwkbPoint, toTrustKind } from './listing.utils';
+import {
+  moveId,
+  parseEwkbPoint,
+  sameListingBounds,
+  toListingBounds,
+  toMapRegions,
+  toTilePin,
+  toTrustKind,
+} from './listing.utils';
 
 describe('listing utils', () => {
-  it('tells whether the map area holds the whole of another area', () => {
-    const romania: [[number, number], [number, number]] = [
-      [20.26, 43.62],
-      [29.7, 48.27],
-    ];
-    expect(
-      containsBounds(
-        [
-          [19.94, 43.54],
-          [30.02, 48.34],
-        ],
-        romania,
-      ),
-    ).toBe(true);
-    expect(
-      containsBounds(
-        [
-          [21.1, 45.7],
-          [21.3, 45.8],
-        ],
-        romania,
-      ),
-    ).toBe(false);
-  });
-
   it('maps the verification to the trust badge kind', () => {
     expect(toTrustKind('physical')).toBe('physical');
     expect(toTrustKind('smartcheck')).toBe('online');
@@ -48,5 +31,49 @@ describe('listing utils', () => {
   it('refuses text that is not a point', () => {
     expect(parseEwkbPoint('zz')).toBeNull();
     expect(parseEwkbPoint('0102000020E6100000')).toBeNull();
+  });
+
+  it('widens the map area to whole steps so a tiny pan keeps the same area', () => {
+    const area = toListingBounds([
+      [21.123456, 45.712341],
+      [21.234567, 45.812349],
+    ]);
+
+    expect(area).toEqual({ west: 21.1234, south: 45.7123, east: 21.2346, north: 45.8124 });
+    expect(sameListingBounds(area, { ...area })).toBe(true);
+    expect(sameListingBounds(area, { ...area, east: 21.3 })).toBe(false);
+    expect(sameListingBounds(area, undefined)).toBe(false);
+  });
+
+  it('turns a listing into a map pin', () => {
+    expect(
+      toTilePin({ id: 'a', longitude: 21.2, latitude: 45.7, price: 90000, currency: 'EUR' }),
+    ).toEqual({ id: 'a', position: [21.2, 45.7], price: 90000, currency: 'EUR' });
+  });
+
+  it('shades each county by its share of the busiest county', () => {
+    const regions = toMapRegions({
+      shapes: {
+        outline: [],
+        regions: [
+          { id: 'timis', name: 'Timiș', coordinates: [] },
+          { id: 'cluj', name: 'Cluj', coordinates: [] },
+          { id: 'iasi', name: 'Iași', coordinates: [] },
+        ],
+      },
+      counties: [
+        { county_id: 'timis', listing_count: 4 },
+        { county_id: 'cluj', listing_count: 2 },
+      ],
+      selectedId: 'cluj',
+      labelOf: (region, count) => `${region.name}: ${String(count)}`,
+    });
+
+    expect(regions.areas.map((area) => [area.id, area.weight, area.label])).toEqual([
+      ['timis', 1, 'Timiș: 4'],
+      ['cluj', 0.5, 'Cluj: 2'],
+      ['iasi', 0, 'Iași: 0'],
+    ]);
+    expect(regions.selectedId).toBe('cluj');
   });
 });

@@ -42,7 +42,7 @@ export function CriteriaExplorer() {
   return (
     <div className="mb-5 overflow-hidden rounded-panel border border-border bg-card shadow-explorer w820:rounded-2xl">
       <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-1 px-4 pt-5 pb-3.5 w820:px-6.75 w820:pt-6 w820:pb-4">
-        <h3 className="text-[22px] leading-[1.08] font-[710] tracking-section text-foreground w520:text-[23px]">
+        <h3 className="text-card-title leading-[1.08] font-[710] tracking-section text-foreground w520:text-[23px]">
           {t('physical.explorer.title')}
         </h3>
         <p className="max-w-copy text-meta text-muted-foreground">{t('physical.explorer.hint')}</p>
@@ -150,7 +150,7 @@ export function CriteriaExplorer() {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-4.25 max-w-95 border-t border-border-subtle pt-3.5 text-micro leading-[1.6] text-ink-faint">
+                <p className="mt-4.25 max-w-95 border-t border-border-subtle pt-3.5 text-micro leading-relaxed-copy text-ink-faint">
                   {t('physical.explorer.limit')}
                 </p>
               </TabsContent>

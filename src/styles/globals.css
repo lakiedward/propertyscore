@@ -310,11 +310,15 @@
   --leading-copy: 1.55;
   --leading-compact: 1.45;
   --leading-heading: 1.12;
+  --leading-relaxed-copy: 1.6;
+  --leading-snug-title: 1.3;
 
   --tracking-title: -0.04em;
   --tracking-section: -0.035em;
   --tracking-eyebrow: 0.06em;
   --tracking-label: 0.08em;
+  --tracking-snug-title: -0.02em;
+  --tracking-figure: -0.03em;
 
   --tracking-brand: -0.04em;
   --radius-wordmark: 0.24em 0.24em 0.24em 0.06em;
@@ -460,12 +464,14 @@
   --text-micro: 10px;
   --text-body-sm: 15px;
   --text-title-xs: 21px;
+  --text-card-title: 22px;
   --text-title-sm: 28px;
   --text-title-md: 32px;
   --text-title-lg: 40px;
 }
 
 :root {
+  --border-width-control: 1.5px;
   --ps-cream-50: #fbfaf5;
   --ps-cream-100: #f6f5ed;
   --ps-cream-200: #eeecdf;

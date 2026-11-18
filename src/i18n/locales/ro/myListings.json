@@ -1,8 +1,6 @@
 {
-  "pageTitle": "Anunțurile mele",
   "list": {
     "title": "Anunțurile mele",
-    "description": "Creezi anunțul, îl trimiți spre verificare și vezi aici răspunsul echipei.",
     "add": "Adaugă anunț",
     "label": "Anunțurile tale",
     "edit": "Editează",
@@ -16,14 +14,17 @@
     "floorShort": "et. {{floor}}/{{total}}",
     "floorOnlyShort": "et. {{floor}}",
     "groundFloorShort": "parter",
-    "reasonLabel": "Motiv:",
     "photoMissing": "Fără fotografie",
     "continueEdit": "Continuă editarea",
     "revision": {
       "draft": "Ai modificări netrimise. Pe site rămâne versiunea publicată până le trimiți și le aprobăm.",
       "pending_approval": "Modificările tale sunt în verificare. Pe site rămâne versiunea publicată până le aprobăm.",
-      "rejected": "Modificările tale au fost respinse; pe site rămâne versiunea publicată."
-    }
+      "rejected": "Modificările tale au fost respinse; pe site rămâne versiunea publicată.",
+      "rejectedWithReason": "Modificările tale au fost respinse; pe site rămâne versiunea publicată. <strong>Motiv:</strong> <message/>"
+    },
+    "reason": "<strong>Motiv:</strong> <message/>",
+    "basementShort": "demisol",
+    "more": "Arată mai multe anunțuri"
   },
   "status": {
     "draft": "Ciornă",
@@ -88,17 +89,10 @@
     "propertyType": "Tip proprietate",
     "transactionType": "Tip tranzacție",
     "extras": "Criterii suplimentare",
-    "optional": "opțional"
+    "optional": "opțional",
+    "optionalTag": "(opțional)"
   },
   "form": {
-    "details": "Detalii",
-    "location": "Adresă și loc pe hartă",
-    "descriptionSection": "Descriere",
-    "transaction": {
-      "label": "Tip anunț",
-      "sale": "Vânzare",
-      "rent": "Închiriere"
-    },
     "title": {
       "label": "Titlu",
       "placeholder": "de ex. Apartament 3 camere, Complex"
@@ -108,23 +102,13 @@
       "placeholder": "Alege orașul"
     },
     "street": {
-      "label": "Stradă și număr",
       "placeholder": "de ex. Str. Gheorghe Lazăr, 12"
-    },
-    "rooms": {
-      "label": "Camere"
     },
     "area": {
       "label": "Suprafață utilă"
     },
-    "price": {
-      "label": "Preț",
-      "rentHint": "Pentru închiriere, prețul este pe lună."
-    },
     "currency": {
-      "label": "Monedă",
-      "EUR": "EUR",
-      "RON": "RON"
+      "label": "Monedă"
     },
     "floor": {
       "label": "Etaj"
@@ -138,11 +122,9 @@
       "hint": "Opțional."
     },
     "description": {
-      "label": "Descriere",
-      "hint": "Starea locuinței, dotările, ce e aproape. Fără numere de telefon."
+      "label": "Descriere"
     },
     "pin": {
-      "label": "Locul pe hartă",
       "hint": "Apasă pe hartă ca să pui pinul la adresa exactă.",
       "mapLabel": "Hartă pentru alegerea locului",
       "mapError": "Harta nu s-a putut încărca. Reîncarcă pagina.",
@@ -150,7 +132,6 @@
     }
   },
   "photos": {
-    "title": "Fotografii",
     "description": "Minim 5 fotografii clare, fără persoane sau acte. Prima este coperta.",
     "count_one": "{{count}} fotografie din {{max}}",
     "count_few": "{{count}} fotografii din {{max}}",
@@ -166,8 +147,7 @@
     "cover": "Copertă",
     "alt": "Fotografia {{index}} a anunțului",
     "invalidType": "Poți încărca doar imagini JPG, PNG sau WebP.",
-    "uploadFailed": "Ciorna a fost salvată, dar nu toate fotografiile s-au încărcat ({{reason}}). Verifică-le și adaugă-le pe cele care lipsesc.",
-    "tooLarge": "Fotografia este prea mare după conversie (peste 5 MB)."
+    "uploadFailed": "Ciorna a fost salvată, dar nu toate fotografiile s-au încărcat ({{reason}}). Verifică-le și adaugă-le pe cele care lipsesc."
   },
   "wizard": {
     "subtitle": "Nu ai nevoie de raport ca să publici. Salvăm anunțul ca ciornă până îl trimiți.",
@@ -207,7 +187,6 @@
       "street": "Adresa exactă",
       "pin": "Ce vezi tu · pin exact"
     },
-    "photosNote": "Poți trimite anunțul spre verificare doar cu cel puțin 5 fotografii.",
     "contact": {
       "phone": "Telefon de contact",
       "phoneHint": "Numărul din contul tău.",

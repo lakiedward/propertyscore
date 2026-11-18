@@ -21,11 +21,11 @@ export function ListingSummary({ content, titleId }: ListingSummaryProps) {
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <h2
               id={titleId}
-              className="min-w-0 text-h3 font-extrabold tracking-[-0.02em] text-foreground"
+              className="min-w-0 text-h3 font-extrabold tracking-snug-title text-foreground"
             >
               {content.title}
             </h2>
-            <p className="text-h3 font-extrabold tracking-[-0.02em] text-foreground tabular-nums">
+            <p className="text-h3 font-extrabold tracking-snug-title text-foreground tabular-nums">
               {content.price}
             </p>
           </div>
@@ -54,7 +54,7 @@ export function ListingSummary({ content, titleId }: ListingSummaryProps) {
           </section>
         ) : null}
         {content.description ? (
-          <p className="text-body-sm leading-[1.6] whitespace-pre-line text-foreground">
+          <p className="text-body-sm leading-relaxed-copy whitespace-pre-line text-foreground">
             {content.description}
           </p>
         ) : null}

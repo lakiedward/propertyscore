@@ -45,7 +45,7 @@ export function QueueRow({ listing, isSelected, onSelect }: QueueRowProps) {
         <span aria-hidden className="h-13.5 w-18 rounded-md bg-surface-sunken" />
       )}
       <span className="flex min-w-0 flex-col gap-1">
-        <strong className="text-small leading-[1.3] font-bold text-foreground">
+        <strong className="text-small leading-snug-title font-bold text-foreground">
           {listing.title}
         </strong>
         <span className="text-caption leading-copy text-muted-foreground tabular-nums">

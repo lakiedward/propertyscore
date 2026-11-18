@@ -6,6 +6,16 @@ export const ROMANIA_BOUNDS: LngLatBounds = [
   [29.7, 48.27],
 ];
 
+export const ROMANIA_CENTER: LngLat = [24.98, 45.94];
+
+export const ROMANIA_ZOOM = 6;
+
+export const EXPLORER_MAP_LAYOUT = {
+  headerOffset: 77,
+  minHeight: 480,
+  boundsPadding: 10,
+} as const;
+
 export const EXPLORER_CITIES = [
   {
     id: 'bucuresti',
@@ -69,6 +79,13 @@ export const EXPLORER_PRICE_CAPS: Readonly<
 };
 
 export const EXPLORER_PRICE_CAP_CURRENCY = 'EUR';
+
+export function isExplorerPriceCap(
+  transaction: Enums<'listing_transaction'>,
+  price: number | undefined,
+): boolean {
+  return price !== undefined && EXPLORER_PRICE_CAPS[transaction].includes(price);
+}
 
 export const EXPLORER_SORTS = ['relevance', 'newest', 'priceAsc', 'priceDesc', 'area'] as const;
 

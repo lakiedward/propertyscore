@@ -10,19 +10,15 @@ import type { Enums } from '@/lib/supabase/database.types';
 
 export type ListingStatus = Enums<'listing_status'>;
 
-export const OWNER_STATUS_META = {
-  draft: { tone: 'neutral', icon: PencilIcon, notice: 'neutral' },
-  pending_approval: { tone: 'info', icon: HourglassIcon, notice: 'info' },
-  approved: { tone: 'success', icon: CircleCheckIcon, notice: 'success' },
-  rejected: { tone: 'warning', icon: Undo2Icon, notice: 'warning' },
-  blocked: { tone: 'error', icon: BanIcon, notice: 'error' },
+export const LISTING_STATUS_META = {
+  draft: { tone: 'neutral', icon: PencilIcon },
+  pending_approval: { tone: 'info', icon: HourglassIcon },
+  approved: { tone: 'success', icon: CircleCheckIcon },
+  rejected: { tone: 'warning', icon: Undo2Icon },
+  blocked: { tone: 'error', icon: BanIcon },
 } as const satisfies Record<
   ListingStatus,
-  {
-    tone: 'neutral' | 'info' | 'success' | 'warning' | 'error';
-    icon: LucideIcon;
-    notice: 'neutral' | 'info' | 'success' | 'warning' | 'error';
-  }
+  { tone: 'neutral' | 'info' | 'success' | 'warning' | 'error'; icon: LucideIcon }
 >;
 
 export function isEditableStatus(status: ListingStatus): boolean {

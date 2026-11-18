@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { MapViewport } from '@/components/map/map-canvas';
 import { ROMANIA_BOUNDS } from '@/config/listings-explorer';
 import type { ListingBounds } from '../listing.types';
-import { containsBounds, sameListingBounds, toListingBounds } from '../listing.utils';
+import { containsBounds } from '@/components/map/map.utils';
+import { sameListingBounds, toListingBounds } from '../listing.utils';
 
 const SETTLE_MS = 250;
 

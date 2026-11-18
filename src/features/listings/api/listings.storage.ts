@@ -53,14 +53,17 @@ export async function uploadListingPhotoFiles(photoPath: string, files: ListingP
     [variantPath(photoPath, 'medium'), files.medium],
     [variantPath(photoPath, 'thumb'), files.thumb],
   ];
-  for (const [path, file] of uploads) {
-    const { error } = await supabase.storage.from(LISTING_PHOTOS_BUCKET).upload(path, file, {
-      contentType: 'image/webp',
-      cacheControl: IMMUTABLE_CACHE_SECONDS,
-    });
-    if (error) {
-      await removeListingPhotoFiles(photoPath).catch(() => undefined);
-      throw toAppError(error);
-    }
+  const results = await Promise.all(
+    uploads.map(([path, file]) =>
+      supabase.storage.from(LISTING_PHOTOS_BUCKET).upload(path, file, {
+        contentType: 'image/webp',
+        cacheControl: IMMUTABLE_CACHE_SECONDS,
+      }),
+    ),
+  );
+  const failed = results.find((result) => result.error);
+  if (failed?.error) {
+    await removeListingPhotoFiles(photoPath).catch(() => undefined);
+    throw toAppError(failed.error);
   }
 }

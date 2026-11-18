@@ -1,5 +1,22 @@
 import type { LngLat, LngLatBounds } from './map.config';
 
+export function containsBounds(
+  [[west, south], [east, north]]: LngLatBounds,
+  [[innerWest, innerSouth], [innerEast, innerNorth]]: LngLatBounds,
+): boolean {
+  return west <= innerWest && south <= innerSouth && east >= innerEast && north >= innerNorth;
+}
+
+export function boundsOfPolygons(
+  polygons: readonly (readonly (readonly (readonly [number, number])[])[])[],
+): LngLatBounds | undefined {
+  return boundsOf(
+    polygons.flatMap((polygon) =>
+      (polygon[0] ?? []).map(([longitude, latitude]): LngLat => [longitude, latitude]),
+    ),
+  );
+}
+
 export function boundsOf(points: readonly LngLat[]): LngLatBounds | undefined {
   const [first, ...rest] = points;
   if (!first) {

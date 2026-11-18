@@ -7,7 +7,7 @@ import { loadFeatureNamespaces } from '@/i18n/i18n';
 export const Route = createFileRoute('/_authenticated/account/listings/')({
   beforeLoad: () => loadFeatureNamespaces(['myListings']),
   loader: ({ context }) =>
-    context.queryClient.query({
+    context.queryClient.infiniteQuery({
       ...myListingQueries.list(context.user.id),
       staleTime: 'static',
     }),

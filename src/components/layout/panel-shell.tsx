@@ -5,7 +5,8 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
-import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed';
+import { useStoredFlag } from '@/hooks/use-stored-flag';
+import { formatNumber } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import { MainContent } from './main-content';
 import {
@@ -15,7 +16,7 @@ import {
   type ResolvedNavGroup,
   type ResolvedNavItem,
 } from './panel-navigation';
-import type { PanelArea } from './panel-paths';
+import { SIDEBAR_COLLAPSED_STORAGE_KEY, type PanelArea } from './panel-paths';
 import { SkipLink } from './skip-link';
 
 export type PanelNavCounts = Partial<Record<string, { value: number; label: string }>>;
@@ -70,7 +71,7 @@ export function PanelShell({
   children,
 }: PanelShellProps) {
   const { t } = useTranslation();
-  const { isCollapsed, toggle } = useSidebarCollapsed();
+  const { isOn: isCollapsed, toggle } = useStoredFlag(SIDEBAR_COLLAPSED_STORAGE_KEY);
   const pathname = useLocation({ select: (location) => location.pathname });
   const groups = usePanelGroups(area);
   const items = groups.flatMap((group) => group.items);
@@ -226,7 +227,7 @@ function SidebarLink({ item, count, isCollapsed }: SidebarLinkProps) {
               isCollapsed && 'hidden',
             )}
           >
-            {count.value}
+            {formatNumber(count.value)}
           </span>
           <span className="sr-only">{count.label}</span>
         </>

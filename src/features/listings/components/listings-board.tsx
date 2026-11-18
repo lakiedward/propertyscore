@@ -190,7 +190,7 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
                             currency={currency}
                             period={listing.transaction === 'rent' ? 'month' : undefined}
                             size="sm"
-                            className="text-lg tracking-[-0.02em] text-brand"
+                            className="text-lg tracking-snug-title text-brand"
                           />
                         }
                         meta={t('card.meta', {

@@ -19,7 +19,7 @@ const optionVariants = cva('data-[state=on]:bg-primary data-[state=on]:text-prim
   variants: {
     variant: {
       pill: 'h-10 rounded-full px-4 text-small font-bold text-brand',
-      segment: 'h-11 rounded-[6px] px-4.5 text-[13px] font-action text-ink-soft',
+      segment: 'h-11 rounded-[6px] px-4.5 text-caption font-action text-ink-soft',
     },
   },
 });

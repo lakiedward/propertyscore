@@ -1,5 +1,4 @@
 {
-  "pageTitle": "Listing moderation",
   "head": {
     "eyebrow": "Portal",
     "title": "Listing moderation",
@@ -21,7 +20,6 @@
   "queue": {
     "label": "Listings",
     "priceArea": "{{type}} · {{price}} · {{area}}",
-    "resubmitted": "Resubmitted",
     "empty": {
       "pending": {
         "title": "No listings left to review",
@@ -35,7 +33,8 @@
     "revision": "Changes",
     "heading": "Listings ({{count}})",
     "hide": "Hide the list",
-    "show": "Show the list ({{count}})"
+    "show": "Show the list ({{count}})",
+    "more": "Show more listings"
   },
   "when": {
     "today": "today · {{time}}",

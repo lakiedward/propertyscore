@@ -61,7 +61,9 @@ export function TrustTiersSection() {
             <span className="block">{t('tiers.titleLead')}</span>
             <span className="block text-cta">{t('tiers.titleAccent')}</span>
           </h2>
-          <p className="max-w-140 text-lg leading-[1.6] text-on-inverse-mist">{t('tiers.intro')}</p>
+          <p className="max-w-140 text-lg leading-relaxed-copy text-on-inverse-mist">
+            {t('tiers.intro')}
+          </p>
         </div>
         <ul className="grid grid-cols-1 items-end gap-x-4.5 gap-y-7.5 w1059:grid-cols-3 w1059:gap-4.5">
           <TierCard kind="plain" />
@@ -151,7 +153,7 @@ function TierCard({ kind }: TierCardProps) {
         </div>
         <div className="flex flex-col gap-2 px-3.5 pt-3 pb-3.5">
           <span className="flex items-baseline justify-between gap-2">
-            <strong className="text-[19px] leading-copy font-bold tracking-[-0.02em] text-foreground tabular-nums">
+            <strong className="text-[19px] leading-copy font-bold tracking-snug-title text-foreground tabular-nums">
               {formatPrice(TIER_LISTING.price, TIER_LISTING.currency)}
             </strong>
             <span className="text-caption leading-copy text-muted-foreground">
@@ -163,7 +165,7 @@ function TierCard({ kind }: TierCardProps) {
           </span>
           <span className="flex flex-wrap gap-1.5">
             {kind === 'plain' ? (
-              <ListingChip className="border-[1.5px] border-dashed border-border-declared font-bold text-muted-foreground">
+              <ListingChip className="border-(length:--border-width-control) border-dashed border-border-declared font-bold text-muted-foreground">
                 {t('tiers.plain.declared')}
               </ListingChip>
             ) : (
@@ -231,7 +233,7 @@ function TierName({ kind }: TierNameProps) {
 
   if (kind === 'plain') {
     return (
-      <strong className="text-xl leading-copy font-bold tracking-[-0.02em]">
+      <strong className="text-xl leading-copy font-bold tracking-snug-title">
         {t('tiers.plain.name')}
       </strong>
     );

@@ -100,7 +100,7 @@ export function ListingBenefit() {
       <div className="flex flex-col gap-5">
         <h3
           id="listing-included-title"
-          className="text-[clamp(28px,3vw,44px)] leading-[1.08] font-extrabold tracking-[-0.03em] text-balance text-on-inverse"
+          className="text-[clamp(28px,3vw,44px)] leading-[1.08] font-extrabold tracking-figure text-balance text-on-inverse"
         >
           <Trans
             t={t}

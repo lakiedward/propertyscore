@@ -59,8 +59,8 @@ const tabIconVariants = cva('grid size-11 shrink-0 place-items-center rounded-md
 const tabNameVariants = cva('font-black', {
   variants: {
     deliverable: {
-      report: 'text-[22px] leading-[1.15]',
-      zone: 'text-[22px] leading-[1.15]',
+      report: 'text-card-title leading-[1.15]',
+      zone: 'text-card-title leading-[1.15]',
       visual: 'text-label',
     },
   },

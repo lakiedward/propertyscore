@@ -6,9 +6,10 @@ import { signedInAs } from '@/test/factories/auth';
 import { moderationListingsResponse, SEEDED_REVIEW_LISTINGS } from '@/test/msw/handlers/moderation';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
-import { buildReviewListing } from '@/test/factories/moderation';
+import { buildReviewListing, toQueueListing } from '@/test/factories/moderation';
 import { renderAppRoute } from '@/test/render';
-import { QUEUE_HIDDEN_STORAGE_KEY } from './moderation-page';
+import { QUEUE_PAGE_SIZE } from '../api/moderation.api';
+import { QUEUE_HIDDEN_STORAGE_KEY } from '../moderation-status';
 
 vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 
@@ -228,5 +229,36 @@ describe('ModerationPage', { timeout: 20_000 }, () => {
 
     expect(screen.getByRole('navigation', { name: ro.queue.label })).toBeInTheDocument();
     window.localStorage.removeItem(QUEUE_HIDDEN_STORAGE_KEY);
+  });
+
+  it('loads the next listings of the queue only when the admin asks for them', async () => {
+    const listings = Array.from({ length: QUEUE_PAGE_SIZE + 1 }, () => buildReviewListing());
+    server.use(
+      http.get(supabaseUrl('/rest/v1/listings'), ({ request }) => {
+        const params = new URL(request.url).searchParams;
+        const id = params.get('id')?.replace(/^eq\./, '');
+        if (id) {
+          return HttpResponse.json(listings.filter((listing) => listing.id === id));
+        }
+        const offset = Number(params.get('offset') ?? '0');
+        const page = listings.slice(offset, offset + QUEUE_PAGE_SIZE).map(toQueueListing);
+        const last = offset + page.length - 1;
+        return HttpResponse.json(page, {
+          headers: {
+            'Content-Range': `${String(offset)}-${String(last)}/${String(listings.length)}`,
+          },
+        });
+      }),
+    );
+    const { user } = await openModeration();
+    const queue = screen.getByRole('navigation', { name: ro.queue.label });
+    expect(within(queue).getAllByRole('link')).toHaveLength(QUEUE_PAGE_SIZE);
+
+    await user.click(within(queue).getByRole('button', { name: ro.queue.more }));
+
+    await waitFor(() => {
+      expect(within(queue).getAllByRole('link')).toHaveLength(QUEUE_PAGE_SIZE + 1);
+    });
+    expect(within(queue).queryByRole('button', { name: ro.queue.more })).not.toBeInTheDocument();
   });
 });

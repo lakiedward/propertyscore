@@ -125,10 +125,6 @@
     },
     "showMap": "Hartă",
     "showList": "Listă",
-    "cluster_one": "{{count}} locuință aici, mărește harta",
-    "cluster_few": "{{count}} locuințe aici, mărește harta",
-    "cluster_other": "{{count}} de locuințe aici, mărește harta",
-    "pin": "{{title}}, {{price}}",
     "card": "Arată pe hartă: {{title}}, {{address}}, {{price}}",
     "address": "{{street}}, {{city}}",
     "popup": {

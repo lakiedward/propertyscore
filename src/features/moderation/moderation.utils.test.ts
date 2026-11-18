@@ -1,5 +1,6 @@
 import { buildReviewListing } from '@/test/factories/moderation';
 import {
+  selectQueueListing,
   dayBucket,
   decisionMessage,
   listingChanges,
@@ -35,5 +36,13 @@ describe('moderation.utils', () => {
 
     expect(listingChanges(revision, original)).toEqual(['price', 'extras', 'photos']);
     expect(listingChanges(original, original)).toEqual([]);
+  });
+
+  it('opens the linked listing, otherwise the first one in the queue', () => {
+    const queue = [{ id: 'a' }, { id: 'b' }];
+
+    expect(selectQueueListing(queue, 'z')).toBe('z');
+    expect(selectQueueListing(queue, undefined)).toBe('a');
+    expect(selectQueueListing([], undefined)).toBeUndefined();
   });
 });

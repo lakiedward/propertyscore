@@ -12,7 +12,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { useErrorMessage } from '@/i18n/error-message';
 import { useValidationMessage } from '@/i18n/validation';
 import { applyServerErrors } from '@/lib/forms';
-import { decisionFormSchema, type DecisionFormValues } from '../moderation.schemas';
+import {
+  DECISION_MESSAGE_MAX,
+  decisionFormSchema,
+  type DecisionFormValues,
+} from '../moderation.schemas';
 import { DECISION_REASONS, type FormDecision } from '../moderation.reasons';
 import type { DecisionReason } from '../moderation.types';
 import { decisionMessage } from '../moderation.utils';
@@ -38,6 +42,7 @@ export function DecisionForm({
   const messageId = useId();
   const [formError, setFormError] = useState<unknown>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmedValues, setConfirmedValues] = useState<DecisionFormValues | null>(null);
   const form = useForm<DecisionFormValues>({
     resolver: zodResolver(decisionFormSchema),
     defaultValues: { reasons: [], message: '' },
@@ -77,6 +82,7 @@ export function DecisionForm({
 
   const handleSubmit = form.handleSubmit(async (values) => {
     if (isBlock) {
+      setConfirmedValues(values);
       setIsConfirmOpen(true);
       return;
     }
@@ -128,7 +134,7 @@ export function DecisionForm({
               {...field}
               id={messageId}
               aria-invalid={fieldState.invalid}
-              maxLength={2000}
+              maxLength={DECISION_MESSAGE_MAX}
             />
             <FieldError>{validationMessage(fieldState.error?.message)}</FieldError>
           </Field>
@@ -166,7 +172,9 @@ export function DecisionForm({
           confirmIcon={BanIcon}
           isPending={isPending}
           onConfirm={() => {
-            void submitValues(form.getValues());
+            if (confirmedValues) {
+              void submitValues(confirmedValues);
+            }
           }}
         />
       ) : null}

@@ -27,5 +27,12 @@ export async function getRomaniaRegions() {
   if (!response.ok) {
     throw new AppError('unknown', `Romania regions request failed with ${String(response.status)}`);
   }
-  return romaniaRegionsSchema.parse(await response.json());
+  const body: unknown = await response.json().catch((error: unknown) => {
+    throw new AppError('unknown', 'Romania regions are not JSON', { cause: error });
+  });
+  const parsed = romaniaRegionsSchema.safeParse(body);
+  if (!parsed.success) {
+    throw new AppError('unknown', 'Romania regions are malformed', { cause: parsed.error });
+  }
+  return parsed.data;
 }

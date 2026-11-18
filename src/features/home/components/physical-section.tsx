@@ -132,7 +132,7 @@ export function PhysicalSection() {
         <CriteriaExplorer />
         <div className="pt-16 pb-14">
           <div className="mb-6.25 flex flex-wrap items-center justify-between gap-4 w820:mb-9.5">
-            <h3 className="text-[26px] leading-[1.08] font-extrabold tracking-[-0.03em] text-brand w820:text-[36px]">
+            <h3 className="text-[26px] leading-[1.08] font-extrabold tracking-figure text-brand w820:text-[36px]">
               {t('physical.journey.title')}
             </h3>
             <ToggleGroup

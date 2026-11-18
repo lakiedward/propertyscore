@@ -93,7 +93,7 @@ export function ListingsExplorerList({
           <h2
             id={headingId}
             aria-live="polite"
-            className="text-[clamp(22px,2.2vw,30px)] leading-tight font-title tracking-[-0.035em]"
+            className="text-[clamp(22px,2.2vw,30px)] leading-tight font-title tracking-section"
           >
             {title}
           </h2>
@@ -108,11 +108,11 @@ export function ListingsExplorerList({
                 onInViewChange(checked === true);
               }}
             />
-            <label htmlFor={inViewId} className="cursor-pointer text-[13px] font-bold text-brand">
+            <label htmlFor={inViewId} className="cursor-pointer text-caption font-bold text-brand">
               {t('explore.list.onlyInView')}
             </label>
           </div>
-          <div className="flex items-center gap-2 text-[13px] font-bold text-muted-foreground">
+          <div className="flex items-center gap-2 text-caption font-bold text-muted-foreground">
             <span aria-hidden="true">{t('explore.list.sortLabel')}</span>
             <Select
               value={sort}
@@ -125,7 +125,7 @@ export function ListingsExplorerList({
             >
               <SelectTrigger
                 aria-label={t('explore.list.sortLabel')}
-                className="h-11 rounded-md border-border px-3 text-[13px] font-bold text-brand"
+                className="h-11 rounded-md border-border px-3 text-caption font-bold text-brand"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -208,7 +208,7 @@ export function ListingsExplorerList({
                       price: isRent ? t('common:price.perMonth', { price }) : price,
                     })}
                     price={
-                      <span className="mb-1 text-[22px] font-extrabold tracking-[-0.03em] text-foreground tabular-nums">
+                      <span className="mb-1 text-card-title font-extrabold tracking-figure text-foreground tabular-nums">
                         {price}
                         {isRent ? (
                           <small className="ml-1 text-small font-semibold tracking-normal text-muted-foreground">

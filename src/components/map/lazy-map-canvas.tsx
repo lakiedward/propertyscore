@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
@@ -10,17 +17,26 @@ const NEAR_VIEWPORT_MARGIN = '400px';
 type LazyMapCanvasProps = Omit<ComponentProps<typeof MapCanvas>, 'onError'> & {
   errorFallback: ReactNode;
   fallbackClassName?: string;
+  onError?: () => void;
 };
 
 function canObserveIntersections(): boolean {
   return typeof IntersectionObserver !== 'undefined';
 }
 
-export function LazyMapCanvas({ errorFallback, fallbackClassName, ...props }: LazyMapCanvasProps) {
+export function LazyMapCanvas({
+  errorFallback,
+  fallbackClassName,
+  onError,
+  ...props
+}: LazyMapCanvasProps) {
   const placeholderRef = useRef<HTMLDivElement>(null);
   const [isNearViewport, setIsNearViewport] = useState(() => !canObserveIntersections());
   const [mapModule, setMapModule] = useState(getLoadedMapCanvas);
   const [hasMapError, setHasMapError] = useState(false);
+  const reportLoadError = useEffectEvent(() => {
+    onError?.();
+  });
 
   useEffect(() => {
     const placeholder = placeholderRef.current;
@@ -57,6 +73,7 @@ export function LazyMapCanvas({ errorFallback, fallbackClassName, ...props }: La
         logger.error(error);
         if (isCurrent) {
           setHasMapError(true);
+          reportLoadError();
         }
       },
     );
@@ -80,12 +97,14 @@ export function LazyMapCanvas({ errorFallback, fallbackClassName, ...props }: La
       fallback={errorFallback}
       onError={(error) => {
         logger.error(error);
+        onError?.();
       }}
     >
       <LoadedMapCanvas
         {...props}
         onError={() => {
           setHasMapError(true);
+          onError?.();
         }}
       />
     </ErrorBoundary>

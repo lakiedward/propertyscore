@@ -5,6 +5,7 @@ import {
   DEFAULT_EXPLORER_SORT,
   EXPLORER_CITY_IDS,
   EXPLORER_SORTS,
+  isExplorerPriceCap,
 } from '@/config/listings-explorer';
 import { preloadMapCanvas } from '@/components/map/load-map-canvas';
 import {
@@ -17,12 +18,19 @@ import { i18n, loadFeatureNamespaces } from '@/i18n/i18n';
 import { pageTitle } from '@/i18n/page-title';
 import { Constants } from '@/lib/supabase/database.types';
 
-const listingsSearchSchema = z.object({
-  transaction: z.enum(Constants.public.Enums.listing_transaction).optional().catch(undefined),
-  city: z.enum(EXPLORER_CITY_IDS).optional().catch(undefined),
-  price: z.coerce.number().int().positive().optional().catch(undefined),
-  sort: z.enum(EXPLORER_SORTS).optional().catch(undefined),
-});
+const listingsSearchSchema = z
+  .object({
+    transaction: z.enum(Constants.public.Enums.listing_transaction).optional().catch(undefined),
+    city: z.enum(EXPLORER_CITY_IDS).optional().catch(undefined),
+    price: z.coerce.number().int().positive().optional().catch(undefined),
+    sort: z.enum(EXPLORER_SORTS).optional().catch(undefined),
+  })
+  .transform((search) => ({
+    ...search,
+    price: isExplorerPriceCap(search.transaction ?? DEFAULT_TRANSACTION, search.price)
+      ? search.price
+      : undefined,
+  }));
 
 export const Route = createFileRoute('/_site/listings')({
   validateSearch: listingsSearchSchema,
@@ -32,12 +40,14 @@ export const Route = createFileRoute('/_site/listings')({
     sort: search.sort ?? DEFAULT_EXPLORER_SORT,
   }),
   beforeLoad: () => loadFeatureNamespaces(['listings']),
-  loader: ({ context, deps }) => {
+  loader: ({ context, deps, cause }) => {
     preloadMapCanvas();
     void context.queryClient
       .infiniteQuery(listingQueries.explorer({ ...deps, bounds: undefined }))
       .catch(() => undefined);
-    warmFirstListingTiles(listingTileUrl(deps));
+    if (cause !== 'stay') {
+      warmFirstListingTiles(listingTileUrl(deps), window);
+    }
     void context.queryClient
       .query(listingQueries.mapSummary({ transaction: deps.transaction, maxPrice: deps.maxPrice }))
       .catch(() => undefined);

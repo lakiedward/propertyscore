@@ -30,7 +30,7 @@ export function FindingExample() {
           <p className="text-meta font-extrabold tracking-eyebrow text-cta uppercase">
             {t('physical.finding.kicker', brands)}
           </p>
-          <p className="text-[19px] leading-copy font-extrabold tracking-[-0.02em] w520:text-h3">
+          <p className="text-[19px] leading-copy font-extrabold tracking-snug-title w520:text-h3">
             {t('physical.finding.title')}
           </p>
           <p className="text-label font-[750] text-on-inverse">{t('physical.finding.text')}</p>

@@ -9,7 +9,7 @@ import { StatusPill } from '@/components/feedback/status-pill';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { myListingQueries, useDiscardListingRevision } from '../api/my-listings.queries';
-import { OWNER_STATUS_META, type ListingStatus } from '../listing-status';
+import { LISTING_STATUS_META, type ListingStatus } from '../listing-status';
 import type { MyListing } from '../listing.types';
 import { ListingDecisionNotice } from './listing-decision-notice';
 import type { EditorSection } from '../listing-editor.sections';
@@ -77,7 +77,11 @@ function ExistingListing({ listingId, ownerId, email, section }: ExistingListing
   );
 }
 
-function RevisionNotice({ listing }: { listing: MyListing }) {
+type RevisionNoticeProps = {
+  listing: MyListing;
+};
+
+function RevisionNotice({ listing }: RevisionNoticeProps) {
   const { t } = useTranslation(['myListings', 'common']);
   const navigate = useNavigate();
   const discard = useDiscardListingRevision();
@@ -133,7 +137,7 @@ type EditorLayoutProps = {
 
 function EditorLayout({ title, subtitle, status, children }: EditorLayoutProps) {
   const { t } = useTranslation('myListings');
-  const meta = status ? OWNER_STATUS_META[status] : undefined;
+  const meta = status ? LISTING_STATUS_META[status] : undefined;
 
   return (
     <div className="flex w-full flex-col gap-5">

@@ -1,5 +1,7 @@
 import type { TrustKind } from '@/components/trust/trust.utils';
+import type { MapRegionArea, MapRegions } from '@/components/map/map-canvas';
 import type { LngLatBounds } from '@/components/map/map.config';
+import type { MapTilePin } from '@/components/map/use-map-listing-tiles';
 import type { ListingBounds, ListingVerification } from './listing.types';
 
 export function toTrustKind(verification: ListingVerification): TrustKind {
@@ -18,13 +20,6 @@ export function toListingBounds([[west, south], [east, north]]: LngLatBounds): L
     east: Math.ceil(east * BOUNDS_STEP) / BOUNDS_STEP,
     north: Math.ceil(north * BOUNDS_STEP) / BOUNDS_STEP,
   };
-}
-
-export function containsBounds(
-  [[west, south], [east, north]]: LngLatBounds,
-  [[innerWest, innerSouth], [innerEast, innerNorth]]: LngLatBounds,
-): boolean {
-  return west <= innerWest && south <= innerSouth && east >= innerEast && north >= innerNorth;
 }
 
 export function sameListingBounds(
@@ -74,4 +69,52 @@ export function parseEwkbPoint(hex: string): [number, number] | null {
     return null;
   }
   return [view.getFloat64(offset, isLittleEndian), view.getFloat64(offset + 8, isLittleEndian)];
+}
+
+export function toTilePin(listing: {
+  id: string;
+  longitude: number;
+  latitude: number;
+  price: number;
+  currency: string;
+}): MapTilePin {
+  return {
+    id: listing.id,
+    position: [listing.longitude, listing.latitude],
+    price: listing.price,
+    currency: listing.currency,
+  };
+}
+
+type RegionShapes = {
+  outline: MapRegions['outline'];
+  regions: readonly { id: string; name: string; coordinates: MapRegionArea['coordinates'] }[];
+};
+
+export function toMapRegions({
+  shapes,
+  counties,
+  selectedId,
+  labelOf,
+}: {
+  shapes: RegionShapes;
+  counties: readonly { county_id: string; listing_count: number }[];
+  selectedId: string | undefined;
+  labelOf: (region: { id: string; name: string }, count: number) => string;
+}): Omit<MapRegions, 'onSelect'> {
+  const counts = new Map(counties.map((county) => [county.county_id, county.listing_count]));
+  const busiest = Math.max(1, ...counts.values());
+  return {
+    outline: shapes.outline,
+    areas: shapes.regions.map((region) => {
+      const count = counts.get(region.id) ?? 0;
+      return {
+        id: region.id,
+        coordinates: region.coordinates,
+        weight: count / busiest,
+        label: labelOf(region, count),
+      };
+    }),
+    selectedId,
+  };
 }

@@ -100,7 +100,7 @@ export function ListingDetailsSection({ control }: ListingDetailsSectionProps) {
                   <ToggleGroupItem
                     key={choice}
                     value={choice}
-                    className="size-11 rounded-full border-[1.5px] border-border bg-card text-small font-bold text-foreground hover:bg-background data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                    className="size-11 rounded-full border-(length:--border-width-control) border-border bg-card text-small font-bold text-foreground hover:bg-background data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                   >
                     {choice === MANY_ROOMS ? t('wizard.details.roomsMore') : choice}
                   </ToggleGroupItem>

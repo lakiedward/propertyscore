@@ -33,6 +33,7 @@ function tilePinOf(title: string) {
 describe('ListingsExplorerPage', { timeout: 20_000 }, () => {
   afterEach(() => {
     mapCanvasStubControl.tilePins = [];
+    mapCanvasStubControl.shouldFail = false;
   });
 
   it('shows the total from the map summary and the listings of the map area below it', async () => {
@@ -135,5 +136,14 @@ describe('ListingsExplorerPage', { timeout: 20_000 }, () => {
       'aria-pressed',
       'true',
     );
+  });
+
+  it('explains when the map cannot be drawn and still lists every listing', async () => {
+    mapCanvasStubControl.shouldFail = true;
+    await renderAppRoute('/listings');
+
+    expect(await screen.findByText(explore.mapError)).toBeInTheDocument();
+    const cards = await findCards();
+    expect(within(cards).getAllByRole('button')).toHaveLength(2);
   });
 });

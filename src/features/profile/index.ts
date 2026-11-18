@@ -1,3 +1,4 @@
+export { loadAccountSettings } from './api/profile.queries';
 export { AccountSettingsPage } from './components/account-settings-page';
 export { LanguageSwitcher } from './components/language-switcher';
 export { SiteMenuAccount } from './components/site-menu-account';

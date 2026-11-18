@@ -1,32 +1,7 @@
+import type { ListingDetailField } from '@/config/listing-details';
 import type { Tables } from '@/lib/supabase/database.types';
 
-type ListingDetails = Pick<
-  Tables<'listings'>,
-  | 'property_type'
-  | 'bathrooms'
-  | 'partitioning'
-  | 'comfort'
-  | 'building_type'
-  | 'house_type'
-  | 'land_area_m2'
-  | 'has_basement'
-  | 'has_semibasement'
-  | 'has_attic'
-  | 'interior_condition'
-  | 'heating'
-  | 'cooling'
-  | 'furnishing'
-  | 'pets'
-  | 'is_passive_house'
-  | 'balconies'
-  | 'parking_spaces'
-  | 'utilities'
-  | 'building_services'
-  | 'has_elevator'
-  | 'has_shared_yard'
-  | 'pool'
-  | 'yard'
->;
+type ListingDetails = Pick<Tables<'listings'>, ListingDetailField>;
 
 export const APARTMENT_DETAILS: ListingDetails = {
   property_type: 'apartment',

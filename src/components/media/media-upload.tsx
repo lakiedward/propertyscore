@@ -66,7 +66,7 @@ export function MediaUpload({
           onAdd([...event.dataTransfer.files]);
         }
       }}
-      className="relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-[1.5px] border-dashed border-border-strong bg-background px-5 py-7 text-center transition-colors duration-(--duration-fast) focus-within:ring-3 focus-within:ring-ring focus-within:ring-offset-2 hover:border-primary hover:bg-surface-highlight aria-disabled:cursor-not-allowed aria-disabled:opacity-60 aria-disabled:hover:border-border-strong aria-disabled:hover:bg-background data-invalid:border-destructive data-invalid:bg-error-surface data-over:border-primary data-over:bg-surface-highlight"
+      className="relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-(length:--border-width-control) border-dashed border-border-strong bg-background px-5 py-7 text-center transition-colors duration-(--duration-fast) focus-within:ring-3 focus-within:ring-ring focus-within:ring-offset-2 hover:border-primary hover:bg-surface-highlight aria-disabled:cursor-not-allowed aria-disabled:opacity-60 aria-disabled:hover:border-border-strong aria-disabled:hover:bg-background data-invalid:border-destructive data-invalid:bg-error-surface data-over:border-primary data-over:bg-surface-highlight"
     >
       <input
         type="file"

@@ -14,7 +14,7 @@ import { useBrandNames } from '../hooks/use-brand-names';
 
 const tileClassName = 'flex flex-col gap-2 rounded-xl bg-card p-5 text-info-ink shadow-tile';
 const iconClassName = 'grid size-11 place-items-center rounded-icon';
-const nameClassName = 'text-h4 leading-[1.15] font-extrabold tracking-[-0.02em]';
+const nameClassName = 'text-h4 leading-[1.15] font-extrabold tracking-snug-title';
 
 export function ZoneReportTiles() {
   const { t } = useTranslation('home');

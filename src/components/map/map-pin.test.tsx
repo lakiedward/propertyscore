@@ -57,4 +57,13 @@ describe('MapPin', () => {
       'text-primary-foreground',
     );
   });
+
+  it('is only a picture when nothing can be selected', async () => {
+    await renderWithProviders(
+      <MapPin kind="brand" label="97.000 €" accessibleName={NAME} isActive isSelected={false} />,
+    );
+
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.getByText('97.000 €')).toHaveAttribute('aria-hidden', 'true');
+  });
 });

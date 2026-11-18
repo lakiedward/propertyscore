@@ -94,7 +94,7 @@ export function AccountPathSection({ isSignedIn }: AccountPathSectionProps) {
                 >
                   {t(`path.steps.${step.key}.tag`)}
                 </span>
-                <strong className="text-title-xs leading-[1.25] font-bold tracking-[-0.02em]">
+                <strong className="text-title-xs leading-tight font-bold tracking-snug-title">
                   {t(`path.steps.${step.key}.title`)}
                 </strong>
                 <span

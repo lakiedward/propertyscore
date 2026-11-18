@@ -1,14 +1,14 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { ExternalLinkIcon, ImageOffIcon, PencilIcon } from 'lucide-react';
 import { useId, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { StatusPill } from '@/components/feedback/status-pill';
 import { Button } from '@/components/ui/button';
 import { useListingPrice } from '@/hooks/use-listing-price';
 import { cn } from '@/lib/utils';
 import { getListingMediumUrl, getListingPhotoUrl } from '../api/listings.storage';
 import { useStartListingRevision } from '../api/my-listings.queries';
-import { isEditableStatus, OWNER_STATUS_META, type ListingStatus } from '../listing-status';
+import { isEditableStatus, LISTING_STATUS_META, type ListingStatus } from '../listing-status';
 import type { MyListingRow } from '../listing.types';
 
 type MyListingCardProps = {
@@ -37,6 +37,9 @@ function floorShort(floor: number | null, total: number | null, t: Translate): s
   if (floor === 0) {
     return t('list.groundFloorShort');
   }
+  if (floor < 0) {
+    return t('list.basementShort');
+  }
   return total === null
     ? t('list.floorOnlyShort', { floor })
     : t('list.floorShort', { floor, total });
@@ -46,7 +49,7 @@ export function MyListingCard({ listing }: MyListingCardProps) {
   const { t } = useTranslation(['myListings', 'common']);
   const { price, area } = useListingPrice(listing);
   const titleId = useId();
-  const meta = OWNER_STATUS_META[listing.status];
+  const meta = LISTING_STATUS_META[listing.status];
   const [decision] = listing.decisions;
   const navigate = useNavigate();
   const startRevision = useStartListingRevision();
@@ -91,7 +94,7 @@ export function MyListingCard({ listing }: MyListingCardProps) {
           <div className="flex min-w-0 flex-col gap-2">
             <h2
               id={titleId}
-              className="text-[22px] leading-[1.25] font-bold tracking-[-0.02em] text-foreground"
+              className="text-card-title leading-tight font-bold tracking-snug-title text-foreground"
             >
               {listing.title}
             </h2>
@@ -107,36 +110,49 @@ export function MyListingCard({ listing }: MyListingCardProps) {
           />
         </div>
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1.5">
-          <p className="text-[28px] leading-tight font-extrabold tracking-[-0.03em] text-foreground tabular-nums">
+          <p className="text-title-sm leading-tight font-extrabold tracking-figure text-foreground tabular-nums">
             {price}
           </p>
           <p className="text-body-sm text-muted-foreground">{facts.join(' · ')}</p>
         </div>
         {reasonStatus && decision?.message ? (
           <p
+            role="note"
             className={cn(
               'rounded-md px-3 py-2.5 text-small leading-copy whitespace-pre-line',
               reasonBoxClass[reasonStatus],
             )}
           >
-            <strong className="font-bold">{t('list.reasonLabel')}</strong> {decision.message}
+            <Trans
+              t={t}
+              i18nKey="list.reason"
+              components={{
+                strong: <strong className="font-bold" />,
+                message: <span>{decision.message}</span>,
+              }}
+            />
           </p>
         ) : null}
         {isApproved && note ? (
           <p
+            role="note"
             className={cn(
               'rounded-md px-3 py-2.5 text-small leading-copy whitespace-pre-line',
               note === 'rejected' ? reasonBoxClass.rejected : 'bg-info-surface text-info-ink',
             )}
           >
-            {t(`list.revision.${note}`)}
             {note === 'rejected' && revisionDecision?.message ? (
-              <>
-                {' '}
-                <strong className="font-bold">{t('list.reasonLabel')}</strong>{' '}
-                {revisionDecision.message}
-              </>
-            ) : null}
+              <Trans
+                t={t}
+                i18nKey="list.revision.rejectedWithReason"
+                components={{
+                  strong: <strong className="font-bold" />,
+                  message: <span>{revisionDecision.message}</span>,
+                }}
+              />
+            ) : (
+              t(`list.revision.${note}`)
+            )}
           </p>
         ) : null}
         {isEditable || isApproved ? (

@@ -26,6 +26,16 @@ describe('toAppError', () => {
     ['rate_limited', undefined],
     ['reauthentication_needed', undefined],
     ['listing_photos_changed', undefined],
+    ['listing_not_found', undefined],
+    ['listing_already_pending', undefined],
+    ['listing_blocked', undefined],
+    ['listing_invalid_transition', undefined],
+    ['listing_incomplete', undefined],
+    ['listing_not_pending', undefined],
+    ['listing_photo_limit', undefined],
+    ['decision_reason_invalid', 'reasons'],
+    ['decision_message_required', 'message'],
+    ['decision_message_too_long', 'message'],
   ])('maps the function error %s to its reason and the %s field', (message, field) => {
     const error = toAppError(postgrestError('P0001', message));
 

@@ -8,6 +8,7 @@ import { myListingsResponse, SEEDED_MY_LISTINGS } from '@/test/msw/handlers/my-l
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
+import { toListingFormValues, toListingWrite } from '../listing-form.schemas';
 
 vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 
@@ -300,5 +301,36 @@ describe('ListingEditorPage', { timeout: 20_000 }, () => {
 
     expect(await screen.findByText(roCommon.errors.reasons.value_out_of_range)).toBeInTheDocument();
     expect(await sectionButton(ro.sections.details)).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('saves a draft with every field in the shape the table takes and waits for the answer', async () => {
+    const draft = buildMyListing();
+    let releaseSave: () => void = () => undefined;
+    const saved = new Promise<void>((resolve) => {
+      releaseSave = resolve;
+    });
+    let body: unknown;
+    server.use(
+      myListingsResponse([draft]),
+      http.patch(supabaseUrl('/rest/v1/listings'), async ({ request }) => {
+        body = await request.json();
+        await saved;
+        return HttpResponse.json([{ id: draft.id }]);
+      }),
+    );
+    const { user } = await renderAppRoute(`/account/listings/${draft.id}`, {
+      auth: signedInAs(),
+    });
+
+    await user.click(await screen.findByRole('button', { name: ro.editor.save }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: ro.editor.save })).toBeDisabled();
+    });
+    expect(body).toEqual(toListingWrite(toListingFormValues(draft)));
+    releaseSave();
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: ro.editor.save })).toBeEnabled();
+    });
   });
 });

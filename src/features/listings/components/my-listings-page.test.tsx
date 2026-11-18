@@ -1,9 +1,13 @@
 import { screen, waitFor, within } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
+import { MY_LISTINGS_PAGE_SIZE } from '../api/my-listings.api';
+import roCommon from '@/i18n/locales/ro/common.json';
 import ro from '@/i18n/locales/ro/myListings.json';
 import { signedInAs } from '@/test/factories/auth';
-import { buildMyListing } from '@/test/factories/my-listing';
+import { buildMyListing, toMyListingRow } from '@/test/factories/my-listing';
 import { myListingsResponse, SEEDED_MY_LISTINGS } from '@/test/msw/handlers/my-listings';
 import { server } from '@/test/msw/server';
+import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
 
 const [REJECTED, BLOCKED] = SEEDED_MY_LISTINGS;
@@ -66,5 +70,43 @@ describe('MyListingsPage', { timeout: 20_000 }, () => {
       'href',
       '/account/listings/new',
     );
+  });
+
+  it('loads the next listings only when the owner asks for them', async () => {
+    const listings = Array.from({ length: MY_LISTINGS_PAGE_SIZE + 1 }, () =>
+      buildMyListing({ status: 'draft' }),
+    );
+    server.use(
+      http.get(supabaseUrl('/rest/v1/listings'), ({ request }) => {
+        const offset = Number(new URL(request.url).searchParams.get('offset') ?? '0');
+        return HttpResponse.json(
+          listings
+            .slice(offset, offset + MY_LISTINGS_PAGE_SIZE)
+            .map((listing) => toMyListingRow(listing)),
+        );
+      }),
+    );
+    const { user } = await renderAppRoute('/account/listings', { auth: signedInAs() });
+
+    expect(await screen.findAllByRole('article')).toHaveLength(MY_LISTINGS_PAGE_SIZE);
+
+    await user.click(screen.getByRole('button', { name: ro.list.more }));
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('article')).toHaveLength(MY_LISTINGS_PAGE_SIZE + 1);
+    });
+    expect(screen.queryByRole('button', { name: ro.list.more })).not.toBeInTheDocument();
+  });
+
+  it('shows the error page when the listings cannot be read', async () => {
+    server.use(
+      http.get(supabaseUrl('/rest/v1/listings'), () =>
+        HttpResponse.json({ code: 'XX000', message: 'boom' }, { status: 500 }),
+      ),
+    );
+    await renderAppRoute('/account/listings', { auth: signedInAs() });
+
+    expect(await screen.findByRole('button', { name: roCommon.actions.retry })).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: ro.list.label })).not.toBeInTheDocument();
   });
 });

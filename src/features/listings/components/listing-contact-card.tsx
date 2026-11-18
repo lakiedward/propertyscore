@@ -1,17 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { MailIcon, PhoneIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { authQueries } from '@/features/auth';
 
 type ListingContactCardProps = {
-  ownerId: string;
+  phone: string | null;
   email: string | undefined;
 };
 
-export function ListingContactCard({ ownerId, email }: ListingContactCardProps) {
+export function ListingContactCard({ phone, email }: ListingContactCardProps) {
   const { t } = useTranslation('myListings');
-  const { data: phone } = useQuery(authQueries.accountPhone(ownerId));
 
   return (
     <dl className="flex flex-col gap-4">

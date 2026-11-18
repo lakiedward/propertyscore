@@ -1,4 +1,9 @@
-import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  infiniteQueryOptions,
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
 import { toListingPhotoFiles } from '../listing.images';
 import {
@@ -27,9 +32,11 @@ export const myListingQueries = {
   all: () => ['my-listings'] as const,
   lists: () => [...myListingQueries.all(), 'list'] as const,
   list: (ownerId: string) =>
-    queryOptions({
+    infiniteQueryOptions({
       queryKey: [...myListingQueries.lists(), ownerId],
-      queryFn: () => listMyListings(ownerId),
+      queryFn: ({ pageParam }) => listMyListings(ownerId, pageParam),
+      initialPageParam: 0,
+      getNextPageParam: (lastPage, pages) => (lastPage.hasMore ? pages.length : undefined),
     }),
   detail: (id: string, ownerId: string) =>
     queryOptions({
@@ -38,7 +45,7 @@ export const myListingQueries = {
     }),
   cities: () =>
     queryOptions({
-      queryKey: ['cities'],
+      queryKey: [...myListingQueries.all(), 'cities'],
       queryFn: listCities,
       staleTime: CITIES_STALE_MS,
     }),
@@ -71,6 +78,8 @@ export function useSubmitListing() {
   });
 }
 
+const PHOTO_UPLOAD_CONCURRENCY = 2;
+
 type AddPhotosInput = {
   ownerId: string;
   listingId: string;
@@ -82,8 +91,7 @@ export function useAddListingPhotos() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ ownerId, listingId, files, nextPosition }: AddPhotosInput) => {
-      let position = nextPosition;
-      for (const file of files) {
+      const addPhoto = async (file: File, position: number) => {
         const photoFiles = await toListingPhotoFiles(file);
         const path = listingPhotoPath(ownerId, listingId, crypto.randomUUID());
         await uploadListingPhotoFiles(path, photoFiles);
@@ -97,7 +105,16 @@ export function useAddListingPhotos() {
           });
           throw error;
         }
-        position += 1;
+      };
+      for (let start = 0; start < files.length; start += PHOTO_UPLOAD_CONCURRENCY) {
+        const batch = files.slice(start, start + PHOTO_UPLOAD_CONCURRENCY);
+        const results = await Promise.allSettled(
+          batch.map((file, index) => addPhoto(file, nextPosition + start + index)),
+        );
+        const failure = results.find((result) => result.status === 'rejected');
+        if (failure) {
+          throw failure.reason;
+        }
       }
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: myListingQueries.all() }),
@@ -111,6 +128,7 @@ export function useReorderListingPhotos() {
   return useMutation({
     mutationFn: ({ listingId, photoIds }: ReorderPhotosInput) =>
       reorderListingPhotos({ listingId, photoIds }),
+    scope: { id: 'listing-photo-order' },
     meta: { silent: true },
     onMutate: async ({ ownerId, listingId, photoIds }) => {
       const { queryKey } = myListingQueries.detail(listingId, ownerId);

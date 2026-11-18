@@ -1,5 +1,7 @@
 export const PANEL_PATHS = { account: '/account', admin: '/admin' } as const;
 
+export const SIDEBAR_COLLAPSED_STORAGE_KEY = 'ps-sb-closed';
+
 export type PanelArea = keyof typeof PANEL_PATHS;
 
 export type PanelPath = (typeof PANEL_PATHS)[PanelArea];

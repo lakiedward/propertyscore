@@ -9,4 +9,5 @@ export { MyListingsPage } from './components/my-listings-page';
 export type { MyListing, MyListingRow } from './listing.types';
 export { useListingPhotoSummary } from './hooks/use-listing-photo-summary';
 export { listingEditorSearchSchema } from './listing-editor.schemas';
-export { isEditableStatus } from './listing-status';
+export { isEditableStatus, LISTING_STATUS_META } from './listing-status';
+export type { ListingStatus } from './listing-status';

@@ -1,21 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { authQueries, authSearchSchema } from '@/features/auth';
-import { AccountSettingsPage } from '@/features/profile';
+import { authSearchSchema } from '@/features/auth';
+import { AccountSettingsPage, loadAccountSettings } from '@/features/profile';
 import { panelPageHead } from '@/components/layout/panel-page-head';
+import { PendingPage } from '@/components/layout/pending-page';
 
 export const Route = createFileRoute('/_authenticated/admin/settings')({
   validateSearch: authSearchSchema,
-  loader: ({ context }) =>
-    Promise.all([
-      context.queryClient.query({
-        ...authQueries.accountHasPassword(context.user.id),
-        staleTime: 'static',
-      }),
-      context.queryClient.query({
-        ...authQueries.accountPhone(context.user.id),
-        staleTime: 'static',
-      }),
-    ]),
+  loader: ({ context }) => loadAccountSettings(context.queryClient, context.user.id),
+  pendingComponent: PendingPage,
   head: panelPageHead('panel.admin.nav.settings'),
   component: AdminSettingsRoute,
 });

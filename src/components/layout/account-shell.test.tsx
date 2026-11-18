@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import roAuth from '@/i18n/locales/ro/auth.json';
 import roCommon from '@/i18n/locales/ro/common.json';
-import { SIDEBAR_COLLAPSED_STORAGE_KEY } from '@/hooks/use-sidebar-collapsed';
+import { SIDEBAR_COLLAPSED_STORAGE_KEY } from './panel-paths';
 import { signedInAs } from '@/test/factories/auth';
 import { buildProfile } from '@/test/factories/profile';
 import { renderAppRoute } from '@/test/render';

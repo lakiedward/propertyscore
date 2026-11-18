@@ -4,34 +4,28 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import {
-  ListIcon,
-  LocateFixedIcon,
-  MapIcon,
-  Maximize2Icon,
-  Minimize2Icon,
-  MinusIcon,
-  PlusIcon,
-} from 'lucide-react';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { ListIcon, MapIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LazyMapCanvas } from '@/components/map/lazy-map-canvas';
 import type {
   MapCanvasController,
   MapFocus,
-  MapListingTiles,
   MapMarkerItem,
   MapRegions,
-  MapTilePin,
 } from '@/components/map/map-canvas';
 import { MapPin } from '@/components/map/map-pin';
-import type { LngLat } from '@/components/map/map.config';
-import { boundsOf } from '@/components/map/map.utils';
+import { boundsOfPolygons } from '@/components/map/map.utils';
+import type { MapListingTiles, MapTilePin } from '@/components/map/use-map-listing-tiles';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DEFAULT_TRANSACTION } from '@/config/home-search';
 import {
+  DEFAULT_EXPLORER_SORT,
   EXPLORER_CITIES,
+  EXPLORER_MAP_LAYOUT,
   ROMANIA_BOUNDS,
+  ROMANIA_CENTER,
+  ROMANIA_ZOOM,
   type ExplorerCityId,
   type ExplorerSort,
 } from '@/config/listings-explorer';
@@ -41,17 +35,23 @@ import { listingQueries } from '../api/listings.queries';
 import { getListingMediumUrl } from '../api/listings.storage';
 import { LISTING_TILE_HEADERS, listingTileUrl } from '../api/listings.tiles';
 import { useDebouncedBounds } from '../hooks/use-debounced-bounds';
+import { useFullScreen } from '../hooks/use-full-screen';
 import { useIsNarrowScreen } from '../hooks/use-is-narrow-screen';
 import type { ListingTransaction } from '../listing.types';
+import { toMapRegions, toTilePin } from '../listing.utils';
 import { ListingMapPopup } from './listing-map-popup';
+import { ListingMapSheet } from './listing-map-sheet';
 import {
   ListingsExplorerList,
   type ExplorerEmptyKind,
   type ExplorerListing,
 } from './listings-explorer-list';
+import { ListingsMapControls } from './listings-map-controls';
 import { ListingsMapFilters } from './listings-map-filters';
 
 const SHOW_ON_MAP_ZOOM = 16;
+
+const PRICE_STEP = { sale: 1000, rent: 1 } as const satisfies Record<ListingTransaction, number>;
 
 type MapPopupContent = {
   photoUrl: string | undefined;
@@ -102,7 +102,7 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
     enabled: selected !== undefined && selected.content === undefined,
   });
   const [focus, setFocus] = useState<MapFocus | undefined>(() => cityFocus(cityId, 1));
-  const [isFullScreen, setIsFullScreen] = useState(false);
+  const { isFullScreen, setIsFullScreen } = useFullScreen();
   const mapRef = useRef<MapCanvasController>(null);
   const mapAreaRef = useRef<HTMLDivElement>(null);
   const isNarrow = useIsNarrowScreen();
@@ -126,24 +126,6 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
       cancelAnimationFrame(frame);
     };
   }, []);
-
-  useEffect(() => {
-    if (!isFullScreen) {
-      return;
-    }
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsFullScreen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isFullScreen]);
 
   const shownCount = summary.data?.total;
   const city = EXPLORER_CITIES.find((candidate) => candidate.id === cityId);
@@ -200,13 +182,7 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
       return;
     }
     const region = regions.data?.regions.find((candidate) => candidate.id === regionId);
-    const regionBounds = region
-      ? boundsOf(
-          region.coordinates.flatMap((polygon) =>
-            (polygon[0] ?? []).map(([longitude, latitude]): LngLat => [longitude, latitude]),
-          ),
-        )
-      : undefined;
+    const regionBounds = region ? boundsOfPolygons(region.coordinates) : undefined;
     if (regionBounds) {
       mapRef.current?.fitBounds(regionBounds);
     }
@@ -225,7 +201,7 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
       transaction: DEFAULT_TRANSACTION,
       city: undefined,
       maxPrice: undefined,
-      sort: 'relevance',
+      sort: DEFAULT_EXPLORER_SORT,
     });
     mapRef.current?.fitBounds(ROMANIA_BOUNDS);
   };
@@ -237,13 +213,7 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
         behavior: prefersReducedMotion() ? 'auto' : 'smooth',
       });
     }
-    setSelected({
-      id: listing.id,
-      position: [listing.longitude, listing.latitude],
-      price: listing.price,
-      currency: listing.currency,
-      content: popupContentOf(listing),
-    });
+    setSelected({ ...toTilePin(listing), content: popupContentOf(listing) });
     setFocus((previous) => ({
       position: [listing.longitude, listing.latitude],
       zoom: SHOW_ON_MAP_ZOOM,
@@ -255,16 +225,7 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
     const listing = cards.data?.pages
       .flatMap((page) => page.items)
       .find((candidate) => candidate.id === id);
-    setHovered(
-      listing
-        ? {
-            id: listing.id,
-            position: [listing.longitude, listing.latitude],
-            price: listing.price,
-            currency: listing.currency,
-          }
-        : undefined,
-    );
+    setHovered(listing ? toTilePin(listing) : undefined);
   };
 
   const handlePinHover = (pin: MapTilePin | undefined) => {
@@ -281,26 +242,17 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
     setIsFullScreen((current) => !current);
   };
 
-  const regionCounts = Object.fromEntries(
-    (summary.data?.counties ?? []).map((county) => [county.county_id, county.listing_count]),
-  );
-  const busiestRegion = Math.max(1, ...Object.values(regionCounts));
   const mapRegions: MapRegions | undefined = regions.data
     ? {
-        outline: regions.data.outline,
-        areas: regions.data.regions.map((region) => {
-          const count = regionCounts[region.id] ?? 0;
-          return {
-            id: region.id,
-            coordinates: region.coordinates,
-            weight: count / busiestRegion,
-            label:
-              region.id === 'bucuresti'
-                ? t('explore.region.bucharest', { count })
-                : t('explore.region.county', { name: region.name, count }),
-          };
+        ...toMapRegions({
+          shapes: regions.data,
+          counties: summary.data?.counties ?? [],
+          selectedId: city?.regionId,
+          labelOf: (region, count) =>
+            region.id === 'bucuresti'
+              ? t('explore.region.bucharest', { count })
+              : t('explore.region.county', { name: region.name, count }),
         }),
-        selectedId: city?.regionId,
         onSelect: handleRegionSelect,
       }
     : undefined;
@@ -314,17 +266,14 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
     anchor: 'bottom',
     isRaised: true,
     node: (
-      <div inert>
-        <MapPin
-          kind="brand"
-          shape="tag"
-          label={pinLabel(listing.price, listing.currency)}
-          accessibleName={fullPrice(listing.price, listing.currency)}
-          isActive={state === 'hovered'}
-          isSelected={state === 'selected'}
-          onSelect={() => undefined}
-        />
-      </div>
+      <MapPin
+        kind="brand"
+        shape="tag"
+        label={pinLabel(listing.price, listing.currency)}
+        accessibleName={fullPrice(listing.price, listing.currency)}
+        isActive={state === 'hovered'}
+        isSelected={state === 'selected'}
+      />
     ),
   });
 
@@ -359,6 +308,7 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
     url: listingTileUrl({ transaction, maxPrice }),
     headers: LISTING_TILE_HEADERS,
     labelKey: `${i18n.language}-${transaction}`,
+    priceStep: PRICE_STEP[transaction],
     pinLabel,
     bubbleLabel: formatNumber,
     hiddenIds: [hovered?.id, selected?.id].filter((id) => id !== undefined),
@@ -384,16 +334,16 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
           'overflow-hidden bg-map-water',
           isFullScreen
             ? 'fixed inset-0 z-200 h-dvh'
-            : 'relative h-[calc(100dvh-77px)] min-h-120 border-b border-map-edge',
+            : 'relative h-[calc(100dvh-var(--header-height)-1px)] min-h-120 border-b border-map-edge',
         )}
       >
         <LazyMapCanvas
           ref={mapRef}
           label={t('explore.mapLabel')}
           center={ROMANIA_CENTER}
-          zoom={COUNTRY_ZOOM}
+          zoom={ROMANIA_ZOOM}
           bounds={ROMANIA_BOUNDS}
-          boundsPadding={10}
+          boundsPadding={EXPLORER_MAP_LAYOUT.boundsPadding}
           focus={focus}
           markers={[...highlightMarkers, ...popupMarkers]}
           regions={mapRegions}
@@ -405,7 +355,14 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
           listingTiles={listingTiles}
           className="absolute inset-0 rounded-none bg-map-water"
           fallbackClassName="absolute inset-0 rounded-none"
-          errorFallback={<MapErrorNotice message={t('explore.mapError')} onShow={setHasMapError} />}
+          onError={() => {
+            setHasMapError(true);
+          }}
+          errorFallback={
+            <Alert className="absolute inset-x-4 top-1/2 z-10 -translate-y-1/2">
+              <AlertDescription>{t('explore.mapError')}</AlertDescription>
+            </Alert>
+          }
         />
         <ListingsMapFilters
           transaction={transaction}
@@ -421,38 +378,13 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
           }}
           onReset={handleReset}
         />
-        <div className="absolute top-3.5 right-3.5 z-10 flex flex-col items-end gap-2.5 max-w760:top-auto max-w760:bottom-35">
-          <MapControlButton
-            label={
-              isFullScreen ? t('explore.controls.exitFullScreen') : t('explore.controls.fullScreen')
-            }
-            isPressed={isFullScreen}
-            onClick={handleFullScreenToggle}
-          >
-            {isFullScreen ? <Minimize2Icon aria-hidden /> : <Maximize2Icon aria-hidden />}
-          </MapControlButton>
-          <MapControlButton label={t('explore.controls.showRomania')} onClick={showRomania}>
-            <LocateFixedIcon aria-hidden />
-          </MapControlButton>
-        </div>
-        <div className="absolute right-3.5 bottom-7 z-10 flex flex-col overflow-hidden rounded-thumb border border-border bg-card shadow-map-control">
-          <button
-            type="button"
-            aria-label={t('explore.controls.zoomIn')}
-            onClick={() => mapRef.current?.zoomIn()}
-            className={ZOOM_BUTTON_CLASS}
-          >
-            <PlusIcon aria-hidden className="size-5.5" />
-          </button>
-          <button
-            type="button"
-            aria-label={t('explore.controls.zoomOut')}
-            onClick={() => mapRef.current?.zoomOut()}
-            className={cn(ZOOM_BUTTON_CLASS, 'border-t border-border')}
-          >
-            <MinusIcon aria-hidden className="size-5.5" />
-          </button>
-        </div>
+        <ListingsMapControls
+          isFullScreen={isFullScreen}
+          onFullScreenToggle={handleFullScreenToggle}
+          onShowRomania={showRomania}
+          onZoomIn={() => mapRef.current?.zoomIn()}
+          onZoomOut={() => mapRef.current?.zoomOut()}
+        />
       </div>
       <div className="mx-auto flex w-[min(1480px,calc(100%-48px))] flex-col pt-7">
         <ListingsExplorerList
@@ -490,20 +422,18 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
           {t('explore.mapNote')}
         </p>
       </div>
-      {selected && isNarrow ? (
-        <div
-          role="dialog"
-          aria-label={t('explore.popup.label')}
-          className="fixed inset-x-0 bottom-0 z-220 rounded-t-xl bg-card px-4 pt-4.5 pb-[calc(16px+env(safe-area-inset-bottom))] shadow-map-sheet"
-        >
-          <ListingMapPopup
-            variant="sheet"
-            listing={selectedContent}
-            isRent={transaction === 'rent'}
-            onClose={clearSelection}
-          />
-        </div>
-      ) : null}
+      <ListingMapSheet
+        label={t('explore.popup.label')}
+        isOpen={selected !== undefined && isNarrow}
+        onClose={clearSelection}
+      >
+        <ListingMapPopup
+          variant="sheet"
+          listing={selectedContent}
+          isRent={transaction === 'rent'}
+          onClose={clearSelection}
+        />
+      </ListingMapSheet>
       <button
         type="button"
         onClick={handleFullScreenToggle}
@@ -517,49 +447,5 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
         {isFullScreen ? t('explore.showList') : t('explore.showMap')}
       </button>
     </div>
-  );
-}
-
-const ROMANIA_CENTER: LngLat = [24.98, 45.94];
-const COUNTRY_ZOOM = 6;
-
-const ZOOM_BUTTON_CLASS =
-  'grid size-12 place-items-center bg-card text-brand transition-colors duration-(--duration-fast) hover:bg-surface-alt focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset';
-
-type MapControlButtonProps = {
-  label: string;
-  isPressed?: boolean;
-  onClick: () => void;
-  children: ReactNode;
-};
-
-function MapControlButton({ label, isPressed, onClick, children }: MapControlButtonProps) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      aria-pressed={isPressed}
-      onClick={onClick}
-      className="grid size-12 place-items-center rounded-thumb border border-border bg-card text-brand shadow-map-control transition-colors duration-(--duration-fast) hover:bg-surface-alt focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none [&_svg]:size-5"
-    >
-      {children}
-    </button>
-  );
-}
-
-type MapErrorNoticeProps = {
-  message: string;
-  onShow: (hasError: boolean) => void;
-};
-
-function MapErrorNotice({ message, onShow }: MapErrorNoticeProps) {
-  useEffect(() => {
-    onShow(true);
-  }, [onShow]);
-
-  return (
-    <Alert className="absolute inset-x-4 top-1/2 z-10 -translate-y-1/2">
-      <AlertDescription>{message}</AlertDescription>
-    </Alert>
   );
 }

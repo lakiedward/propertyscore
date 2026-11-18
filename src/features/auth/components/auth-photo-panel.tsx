@@ -46,7 +46,7 @@ export function AuthPhotoPanel() {
           <span className="block">{t('auth:layout.title.line2')}</span>
           <span className="block text-cta">{t('auth:layout.title.line3')}</span>
         </h1>
-        <p className="max-w-110 text-[clamp(16px,1.3vw,18px)] leading-[1.6] text-pretty text-on-photo">
+        <p className="max-w-110 text-[clamp(16px,1.3vw,18px)] leading-relaxed-copy text-pretty text-on-photo">
           {t('auth:layout.text')}
         </p>
       </div>

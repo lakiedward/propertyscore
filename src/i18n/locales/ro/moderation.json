@@ -1,5 +1,4 @@
 {
-  "pageTitle": "Moderare anunțuri",
   "head": {
     "eyebrow": "Portal",
     "title": "Moderare anunțuri",
@@ -21,7 +20,6 @@
   "queue": {
     "label": "Anunțuri",
     "priceArea": "{{type}} · {{price}} · {{area}}",
-    "resubmitted": "Retrimis",
     "empty": {
       "pending": {
         "title": "Nu mai ai anunțuri de verificat",
@@ -35,7 +33,8 @@
     "revision": "Modificări",
     "heading": "Anunțuri ({{count}})",
     "hide": "Ascunde lista",
-    "show": "Arată lista ({{count}})"
+    "show": "Arată lista ({{count}})",
+    "more": "Arată mai multe anunțuri"
   },
   "when": {
     "today": "azi · {{time}}",

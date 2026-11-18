@@ -5,8 +5,9 @@ import {
   type MapGeoJSONFeature,
   type MapLayerMouseEvent,
 } from 'maplibre-gl';
-import { useEffect, useEffectEvent, useState } from 'react';
-import type { LngLat } from './map.config';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { LISTING_TILE_ZOOMS, type LngLat } from './map.config';
+import { removeLayersAndSource } from './map-layers';
 import {
   drawBubbleImage,
   drawPinImage,
@@ -22,7 +23,6 @@ const PIN_SOURCE_LAYER = 'listings';
 const BUBBLE_SOURCE_LAYER = 'clusters';
 const PIN_IMAGE_PREFIX = 'ps-pin|';
 const BUBBLE_IMAGE_PREFIX = 'ps-bubble|';
-export const LISTING_TILE_ZOOMS = { min: 4, max: 16 } as const;
 const BUBBLE_ZOOM_STEP = 2;
 
 export type MapTilePin = {
@@ -36,6 +36,7 @@ export type MapListingTiles = {
   url: string;
   headers: Readonly<Record<string, string>>;
   labelKey: string;
+  priceStep: number;
   pinLabel: (price: number, currency: string) => string;
   bubbleLabel: (count: number) => string;
   hiddenIds: readonly string[];
@@ -43,7 +44,7 @@ export type MapListingTiles = {
   onPinSelect: (pin: MapTilePin) => void;
 };
 
-function pinImage(labelKey: string): ExpressionSpecification {
+function pinImage(labelKey: string, priceStep: number): ExpressionSpecification {
   return [
     'concat',
     PIN_IMAGE_PREFIX,
@@ -51,8 +52,18 @@ function pinImage(labelKey: string): ExpressionSpecification {
     '|',
     ['get', 'currency'],
     '|',
-    ['to-string', ['get', 'price']],
+    ['to-string', ['*', ['round', ['/', ['get', 'price'], priceStep]], priceStep]],
   ];
+}
+
+function removeImagesOf(map: MapLibreMap, labelKey: string) {
+  for (const prefix of [`${PIN_IMAGE_PREFIX}${labelKey}|`, `${BUBBLE_IMAGE_PREFIX}${labelKey}|`]) {
+    for (const id of map.listImages()) {
+      if (id.startsWith(prefix)) {
+        map.removeImage(id);
+      }
+    }
+  }
 }
 
 function bubbleImage(labelKey: string): ExpressionSpecification {
@@ -126,6 +137,8 @@ export function useMapListingTiles(
   const hasTiles = tiles !== undefined;
   const url = tiles?.url;
   const labelKey = tiles?.labelKey;
+  const priceStep = tiles?.priceStep;
+  const previousLabelKey = useRef<string>(undefined);
   const hiddenKey = tiles ? tiles.hiddenIds.join('|') : '';
 
   const readTiles = useEffectEvent(() => tiles);
@@ -196,7 +209,7 @@ export function useMapListingTiles(
         source: LISTING_SOURCE_ID,
         'source-layer': PIN_SOURCE_LAYER,
         layout: {
-          'icon-image': pinImage(initial.labelKey),
+          'icon-image': pinImage(initial.labelKey, initial.priceStep),
           'icon-offset': [0, -PIN_BOX_HEIGHT / 2],
           'icon-allow-overlap': true,
           'icon-ignore-placement': true,
@@ -211,14 +224,10 @@ export function useMapListingTiles(
       map.off('remove', handleRemove);
       if (!isRemoved) {
         map.setMissingStyleImageResolver(null);
-        for (const layerId of [LISTING_PIN_LAYER_ID, LISTING_BUBBLE_LAYER_ID]) {
-          if (map.getLayer(layerId)) {
-            map.removeLayer(layerId);
-          }
-        }
-        if (map.getSource(LISTING_SOURCE_ID)) {
-          map.removeSource(LISTING_SOURCE_ID);
-        }
+        removeLayersAndSource(map, LISTING_SOURCE_ID, [
+          LISTING_PIN_LAYER_ID,
+          LISTING_BUBBLE_LAYER_ID,
+        ]);
       }
       setIsReady(false);
     };
@@ -235,12 +244,17 @@ export function useMapListingTiles(
   }, [map, isReady, url]);
 
   useEffect(() => {
-    if (!map || !isReady || labelKey === undefined) {
+    if (!map || !isReady || labelKey === undefined || priceStep === undefined) {
       return;
     }
-    map.setLayoutProperty(LISTING_PIN_LAYER_ID, 'icon-image', pinImage(labelKey));
+    map.setLayoutProperty(LISTING_PIN_LAYER_ID, 'icon-image', pinImage(labelKey, priceStep));
     map.setLayoutProperty(LISTING_BUBBLE_LAYER_ID, 'icon-image', bubbleImage(labelKey));
-  }, [map, isReady, labelKey]);
+    const previous = previousLabelKey.current;
+    if (previous !== undefined && previous !== labelKey) {
+      removeImagesOf(map, previous);
+    }
+    previousLabelKey.current = labelKey;
+  }, [map, isReady, labelKey, priceStep]);
 
   useEffect(() => {
     if (!map || !isReady || hiddenKey === '') {

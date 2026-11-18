@@ -10,7 +10,8 @@ const filterChipVariants = cva(
     variants: {
       variant: {
         filter: 'gap-1.5 border border-border px-3.5',
-        reason: 'h-auto min-h-9 border-[1.5px] border-border px-3 py-1 text-left whitespace-normal',
+        reason:
+          'h-auto min-h-9 border-(length:--border-width-control) border-border px-3 py-1 text-left whitespace-normal',
       },
     },
     defaultVariants: { variant: 'filter' },

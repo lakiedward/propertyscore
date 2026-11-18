@@ -1,19 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import {
-  Building2Icon,
-  CircleAlertIcon,
-  HouseIcon,
-  KeyRoundIcon,
-  SendIcon,
-  TagIcon,
-} from 'lucide-react';
+import { CircleAlertIcon, SendIcon } from 'lucide-react';
 import { useEffect, useId, useState, type ReactNode } from 'react';
-import { flushSync } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { StatusPill } from '@/components/feedback/status-pill';
 import {
   Accordion,
   AccordionContent,
@@ -22,46 +14,41 @@ import {
 } from '@/components/ui/accordion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { authQueries } from '@/features/auth';
 import { useErrorMessage } from '@/i18n/error-message';
 import { validationMessage } from '@/i18n/validation';
 import { isAppError } from '@/lib/errors';
 import { applyServerErrors } from '@/lib/forms';
-import { getListingMediumUrl } from '../api/listings.storage';
 import {
-  useAddListingPhotos,
+  myListingQueries,
   useCreateListing,
-  useRemoveListingPhoto,
-  useReorderListingPhotos,
   useSubmitListing,
   useUpdateListing,
 } from '../api/my-listings.queries';
-import { usePendingListingPhotos } from '../hooks/use-pending-listing-photos';
+import { useEditorSections } from '../hooks/use-editor-sections';
+import { useListingEditorPhotos } from '../hooks/use-listing-editor-photos';
 import {
   EDITOR_SECTIONS,
   fieldsOf,
-  isEditorSection,
   REQUIRED_SECTIONS,
-  SECTION_FIELDS,
   sectionsWithErrors,
   type EditorSection,
 } from '../listing-editor.sections';
 import {
-  LISTING_MIN_PHOTOS,
   listingFormSchema,
   toListingFormValues,
   toListingWrite,
   type ListingFormValues,
 } from '../listing-form.schemas';
 import type { MyListing } from '../listing.types';
+import { EditorSectionTitle } from './editor-section-title';
 import { ListingAddressSection } from './listing-address-section';
 import { ListingContactCard } from './listing-contact-card';
 import { ListingDetailsSection } from './listing-details-section';
 import { ListingExtrasSection } from './listing-extras-section';
-import { ListingPhotosField, type ListingPhotoItem } from './listing-photos-field';
+import { ListingPhotosField } from './listing-photos-field';
 import { ListingTextSection } from './listing-text-section';
-import { ListingTileField } from './listing-tile-field';
-
-type SectionStatus = { tone: 'error' | 'success'; label: string } | undefined;
+import { ListingTypeCard } from './listing-type-card';
 
 type ListingEditorFormProps = {
   listing: MyListing | null;
@@ -69,10 +56,6 @@ type ListingEditorFormProps = {
   email: string | undefined;
   initialSection: EditorSection | undefined;
 };
-
-function union<T>(current: readonly T[], added: readonly T[]): T[] {
-  return [...new Set([...current, ...added])];
-}
 
 export function ListingEditorForm({
   listing,
@@ -84,39 +67,32 @@ export function ListingEditorForm({
   const navigate = useNavigate();
   const errorMessage = useErrorMessage();
   const formId = useId();
-  const propertyTypeHeadingId = useId();
-  const transactionHeadingId = useId();
-  const firstSection = initialSection ?? 'details';
-  const [openSections, setOpenSections] = useState<EditorSection[]>([firstSection]);
-  const [visited, setVisited] = useState<readonly EditorSection[]>([firstSection]);
-  const [checked, setChecked] = useState<readonly EditorSection[]>([]);
-  const [hasMarkedErrors, setHasMarkedErrors] = useState(false);
   const [formError, setFormError] = useState<unknown>(null);
+  const { data: cities } = useSuspenseQuery(myListingQueries.cities());
+  const { data: phone } = useSuspenseQuery(authQueries.accountPhone(ownerId));
   const createListing = useCreateListing();
   const updateListing = useUpdateListing();
   const submitListing = useSubmitListing();
-  const addPhotos = useAddListingPhotos();
-  const removePhoto = useRemoveListingPhoto();
-  const reorderPhotos = useReorderListingPhotos();
-  const pendingPhotos = usePendingListingPhotos();
+  const photos = useListingEditorPhotos(listing, ownerId);
   const form = useForm<ListingFormValues>({
     resolver: zodResolver(listingFormSchema),
     mode: 'onTouched',
     defaultValues: toListingFormValues(listing),
   });
-  const { errors } = form.formState;
+  const sectionId = (section: EditorSection) => `${formId}-${section}`;
+  const sections = useEditorSections({
+    form,
+    initialSection,
+    missingPhotos: photos.missingPhotos,
+    sectionId,
+  });
   const isPending =
     createListing.isPending ||
     updateListing.isPending ||
     submitListing.isPending ||
-    addPhotos.isPending;
+    photos.isAdding;
   const isRejected = listing?.status === 'rejected';
   const isRevision = Boolean(listing?.revision_of);
-  const photoItems: ListingPhotoItem[] = listing
-    ? listing.photos.map((photo) => ({ id: photo.id, src: getListingMediumUrl(photo.path) }))
-    : [...pendingPhotos.photos];
-  const missingPhotos = Math.max(0, LISTING_MIN_PHOTOS - photoItems.length);
-  const sectionId = (section: EditorSection) => `${formId}-${section}`;
 
   useEffect(
     () =>
@@ -132,78 +108,6 @@ export function ListingEditorForm({
     [form],
   );
 
-  const sectionStatus = (section: EditorSection): SectionStatus => {
-    if (section === 'contact') {
-      return undefined;
-    }
-    if (section === 'extras') {
-      const invalid = SECTION_FIELDS.extras.filter((field) => errors[field]).length;
-      return invalid > 0
-        ? { tone: 'error', label: t('sections.missing', { count: invalid }) }
-        : undefined;
-    }
-    if (section === 'photos') {
-      if (missingPhotos === 0) {
-        return { tone: 'success', label: t('sections.complete') };
-      }
-      return checked.includes('photos')
-        ? { tone: 'error', label: t('sections.photosMissing', { count: missingPhotos }) }
-        : undefined;
-    }
-    const missing = SECTION_FIELDS[section].filter((field) => errors[field]).length;
-    if (missing > 0) {
-      return { tone: 'error', label: t('sections.missing', { count: missing }) };
-    }
-    return checked.includes(section)
-      ? { tone: 'success', label: t('sections.complete') }
-      : undefined;
-  };
-
-  const checkSections = async (sections: readonly EditorSection[]) => {
-    const fields = fieldsOf(sections);
-    if (fields.length > 0) {
-      await form.trigger(fields);
-    }
-    setChecked((current) => union(current, sections));
-  };
-
-  const handleOpenChange = (values: string[]) => {
-    const next = values.filter(isEditorSection);
-    const opened = next.filter((section) => !openSections.includes(section));
-    void checkSections(visited.filter((section) => !opened.includes(section)));
-    setVisited((current) => union(current, next));
-    setOpenSections(next);
-  };
-
-  const revealErrors = (sections: readonly EditorSection[], fields: readonly string[]) => {
-    const [first] = sections;
-    if (!first) {
-      return;
-    }
-    flushSync(() => {
-      setOpenSections((current) => union(current, sections));
-      setVisited((current) => union(current, sections));
-      setChecked((current) => union(current, sections));
-      setHasMarkedErrors(true);
-    });
-    const field = fieldsOf(EDITOR_SECTIONS).find((name) => fields.includes(name));
-    if (field) {
-      form.setFocus(field);
-    }
-    const element = document.getElementById(sectionId(first));
-    if (element && !element.contains(document.activeElement)) {
-      element.scrollIntoView({ block: 'start' });
-    }
-  };
-
-  const revealInvalidSections = (fields: readonly string[]) => {
-    const sections = sectionsWithErrors(fields);
-    const withPhotos = missingPhotos > 0 ? union(sections, ['photos']) : sections;
-    const ordered = EDITOR_SECTIONS.filter((section) => withPhotos.includes(section));
-    revealErrors(ordered, fields);
-    return ordered.length === 0;
-  };
-
   const invalidFields = async (): Promise<string[]> => {
     await form.trigger();
     const result = listingFormSchema.safeParse(form.getValues());
@@ -212,7 +116,7 @@ export function ListingEditorForm({
       : [...new Set(result.error.issues.map((issue) => String(issue.path[0])))];
   };
 
-  const validateDraft = async () => revealInvalidSections(await invalidFields());
+  const validateDraft = async () => sections.revealInvalidSections(await invalidFields());
 
   const validateForReview = async () => {
     const fields = await invalidFields();
@@ -220,7 +124,7 @@ export function ListingEditorForm({
       form.setError('description', { type: 'required', message: validationMessage('required') });
       fields.push('description');
     }
-    return revealInvalidSections(fields);
+    return sections.revealInvalidSections(fields);
   };
 
   const persist = async (values: ListingFormValues): Promise<string> => {
@@ -235,12 +139,12 @@ export function ListingEditorForm({
 
   const run = async (action: () => Promise<void>) => {
     setFormError(null);
-    setHasMarkedErrors(false);
+    sections.clearMarkedErrors();
     try {
       await action();
     } catch (error) {
       if (applyServerErrors(form, error) && isAppError(error) && error.field) {
-        revealErrors(sectionsWithErrors([error.field]), [error.field]);
+        sections.revealErrors(sectionsWithErrors([error.field]), [error.field]);
         return;
       }
       setFormError(error);
@@ -258,12 +162,7 @@ export function ListingEditorForm({
         return;
       }
       try {
-        await addPhotos.mutateAsync({
-          ownerId,
-          listingId: id,
-          files: pendingPhotos.photos.map((photo) => photo.file),
-          nextPosition: 0,
-        });
+        await photos.uploadPending(id);
         toast.success(t('editor.saved'));
       } catch (error) {
         toast.error(t('photos.uploadFailed', { reason: errorMessage(error) }));
@@ -275,31 +174,6 @@ export function ListingEditorForm({
         replace: true,
       });
     });
-
-  const handleAddPhotos = (files: File[]) => {
-    if (listing) {
-      addPhotos.mutate({ ownerId, listingId: listing.id, files, nextPosition: photoItems.length });
-    } else {
-      pendingPhotos.add(files);
-    }
-  };
-
-  const handleReorderPhotos = (photoIds: string[]) => {
-    if (listing) {
-      reorderPhotos.mutate({ ownerId, listingId: listing.id, photoIds });
-    } else {
-      pendingPhotos.reorder(photoIds);
-    }
-  };
-
-  const handleRemovePhoto = (id: string) => {
-    const saved = listing?.photos.find((photo) => photo.id === id);
-    if (saved && listing) {
-      removePhoto.mutate({ id: saved.id, path: saved.path, listingId: listing.id });
-    } else {
-      pendingPhotos.remove(id);
-    }
-  };
 
   const handleSubmitForReview = () =>
     run(async () => {
@@ -322,22 +196,22 @@ export function ListingEditorForm({
     details: <ListingDetailsSection control={form.control} />,
     photos: (
       <ListingPhotosField
-        photos={photoItems}
+        photos={photos.photoItems}
         isEditable
-        isAdding={addPhotos.isPending}
-        isBusy={isPending || removePhoto.isPending}
-        error={listing ? (addPhotos.error ?? removePhoto.error ?? reorderPhotos.error) : null}
-        onAdd={handleAddPhotos}
-        onRemove={handleRemovePhoto}
-        onReorder={handleReorderPhotos}
+        isAdding={photos.isAdding}
+        isBusy={isPending || photos.isRemoving}
+        error={photos.error}
+        onAdd={photos.add}
+        onRemove={photos.remove}
+        onReorder={photos.reorder}
       />
     ),
-    address: <ListingAddressSection control={form.control} />,
+    address: <ListingAddressSection control={form.control} cities={cities} />,
     text: <ListingTextSection control={form.control} />,
     extras: <ListingExtrasSection control={form.control} />,
     contact: (
       <div className="flex flex-col gap-4">
-        <ListingContactCard ownerId={ownerId} email={email} />
+        <ListingContactCard phone={phone} email={email} />
         {listing ? (
           <p className="rounded-md bg-surface-sunken px-4 py-3 text-small text-muted-foreground">
             {t('wizard.contact.ready')}
@@ -356,65 +230,15 @@ export function ListingEditorForm({
       }}
       className="flex flex-col gap-3"
     >
-      <section className="flex flex-col gap-5 rounded-lg border border-border bg-card p-5 sm:p-6">
-        <div className="flex flex-col gap-3.5">
-          <h2 id={propertyTypeHeadingId} className="text-h4 text-foreground">
-            {t('sections.propertyType')}
-          </h2>
-          <ListingTileField
-            control={form.control}
-            name="property_type"
-            labelledBy={propertyTypeHeadingId}
-            options={[
-              {
-                value: 'apartment',
-                icon: Building2Icon,
-                label: t('wizard.propertyType.apartment.label'),
-                hint: t('wizard.propertyType.apartment.hint'),
-              },
-              {
-                value: 'house',
-                icon: HouseIcon,
-                label: t('wizard.propertyType.house.label'),
-                hint: t('wizard.propertyType.house.hint'),
-              },
-            ]}
-          />
-        </div>
-        <div className="flex flex-col gap-3.5">
-          <h2 id={transactionHeadingId} className="text-h4 text-foreground">
-            {t('sections.transactionType')}
-          </h2>
-          <ListingTileField
-            control={form.control}
-            name="transaction"
-            labelledBy={transactionHeadingId}
-            options={[
-              {
-                value: 'sale',
-                icon: TagIcon,
-                label: t('wizard.type.sale.label'),
-                hint: t('wizard.type.sale.hint'),
-              },
-              {
-                value: 'rent',
-                icon: KeyRoundIcon,
-                label: t('wizard.type.rent.label'),
-                hint: t('wizard.type.rent.hint'),
-              },
-            ]}
-          />
-        </div>
-      </section>
+      <ListingTypeCard control={form.control} />
       <Accordion
         type="multiple"
-        value={openSections}
-        onValueChange={handleOpenChange}
+        value={sections.openSections}
+        onValueChange={sections.handleOpenChange}
         className="gap-3"
       >
         {EDITOR_SECTIONS.map((section) => {
-          const status = sectionStatus(section);
-          const isRequired = REQUIRED_SECTIONS.includes(section);
+          const status = sections.sectionStatus(section);
           return (
             <AccordionItem
               key={section}
@@ -424,25 +248,11 @@ export function ListingEditorForm({
               className="scroll-mt-24 rounded-lg border border-border bg-card data-invalid:border-destructive"
             >
               <AccordionTrigger className="px-5 py-4 text-h4 text-foreground sm:px-6">
-                <span className="flex flex-1 flex-wrap items-center gap-x-3 gap-y-1.5">
-                  <span>
-                    {t(`sections.${section}`)}
-                    {section === 'extras' ? (
-                      <span className="text-body-sm font-semibold text-muted-foreground">
-                        {` (${t('sections.optional')})`}
-                      </span>
-                    ) : null}
-                    {isRequired ? (
-                      <>
-                        <span aria-hidden className="text-destructive">
-                          {' *'}
-                        </span>
-                        <span className="sr-only">{t('sections.required')}</span>
-                      </>
-                    ) : null}
-                  </span>
-                  {status ? <StatusPill tone={status.tone} label={status.label} /> : null}
-                </span>
+                <EditorSectionTitle
+                  section={section}
+                  isRequired={REQUIRED_SECTIONS.includes(section)}
+                  status={status}
+                />
               </AccordionTrigger>
               <AccordionContent className="h-auto px-5 pb-5 sm:px-6 [&_p:not(:last-child)]:mb-0">
                 {sectionContent[section]}
@@ -451,7 +261,7 @@ export function ListingEditorForm({
           );
         })}
       </Accordion>
-      {hasMarkedErrors ? (
+      {sections.hasMarkedErrors ? (
         <Alert tone="error">
           <CircleAlertIcon aria-hidden />
           <AlertDescription>{t('sections.markedErrors')}</AlertDescription>

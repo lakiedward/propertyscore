@@ -22,7 +22,7 @@ const ALL_ROMANIA = 'ro';
 const ANY_PRICE = 'any';
 
 const SELECT_TRIGGER_CLASS =
-  'h-11 rounded-md border-border px-3 text-[13px] font-bold text-brand max-w760:min-w-0 max-w760:flex-1';
+  'h-11 rounded-md border-border px-3 text-caption font-bold text-brand max-w760:min-w-0 max-w760:flex-1';
 
 type ListingsMapFiltersProps = {
   transaction: ListingTransaction;
@@ -111,7 +111,7 @@ export function ListingsMapFilters({
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex h-11 items-center gap-2 rounded-md border border-error-border bg-card px-3.5 text-[13px] font-action whitespace-nowrap text-destructive transition-colors duration-(--duration-fast) hover:bg-error-surface focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none"
+            className="inline-flex h-11 items-center gap-2 rounded-md border border-error-border bg-card px-3.5 text-caption font-action whitespace-nowrap text-destructive transition-colors duration-(--duration-fast) hover:bg-error-surface focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none"
           >
             <RotateCcwIcon aria-hidden className="size-5" />
             {t('explore.filters.reset')}

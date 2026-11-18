@@ -369,6 +369,7 @@ function TilesHarness({ onPinHover, onPinSelect, pinLabel }: TilesHarnessProps) 
           url: isFiltered ? `${TILES_URL}&p_max_price_eur=100000` : TILES_URL,
           headers: { apikey: 'key' },
           labelKey: 'ro-sale',
+          priceStep: 1000,
           pinLabel,
           bubbleLabel: String,
           hiddenIds: isFiltered ? ['a'] : [],

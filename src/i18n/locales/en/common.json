@@ -277,12 +277,7 @@
     "backToSite": "Back to site"
   },
   "listingSummary": {
-    "transaction": {
-      "sale": "For sale",
-      "rent": "For rent"
-    },
     "dealCity": "{{deal}} · {{city}}",
-    "pricePerMonth": "{{price}} / month",
     "area": "{{value}} m²",
     "facts": {
       "rooms_one": "{{count}} room",

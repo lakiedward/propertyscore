@@ -98,7 +98,7 @@ export function SiteFooter() {
       <div className="page-wrap grid grid-cols-1 gap-10 pt-18 sm:grid-cols-2 lg:grid-cols-[1.6fr_repeat(3,1fr)]">
         <div className="flex flex-col gap-4 sm:col-span-2 lg:col-span-1">
           <Logo tone="inverse" size="md" className="gap-1" />
-          <p className="max-w-95 text-label leading-[1.6] font-normal text-on-inverse-muted">
+          <p className="max-w-95 text-label leading-relaxed-copy font-normal text-on-inverse-muted">
             {t('site.footer.tagline')}
           </p>
           <div className="flex flex-wrap gap-2.5">

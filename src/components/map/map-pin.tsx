@@ -8,7 +8,7 @@ const mapPinVariants = cva(
     variants: {
       shape: {
         pill: 'h-7 border-2 border-card px-2.5 text-meta font-extrabold shadow-md',
-        tag: 'px-3 py-1.5 text-small leading-[1.25] font-extrabold shadow-pin-tag after:absolute after:-bottom-1.75 after:left-1/2 after:-z-10 after:size-3 after:-translate-x-1/2 after:rotate-45 after:rounded-br-[3px] after:bg-inherit after:shadow-[3px_3px_0_0_var(--card)] hover:scale-108',
+        tag: 'px-3 py-1.5 text-small leading-tight font-extrabold shadow-pin-tag after:absolute after:-bottom-1.75 after:left-1/2 after:-z-10 after:size-3 after:-translate-x-1/2 after:rotate-45 after:rounded-br-[3px] after:bg-inherit after:shadow-[3px_3px_0_0_var(--card)] hover:scale-108',
       },
       kind: {
         physical: 'bg-trust-physical text-trust-physical-foreground',
@@ -48,7 +48,7 @@ type MapPinProps = {
   accessibleName: string;
   isActive: boolean;
   isSelected: boolean;
-  onSelect: () => void;
+  onSelect?: () => void;
 };
 
 export function MapPin({
@@ -60,6 +60,19 @@ export function MapPin({
   isSelected,
   onSelect,
 }: MapPinProps) {
+  if (!onSelect) {
+    return (
+      <span
+        aria-hidden="true"
+        className={cn(
+          mapPinVariants({ shape, kind, isActive, isSelected }),
+          'pointer-events-none w-fit',
+        )}
+      >
+        {label}
+      </span>
+    );
+  }
   return (
     <button
       type="button"

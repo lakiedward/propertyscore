@@ -1,3 +1,4 @@
+import type { ListingDetailField } from '@/config/listing-details';
 export type DayBucket = 'today' | 'yesterday' | 'date';
 
 function startOfDay(value: Date): number {
@@ -27,7 +28,6 @@ export function decisionMessage(messages: readonly string[]): string {
 }
 
 type ComparedColumn =
-  | 'property_type'
   | 'transaction'
   | 'title'
   | 'description'
@@ -42,29 +42,7 @@ type ComparedColumn =
   | 'street_label'
   | 'latitude'
   | 'longitude'
-  | 'bathrooms'
-  | 'partitioning'
-  | 'comfort'
-  | 'building_type'
-  | 'house_type'
-  | 'land_area_m2'
-  | 'has_basement'
-  | 'has_semibasement'
-  | 'has_attic'
-  | 'interior_condition'
-  | 'heating'
-  | 'cooling'
-  | 'furnishing'
-  | 'pets'
-  | 'is_passive_house'
-  | 'balconies'
-  | 'parking_spaces'
-  | 'utilities'
-  | 'building_services'
-  | 'has_elevator'
-  | 'has_shared_yard'
-  | 'pool'
-  | 'yard';
+  | ListingDetailField;
 
 export type ListingChange =
   | 'propertyType'
@@ -143,4 +121,11 @@ export function listingChanges(
     columns.some((column) => JSON.stringify(revision[column]) !== JSON.stringify(original[column])),
   ).map(({ change }) => change);
   return photoOrder(revision) === photoOrder(original) ? changes : [...changes, 'photos'];
+}
+
+export function selectQueueListing(
+  items: readonly { id: string }[],
+  listingId: string | undefined,
+): string | undefined {
+  return listingId ?? items[0]?.id;
 }

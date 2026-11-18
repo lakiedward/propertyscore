@@ -64,7 +64,7 @@ export function ListingCard({
       className={cn(
         'w-full bg-card text-left focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none',
         layout === 'horizontal'
-          ? 'grid grid-cols-[6rem_1fr] gap-3.5 rounded-tile border-[1.5px] border-border-subtle p-2 transition-[border-color,box-shadow] duration-(--duration-fast) hover:border-border-strong sm:grid-cols-[7.25rem_1fr]'
+          ? 'grid grid-cols-[6rem_1fr] gap-3.5 rounded-tile border-(length:--border-width-control) border-border-subtle p-2 transition-[border-color,box-shadow] duration-(--duration-fast) hover:border-border-strong sm:grid-cols-[7.25rem_1fr]'
           : 'group/card flex h-full flex-col overflow-hidden rounded-xl border border-border transition-[border-color,box-shadow] duration-180 hover:border-border-control hover:shadow-card-hover',
         isSelected &&
           (layout === 'horizontal'
@@ -92,7 +92,7 @@ export function ListingCard({
           </span>
           <span className="flex flex-1 flex-col gap-0.5 px-4 pt-3.5 pb-4" aria-hidden="true">
             {price}
-            <span className="text-body leading-[1.25] font-bold tracking-[-0.025em] text-foreground">
+            <span className="text-body leading-tight font-bold tracking-[-0.025em] text-foreground">
               {title}
             </span>
             <span className="text-caption text-muted-foreground">{meta}</span>

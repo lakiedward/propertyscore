@@ -1,24 +1,24 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useSuspenseInfiniteQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InlineToast } from '@/components/feedback/inline-toast';
 import { EmptyState } from '@/components/layout/empty-state';
+import { PanelPageHeader } from '@/components/layout/panel-page-header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useStoredFlag } from '@/hooks/use-stored-flag';
 import { cn } from '@/lib/utils';
 import { moderationQueries } from '../api/moderation.queries';
-import { MODERATION_STATUSES } from '../moderation-status';
+import { MODERATION_STATUSES, QUEUE_HIDDEN_STORAGE_KEY } from '../moderation-status';
 import type { ListingDecision, ModerationStatus } from '../moderation.types';
+import { selectQueueListing } from '../moderation.utils';
 import { QueueRow } from './queue-row';
 import { ReviewPanel } from './review-panel';
 import { StatusTabs } from './status-tabs';
 
 const route = getRouteApi('/_authenticated/admin/listings');
-
-export const QUEUE_HIDDEN_STORAGE_KEY = 'ps-moderation-queue-hidden';
 
 function isModerationStatus(value: string): value is ModerationStatus {
   return MODERATION_STATUSES.some((status) => status === value);
@@ -32,8 +32,10 @@ export function ModerationPage() {
   const queuePanel = useStoredFlag(QUEUE_HIDDEN_STORAGE_KEY);
   const isQueueHidden = queuePanel.isOn;
   const { data: counts } = useSuspenseQuery(moderationQueries.counts());
-  const { data: queue } = useSuspenseQuery(moderationQueries.queue(search.status));
-  const selected = queue.items.find((item) => item.id === search.listing) ?? queue.items[0];
+  const queue = useSuspenseInfiniteQuery(moderationQueries.queue(search.status));
+  const queueItems = queue.data.pages.flatMap((page) => page.items);
+  const queueTotal = queue.data.pages[0]?.total ?? queueItems.length;
+  const selectedId = selectQueueListing(queueItems, search.listing);
   const emptyKey = search.status === 'pending_approval' ? 'pending' : 'decided';
 
   const handleDecided = (decision: ListingDecision, title: string) => {
@@ -52,18 +54,14 @@ export function ModerationPage() {
       }}
       className="gap-5"
     >
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <p className="text-eyebrow leading-copy font-bold tracking-eyebrow text-muted-foreground uppercase">
-            {t('head.eyebrow')}
-          </p>
-          <h1 className="text-h2 leading-heading text-foreground">{t('head.title')}</h1>
-          <p className="text-small text-muted-foreground">{t('head.description')}</p>
-        </div>
-        <StatusTabs counts={counts} />
-      </header>
+      <PanelPageHeader
+        eyebrow={t('head.eyebrow')}
+        title={t('head.title')}
+        description={t('head.description')}
+        actions={<StatusTabs counts={counts} />}
+      />
       <TabsContent value={search.status} className="text-base">
-        {selected ? (
+        {selectedId ? (
           <div
             className={cn(
               'grid grid-cols-1 gap-5 lg:items-start',
@@ -78,7 +76,7 @@ export function ModerationPage() {
               >
                 <div className="flex items-center justify-between gap-2 border-b border-border-subtle py-2 pr-2 pl-4">
                   <p className="text-small font-bold text-foreground">
-                    {t('queue.heading', { count: queue.total })}
+                    {t('queue.heading', { count: queueTotal })}
                   </p>
                   <Button
                     type="button"
@@ -92,17 +90,32 @@ export function ModerationPage() {
                   </Button>
                 </div>
                 <ul className="max-h-[70svh] divide-y divide-border-subtle overflow-y-auto">
-                  {queue.items.map((item) => (
+                  {queueItems.map((item) => (
                     <li key={item.id}>
                       <QueueRow
                         listing={item}
-                        isSelected={item.id === selected.id}
+                        isSelected={item.id === selectedId}
                         onSelect={() => {
                           setToastMessage(null);
                         }}
                       />
                     </li>
                   ))}
+                  {queue.hasNextPage ? (
+                    <li className="p-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="w-full"
+                        disabled={queue.isFetchingNextPage}
+                        aria-busy={queue.isFetchingNextPage}
+                        onClick={() => void queue.fetchNextPage()}
+                      >
+                        {t('queue.more')}
+                      </Button>
+                    </li>
+                  ) : null}
                 </ul>
               </nav>
             )}
@@ -116,11 +129,11 @@ export function ModerationPage() {
                   onClick={queuePanel.toggle}
                 >
                   <PanelLeftOpenIcon aria-hidden />
-                  {t('queue.show', { count: queue.total })}
+                  {t('queue.show', { count: queueTotal })}
                 </Button>
               ) : null}
               <SelectedListing
-                listingId={selected.id}
+                listingId={selectedId}
                 toastMessage={toastMessage}
                 onDecided={handleDecided}
               />

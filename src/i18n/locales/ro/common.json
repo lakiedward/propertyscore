@@ -280,12 +280,7 @@
     "backToSite": "Înapoi la site"
   },
   "listingSummary": {
-    "transaction": {
-      "sale": "De vânzare",
-      "rent": "De închiriat"
-    },
     "dealCity": "{{deal}} · {{city}}",
-    "pricePerMonth": "{{price}} / lună",
     "area": "{{value}} m²",
     "facts": {
       "rooms_one": "{{count}} cameră",

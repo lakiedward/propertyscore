@@ -16,7 +16,7 @@ export function NextChapterButton({ chapter, onOpen }: NextChapterButtonProps) {
       onClick={() => {
         onOpen(chapter);
       }}
-      className="flex min-h-16 items-center justify-between gap-4 rounded-lg border-[1.5px] border-border bg-card px-5 py-3 text-left transition-colors duration-(--duration-fast) hover:border-info"
+      className="flex min-h-16 items-center justify-between gap-4 rounded-lg border-(length:--border-width-control) border-border bg-card px-5 py-3 text-left transition-colors duration-(--duration-fast) hover:border-info"
     >
       <span className="flex flex-col gap-0.5">
         <span className="text-eyebrow font-extrabold text-muted-foreground uppercase">

@@ -23,6 +23,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { MAP_STYLE_URL, type LngLat, type LngLatBounds } from './map.config';
+import { removeLayersAndSource } from './map-layers';
 import { themeColor } from './map.theme';
 import {
   tileRequestPrefix,
@@ -30,8 +31,6 @@ import {
   type MapListingTiles,
 } from './use-map-listing-tiles';
 import { useMapRegions } from './use-map-regions';
-
-export type { MapListingTiles, MapTilePin } from './use-map-listing-tiles';
 
 setWorkerUrl(mapWorkerUrl);
 prewarm();
@@ -470,14 +469,7 @@ function overlayLayerIds(id: string): string[] {
 }
 
 function removeOverlay(map: MapLibreMap, id: string) {
-  for (const layerId of overlayLayerIds(id)) {
-    if (map.getLayer(layerId)) {
-      map.removeLayer(layerId);
-    }
-  }
-  if (map.getSource(id)) {
-    map.removeSource(id);
-  }
+  removeLayersAndSource(map, id, overlayLayerIds(id));
 }
 
 function syncOverlays(

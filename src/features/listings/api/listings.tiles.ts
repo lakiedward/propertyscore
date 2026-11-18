@@ -1,7 +1,7 @@
+import { LISTING_TILE_ZOOMS } from '@/components/map/map.config';
 import { tilesInView } from '@/components/map/map.utils';
-import { LISTING_TILE_ZOOMS } from '@/components/map/use-map-listing-tiles';
 import { env } from '@/config/env';
-import { ROMANIA_BOUNDS } from '@/config/listings-explorer';
+import { EXPLORER_MAP_LAYOUT, ROMANIA_BOUNDS } from '@/config/listings-explorer';
 import type { ListingTransaction } from '../listing.types';
 
 const TILE_FUNCTION_PATH = '/rest/v1/rpc/listing_map_tile';
@@ -33,19 +33,21 @@ function listingTileUrlAt(template: string, tile: { z: number; x: number; y: num
     .replace('{y}', String(tile.y));
 }
 
-const EXPLORER_MAP_TOP_OFFSET = 77;
-const EXPLORER_MAP_MIN_HEIGHT = 480;
-const EXPLORER_MAP_PADDING = 10;
-
-export function warmFirstListingTiles(template: string) {
+export function warmFirstListingTiles(
+  template: string,
+  window: { innerWidth: number; innerHeight: number },
+) {
   const viewport = {
     width: window.innerWidth,
-    height: Math.max(window.innerHeight - EXPLORER_MAP_TOP_OFFSET, EXPLORER_MAP_MIN_HEIGHT),
+    height: Math.max(
+      window.innerHeight - EXPLORER_MAP_LAYOUT.headerOffset,
+      EXPLORER_MAP_LAYOUT.minHeight,
+    ),
   };
   for (const tile of tilesInView(
     ROMANIA_BOUNDS,
     viewport,
-    EXPLORER_MAP_PADDING,
+    EXPLORER_MAP_LAYOUT.boundsPadding,
     LISTING_TILE_ZOOMS,
   )) {
     void fetch(listingTileUrlAt(template, tile), { headers: { ...LISTING_TILE_HEADERS } }).catch(

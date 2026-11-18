@@ -4,6 +4,7 @@ import { messageKey, validationMessage } from '@/i18n/validation';
 import type { Tables, TablesInsert } from '@/lib/supabase/database.types';
 import {
   BUILDING_SERVICES,
+  HIGHEST_FLOOR,
   BUILDING_TYPES,
   COMFORTS,
   COOLINGS,
@@ -20,6 +21,7 @@ import {
   utilitiesFor,
   YARDS,
 } from './listing-property.options';
+import type { ListingDetailField } from '@/config/listing-details';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -72,7 +74,7 @@ export const listingFormSchema = z
     area_m2: localeNumber({ min: 1, max: 99_999, isRequired: true }),
     price: localeNumber({ min: 1, max: 9_999_999_999, isRequired: true }),
     currency: z.enum(['EUR', 'RON']),
-    floor: localeNumber({ min: -1, max: 80, isInteger: true, isRequired: false }),
+    floor: localeNumber({ min: -1, max: HIGHEST_FLOOR, isInteger: true, isRequired: false }),
     bathrooms: localeNumber({ min: 1, max: 10, isInteger: true, isRequired: false }),
     partitioning: optionalChoice(PARTITIONINGS),
     comfort: optionalChoice(COMFORTS),
@@ -140,7 +142,6 @@ export const listingFormSchema = z
 export type ListingFormValues = z.input<typeof listingFormSchema>;
 
 type DetailColumn =
-  | 'property_type'
   | 'transaction'
   | 'title'
   | 'city'
@@ -155,29 +156,7 @@ type DetailColumn =
   | 'description'
   | 'latitude'
   | 'longitude'
-  | 'bathrooms'
-  | 'partitioning'
-  | 'comfort'
-  | 'building_type'
-  | 'house_type'
-  | 'land_area_m2'
-  | 'has_basement'
-  | 'has_semibasement'
-  | 'has_attic'
-  | 'interior_condition'
-  | 'heating'
-  | 'cooling'
-  | 'furnishing'
-  | 'pets'
-  | 'is_passive_house'
-  | 'balconies'
-  | 'parking_spaces'
-  | 'utilities'
-  | 'building_services'
-  | 'has_elevator'
-  | 'has_shared_yard'
-  | 'pool'
-  | 'yard';
+  | ListingDetailField;
 
 export type ListingWrite = Required<Pick<TablesInsert<'listings'>, DetailColumn>>;
 

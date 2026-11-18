@@ -17,7 +17,7 @@ const buttonVariants = cva(
         inverseInfo:
           'bg-card text-info hover:bg-info-surface focus-visible:ring-focus-inverse focus-visible:ring-offset-info',
         outlineInverse:
-          'border-[1.5px] border-on-inverse/50 bg-transparent text-on-inverse hover:bg-on-inverse/10 focus-visible:ring-focus-inverse focus-visible:ring-offset-surface-inverse',
+          'border-(length:--border-width-control) border-on-inverse/50 bg-transparent text-on-inverse hover:bg-on-inverse/10 focus-visible:ring-focus-inverse focus-visible:ring-offset-surface-inverse',
         outline:
           'border-brand bg-card text-brand hover:bg-surface-alt aria-expanded:bg-surface-alt',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-surface-alt',

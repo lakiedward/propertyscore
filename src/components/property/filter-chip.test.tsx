@@ -1,12 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen } from '@testing-library/react';
 import { FilterChip } from './filter-chip';
+import { renderWithProviders } from '@/test/render';
 
 describe('FilterChip', () => {
   it('reports the new selection when pressed', async () => {
-    const user = userEvent.setup();
     const onSelectedChange = vi.fn();
-    render(
+    const { user } = await renderWithProviders(
       <FilterChip
         variant="reason"
         label="Anunț duplicat"

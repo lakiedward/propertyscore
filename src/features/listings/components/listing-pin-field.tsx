@@ -2,15 +2,14 @@ import { MapPinIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LazyMapCanvas } from '@/components/map/lazy-map-canvas';
 import type { LngLat } from '@/components/map/map.config';
+import { ROMANIA_CENTER, ROMANIA_ZOOM } from '@/config/listings-explorer';
 
-const ROMANIA_CENTER: LngLat = [24.9668, 45.9432];
-const COUNTRY_ZOOM = 6;
 const CITY_ZOOM = 13;
 const PIN_ZOOM = 16;
 const PIN_MARKER_ID = 'listing-pin';
 
 type ListingPinFieldProps = {
-  id: string;
+  labelledBy: string;
   value: LngLat | null;
   cityCenter: LngLat | undefined;
   isDisabled: boolean;
@@ -20,7 +19,7 @@ type ListingPinFieldProps = {
 };
 
 export function ListingPinField({
-  id,
+  labelledBy,
   value,
   cityCenter,
   isDisabled,
@@ -30,15 +29,16 @@ export function ListingPinField({
 }: ListingPinFieldProps) {
   const { t } = useTranslation('myListings');
   const center = value ?? cityCenter ?? ROMANIA_CENTER;
-  const zoom = value ? PIN_ZOOM : cityCenter ? CITY_ZOOM : COUNTRY_ZOOM;
+  const zoom = value ? PIN_ZOOM : cityCenter ? CITY_ZOOM : ROMANIA_ZOOM;
   const focusKey = cityCenter ? cityCenter.join(',') : 'country';
 
   return (
     <div
-      id={id}
-      aria-invalid={isInvalid}
+      role="group"
+      aria-labelledby={labelledBy}
+      data-invalid={isInvalid || undefined}
       aria-describedby={describedBy}
-      className="overflow-hidden rounded-md border border-border aria-invalid:border-destructive"
+      className="overflow-hidden rounded-md border border-border data-invalid:border-destructive"
     >
       <LazyMapCanvas
         key={value ? 'pinned' : focusKey}

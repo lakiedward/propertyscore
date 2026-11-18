@@ -17,7 +17,7 @@ export const Route = createFileRoute('/_authenticated/account/listings/$listingI
     const listing = await Promise.all([
       context.queryClient.query({
         ...myListingQueries.detail(params.listingId, context.user.id),
-        staleTime: 'static',
+        staleTime: 0,
       }),
       context.queryClient.query({ ...myListingQueries.cities(), staleTime: 'static' }),
     ]).then(

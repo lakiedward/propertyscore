@@ -1,6 +1,6 @@
-import { createEvent, fireEvent, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { createEvent, fireEvent, screen } from '@testing-library/react';
 import { MediaUpload } from './media-upload';
+import { renderWithProviders } from '@/test/render';
 
 const LABEL = 'Adaugă fotografii';
 const HINT = 'Trage fotografiile aici.';
@@ -17,9 +17,10 @@ function dropFiles(element: HTMLElement, files: File[]) {
 
 describe('MediaUpload', () => {
   it('passes the chosen files on and describes the zone with its hint', async () => {
-    const user = userEvent.setup();
     const onAdd = vi.fn();
-    render(<MediaUpload label={LABEL} hint={HINT} accept="image/jpeg" onAdd={onAdd} />);
+    const { user } = await renderWithProviders(
+      <MediaUpload label={LABEL} hint={HINT} accept="image/jpeg" onAdd={onAdd} />,
+    );
 
     const input = screen.getByLabelText(LABEL);
     expect(input).toHaveAccessibleDescription(HINT);
@@ -31,18 +32,22 @@ describe('MediaUpload', () => {
     ]);
   });
 
-  it('takes files dropped on the zone', () => {
+  it('takes files dropped on the zone', async () => {
     const onAdd = vi.fn();
-    render(<MediaUpload label={LABEL} hint={HINT} accept="image/jpeg" onAdd={onAdd} />);
+    await renderWithProviders(
+      <MediaUpload label={LABEL} hint={HINT} accept="image/jpeg" onAdd={onAdd} />,
+    );
 
     dropFiles(screen.getByText(HINT), [photo('c.jpg')]);
 
     expect(onAdd).toHaveBeenCalledWith([expect.objectContaining({ name: 'c.jpg' })]);
   });
 
-  it('ignores files while it is busy or disabled', () => {
+  it('ignores files while it is busy or disabled', async () => {
     const onAdd = vi.fn();
-    render(<MediaUpload label={LABEL} hint={HINT} accept="image/jpeg" isBusy onAdd={onAdd} />);
+    await renderWithProviders(
+      <MediaUpload label={LABEL} hint={HINT} accept="image/jpeg" isBusy onAdd={onAdd} />,
+    );
 
     expect(screen.getByLabelText(LABEL)).toBeDisabled();
     dropFiles(screen.getByText(HINT), [photo('d.jpg')]);
