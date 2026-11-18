@@ -3,13 +3,14 @@ import { join } from 'node:path';
 import { parseCommand, type WorkerCommand } from './cli.ts';
 import { type Env, readEnv } from './config/env.ts';
 import { createSql, type Sql } from './db/sql.ts';
-import { errorCauseExit, errorCauseTail, errorCode } from './lib/errors.ts';
+import { errorCauseExit, errorCauseTail, errorCode, WorkerError } from './lib/errors.ts';
 import { createLogger, type Logger } from './lib/logger.ts';
 import { generateReport } from './report/generate-report.ts';
 import { insertReport } from './report/report.db.ts';
 import { REPORT_SECTIONS } from './report/sections.ts';
 import { importHealthSources } from './scoring/health/import-health-sources.ts';
 import { createValhallaClient, type ValhallaClient } from './routing/valhalla.ts';
+import { importAreaStatistics } from './scoring/investment/area-statistics-import.ts';
 import { importCityAverages } from './scoring/investment/city-averages-import.ts';
 import { readActiveInvestmentParams } from './scoring/investment/investment.db.ts';
 import { importMarketListings } from './scoring/investment/market-import.ts';
@@ -127,6 +128,30 @@ async function runCommand(
         import_id: result.importId,
         period: result.period,
         accepted: result.accepted,
+      });
+      return;
+    }
+    case 'import-market-statistics': {
+      if (!env.MARKET_SOURCE_CONTACT) {
+        throw new WorkerError(
+          'market_source_contact_required',
+          'import-market-statistics needs MARKET_SOURCE_CONTACT',
+        );
+      }
+      const results = await importAreaStatistics({
+        sql,
+        sources: command.sources,
+        citySlugs: command.citySlugs,
+        contact: env.MARKET_SOURCE_CONTACT,
+        period: command.period,
+        isRetry: command.isRetry,
+        params: await readActiveInvestmentParams(sql),
+        logger,
+      });
+      logger.info('import-market-statistics done', {
+        imports: results.filter((result) => result.importId !== null).length,
+        accepted: results.reduce((sum, result) => sum + result.accepted, 0),
+        requests: results.reduce((sum, result) => sum + result.requests, 0),
       });
       return;
     }
