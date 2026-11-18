@@ -37,6 +37,13 @@ const MAP_KEY = [
   { label: 'peste 70', swatch: `background:${LOUD}` },
 ];
 
+const LINES_KEY = [
+  { label: 'drum mare', color: LOUD },
+  { label: 'bulevard, tramvai', color: BUSY },
+  { label: 'stradă', color: MODERATE },
+  { label: 'cale ferată', color: RAIL },
+];
+
 function decibelBand(value: number): string {
   const low = Math.floor(value / BAND_DB) * BAND_DB;
   return `${String(low)}–${String(low + BAND_DB)} dB`;
@@ -139,9 +146,12 @@ export const noiseChapter: ChapterBuilder = (report) => {
         : [],
     markers: [addressDot(center)],
   };
-  const key = !bands
-    ? ''
-    : `<div class="gz-key zg-key">${MAP_KEY.map((item) => `<span><i style="${item.swatch}"></i>${item.label}</span>`).join('')}<span class="zg-est">estimare ziua</span></div>`;
+  const keyItems = bands
+    ? `${MAP_KEY.map((item) => `<span><i style="${item.swatch}"></i>${item.label}</span>`).join('')}<span class="zg-est">estimare ziua</span>`
+    : LINES_KEY.map(
+        (item) => `<span><i style="background:${item.color}"></i>${item.label}</span>`,
+      ).join('');
+  const key = bands || lines ? `<div class="gz-key zg-key">${keyItems}</div>` : '';
   const night =
     section.lnight === null
       ? ''
