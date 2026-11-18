@@ -18,13 +18,11 @@ const maplibre = vi.hoisted(() => {
 
   class FakeGeoJSONSource {
     setData = vi.fn(() => Promise.resolve());
-    getClusterExpansionZoom = vi.fn(() => Promise.resolve(16));
   }
 
-  type FakeFeature = {
-    geometry: { type: 'Point'; coordinates: [number, number] };
-    properties: Record<string, unknown>;
-  };
+  class FakeVectorTileSource {
+    setTiles = vi.fn();
+  }
 
   class FakeNavigationControl {
     readonly position = 'top-right';
@@ -38,6 +36,7 @@ const maplibre = vi.hoisted(() => {
     container: HTMLElement;
     locale: Record<string, string>;
     cooperativeGestures?: boolean;
+    transformRequest: (url: string, resourceType: string) => { url: string; headers?: object };
   };
 
   class FakeMap {
@@ -46,14 +45,20 @@ const maplibre = vi.hoisted(() => {
     readonly canvas = document.createElement('canvas');
     readonly handlers = new Map<string, Set<(event?: unknown) => void>>();
     styleLayers: { id: string }[] = [];
-    sourceFeatures: FakeFeature[] = [];
     zoom = 14;
-    readonly sources = new Map<string, FakeGeoJSONSource>();
+    readonly sources = new Map<string, FakeGeoJSONSource | FakeVectorTileSource>();
     readonly layers = new Set<string>();
     setPaintProperty = vi.fn();
     setLayoutProperty = vi.fn();
     setFilter = vi.fn();
     setFeatureState = vi.fn();
+    addImage = vi.fn();
+    missingImageResolver: ((id: string) => void) | null = null;
+
+    setMissingStyleImageResolver(resolver: ((id: string) => void) | null) {
+      this.missingImageResolver = resolver;
+      return this;
+    }
     fitBounds = vi.fn();
     easeTo = vi.fn();
     flyTo = vi.fn();
@@ -155,10 +160,6 @@ const maplibre = vi.hoisted(() => {
       return this.zoom;
     }
 
-    querySourceFeatures() {
-      return this.sourceFeatures;
-    }
-
     isStyleLoaded() {
       return false;
     }
@@ -188,8 +189,11 @@ const maplibre = vi.hoisted(() => {
       return this.sources.get(id);
     }
 
-    addSource(id: string) {
-      this.sources.set(id, new FakeGeoJSONSource());
+    addSource(id: string, spec: { type: string }) {
+      this.sources.set(
+        id,
+        spec.type === 'vector' ? new FakeVectorTileSource() : new FakeGeoJSONSource(),
+      );
     }
 
     removeSource(id: string) {
@@ -232,6 +236,7 @@ const maplibre = vi.hoisted(() => {
       NavigationControl: FakeNavigationControl,
       AttributionControl: FakeAttributionControl,
       GeoJSONSource: FakeGeoJSONSource,
+      VectorTileSource: FakeVectorTileSource,
       setWorkerUrl: vi.fn(),
       prewarm: vi.fn(),
     },
@@ -329,6 +334,47 @@ function CooperativeHarness() {
         isScrollZoomEnabled
         hasCooperativeGestures={isCooperative}
         onError={vi.fn()}
+      />
+    </>
+  );
+}
+
+const TILES_URL = 'https://db.example/rest/v1/rpc/listing_map_tile?p_transaction=sale';
+
+type TilesHarnessProps = {
+  onPinHover: (pin: unknown) => void;
+  onPinSelect: (pin: unknown) => void;
+  pinLabel: (price: number, currency: string) => string;
+};
+
+function TilesHarness({ onPinHover, onPinSelect, pinLabel }: TilesHarnessProps) {
+  const [isFiltered, setIsFiltered] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setIsFiltered(true);
+        }}
+      >
+        next
+      </button>
+      <MapCanvas
+        label={LABEL}
+        center={CENTER}
+        zoom={14}
+        markers={[]}
+        onError={vi.fn()}
+        listingTiles={{
+          url: isFiltered ? `${TILES_URL}&p_max_price_eur=100000` : TILES_URL,
+          headers: { apikey: 'key' },
+          labelKey: 'ro-sale',
+          pinLabel,
+          bubbleLabel: String,
+          hiddenIds: isFiltered ? ['a'] : [],
+          onPinHover,
+          onPinSelect,
+        }}
       />
     </>
   );
@@ -439,7 +485,10 @@ describe('MapCanvas', () => {
       'visibility',
       'none',
     );
-    expect(map.sources.get('walk-school')?.setData).toHaveBeenCalledOnce();
+    const routeSource = map.sources.get('walk-school');
+    expect(
+      routeSource && 'setData' in routeSource ? routeSource.setData : undefined,
+    ).toHaveBeenCalledOnce();
     expect(map.fitBounds).toHaveBeenLastCalledWith(SECOND_BOUNDS, expect.anything());
     expect(map.easeTo).toHaveBeenCalledWith({ center: CENTER });
 
@@ -528,55 +577,91 @@ describe('MapCanvas', () => {
     expect(onViewportChange).toHaveBeenLastCalledWith(expect.objectContaining({ zoom: 16 }));
   });
 
-  it('draws one pin per single point in view and one bubble per group, and zooms into a group', async () => {
+  it('draws the listing tiles, follows the filters, hides the highlighted pin and reports picks', async () => {
+    const canvasContext = {
+      scale: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      translate: vi.fn(),
+      rotate: vi.fn(),
+      beginPath: vi.fn(),
+      roundRect: vi.fn(),
+      arc: vi.fn(),
+      fill: vi.fn(),
+      fillText: vi.fn(),
+      measureText: vi.fn(() => ({ width: 48 })),
+      getImageData: vi.fn(() => ({ data: new Uint8ClampedArray(4) })),
+      canvas: { width: 1, height: 1 },
+    };
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+      // @ts-expect-error jsdom has no 2D canvas, so the test hands the map a partial context
+      () => canvasContext,
+    );
+    const onPinHover = vi.fn();
+    const onPinSelect = vi.fn();
+    const pinLabel = vi.fn((price: number) => `${String(price / 1000)}k €`);
     const { user } = await renderWithProviders(
-      <MapCanvas
-        label={LABEL}
-        center={CENTER}
-        zoom={14}
-        markers={[]}
-        onError={vi.fn()}
-        clusters={{
-          points: [
-            { id: 'a', position: [21.2, 45.75] },
-            { id: 'b', position: [21.3, 45.76] },
-            { id: 'c', position: [21.31, 45.761] },
-          ],
-          renderPoint: (id) => <span>{`pin ${id}`}</span>,
-          renderCluster: ({ count, onExpand }) => (
-            <button type="button" onClick={onExpand}>
-              {`${String(count)} locuințe`}
-            </button>
-          ),
-        }}
-      />,
+      <TilesHarness onPinHover={onPinHover} onPinSelect={onPinSelect} pinLabel={pinLabel} />,
     );
     const map = lastMap();
     act(() => {
       map.emit('style.load');
     });
-    map.sourceFeatures = [
-      { geometry: { type: 'Point', coordinates: [21.2, 45.75] }, properties: { id: 'a' } },
-      {
-        geometry: { type: 'Point', coordinates: [21.305, 45.76] },
-        properties: { cluster: true, cluster_id: 7, point_count: 2 },
-      },
-      { geometry: { type: 'Point', coordinates: [26.1, 44.4] }, properties: { id: 'far' } },
-    ];
-
-    act(() => {
-      map.emit('sourcedata', { sourceId: 'ps-clusters', isSourceLoaded: true });
-    });
-
-    expect(map.getSource('ps-clusters')).toBeDefined();
-    expect(screen.getByText('pin a')).toBeInTheDocument();
-    expect(screen.queryByText('pin far')).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: '2 locuințe' }));
 
     await vi.waitFor(() => {
-      expect(map.easeTo).toHaveBeenCalledWith({ center: [21.305, 45.76], zoom: 16 });
+      expect(map.getSource('ps-listings')).toBeDefined();
     });
+    expect(map.addedLayers.map((layer) => layer.id)).toEqual(
+      expect.arrayContaining(['ps-listings-bubbles', 'ps-listings-pins']),
+    );
+    expect(map.options.transformRequest(`${TILES_URL}&p_z=6`, 'Tile')).toEqual({
+      url: `${TILES_URL}&p_z=6`,
+      headers: { apikey: 'key' },
+    });
+    expect(map.options.transformRequest('https://tiles.example/1.pbf', 'Tile')).toEqual({
+      url: 'https://tiles.example/1.pbf',
+    });
+
+    act(() => {
+      map.missingImageResolver?.('ps-pin|ro-sale|EUR|142000');
+    });
+    expect(pinLabel).toHaveBeenCalledWith(142000, 'EUR');
+    expect(canvasContext.fillText).toHaveBeenCalledWith(
+      '142k €',
+      expect.any(Number),
+      expect.any(Number),
+    );
+    expect(map.addImage).toHaveBeenCalledWith('ps-pin|ro-sale|EUR|142000', expect.anything(), {
+      pixelRatio: 1,
+    });
+
+    await user.click(screen.getByRole('button', { name: 'next' }));
+
+    const source = map.getSource('ps-listings');
+    expect(source && 'setTiles' in source ? source.setTiles : undefined).toHaveBeenLastCalledWith([
+      `${TILES_URL}&p_max_price_eur=100000`,
+    ]);
+    expect(map.setFeatureState).toHaveBeenCalledWith(
+      { source: 'ps-listings', sourceLayer: 'listings', id: 'a' },
+      { hidden: true },
+    );
+
+    const pinFeature = {
+      geometry: { type: 'Point', coordinates: [21.2, 45.75] },
+      properties: { id: 'a', price: 142000, currency: 'EUR' },
+    };
+    act(() => {
+      map.emit('mousemove:ps-listings-pins', { features: [pinFeature] });
+      map.emit('click:ps-listings-pins', { features: [pinFeature] });
+      map.emit('click:ps-listings-bubbles', {
+        features: [{ geometry: { type: 'Point', coordinates: [21.3, 45.76] }, properties: {} }],
+      });
+    });
+
+    const pin = { id: 'a', position: [21.2, 45.75], price: 142000, currency: 'EUR' };
+    expect(onPinHover).toHaveBeenCalledWith(pin);
+    expect(onPinSelect).toHaveBeenCalledWith(pin);
+    expect(map.easeTo).toHaveBeenCalledWith({ center: [21.3, 45.76], zoom: 16 });
   });
 
   it('masks everything outside the outline, shades the regions and reports a picked region', async () => {

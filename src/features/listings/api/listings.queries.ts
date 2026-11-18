@@ -2,13 +2,14 @@ import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import type { ExplorerListingFilters, ListingFilters, ListingTransaction } from '../listing.types';
 import {
   EXPLORER_PAGE_SIZE,
+  getListingMapCard,
+  getListingMapSummary,
   listExplorerListings,
   listListings,
-  listMapPoints,
 } from './listings.api';
 import { getRomaniaRegions } from './romania-regions.api';
 
-const MAP_POINTS_STALE_MS = 60_000;
+const MAP_STALE_MS = 60_000;
 
 export const LISTINGS_PREVIEW_LIMIT = 6;
 
@@ -20,11 +21,17 @@ export const listingQueries = {
       queryKey: [...listingQueries.lists(), filters],
       queryFn: () => listListings(filters),
     }),
-  mapPoints: (transaction: ListingTransaction) =>
+  mapSummary: (filters: { transaction: ListingTransaction; maxPrice: number | undefined }) =>
     queryOptions({
-      queryKey: [...listingQueries.all(), 'map-points', transaction],
-      queryFn: () => listMapPoints(transaction),
-      staleTime: MAP_POINTS_STALE_MS,
+      queryKey: [...listingQueries.all(), 'map-summary', filters],
+      queryFn: () => getListingMapSummary(filters),
+      staleTime: MAP_STALE_MS,
+    }),
+  mapCard: (id: string) =>
+    queryOptions({
+      queryKey: [...listingQueries.all(), 'map-card', id],
+      queryFn: () => getListingMapCard(id),
+      staleTime: MAP_STALE_MS,
     }),
   explorer: (filters: ExplorerListingFilters) =>
     infiniteQueryOptions({

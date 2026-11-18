@@ -1,4 +1,5 @@
 export { LISTINGS_PREVIEW_LIMIT, listingQueries } from './api/listings.queries';
+export { listingTileUrl, warmFirstListingTiles } from './api/listings.tiles';
 export { ListingsBoard } from './components/listings-board';
 export { ListingsExplorerPage } from './components/listings-explorer-page';
 export { getListingThumbUrl } from './api/listings.storage';

@@ -6,10 +6,8 @@ import type { ExplorerListingFilters, ListingFilters, ListingTransaction } from 
 const LISTING_COLUMNS =
   'id, property_type, transaction, title, street_label, city, rooms, area_m2, price, currency, latitude, longitude, verification, smartcheck_score, photo_path' as const;
 
-const MAP_POINT_COLUMNS =
+const MAP_CARD_COLUMNS =
   'id, title, price, currency, latitude, longitude, street_label, city, photo_path' as const;
-
-const MAP_POINTS_LIMIT = 2000;
 
 export const EXPLORER_PAGE_SIZE = 12;
 
@@ -23,15 +21,31 @@ const EXPLORER_ORDER: Readonly<
   area: { column: 'area_m2', ascending: false },
 };
 
-export async function listMapPoints(transaction: ListingTransaction) {
+export async function getListingMapSummary({
+  transaction,
+  maxPrice,
+}: {
+  transaction: ListingTransaction;
+  maxPrice: number | undefined;
+}) {
+  const { data, error } = await supabase.rpc('listing_map_summary', {
+    p_transaction: transaction,
+    ...(maxPrice === undefined ? {} : { p_max_price_eur: maxPrice }),
+  });
+  if (error) throw toAppError(error);
+  return {
+    total: data.reduce((sum, county) => sum + county.listing_count, 0),
+    counties: data,
+  };
+}
+
+export async function getListingMapCard(id: string) {
   const { data, error } = await supabase
     .from('listings')
-    .select(MAP_POINT_COLUMNS)
+    .select(MAP_CARD_COLUMNS)
+    .eq('id', id)
     .eq('status', 'approved')
-    .eq('transaction', transaction)
-    .order('published_at', { ascending: false })
-    .order('id', { ascending: false })
-    .range(0, MAP_POINTS_LIMIT - 1);
+    .single();
   if (error) throw toAppError(error);
   return data;
 }

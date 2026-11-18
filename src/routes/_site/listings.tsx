@@ -7,7 +7,12 @@ import {
   EXPLORER_SORTS,
 } from '@/config/listings-explorer';
 import { preloadMapCanvas } from '@/components/map/load-map-canvas';
-import { ListingsExplorerPage, listingQueries } from '@/features/listings';
+import {
+  ListingsExplorerPage,
+  listingQueries,
+  listingTileUrl,
+  warmFirstListingTiles,
+} from '@/features/listings';
 import { i18n, loadFeatureNamespaces } from '@/i18n/i18n';
 import { pageTitle } from '@/i18n/page-title';
 import { Constants } from '@/lib/supabase/database.types';
@@ -32,8 +37,9 @@ export const Route = createFileRoute('/_site/listings')({
     void context.queryClient
       .infiniteQuery(listingQueries.explorer({ ...deps, bounds: undefined }))
       .catch(() => undefined);
+    warmFirstListingTiles(listingTileUrl(deps));
     void context.queryClient
-      .query(listingQueries.mapPoints(deps.transaction))
+      .query(listingQueries.mapSummary({ transaction: deps.transaction, maxPrice: deps.maxPrice }))
       .catch(() => undefined);
     void context.queryClient.query(listingQueries.romaniaRegions()).catch(() => undefined);
   },

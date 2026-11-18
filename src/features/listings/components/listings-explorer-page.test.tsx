@@ -1,8 +1,9 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { http } from 'msw';
+import { http, HttpResponse } from 'msw';
 import roCommon from '@/i18n/locales/ro/common.json';
 import roListings from '@/i18n/locales/ro/listings.json';
-import { listingsResponse } from '@/test/msw/handlers/listings';
+import { mapCanvasStubControl } from '@/test/mocks/map-canvas-control';
+import { listingsResponse, seededListing } from '@/test/msw/handlers/listings';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
@@ -19,8 +20,22 @@ async function findCards() {
   return screen.findByRole('list', { name: explore.list.label });
 }
 
+function tilePinOf(title: string) {
+  const listing = seededListing(title);
+  return {
+    id: listing.id,
+    position: [listing.longitude, listing.latitude] satisfies [number, number],
+    price: listing.price,
+    currency: listing.currency,
+  };
+}
+
 describe('ListingsExplorerPage', { timeout: 20_000 }, () => {
-  it('shows every approved listing on the map and the listings of the map area below it', async () => {
+  afterEach(() => {
+    mapCanvasStubControl.tilePins = [];
+  });
+
+  it('shows the total from the map summary and the listings of the map area below it', async () => {
     await renderAppRoute('/listings');
 
     expect(
@@ -31,10 +46,7 @@ describe('ListingsExplorerPage', { timeout: 20_000 }, () => {
     expect(
       screen.getByRole('heading', { level: 2, name: withCount(explore.list.inView_few, 2) }),
     ).toBeInTheDocument();
-    expect(screen.getByText(withCount(explore.shown_few, 2))).toBeInTheDocument();
-
-    const map = await screen.findByRole('region', { name: explore.mapLabel });
-    expect(within(map).getAllByRole('button')).toHaveLength(2);
+    expect(await screen.findByText(withCount(explore.shown_few, 2))).toBeInTheDocument();
   });
 
   it('opens at the top of the page, with the map first', async () => {
@@ -49,18 +61,17 @@ describe('ListingsExplorerPage', { timeout: 20_000 }, () => {
     scrollTo.mockRestore();
   });
 
-  it('opens the selected home on the map and closes it again', async () => {
+  it('opens a home picked on the map with its details and closes it again', async () => {
+    mapCanvasStubControl.tilePins = [tilePinOf('Apartament cu 3 camere')];
     const { user } = await renderAppRoute('/listings');
 
     const map = await screen.findByRole('region', { name: explore.mapLabel });
-    const [pin] = await within(map).findAllByRole('button');
-    if (!pin) {
-      throw new Error('The pin is missing');
-    }
-    await user.click(pin);
+    await user.click(await within(map).findByRole('button', { name: /125/ }));
 
-    expect(pin).toHaveAttribute('aria-pressed', 'true');
-    expect(within(map).getByRole('button', { name: explore.popup.viewListing })).toBeVisible();
+    expect(
+      await within(map).findByRole('button', { name: explore.popup.viewListing }),
+    ).toBeVisible();
+    expect(within(map).getByText('Apartament cu 3 camere')).toBeInTheDocument();
 
     await user.click(within(map).getByRole('button', { name: roCommon.actions.close }));
 
@@ -105,7 +116,10 @@ describe('ListingsExplorerPage', { timeout: 20_000 }, () => {
   });
 
   it('says when there is no listing at all for the chosen transaction', async () => {
-    server.use(http.get(supabaseUrl('/rest/v1/listings'), () => listingsResponse([])));
+    server.use(
+      http.get(supabaseUrl('/rest/v1/listings'), () => listingsResponse([])),
+      http.post(supabaseUrl('/rest/v1/rpc/listing_map_summary'), () => HttpResponse.json([])),
+    );
     await renderAppRoute('/listings');
 
     expect(await screen.findByText(explore.empty.none.sale)).toBeInTheDocument();

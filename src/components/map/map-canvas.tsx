@@ -7,6 +7,7 @@ import {
   NavigationControl,
   prewarm,
   setWorkerUrl,
+  type RequestParameters,
 } from 'maplibre-gl';
 import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import {
@@ -23,7 +24,14 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { MAP_STYLE_URL, type LngLat, type LngLatBounds } from './map.config';
 import { themeColor } from './map.theme';
+import {
+  tileRequestPrefix,
+  useMapListingTiles,
+  type MapListingTiles,
+} from './use-map-listing-tiles';
 import { useMapRegions } from './use-map-regions';
+
+export type { MapListingTiles, MapTilePin } from './use-map-listing-tiles';
 
 setWorkerUrl(mapWorkerUrl);
 prewarm();
@@ -82,30 +90,6 @@ export type MapViewport = {
   zoom: number;
 };
 
-export type MapClusterPoint = {
-  id: string;
-  position: LngLat;
-};
-
-export type MapClusterBubble = {
-  count: number;
-  onExpand: () => void;
-};
-
-export type MapClusters = {
-  points: readonly MapClusterPoint[];
-  renderPoint: (id: string) => ReactNode;
-  renderCluster: (cluster: MapClusterBubble) => ReactNode;
-};
-
-type ClusterItem = { key: string; position: LngLat } & (
-  { kind: 'point'; id: string } | { kind: 'cluster'; clusterId: number; count: number }
-);
-
-const CLUSTER_SOURCE_ID = 'ps-clusters';
-const CLUSTER_LAYER_ID = 'ps-clusters-hit';
-const CLUSTER_RADIUS = 64;
-const CLUSTER_MAX_ZOOM = 15;
 const FLY_DURATION_MS = 800;
 const DEFAULT_BOUNDS_PADDING = 48;
 const RAISED_MARKER_Z_INDEX = '2';
@@ -128,7 +112,7 @@ type MapCanvasProps = {
   focus?: MapFocus | undefined;
   markers: readonly MapMarkerItem[];
   overlays?: readonly MapOverlay[];
-  clusters?: MapClusters | undefined;
+  listingTiles?: MapListingTiles | undefined;
   regions?: MapRegions | undefined;
   onError: () => void;
   onPick?: (position: LngLat) => void;
@@ -187,7 +171,7 @@ export function MapCanvas({
   focus,
   markers,
   overlays = [],
-  clusters,
+  listingTiles,
   regions,
   onError,
   onPick,
@@ -205,7 +189,9 @@ export function MapCanvas({
   const [map, setMap] = useState<MapLibreMap>();
   const [isStyleReady, setIsStyleReady] = useState(false);
   const appliedOverlays = useRef(new Map<string, string>());
-  const [clusterItems, setClusterItems] = useState<readonly ClusterItem[]>([]);
+  const tileRequest = useRef<{ prefix: string; headers: Readonly<Record<string, string>> }>(
+    undefined,
+  );
   const initialView = useRef({
     center,
     zoom,
@@ -246,6 +232,12 @@ export function MapCanvas({
         scrollZoom: initialView.current.isScrollZoomEnabled,
         cooperativeGestures: initialView.current.hasCooperativeGestures,
         canvasContextAttributes: { preserveDrawingBuffer: initialView.current.isPrintable },
+        transformRequest: (url, resourceType): RequestParameters => {
+          const request = tileRequest.current;
+          return String(resourceType) === 'Tile' && request && url.startsWith(request.prefix)
+            ? { url, headers: { ...request.headers } }
+            : { url };
+        },
         locale: {
           'Map.Title': initialLabels.title,
           'NavigationControl.ZoomIn': initialLabels.zoomIn,
@@ -395,66 +387,15 @@ export function MapCanvas({
     };
   }, [map, isStyleReady, isViewportTracked]);
 
-  const clusterPoints = clusters?.points;
-  const clusterPointsKey = clusterPoints
-    ? clusterPoints.map((point) => `${point.id}:${point.position.join(',')}`).join('|')
-    : '';
-  const readClusterPoints = useEffectEvent(() => clusterPoints ?? []);
-  const hasClusters = clusterPoints !== undefined;
+  const tilesUrl = listingTiles?.url;
+  const tilesHeaders = listingTiles?.headers;
   useEffect(() => {
-    if (!map || !isStyleReady || !hasClusters) {
-      return;
-    }
-    const data = pointCollection(readClusterPoints());
-    const source = map.getSource(CLUSTER_SOURCE_ID);
-    if (source instanceof GeoJSONSource) {
-      void source.setData(data);
-      return;
-    }
-    map.addSource(CLUSTER_SOURCE_ID, {
-      type: 'geojson',
-      data,
-      cluster: true,
-      clusterRadius: CLUSTER_RADIUS,
-      clusterMaxZoom: CLUSTER_MAX_ZOOM,
-    });
-    map.addLayer({
-      id: CLUSTER_LAYER_ID,
-      type: 'circle',
-      source: CLUSTER_SOURCE_ID,
-      paint: { 'circle-radius': 1, 'circle-opacity': 0 },
-    });
-  }, [map, isStyleReady, hasClusters, clusterPointsKey]);
-
-  useEffect(() => {
-    if (!map || !isStyleReady || !hasClusters) {
-      return;
-    }
-    const refresh = () => {
-      const next = readClusterItems(map);
-      setClusterItems((current) => (sameItems(current, next) ? current : next));
-    };
-    const handleSourceData = (event?: { sourceId?: string; isSourceLoaded?: boolean }) => {
-      if (event?.sourceId === CLUSTER_SOURCE_ID && event.isSourceLoaded) {
-        refresh();
-      }
-    };
-    map.on('moveend', refresh);
-    map.on('sourcedata', handleSourceData);
-    return () => {
-      map.off('moveend', refresh);
-      map.off('sourcedata', handleSourceData);
-    };
-  }, [map, isStyleReady, hasClusters]);
-
-  const expandCluster = (target: MapLibreMap, clusterId: number, position: LngLat) => {
-    const source = target.getSource(CLUSTER_SOURCE_ID);
-    if (source instanceof GeoJSONSource) {
-      void source.getClusterExpansionZoom(clusterId).then((expansionZoom) => {
-        target.easeTo({ center: position, zoom: expansionZoom });
-      });
-    }
-  };
+    tileRequest.current =
+      tilesUrl === undefined || tilesHeaders === undefined
+        ? undefined
+        : { prefix: tileRequestPrefix(tilesUrl), headers: tilesHeaders };
+  }, [tilesUrl, tilesHeaders]);
+  useMapListingTiles(map, isStyleReady, listingTiles);
 
   const moveToFocus = useEffectEvent((target: MapLibreMap) => {
     if (!focus) {
@@ -511,26 +452,6 @@ export function MapCanvas({
             </MapMarker>
           ))
         : null}
-      {map && clusters
-        ? clusterItems.map((item) => (
-            <MapMarker
-              key={item.key}
-              map={map}
-              position={item.position}
-              anchor={item.kind === 'cluster' ? 'center' : 'bottom'}
-              isRaised={false}
-            >
-              {item.kind === 'cluster'
-                ? clusters.renderCluster({
-                    count: item.count,
-                    onExpand: () => {
-                      expandCluster(map, item.clusterId, item.position);
-                    },
-                  })
-                : clusters.renderPoint(item.id)}
-            </MapMarker>
-          ))
-        : null}
       {regionTooltip ? (
         <span
           aria-hidden="true"
@@ -541,73 +462,6 @@ export function MapCanvas({
         </span>
       ) : null}
     </div>
-  );
-}
-
-function pointCollection(points: readonly MapClusterPoint[]): MapFeatureCollection {
-  return {
-    type: 'FeatureCollection',
-    features: points.map((point) => ({
-      type: 'Feature',
-      properties: { id: point.id },
-      geometry: { type: 'Point', coordinates: point.position },
-    })),
-  };
-}
-
-function pointPosition(geometry: unknown): LngLat | undefined {
-  if (
-    typeof geometry !== 'object' ||
-    geometry === null ||
-    !('type' in geometry) ||
-    geometry.type !== 'Point' ||
-    !('coordinates' in geometry) ||
-    !Array.isArray(geometry.coordinates)
-  ) {
-    return undefined;
-  }
-  const coordinates: unknown[] = geometry.coordinates;
-  const [longitude, latitude] = coordinates;
-  return typeof longitude === 'number' && typeof latitude === 'number'
-    ? [longitude, latitude]
-    : undefined;
-}
-
-function readClusterItems(map: MapLibreMap): ClusterItem[] {
-  const visible = map.getBounds();
-  const items = new Map<string, ClusterItem>();
-  for (const feature of map.querySourceFeatures(CLUSTER_SOURCE_ID)) {
-    const geometry: unknown = feature.geometry;
-    const position = pointPosition(geometry);
-    if (!position || !visible.contains(position)) {
-      continue;
-    }
-    const properties: Record<string, unknown> = feature.properties;
-    const clusterId = properties.cluster_id;
-    const count = properties.point_count;
-    const id = properties.id;
-    if (typeof clusterId === 'number' && typeof count === 'number') {
-      const key = `cluster-${String(clusterId)}`;
-      items.set(key, { key, position, kind: 'cluster', clusterId, count });
-    } else if (typeof id === 'string') {
-      const key = `point-${id}`;
-      items.set(key, { key, position, kind: 'point', id });
-    }
-  }
-  return [...items.values()];
-}
-
-function sameItems(current: readonly ClusterItem[], next: readonly ClusterItem[]): boolean {
-  return (
-    current.length === next.length &&
-    current.every((item, index) => {
-      const other = next[index];
-      return (
-        other?.key === item.key &&
-        other.position[0] === item.position[0] &&
-        other.position[1] === item.position[1]
-      );
-    })
   );
 }
 

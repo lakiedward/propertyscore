@@ -7,6 +7,7 @@ import {
 import { useEffect, useEffectEvent, useState } from 'react';
 import type { MapRegions } from './map-canvas';
 import { themeColor } from './map.theme';
+import { LISTING_BUBBLE_LAYER_ID } from './use-map-listing-tiles';
 
 const MASK_ID = 'ps-regions-mask';
 const MASK_WATER_ID = 'ps-regions-mask-water';
@@ -117,48 +118,66 @@ function addRegionLayers(map: MapLibreMap, regions: MapRegions) {
     },
     beforeLabels,
   );
-  map.addLayer({
-    id: MASK_ID,
-    type: 'fill',
-    source: MASK_ID,
-    paint: { 'fill-color': themeColor('--map-outside'), 'fill-opacity': 1 },
-  });
+  const beforeListings = map.getLayer(LISTING_BUBBLE_LAYER_ID)
+    ? LISTING_BUBBLE_LAYER_ID
+    : undefined;
+  map.addLayer(
+    {
+      id: MASK_ID,
+      type: 'fill',
+      source: MASK_ID,
+      paint: { 'fill-color': themeColor('--map-outside'), 'fill-opacity': 1 },
+    },
+    beforeListings,
+  );
   const water = map.getStyle().layers.find((layer) => layer.id === 'water');
   if (water?.type === 'fill' && water.source) {
-    map.addLayer({
-      id: MASK_WATER_ID,
-      type: 'fill',
-      source: water.source,
-      ...(water['source-layer'] ? { 'source-layer': water['source-layer'] } : {}),
-      paint: { 'fill-color': themeColor('--map-water') },
-    });
+    map.addLayer(
+      {
+        id: MASK_WATER_ID,
+        type: 'fill',
+        source: water.source,
+        ...(water['source-layer'] ? { 'source-layer': water['source-layer'] } : {}),
+        paint: { 'fill-color': themeColor('--map-water') },
+      },
+      beforeListings,
+    );
   }
-  map.addLayer({
-    id: AREAS_HOVER_ID,
-    type: 'line',
-    source: AREAS_ID,
-    layout: { 'line-join': 'round' },
-    paint: {
-      'line-color': brand,
-      'line-width': 2,
-      'line-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.9, 0],
+  map.addLayer(
+    {
+      id: AREAS_HOVER_ID,
+      type: 'line',
+      source: AREAS_ID,
+      layout: { 'line-join': 'round' },
+      paint: {
+        'line-color': brand,
+        'line-width': 2,
+        'line-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.9, 0],
+      },
     },
-  });
-  map.addLayer({
-    id: AREAS_SELECTED_ID,
-    type: 'line',
-    source: AREAS_ID,
-    layout: { 'line-join': 'round' },
-    filter: ['==', ['get', 'id'], ''],
-    paint: { 'line-color': brand, 'line-width': 2.6, 'line-opacity': 0.95 },
-  });
-  map.addLayer({
-    id: OUTLINE_ID,
-    type: 'line',
-    source: OUTLINE_ID,
-    layout: { 'line-join': 'round' },
-    paint: { 'line-color': brand, 'line-width': 2.2, 'line-opacity': 0.9 },
-  });
+    beforeListings,
+  );
+  map.addLayer(
+    {
+      id: AREAS_SELECTED_ID,
+      type: 'line',
+      source: AREAS_ID,
+      layout: { 'line-join': 'round' },
+      filter: ['==', ['get', 'id'], ''],
+      paint: { 'line-color': brand, 'line-width': 2.6, 'line-opacity': 0.95 },
+    },
+    beforeListings,
+  );
+  map.addLayer(
+    {
+      id: OUTLINE_ID,
+      type: 'line',
+      source: OUTLINE_ID,
+      layout: { 'line-join': 'round' },
+      paint: { 'line-color': brand, 'line-width': 2.2, 'line-opacity': 0.9 },
+    },
+    beforeListings,
+  );
 }
 
 function applySelection(map: MapLibreMap, selectedId: string | undefined) {

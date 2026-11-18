@@ -1,4 +1,9 @@
-import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   ListIcon,
   LocateFixedIcon,
@@ -14,10 +19,11 @@ import { LazyMapCanvas } from '@/components/map/lazy-map-canvas';
 import type {
   MapCanvasController,
   MapFocus,
+  MapListingTiles,
   MapMarkerItem,
   MapRegions,
+  MapTilePin,
 } from '@/components/map/map-canvas';
-import { MapCluster } from '@/components/map/map-cluster';
 import { MapPin } from '@/components/map/map-pin';
 import type { LngLat } from '@/components/map/map.config';
 import { boundsOf } from '@/components/map/map.utils';
@@ -25,7 +31,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DEFAULT_TRANSACTION } from '@/config/home-search';
 import {
   EXPLORER_CITIES,
-  EXPLORER_PRICE_CAP_CURRENCY,
   ROMANIA_BOUNDS,
   type ExplorerCityId,
   type ExplorerSort,
@@ -34,10 +39,10 @@ import { formatNumber, formatPrice, formatPriceInThousands, toCurrency } from '@
 import { cn } from '@/lib/utils';
 import { listingQueries } from '../api/listings.queries';
 import { getListingMediumUrl } from '../api/listings.storage';
+import { LISTING_TILE_HEADERS, listingTileUrl } from '../api/listings.tiles';
 import { useDebouncedBounds } from '../hooks/use-debounced-bounds';
 import { useIsNarrowScreen } from '../hooks/use-is-narrow-screen';
 import type { ListingTransaction } from '../listing.types';
-import { countPointsByRegion } from '../listing.utils';
 import { ListingMapPopup } from './listing-map-popup';
 import {
   ListingsExplorerList,
@@ -47,6 +52,15 @@ import {
 import { ListingsMapFilters } from './listings-map-filters';
 
 const SHOW_ON_MAP_ZOOM = 16;
+
+type MapPopupContent = {
+  photoUrl: string | undefined;
+  title: string;
+  address: string;
+  price: string;
+};
+
+type HighlightedListing = MapTilePin & { content?: MapPopupContent };
 
 type ListingsExplorerSearch = {
   transaction: ListingTransaction;
@@ -70,15 +84,23 @@ function cityFocus(cityId: ExplorerCityId | undefined, requestId: number): MapFo
 }
 
 export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplorerPageProps) {
-  const { t } = useTranslation(['listings', 'common']);
+  const { t, i18n } = useTranslation(['listings', 'common']);
+  const queryClient = useQueryClient();
   const { transaction, city: cityId, maxPrice, sort } = search;
-  const points = useQuery(listingQueries.mapPoints(transaction));
+  const summary = useQuery({
+    ...listingQueries.mapSummary({ transaction, maxPrice }),
+    placeholderData: keepPreviousData,
+  });
   const regions = useQuery(listingQueries.romaniaRegions());
   const { bounds, handleViewportChange } = useDebouncedBounds();
   const [isInView, setIsInView] = useState(true);
   const [hasMapError, setHasMapError] = useState(false);
-  const [selectedId, setSelectedId] = useState<string>();
-  const [hoveredId, setHoveredId] = useState<string>();
+  const [selected, setSelected] = useState<HighlightedListing>();
+  const [hovered, setHovered] = useState<HighlightedListing>();
+  const selectedCard = useQuery({
+    ...listingQueries.mapCard(selected?.id ?? ''),
+    enabled: selected !== undefined && selected.content === undefined,
+  });
   const [focus, setFocus] = useState<MapFocus | undefined>(() => cityFocus(cityId, 1));
   const [isFullScreen, setIsFullScreen] = useState(false);
   const mapRef = useRef<MapCanvasController>(null);
@@ -123,13 +145,7 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
     };
   }, [isFullScreen]);
 
-  const visiblePoints = (points.data ?? []).filter(
-    (point) =>
-      maxPrice === undefined ||
-      (point.currency === EXPLORER_PRICE_CAP_CURRENCY && point.price <= maxPrice),
-  );
-  const pointsById = new Map(visiblePoints.map((point) => [point.id, point]));
-  const selectedPoint = selectedId ? pointsById.get(selectedId) : undefined;
+  const shownCount = summary.data?.total;
   const city = EXPLORER_CITIES.find((candidate) => candidate.id === cityId);
   const canReset =
     transaction !== DEFAULT_TRANSACTION || cityId !== undefined || maxPrice !== undefined;
@@ -140,6 +156,27 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
       : formatPrice(price, toCurrency(currency));
   const fullPrice = (price: number, currency: string) => formatPrice(price, toCurrency(currency));
   const addressOf = (street: string, town: string) => t('explore.address', { street, city: town });
+  const popupContentOf = (listing: {
+    photo_path: string | null;
+    title: string;
+    street_label: string;
+    city: string;
+    price: number;
+    currency: string;
+  }): MapPopupContent => ({
+    photoUrl: listing.photo_path ? getListingMediumUrl(listing.photo_path) : undefined,
+    title: listing.title,
+    address: addressOf(listing.street_label, listing.city),
+    price: fullPrice(listing.price, listing.currency),
+  });
+  const selectedContent =
+    selected?.content ??
+    (selectedCard.data && selectedCard.data.id === selected?.id
+      ? popupContentOf(selectedCard.data)
+      : undefined);
+  const clearSelection = () => {
+    setSelected(undefined);
+  };
 
   const showRomania = () => {
     onSearchChange({ city: undefined });
@@ -176,13 +213,13 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
   };
 
   const handleTransactionChange = (next: ListingTransaction) => {
-    setSelectedId(undefined);
-    setHoveredId(undefined);
+    setSelected(undefined);
+    setHovered(undefined);
     onSearchChange({ transaction: next, maxPrice: undefined });
   };
 
   const handleReset = () => {
-    setSelectedId(undefined);
+    setSelected(undefined);
     setIsInView(true);
     onSearchChange({
       transaction: DEFAULT_TRANSACTION,
@@ -200,7 +237,13 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
         behavior: prefersReducedMotion() ? 'auto' : 'smooth',
       });
     }
-    setSelectedId(listing.id);
+    setSelected({
+      id: listing.id,
+      position: [listing.longitude, listing.latitude],
+      price: listing.price,
+      currency: listing.currency,
+      content: popupContentOf(listing),
+    });
     setFocus((previous) => ({
       position: [listing.longitude, listing.latitude],
       zoom: SHOW_ON_MAP_ZOOM,
@@ -208,14 +251,39 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
     }));
   };
 
+  const handleCardHover = (id: string | undefined) => {
+    const listing = cards.data?.pages
+      .flatMap((page) => page.items)
+      .find((candidate) => candidate.id === id);
+    setHovered(
+      listing
+        ? {
+            id: listing.id,
+            position: [listing.longitude, listing.latitude],
+            price: listing.price,
+            currency: listing.currency,
+          }
+        : undefined,
+    );
+  };
+
+  const handlePinHover = (pin: MapTilePin | undefined) => {
+    setHovered(pin);
+    if (pin) {
+      void queryClient.query(listingQueries.mapCard(pin.id)).catch(() => undefined);
+    }
+  };
+
   const handleFullScreenToggle = () => {
     if (isFullScreen) {
-      setSelectedId(undefined);
+      setSelected(undefined);
     }
     setIsFullScreen((current) => !current);
   };
 
-  const regionCounts = regions.data ? countPointsByRegion(visiblePoints, regions.data.regions) : {};
+  const regionCounts = Object.fromEntries(
+    (summary.data?.counties ?? []).map((county) => [county.county_id, county.listing_count]),
+  );
   const busiestRegion = Math.max(1, ...Object.values(regionCounts));
   const mapRegions: MapRegions | undefined = regions.data
     ? {
@@ -237,30 +305,49 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
       }
     : undefined;
 
+  const highlightMarker = (
+    listing: HighlightedListing,
+    state: 'hovered' | 'selected',
+  ): MapMarkerItem => ({
+    id: `${state}-${listing.id}`,
+    position: listing.position,
+    anchor: 'bottom',
+    isRaised: true,
+    node: (
+      <div inert>
+        <MapPin
+          kind="brand"
+          shape="tag"
+          label={pinLabel(listing.price, listing.currency)}
+          accessibleName={fullPrice(listing.price, listing.currency)}
+          isActive={state === 'hovered'}
+          isSelected={state === 'selected'}
+          onSelect={() => undefined}
+        />
+      </div>
+    ),
+  });
+
+  const highlightMarkers: MapMarkerItem[] = [
+    ...(hovered && hovered.id !== selected?.id ? [highlightMarker(hovered, 'hovered')] : []),
+    ...(selected ? [highlightMarker(selected, 'selected')] : []),
+  ];
+
   const popupMarkers: MapMarkerItem[] =
-    selectedPoint && !isNarrow
+    selected && !isNarrow
       ? [
           {
-            id: `popup-${selectedPoint.id}`,
-            position: [selectedPoint.longitude, selectedPoint.latitude],
+            id: `popup-${selected.id}`,
+            position: selected.position,
             anchor: 'bottom',
             isRaised: true,
             node: (
               <div className="pb-11">
                 <ListingMapPopup
                   variant="popup"
-                  photoUrl={
-                    selectedPoint.photo_path
-                      ? getListingMediumUrl(selectedPoint.photo_path)
-                      : undefined
-                  }
-                  title={selectedPoint.title}
-                  address={addressOf(selectedPoint.street_label, selectedPoint.city)}
-                  price={fullPrice(selectedPoint.price, selectedPoint.currency)}
+                  listing={selectedContent}
                   isRent={transaction === 'rent'}
-                  onClose={() => {
-                    setSelectedId(undefined);
-                  }}
+                  onClose={clearSelection}
                 />
               </div>
             ),
@@ -268,10 +355,23 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
         ]
       : [];
 
+  const listingTiles: MapListingTiles = {
+    url: listingTileUrl({ transaction, maxPrice }),
+    headers: LISTING_TILE_HEADERS,
+    labelKey: `${i18n.language}-${transaction}`,
+    pinLabel,
+    bubbleLabel: formatNumber,
+    hiddenIds: [hovered?.id, selected?.id].filter((id) => id !== undefined),
+    onPinHover: handlePinHover,
+    onPinSelect: (pin) => {
+      setSelected(pin);
+    },
+  };
+
   const emptyKind: ExplorerEmptyKind =
-    points.isSuccess && points.data.length === 0
+    shownCount === 0 && maxPrice === undefined
       ? 'none'
-      : tracksMapArea && visiblePoints.length > 0
+      : tracksMapArea && shownCount !== undefined && shownCount > 0
         ? 'outside'
         : 'filters';
 
@@ -295,50 +395,14 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
           bounds={ROMANIA_BOUNDS}
           boundsPadding={10}
           focus={focus}
-          markers={popupMarkers}
+          markers={[...highlightMarkers, ...popupMarkers]}
           regions={mapRegions}
           hidesPointsOfInterest
           isScrollZoomEnabled
           hasCooperativeGestures={!isFullScreen}
           hasNavigationControl={false}
           onViewportChange={handleViewportChange}
-          clusters={{
-            points: visiblePoints.map((point) => ({
-              id: point.id,
-              position: [point.longitude, point.latitude],
-            })),
-            renderPoint: (id) => {
-              const point = pointsById.get(id);
-              if (!point) {
-                return null;
-              }
-              const label = pinLabel(point.price, point.currency);
-              return (
-                <MapPin
-                  kind="brand"
-                  shape="tag"
-                  label={label}
-                  accessibleName={t('explore.pin', {
-                    title: point.title,
-                    price: fullPrice(point.price, point.currency),
-                  })}
-                  isActive={id === hoveredId}
-                  isSelected={id === selectedId}
-                  onSelect={() => {
-                    setSelectedId(id);
-                  }}
-                />
-              );
-            },
-            renderCluster: ({ count, onExpand }) => (
-              <MapCluster
-                count={count}
-                label={formatNumber(count)}
-                accessibleName={t('explore.cluster', { count })}
-                onExpand={onExpand}
-              />
-            ),
-          }}
+          listingTiles={listingTiles}
           className="absolute inset-0 rounded-none bg-map-water"
           fallbackClassName="absolute inset-0 rounded-none"
           errorFallback={<MapErrorNotice message={t('explore.mapError')} onShow={setHasMapError} />}
@@ -347,12 +411,12 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
           transaction={transaction}
           cityId={cityId}
           maxPrice={maxPrice}
-          shownCount={points.data ? visiblePoints.length : undefined}
+          shownCount={shownCount}
           canReset={canReset}
           onTransactionChange={handleTransactionChange}
           onCityChange={flyToCity}
           onMaxPriceChange={(next) => {
-            setSelectedId(undefined);
+            setSelected(undefined);
             onSearchChange({ maxPrice: next });
           }}
           onReset={handleReset}
@@ -394,22 +458,22 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
         <ListingsExplorerList
           transaction={transaction}
           data={cards.data}
-          allCount={points.data ? visiblePoints.length : undefined}
+          allCount={shownCount}
           isInView={tracksMapArea}
           isLoading={!cards.data && !cards.isError}
-          hasError={(cards.isError && !cards.data) || (points.isError && !points.data)}
+          hasError={(cards.isError && !cards.data) || (summary.isError && !summary.data)}
           emptyKind={emptyKind}
           hasNextPage={cards.hasNextPage}
           isFetchingNextPage={cards.isFetchingNextPage}
           sort={sort}
-          activeId={selectedId}
+          activeId={selected?.id}
           onInViewChange={setIsInView}
           onSortChange={(next) => {
             onSearchChange({ sort: next });
           }}
           onLoadMore={() => void cards.fetchNextPage()}
           onRetry={() => {
-            void points.refetch();
+            void summary.refetch();
             void cards.refetch();
           }}
           onEmptyAction={() => {
@@ -420,13 +484,13 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
             }
           }}
           onSelect={handleCardSelect}
-          onHoverChange={setHoveredId}
+          onHoverChange={handleCardHover}
         />
         <p className="mt-10 max-w-162.5 text-meta leading-copy text-muted-foreground">
           {t('explore.mapNote')}
         </p>
       </div>
-      {selectedPoint && isNarrow ? (
+      {selected && isNarrow ? (
         <div
           role="dialog"
           aria-label={t('explore.popup.label')}
@@ -434,16 +498,9 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
         >
           <ListingMapPopup
             variant="sheet"
-            photoUrl={
-              selectedPoint.photo_path ? getListingMediumUrl(selectedPoint.photo_path) : undefined
-            }
-            title={selectedPoint.title}
-            address={addressOf(selectedPoint.street_label, selectedPoint.city)}
-            price={fullPrice(selectedPoint.price, selectedPoint.currency)}
+            listing={selectedContent}
             isRent={transaction === 'rent'}
-            onClose={() => {
-              setSelectedId(undefined);
-            }}
+            onClose={clearSelection}
           />
         </div>
       ) : null}

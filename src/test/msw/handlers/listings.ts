@@ -1,4 +1,5 @@
 import { http, HttpResponse } from 'msw';
+import { z } from 'zod';
 import { buildListing } from '@/test/factories/listing';
 import { supabaseUrl } from '../supabase-url';
 
@@ -11,6 +12,14 @@ const SEEDED_LISTINGS = [
   buildListing({ title: '2 camere mobilat', transaction: 'rent', price: 450 }),
   buildListing({ title: 'Ciornă de anunț', status: 'draft', published_at: null }),
 ];
+
+export function seededListing(title: string): ListingRow {
+  const listing = SEEDED_LISTINGS.find((candidate) => candidate.title === title);
+  if (!listing) {
+    throw new Error(`No seeded listing is called ${title}`);
+  }
+  return listing;
+}
 
 export function listingsResponse(items: ListingRow[], total = items.length, offset = 0) {
   const last = Math.max(offset + items.length - 1, offset);
@@ -77,10 +86,12 @@ export const listingHandlers = [
     const status = eqValue(params, 'status');
     const transaction = eqValue(params, 'transaction');
     const currency = eqValue(params, 'currency');
+    const id = eqValue(params, 'id');
     const offset = Number(params.get('offset') ?? 0);
     const limit = Number(params.get('limit') ?? SEEDED_LISTINGS.length);
     const matching = SEEDED_LISTINGS.filter(
       (item) =>
+        (id === undefined || item.id === id) &&
         (status === undefined || item.status === status) &&
         (transaction === undefined || item.transaction === transaction) &&
         (currency === undefined || item.currency === currency) &&
@@ -88,7 +99,58 @@ export const listingHandlers = [
         withinRange(params, 'latitude', item.latitude) &&
         withinRange(params, 'longitude', item.longitude),
     ).sort(compareBy(params.get('order')));
+    if (request.headers.get('Accept') === 'application/vnd.pgrst.object+json') {
+      const [single] = matching;
+      return single && matching.length === 1
+        ? HttpResponse.json(single)
+        : HttpResponse.json(
+            {
+              code: 'PGRST116',
+              details: `The result contains ${String(matching.length)} rows`,
+              hint: null,
+              message: 'Cannot coerce the result to a single JSON object',
+            },
+            { status: 406 },
+          );
+    }
     return listingsResponse(matching.slice(offset, offset + limit), matching.length, offset);
+  }),
+];
+
+const BUCHAREST_FROM_LONGITUDE = 25;
+
+function countyOf(listing: ListingRow): string {
+  return listing.longitude >= BUCHAREST_FROM_LONGITUDE ? 'bucuresti' : 'timis';
+}
+
+export const listingMapHandlers = [
+  http.get(
+    supabaseUrl('/rest/v1/rpc/listing_map_tile'),
+    () =>
+      new HttpResponse(new ArrayBuffer(0), {
+        headers: { 'Content-Type': 'application/vnd.mapbox-vector-tile' },
+      }),
+  ),
+  http.post(supabaseUrl('/rest/v1/rpc/listing_map_summary'), async ({ request }) => {
+    const body = z
+      .object({ p_transaction: z.string(), p_max_price_eur: z.number().optional() })
+      .parse(await request.json());
+    const counts = new Map<string, number>();
+    for (const listing of SEEDED_LISTINGS) {
+      const isUnderCap =
+        body.p_max_price_eur === undefined ||
+        (listing.currency === 'EUR' && listing.price <= body.p_max_price_eur);
+      if (
+        listing.status === 'approved' &&
+        listing.transaction === body.p_transaction &&
+        isUnderCap
+      ) {
+        counts.set(countyOf(listing), (counts.get(countyOf(listing)) ?? 0) + 1);
+      }
+    }
+    return HttpResponse.json(
+      [...counts].map(([county_id, listing_count]) => ({ county_id, listing_count })),
+    );
   }),
 ];
 

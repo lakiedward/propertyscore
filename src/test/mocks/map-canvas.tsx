@@ -8,9 +8,10 @@ type MapCanvasStubProps = {
   onError: () => void;
   markers?: readonly { id: string; node: ReactNode }[];
   onViewportChange?: (viewport: { bounds: [LngLat, LngLat]; zoom: number }) => void;
-  clusters?: {
-    points: readonly { id: string }[];
-    renderPoint: (id: string) => ReactNode;
+  listingTiles?: {
+    pinLabel: (price: number, currency: string) => string;
+    onPinHover: (pin: (typeof mapCanvasStubControl.tilePins)[number] | undefined) => void;
+    onPinSelect: (pin: (typeof mapCanvasStubControl.tilePins)[number]) => void;
   };
 };
 
@@ -24,7 +25,7 @@ export function MapCanvas({
   onError,
   markers = [],
   onViewportChange,
-  clusters,
+  listingTiles,
 }: MapCanvasStubProps) {
   const shouldFail = mapCanvasStubControl.shouldFail;
 
@@ -40,9 +41,22 @@ export function MapCanvas({
 
   return (
     <div role="region" aria-label={label}>
-      {clusters?.points.map((point) => (
-        <span key={point.id}>{clusters.renderPoint(point.id)}</span>
-      ))}
+      {listingTiles
+        ? mapCanvasStubControl.tilePins.map((pin) => (
+            <button
+              key={pin.id}
+              type="button"
+              onClick={() => {
+                listingTiles.onPinSelect(pin);
+              }}
+              onMouseEnter={() => {
+                listingTiles.onPinHover(pin);
+              }}
+            >
+              {listingTiles.pinLabel(pin.price, pin.currency)}
+            </button>
+          ))
+        : null}
       {markers.map((marker) => (
         <span key={marker.id}>{marker.node}</span>
       ))}

@@ -1,10 +1,16 @@
 import { http, HttpResponse } from 'msw';
 import { AppError } from '@/lib/errors';
 import { buildListing } from '@/test/factories/listing';
-import { listingsResponse } from '@/test/msw/handlers/listings';
+import { listingsResponse, seededListing } from '@/test/msw/handlers/listings';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
-import { listExplorerListings, listListings, listMapPoints } from './listings.api';
+import {
+  getListingMapCard,
+  getListingMapSummary,
+  listExplorerListings,
+  listListings,
+} from './listings.api';
+import { listingTileUrl } from './listings.tiles';
 
 function recordRequests() {
   const requests: Request[] = [];
@@ -79,26 +85,54 @@ describe('listListings', () => {
 
 const TIMISOARA = { west: 21.1, south: 45.7, east: 21.35, north: 45.8 };
 
-describe('listMapPoints', () => {
+describe('getListingMapSummary', () => {
+  it('adds up the counties into the total of the map', async () => {
+    const summary = await getListingMapSummary({ transaction: 'sale', maxPrice: undefined });
+
+    expect(summary).toEqual({ total: 2, counties: [{ county_id: 'timis', listing_count: 2 }] });
+  });
+
+  it('sends the price cap only when one is chosen', async () => {
+    const summary = await getListingMapSummary({ transaction: 'sale', maxPrice: 100000 });
+
+    expect(summary.total).toBe(1);
+  });
+});
+
+describe('getListingMapCard', () => {
   afterEach(() => {
     server.events.removeAllListeners();
   });
 
-  it('asks only for the columns a pin needs, for the approved listings of one transaction', async () => {
+  it('asks for the popup columns of one approved listing', async () => {
     const requests = recordRequests();
+    const listing = seededListing('Apartament cu 3 camere');
 
-    const points = await listMapPoints('sale');
+    const card = await getListingMapCard(listing.id);
 
     const params = new URL(requests[0]?.url ?? '').searchParams;
     expect(params.get('select')).toBe(
       'id,title,price,currency,latitude,longitude,street_label,city,photo_path',
     );
     expect(params.get('status')).toBe('eq.approved');
-    expect(params.get('transaction')).toBe('eq.sale');
-    expect(points.map((point) => point.title)).toEqual([
-      'Apartament cu 3 camere',
-      '3 camere cu balcon',
-    ]);
+    expect(card.title).toBe('Apartament cu 3 camere');
+  });
+
+  it('maps a listing that is no longer on the site to not found', async () => {
+    await expect(getListingMapCard('b0000000-0000-4000-8000-999999999999')).rejects.toMatchObject({
+      code: 'not_found',
+    });
+  });
+});
+
+describe('listingTileUrl', () => {
+  it('builds the tile address with the zoom placeholders and the filters', () => {
+    const url = new URL(listingTileUrl({ transaction: 'rent', maxPrice: 600 }));
+
+    expect(url.pathname).toBe('/rest/v1/rpc/listing_map_tile');
+    expect(decodeURIComponent(url.search)).toBe(
+      '?p_z={z}&p_x={x}&p_y={y}&p_transaction=rent&p_max_price_eur=600',
+    );
   });
 });
 
