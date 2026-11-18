@@ -17,7 +17,7 @@ function stepTab(title: string) {
 }
 
 describe('PublishPage', { timeout: 20_000 }, () => {
-  it('asks a signed-out owner to sign in and come back to the steps', async () => {
+  it('asks a signed-out owner to sign in and then opens the new listing form', async () => {
     await renderAppRoute('/publish');
 
     expect(
@@ -25,25 +25,25 @@ describe('PublishPage', { timeout: 20_000 }, () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: roPublish.hero.startSignedOut })).toHaveAttribute(
       'href',
-      '/login?redirect=%2Fpublish%23steps',
+      '/login?redirect=%2Faccount%2Flistings%2Fnew',
     );
     expect(screen.getByRole('link', { name: roPublish.path.signUp })).toHaveAttribute(
       'href',
-      '/sign-up?redirect=%2Fpublish%23steps',
+      '/sign-up?redirect=%2Faccount%2Flistings%2Fnew',
     );
     expect(screen.getByText(roPublish.hero.accountHint)).toBeInTheDocument();
   });
 
-  it('lets a signed-in owner go straight to the steps', async () => {
+  it('lets a signed-in owner go straight to the new listing form', async () => {
     await renderAppRoute('/publish', { auth: signedIn });
 
     expect(await screen.findByRole('link', { name: roPublish.hero.startSignedIn })).toHaveAttribute(
       'href',
-      '#steps',
+      '/account/listings/new',
     );
     expect(screen.getByRole('link', { name: roPublish.path.continue })).toHaveAttribute(
       'href',
-      '#steps',
+      '/account/listings/new',
     );
     expect(screen.queryByText(roPublish.hero.accountHint)).not.toBeInTheDocument();
   });

@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/i18n/format';
 import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
-import { PUBLISH_REDIRECT, PUBLISHING_COST } from '../publish.example';
+import { NEW_LISTING_PATH, PUBLISHING_COST } from '../publish.example';
 import { ExampleListingCard } from './example-listing-card';
 
 type PublishHeroProps = {
@@ -68,12 +68,12 @@ export function PublishHero({ isSignedIn }: PublishHeroProps) {
               className="h-auto min-h-13 gap-2.5 border-[1.5px] py-2 text-lead-sm leading-tight font-bold whitespace-normal"
             >
               {isSignedIn ? (
-                <a href={`#${PUBLISH_SECTION.steps}`}>
+                <Link to={NEW_LISTING_PATH}>
                   {t('hero.startSignedIn')}
                   <ArrowRightIcon aria-hidden />
-                </a>
+                </Link>
               ) : (
-                <Link to="/login" search={{ redirect: PUBLISH_REDIRECT }}>
+                <Link to="/login" search={{ redirect: NEW_LISTING_PATH }}>
                   <LogInIcon aria-hidden />
                   {t('hero.startSignedOut')}
                   <ArrowRightIcon aria-hidden />
