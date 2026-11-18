@@ -69,7 +69,7 @@ export type DestinationTiming = {
   walkMinutes: number | null;
 };
 
-export type TripLeg = {
+type TripLeg = {
   mode: 'walk' | 'transit';
   routeId: string | null;
   coordinates: [number, number][];

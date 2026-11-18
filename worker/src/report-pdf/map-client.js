@@ -2,7 +2,7 @@ import { LngLatBounds, Map, Marker, setWorkerUrl } from './maplibre-gl.mjs';
 
 setWorkerUrl(new URL('./maplibre-gl-worker.mjs', import.meta.url).href);
 
-const tolerated = 4;
+const TOLERATED_TILE_ERRORS = 4;
 const { style, palette, maps } = JSON.parse(document.getElementById('map-specs').textContent);
 
 function recolour(map) {
@@ -35,6 +35,7 @@ function paint(layer) {
       'line-opacity': layer.opacity ?? 1,
       'line-width': layer.width ?? 2,
       ...(layer.dashed ? { 'line-dasharray': [1.5, 2] } : {}),
+      ...(layer.dotted ? { 'line-dasharray': [0.01, 1.8] } : {}),
     };
   }
   return {
@@ -67,7 +68,7 @@ function draw(spec) {
     });
     let failedTiles = 0;
     map.on('error', (event) => {
-      if (event.tile && (failedTiles += 1) <= tolerated) return;
+      if (event.tile && (failedTiles += 1) <= TOLERATED_TILE_ERRORS) return;
       reject(event.error ?? new Error('The map could not be drawn'));
     });
     map.once('load', () => {

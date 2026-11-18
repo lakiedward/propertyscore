@@ -182,7 +182,10 @@ const noiseSchema = z.object({
       distance_m: z.number(),
     }),
   ),
-  map: z.object({ lines: featureCollection.optional() }),
+  map: z.object({
+    lines: featureCollection.optional(),
+    bands: featureCollection.optional(),
+  }),
 });
 
 const airSchema = z.object({

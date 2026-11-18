@@ -16,6 +16,7 @@ type MapLayer = {
   width?: number;
   radius?: number;
   dashed?: boolean;
+  dotted?: boolean;
   outline?: string;
   colorProperty?: string;
 };

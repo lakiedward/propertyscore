@@ -15,11 +15,18 @@ import { CATEGORY_THEME } from '../theme.ts';
 
 const BAND_DB = 5;
 const MAP_RADIUS_M = 500;
+const BANDS_RADIUS_M = 1000;
 const LISTED_SOURCES = 5;
 const LOUD = '#B8432B';
 const BUSY = '#E07F55';
 const MODERATE = '#F0B877';
 const RAIL = '#55607A';
+const QUIET = '#F6E3A8';
+const BAND_COLORS: readonly (readonly [number, string])[] = [
+  [70, LOUD],
+  [65, BUSY],
+  [60, MODERATE],
+];
 const LOUD_ROADS = ['motorway', 'trunk', 'primary'];
 const BUSY_ROADS = ['secondary'];
 const MAP_KEY = [
@@ -51,6 +58,21 @@ function sourceColor(kind: string, sourceClass: string): string {
 
 function text(value: unknown): string {
   return typeof value === 'string' ? value : '';
+}
+
+function bandColor(level: unknown): string {
+  const value = typeof level === 'number' ? level : 0;
+  return BAND_COLORS.find(([low]) => value >= low)?.[1] ?? QUIET;
+}
+
+function banded(bands: FeatureCollection): FeatureCollection {
+  return {
+    type: 'FeatureCollection',
+    features: bands.features.map((feature) => ({
+      ...feature,
+      properties: { ...feature.properties, color: bandColor(feature.properties?.db_low) },
+    })),
+  };
 }
 
 function coloured(lines: FeatureCollection): FeatureCollection {
@@ -100,35 +122,26 @@ export const noiseChapter: ChapterBuilder = (report) => {
       : `Nu am găsit surse mari de zgomot în apropiere.${average}`,
   });
   const center: [number, number] = [report.longitude, report.latitude];
+  const bands = section.map.bands ? banded(section.map.bands) : null;
   const lines = section.map.lines ? coloured(section.map.lines) : null;
   const map: MapSpec = {
     id: 'map-noise',
     center,
-    fit: around(center, MAP_RADIUS_M),
-    padding: 8,
-    layers: lines
-      ? [
-          {
-            kind: 'line',
-            data: lines,
-            color: LOUD,
-            colorProperty: 'color',
-            width: 26,
-            opacity: 0.22,
-          },
-          {
-            kind: 'line',
-            data: lines,
-            color: LOUD,
-            colorProperty: 'color',
-            width: 12,
-            opacity: 0.4,
-          },
-        ]
-      : [],
+    fit: around(center, bands ? BANDS_RADIUS_M : MAP_RADIUS_M),
+    padding: 0,
+    layers: bands
+      ? [{ kind: 'fill', data: bands, color: QUIET, colorProperty: 'color', opacity: 0.55 }]
+      : lines
+        ? [
+            { kind: 'line', data: lines, color: '#FFFFFF', width: 7 },
+            { kind: 'line', data: lines, color: LOUD, colorProperty: 'color', width: 4 },
+          ]
+        : [],
     markers: [addressDot(center)],
   };
-  const key = `<div class="gz-key zg-key">${MAP_KEY.map((item) => `<span><i style="${item.swatch}"></i>${item.label}</span>`).join('')}<span class="zg-est">estimare ziua</span></div>`;
+  const key = !bands
+    ? ''
+    : `<div class="gz-key zg-key">${MAP_KEY.map((item) => `<span><i style="${item.swatch}"></i>${item.label}</span>`).join('')}<span class="zg-est">estimare ziua</span></div>`;
   const night =
     section.lnight === null
       ? ''

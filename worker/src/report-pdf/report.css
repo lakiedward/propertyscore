@@ -3648,11 +3648,11 @@ body {
   max-width: none;
   padding-inline: 48px;
 }
-.chapter {
-  break-before: page;
+.chapter + .chapter {
+  margin-top: 44px;
 }
-.chapter.cover {
-  break-before: auto;
+.chapter.cover + .chapter {
+  margin-top: 28px;
 }
 .chapter .ch {
   display: block;
@@ -3863,4 +3863,34 @@ li {
 .maplibregl-map,
 .mk {
   font-family: var(--font);
+}
+.ch-head {
+  break-inside: avoid;
+}
+.ch-head::after {
+  content: '';
+  display: block;
+  height: 520px;
+  margin-bottom: -520px;
+}
+.ac-h {
+  break-inside: avoid;
+}
+.ac-h::after {
+  content: '';
+  display: block;
+  height: 160px;
+  margin-bottom: -160px;
+}
+.gzB-m,
+.gzA-m {
+  display: flex;
+  flex-direction: column;
+}
+.gzB-m .map,
+.gzA-m .map {
+  flex: 1;
+  height: auto;
+  min-height: 420px;
+  border-radius: 0;
 }

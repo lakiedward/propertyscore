@@ -170,13 +170,20 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
     padding: 64,
     layers: [
       ...reachable.flatMap((destination) =>
-        destination.path.map((leg) => ({
-          kind: 'line' as const,
-          data: collection([{ type: 'LineString', coordinates: leg.coordinates }]),
-          color: kindOf(destination).color,
-          width: leg.mode === 'walk' ? 3 : 4,
-          dashed: leg.mode === 'walk',
-        })),
+        destination.path.flatMap((leg) => {
+          const data = collection([{ type: 'LineString', coordinates: leg.coordinates }]);
+          const isWalk = leg.mode === 'walk';
+          return [
+            { kind: 'line' as const, data, color: '#FFFFFF', width: isWalk ? 5 : 7 },
+            {
+              kind: 'line' as const,
+              data,
+              color: kindOf(destination).color,
+              width: isWalk ? 3 : 4,
+              dotted: isWalk,
+            },
+          ];
+        }),
       ),
       {
         kind: 'circle',
