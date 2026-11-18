@@ -1,10 +1,16 @@
 import { act, screen } from '@testing-library/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { changeLocale } from '@/i18n/i18n';
 import enCommon from '@/i18n/locales/en/common.json';
 import roCommon from '@/i18n/locales/ro/common.json';
 import { renderWithProviders } from '@/test/render';
-import { MapCanvas, type MapOverlay } from './map-canvas';
+import {
+  MapCanvas,
+  type MapCanvasController,
+  type MapFocus,
+  type MapOverlay,
+  type MapRegions,
+} from './map-canvas';
 import type { LngLatBounds } from './map.config';
 
 const maplibre = vi.hoisted(() => {
@@ -12,6 +18,10 @@ const maplibre = vi.hoisted(() => {
 
   class FakeGeoJSONSource {
     setData = vi.fn(() => Promise.resolve());
+  }
+
+  class FakeVectorTileSource {
+    setTiles = vi.fn();
   }
 
   class FakeNavigationControl {
@@ -25,21 +35,39 @@ const maplibre = vi.hoisted(() => {
   type FakeMapOptions = {
     container: HTMLElement;
     locale: Record<string, string>;
+    cooperativeGestures?: boolean;
+    transformRequest: (url: string, resourceType: string) => { url: string; headers?: object };
   };
 
   class FakeMap {
     static instances: FakeMap[] = [];
     readonly options: FakeMapOptions;
     readonly canvas = document.createElement('canvas');
-    readonly handlers = new Map<string, () => void>();
-    readonly sources = new Map<string, FakeGeoJSONSource>();
+    readonly handlers = new Map<string, Set<(event?: unknown) => void>>();
+    styleLayers: { id: string }[] = [];
+    zoom = 14;
+    readonly sources = new Map<string, FakeGeoJSONSource | FakeVectorTileSource>();
     readonly layers = new Set<string>();
     setPaintProperty = vi.fn();
     setLayoutProperty = vi.fn();
+    setFilter = vi.fn();
+    setFeatureState = vi.fn();
+    addImage = vi.fn();
+    missingImageResolver: ((id: string) => void) | null = null;
+
+    setMissingStyleImageResolver(resolver: ((id: string) => void) | null) {
+      this.missingImageResolver = resolver;
+      return this;
+    }
     fitBounds = vi.fn();
     easeTo = vi.fn();
+    flyTo = vi.fn();
+    zoomIn = vi.fn();
+    zoomOut = vi.fn();
+    readonly addedLayers: { id: string; type?: string; filter?: unknown }[] = [];
     resize = vi.fn();
     remove = vi.fn();
+    readonly cooperativeGestures = { enable: vi.fn(), disable: vi.fn() };
 
     constructor(options: FakeMapOptions) {
       if (control.shouldThrow) {
@@ -76,13 +104,60 @@ const maplibre = vi.hoisted(() => {
       return this;
     }
 
-    on(event: string, handler: () => void) {
-      this.handlers.set(event, handler);
+    on(
+      event: string,
+      layerOrHandler: string | ((event?: unknown) => void),
+      layerHandler?: (event?: unknown) => void,
+    ) {
+      const key = typeof layerOrHandler === 'string' ? `${event}:${layerOrHandler}` : event;
+      const handler = typeof layerOrHandler === 'string' ? layerHandler : layerOrHandler;
+      if (!handler) {
+        return this;
+      }
+      const handlers = this.handlers.get(key) ?? new Set();
+      handlers.add(handler);
+      this.handlers.set(key, handlers);
       return this;
     }
 
-    emit(event: string) {
-      this.handlers.get(event)?.();
+    off(
+      event: string,
+      layerOrHandler?: string | ((event?: unknown) => void),
+      layerHandler?: (event?: unknown) => void,
+    ) {
+      const key = typeof layerOrHandler === 'string' ? `${event}:${layerOrHandler}` : event;
+      const handler = typeof layerOrHandler === 'string' ? layerHandler : layerOrHandler;
+      if (handler) {
+        this.handlers.get(key)?.delete(handler);
+      } else {
+        this.handlers.delete(key);
+      }
+      return this;
+    }
+
+    emit(event: string, payload?: unknown) {
+      for (const handler of this.handlers.get(event) ?? []) {
+        handler(payload);
+      }
+    }
+
+    getStyle() {
+      return { layers: this.styleLayers };
+    }
+
+    getBounds() {
+      return {
+        getWest: () => 21.1,
+        getSouth: () => 45.7,
+        getEast: () => 21.4,
+        getNorth: () => 45.8,
+        contains: ([longitude, latitude]: [number, number]) =>
+          longitude >= 21.1 && longitude <= 21.4 && latitude >= 45.7 && latitude <= 45.8,
+      };
+    }
+
+    getZoom() {
+      return this.zoom;
     }
 
     isStyleLoaded() {
@@ -101,8 +176,9 @@ const maplibre = vi.hoisted(() => {
       return this.layers.has(id) ? { id } : undefined;
     }
 
-    addLayer(layer: { id: string }) {
+    addLayer(layer: { id: string; type?: string; filter?: unknown }) {
       this.layers.add(layer.id);
+      this.addedLayers.push(layer);
     }
 
     removeLayer(id: string) {
@@ -113,8 +189,11 @@ const maplibre = vi.hoisted(() => {
       return this.sources.get(id);
     }
 
-    addSource(id: string) {
-      this.sources.set(id, new FakeGeoJSONSource());
+    addSource(id: string, spec: { type: string }) {
+      this.sources.set(
+        id,
+        spec.type === 'vector' ? new FakeVectorTileSource() : new FakeGeoJSONSource(),
+      );
     }
 
     removeSource(id: string) {
@@ -123,15 +202,27 @@ const maplibre = vi.hoisted(() => {
   }
 
   class FakeMarker {
+    readonly element: HTMLElement;
+
+    constructor(options: { element: HTMLElement }) {
+      this.element = options.element;
+    }
+
     setLngLat() {
       return this;
     }
 
-    addTo() {
+    getElement() {
+      return this.element;
+    }
+
+    addTo(map: FakeMap) {
+      map.getContainer().append(this.element);
       return this;
     }
 
     remove() {
+      this.element.remove();
       return this;
     }
   }
@@ -145,7 +236,9 @@ const maplibre = vi.hoisted(() => {
       NavigationControl: FakeNavigationControl,
       AttributionControl: FakeAttributionControl,
       GeoJSONSource: FakeGeoJSONSource,
+      VectorTileSource: FakeVectorTileSource,
       setWorkerUrl: vi.fn(),
+      prewarm: vi.fn(),
     },
   };
 });
@@ -221,6 +314,73 @@ function MapHarness() {
   );
 }
 
+function CooperativeHarness() {
+  const [isCooperative, setIsCooperative] = useState(true);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setIsCooperative(false);
+        }}
+      >
+        free
+      </button>
+      <MapCanvas
+        label={LABEL}
+        center={CENTER}
+        zoom={14}
+        markers={[]}
+        isScrollZoomEnabled
+        hasCooperativeGestures={isCooperative}
+        onError={vi.fn()}
+      />
+    </>
+  );
+}
+
+const TILES_URL = 'https://db.example/rest/v1/rpc/listing_map_tile?p_transaction=sale';
+
+type TilesHarnessProps = {
+  onPinHover: (pin: unknown) => void;
+  onPinSelect: (pin: unknown) => void;
+  pinLabel: (price: number, currency: string) => string;
+};
+
+function TilesHarness({ onPinHover, onPinSelect, pinLabel }: TilesHarnessProps) {
+  const [isFiltered, setIsFiltered] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setIsFiltered(true);
+        }}
+      >
+        next
+      </button>
+      <MapCanvas
+        label={LABEL}
+        center={CENTER}
+        zoom={14}
+        markers={[]}
+        onError={vi.fn()}
+        listingTiles={{
+          url: isFiltered ? `${TILES_URL}&p_max_price_eur=100000` : TILES_URL,
+          headers: { apikey: 'key' },
+          labelKey: 'ro-sale',
+          priceStep: 1000,
+          pinLabel,
+          bubbleLabel: String,
+          hiddenIds: isFiltered ? ['a'] : [],
+          onPinHover,
+          onPinSelect,
+        }}
+      />
+    </>
+  );
+}
+
 describe('MapCanvas', () => {
   afterEach(() => {
     maplibre.control.shouldThrow = false;
@@ -237,6 +397,26 @@ describe('MapCanvas', () => {
 
     expect(onError).toHaveBeenCalledOnce();
     expect(screen.getByRole('region', { name: LABEL })).toBeInTheDocument();
+  });
+
+  it('reports the clicked position when it lets people pick a place', async () => {
+    const onPick = vi.fn();
+    await renderWithProviders(
+      <MapCanvas
+        label={LABEL}
+        center={CENTER}
+        zoom={14}
+        markers={[]}
+        onError={vi.fn()}
+        onPick={onPick}
+      />,
+    );
+
+    act(() => {
+      lastMap().emit('click', { lngLat: { lng: 21.23, lat: 45.75 } });
+    });
+
+    expect(onPick).toHaveBeenCalledWith([21.23, 45.75]);
   });
 
   it('removes the map when it unmounts', async () => {
@@ -266,6 +446,25 @@ describe('MapCanvas', () => {
     expect(lastMap().canvas).toHaveAttribute('aria-label', enCommon.map.title);
   });
 
+  it('lets the page scroll over the map until cooperative gestures are turned off', async () => {
+    const { user } = await renderWithProviders(<CooperativeHarness />);
+    const map = lastMap();
+
+    expect(map.options.cooperativeGestures).toBe(true);
+    expect(map.options.locale['CooperativeGesturesHandler.WindowsHelpText']).toBe(
+      roCommon.map.cooperativeDesktop,
+    );
+    expect(map.options.locale['CooperativeGesturesHandler.MobileHelpText']).toBe(
+      roCommon.map.cooperativeMobile,
+    );
+    expect(map.cooperativeGestures.enable).toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'free' }));
+
+    expect(map.cooperativeGestures.disable).toHaveBeenCalledOnce();
+    expect(maplibre.FakeMap.instances).toHaveLength(1);
+  });
+
   it('keeps overlays, bounds and focus in sync with its props', async () => {
     const { user } = await renderWithProviders(<MapHarness />);
     const map = lastMap();
@@ -287,7 +486,10 @@ describe('MapCanvas', () => {
       'visibility',
       'none',
     );
-    expect(map.sources.get('walk-school')?.setData).toHaveBeenCalledOnce();
+    const routeSource = map.sources.get('walk-school');
+    expect(
+      routeSource && 'setData' in routeSource ? routeSource.setData : undefined,
+    ).toHaveBeenCalledOnce();
     expect(map.fitBounds).toHaveBeenLastCalledWith(SECOND_BOUNDS, expect.anything());
     expect(map.easeTo).toHaveBeenCalledWith({ center: CENTER });
 
@@ -337,4 +539,269 @@ describe('MapCanvas', () => {
 
     expect(map.layers).toEqual(new Set(['green-areas', 'green-areas-casing']));
   });
+
+  it('hides the point-of-interest icons and reports where the map stopped', async () => {
+    const onViewportChange = vi.fn();
+    await renderWithProviders(
+      <MapCanvas
+        label={LABEL}
+        center={CENTER}
+        zoom={14}
+        markers={[]}
+        onError={vi.fn()}
+        onViewportChange={onViewportChange}
+        hidesPointsOfInterest
+      />,
+    );
+    const map = lastMap();
+    map.styleLayers = [{ id: 'poi_r1' }, { id: 'road_primary' }];
+
+    act(() => {
+      map.emit('style.load');
+    });
+
+    expect(map.setLayoutProperty).toHaveBeenCalledWith('poi_r1', 'visibility', 'none');
+    expect(map.setLayoutProperty).not.toHaveBeenCalledWith('road_primary', 'visibility', 'none');
+    expect(onViewportChange).toHaveBeenLastCalledWith({
+      bounds: [
+        [21.1, 45.7],
+        [21.4, 45.8],
+      ],
+      zoom: 14,
+    });
+
+    map.zoom = 16;
+    act(() => {
+      map.emit('moveend');
+    });
+
+    expect(onViewportChange).toHaveBeenLastCalledWith(expect.objectContaining({ zoom: 16 }));
+  });
+
+  it('draws the listing tiles, follows the filters, hides the highlighted pin and reports picks', async () => {
+    const canvasContext = {
+      scale: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      translate: vi.fn(),
+      rotate: vi.fn(),
+      beginPath: vi.fn(),
+      roundRect: vi.fn(),
+      arc: vi.fn(),
+      fill: vi.fn(),
+      fillText: vi.fn(),
+      measureText: vi.fn(() => ({ width: 48 })),
+      getImageData: vi.fn(() => ({ data: new Uint8ClampedArray(4) })),
+      canvas: { width: 1, height: 1 },
+    };
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+      // @ts-expect-error jsdom has no 2D canvas, so the test hands the map a partial context
+      () => canvasContext,
+    );
+    const onPinHover = vi.fn();
+    const onPinSelect = vi.fn();
+    const pinLabel = vi.fn((price: number) => `${String(price / 1000)}k €`);
+    const { user } = await renderWithProviders(
+      <TilesHarness onPinHover={onPinHover} onPinSelect={onPinSelect} pinLabel={pinLabel} />,
+    );
+    const map = lastMap();
+    act(() => {
+      map.emit('style.load');
+    });
+
+    await vi.waitFor(() => {
+      expect(map.getSource('ps-listings')).toBeDefined();
+    });
+    expect(map.addedLayers.map((layer) => layer.id)).toEqual(
+      expect.arrayContaining(['ps-listings-bubbles', 'ps-listings-pins']),
+    );
+    expect(map.options.transformRequest(`${TILES_URL}&p_z=6`, 'Tile')).toEqual({
+      url: `${TILES_URL}&p_z=6`,
+      headers: { apikey: 'key' },
+    });
+    expect(map.options.transformRequest('https://tiles.example/1.pbf', 'Tile')).toEqual({
+      url: 'https://tiles.example/1.pbf',
+    });
+
+    act(() => {
+      map.missingImageResolver?.('ps-pin|ro-sale|EUR|142000');
+    });
+    expect(pinLabel).toHaveBeenCalledWith(142000, 'EUR');
+    expect(canvasContext.fillText).toHaveBeenCalledWith(
+      '142k €',
+      expect.any(Number),
+      expect.any(Number),
+    );
+    expect(map.addImage).toHaveBeenCalledWith('ps-pin|ro-sale|EUR|142000', expect.anything(), {
+      pixelRatio: 1,
+    });
+
+    await user.click(screen.getByRole('button', { name: 'next' }));
+
+    const source = map.getSource('ps-listings');
+    expect(source && 'setTiles' in source ? source.setTiles : undefined).toHaveBeenLastCalledWith([
+      `${TILES_URL}&p_max_price_eur=100000`,
+    ]);
+    expect(map.setFeatureState).toHaveBeenCalledWith(
+      { source: 'ps-listings', sourceLayer: 'listings', id: 'a' },
+      { hidden: true },
+    );
+
+    const pinFeature = {
+      geometry: { type: 'Point', coordinates: [21.2, 45.75] },
+      properties: { id: 'a', price: 142000, currency: 'EUR' },
+    };
+    act(() => {
+      map.emit('mousemove:ps-listings-pins', { features: [pinFeature] });
+      map.emit('click:ps-listings-pins', { features: [pinFeature] });
+      map.emit('click:ps-listings-bubbles', {
+        features: [{ geometry: { type: 'Point', coordinates: [21.3, 45.76] }, properties: {} }],
+      });
+    });
+
+    const pin = { id: 'a', position: [21.2, 45.75], price: 142000, currency: 'EUR' };
+    expect(onPinHover).toHaveBeenCalledWith(pin);
+    expect(onPinSelect).toHaveBeenCalledWith(pin);
+    expect(map.easeTo).toHaveBeenCalledWith({ center: [21.3, 45.76], zoom: 16 });
+  });
+
+  it('masks everything outside the outline, shades the regions and reports a picked region', async () => {
+    const onSelect = vi.fn();
+    const { user } = await renderWithProviders(<RegionsHarness onSelect={onSelect} />);
+    const map = lastMap();
+    act(() => {
+      map.emit('style.load');
+    });
+
+    expect(map.addedLayers.map((layer) => layer.id)).toEqual(
+      expect.arrayContaining([
+        'ps-regions-areas',
+        'ps-regions-mask',
+        'ps-regions-outline',
+        'ps-regions-areas-selected',
+      ]),
+    );
+
+    map.zoom = 6;
+    act(() => {
+      map.emit('click:ps-regions-areas', { features: [{ properties: { id: 'timis' } }] });
+    });
+    expect(onSelect).toHaveBeenCalledWith('timis');
+
+    await user.click(screen.getByRole('button', { name: 'select' }));
+
+    expect(map.setFilter).toHaveBeenLastCalledWith('ps-regions-areas-selected', [
+      '==',
+      ['get', 'id'],
+      'timis',
+    ]);
+  });
+
+  it('zooms through its controller and flies to a focus with a zoom', async () => {
+    const { user } = await renderWithProviders(<ControllerHarness />);
+    const map = lastMap();
+
+    await user.click(screen.getByRole('button', { name: 'in' }));
+    await user.click(screen.getByRole('button', { name: 'out' }));
+    expect(map.zoomIn).toHaveBeenCalledOnce();
+    expect(map.zoomOut).toHaveBeenCalledOnce();
+
+    await user.click(screen.getByRole('button', { name: 'fly' }));
+
+    expect(map.flyTo).toHaveBeenCalledWith(
+      expect.objectContaining({ center: [26.1, 44.43], zoom: 11.25 }),
+    );
+  });
 });
+
+const TIMIS_REGIONS: Omit<MapRegions, 'selectedId' | 'onSelect'> = {
+  outline: [
+    [
+      [
+        [20, 43],
+        [30, 43],
+        [30, 49],
+        [20, 43],
+      ],
+    ],
+  ],
+  areas: [
+    {
+      id: 'timis',
+      label: 'Județul Timiș · 2 locuințe',
+      weight: 1,
+      coordinates: [
+        [
+          [
+            [20.5, 45.2],
+            [22.5, 45.2],
+            [22.5, 46.2],
+            [20.5, 45.2],
+          ],
+        ],
+      ],
+    },
+  ],
+};
+
+type RegionsHarnessProps = {
+  onSelect: (id: string) => void;
+};
+
+function RegionsHarness({ onSelect }: RegionsHarnessProps) {
+  const [selectedId, setSelectedId] = useState<string>();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setSelectedId('timis');
+        }}
+      >
+        select
+      </button>
+      <MapCanvas
+        label={LABEL}
+        center={CENTER}
+        zoom={6}
+        markers={[]}
+        onError={vi.fn()}
+        regions={{ ...TIMIS_REGIONS, selectedId, onSelect }}
+      />
+    </>
+  );
+}
+
+function ControllerHarness() {
+  const controller = useRef<MapCanvasController>(null);
+  const [focus, setFocus] = useState<MapFocus>();
+
+  return (
+    <>
+      <button type="button" onClick={() => controller.current?.zoomIn()}>
+        in
+      </button>
+      <button type="button" onClick={() => controller.current?.zoomOut()}>
+        out
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setFocus({ position: [26.1, 44.43], zoom: 11.25, requestId: 1 });
+        }}
+      >
+        fly
+      </button>
+      <MapCanvas
+        ref={controller}
+        label={LABEL}
+        center={CENTER}
+        zoom={6}
+        focus={focus}
+        markers={[]}
+        onError={vi.fn()}
+      />
+    </>
+  );
+}

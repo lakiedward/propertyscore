@@ -1,7 +1,7 @@
 import type { Session, User, UserIdentity } from '@supabase/supabase-js';
 import { createAuthState, type AuthState } from '@/features/auth';
 
-const TEST_USER_ID = 'a0000000-0000-4000-8000-000000000001';
+export const TEST_USER_ID = 'a0000000-0000-4000-8000-000000000001';
 const SESSION_LIFETIME_SECONDS = 3600;
 
 export function buildUser(overrides: Partial<User> = {}): User {

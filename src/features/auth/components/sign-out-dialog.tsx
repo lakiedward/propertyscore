@@ -1,3 +1,4 @@
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { LogOutIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
@@ -11,11 +12,19 @@ type SignOutDialogProps = {
 export function SignOutDialog({ isOpen, onOpenChange }: SignOutDialogProps) {
   const { t } = useTranslation('auth');
   const signOut = useSignOut();
+  const navigate = useNavigate();
+  const isInsideSignedInArea = useRouterState({
+    select: (state) => state.matches.some((match) => match.routeId.startsWith('/_authenticated')),
+  });
 
   const handleConfirm = () => {
+    const shouldLeaveArea = isInsideSignedInArea;
     signOut.mutate(undefined, {
       onSuccess: () => {
         onOpenChange(false);
+        if (shouldLeaveArea) {
+          void navigate({ to: '/', replace: true });
+        }
       },
     });
   };

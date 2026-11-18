@@ -89,6 +89,7 @@ describe('LazyMapCanvas', () => {
   it('shows the error fallback when the map reports an error', async () => {
     const { LazyMapCanvas, mapCanvasStubControl } = await loadLazyMapCanvas(stubModule);
     mapCanvasStubControl.shouldFail = true;
+    const onError = vi.fn();
     await renderWithProviders(
       <LazyMapCanvas
         label={LABEL}
@@ -96,10 +97,12 @@ describe('LazyMapCanvas', () => {
         zoom={14}
         markers={[]}
         errorFallback={<p>{ERROR_TEXT}</p>}
+        onError={onError}
       />,
     );
 
     expect(await screen.findByText(ERROR_TEXT)).toBeInTheDocument();
+    expect(onError).toHaveBeenCalled();
     expect(screen.queryByRole('region', { name: LABEL })).not.toBeInTheDocument();
   });
 
@@ -108,6 +111,7 @@ describe('LazyMapCanvas', () => {
     const { LazyMapCanvas } = await loadLazyMapCanvas(() =>
       Promise.reject(new Error('Failed to fetch dynamically imported module')),
     );
+    const onError = vi.fn();
     await renderWithProviders(
       <LazyMapCanvas
         label={LABEL}
@@ -115,10 +119,12 @@ describe('LazyMapCanvas', () => {
         zoom={14}
         markers={[]}
         errorFallback={<p>{ERROR_TEXT}</p>}
+        onError={onError}
       />,
     );
 
     expect(await screen.findByText(ERROR_TEXT)).toBeInTheDocument();
+    expect(onError).toHaveBeenCalledOnce();
     consoleError.mockRestore();
   });
 });

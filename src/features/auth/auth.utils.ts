@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { PANEL_PATHS, type PanelPath } from '@/components/layout/panel-paths';
+import {
+  PANEL_PATHS,
+  SETTINGS_PATHS,
+  type PanelPath,
+  type SettingsPath,
+} from '@/components/layout/panel-paths';
 import { Constants } from '@/lib/supabase/database.types';
 import { EXPIRED_LINK_CODES } from '@/lib/supabase/errors';
 import { safeRedirectPath } from '@/lib/url';
@@ -67,6 +72,10 @@ export function homePathFor(roles: readonly AppRole[]): PanelPath {
   return roles.includes('admin') ? PANEL_PATHS.admin : PANEL_PATHS.account;
 }
 
+export function settingsPathFor(roles: readonly AppRole[]): SettingsPath {
+  return roles.includes('admin') ? SETTINGS_PATHS.admin : SETTINGS_PATHS.account;
+}
+
 export function postSignInPath(roles: readonly AppRole[], redirect: string | undefined): string {
   const home = homePathFor(roles);
   const path = safeRedirectPath(redirect, home);
@@ -93,7 +102,7 @@ export function emailLinkTarget(
     return '/password-reset/new';
   }
   if (type === 'email_change') {
-    return '/account/settings';
+    return settingsPathFor(roles);
   }
   return postSignInPath(roles, redirectFromEmailLink(next));
 }

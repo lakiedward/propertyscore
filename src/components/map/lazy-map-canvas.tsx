@@ -1,7 +1,6 @@
 import {
-  lazy,
-  Suspense,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
   type ComponentProps,
@@ -10,26 +9,34 @@ import {
 import { ErrorBoundary } from 'react-error-boundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
-
-const MapCanvas = lazy(() =>
-  import('./map-canvas').then((module) => ({ default: module.MapCanvas })),
-);
+import { getLoadedMapCanvas, loadMapCanvas } from './load-map-canvas';
+import type { MapCanvas } from './map-canvas';
 
 const NEAR_VIEWPORT_MARGIN = '400px';
 
 type LazyMapCanvasProps = Omit<ComponentProps<typeof MapCanvas>, 'onError'> & {
   errorFallback: ReactNode;
   fallbackClassName?: string;
+  onError?: () => void;
 };
 
 function canObserveIntersections(): boolean {
   return typeof IntersectionObserver !== 'undefined';
 }
 
-export function LazyMapCanvas({ errorFallback, fallbackClassName, ...props }: LazyMapCanvasProps) {
+export function LazyMapCanvas({
+  errorFallback,
+  fallbackClassName,
+  onError,
+  ...props
+}: LazyMapCanvasProps) {
   const placeholderRef = useRef<HTMLDivElement>(null);
   const [isNearViewport, setIsNearViewport] = useState(() => !canObserveIntersections());
+  const [mapModule, setMapModule] = useState(getLoadedMapCanvas);
   const [hasMapError, setHasMapError] = useState(false);
+  const reportLoadError = useEffectEvent(() => {
+    onError?.();
+  });
 
   useEffect(() => {
     const placeholder = placeholderRef.current;
@@ -51,31 +58,55 @@ export function LazyMapCanvas({ errorFallback, fallbackClassName, ...props }: La
     };
   }, [isNearViewport]);
 
+  useEffect(() => {
+    if (!isNearViewport || mapModule) {
+      return;
+    }
+    let isCurrent = true;
+    loadMapCanvas().then(
+      (module) => {
+        if (isCurrent) {
+          setMapModule(module);
+        }
+      },
+      (error: unknown) => {
+        logger.error(error);
+        if (isCurrent) {
+          setHasMapError(true);
+          reportLoadError();
+        }
+      },
+    );
+    return () => {
+      isCurrent = false;
+    };
+  }, [isNearViewport, mapModule]);
+
   if (hasMapError) {
     return errorFallback;
   }
 
-  const placeholder = <Skeleton className={fallbackClassName} />;
-
-  if (!isNearViewport) {
+  if (!isNearViewport || !mapModule) {
     return <Skeleton ref={placeholderRef} className={fallbackClassName} />;
   }
+
+  const LoadedMapCanvas = mapModule.MapCanvas;
 
   return (
     <ErrorBoundary
       fallback={errorFallback}
       onError={(error) => {
         logger.error(error);
+        onError?.();
       }}
     >
-      <Suspense fallback={placeholder}>
-        <MapCanvas
-          {...props}
-          onError={() => {
-            setHasMapError(true);
-          }}
-        />
-      </Suspense>
+      <LoadedMapCanvas
+        {...props}
+        onError={() => {
+          setHasMapError(true);
+          onError?.();
+        }}
+      />
     </ErrorBoundary>
   );
 }

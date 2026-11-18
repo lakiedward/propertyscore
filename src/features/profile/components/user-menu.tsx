@@ -1,5 +1,4 @@
 import type { User } from '@supabase/supabase-js';
-import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { cva, type VariantProps } from 'class-variance-authority';
 import {
@@ -19,11 +18,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PANEL_LINK_KEYS, type PanelPath } from '@/components/layout/panel-paths';
-import { SignOutDialog, type AppRole } from '@/features/auth';
+import { settingsPathFor, SignOutDialog, useAuth, type AppRole } from '@/features/auth';
 import { SUPPORTED_LOCALES } from '@/i18n/i18n';
 import { useLocale } from '@/i18n/use-locale';
 import { cn } from '@/lib/utils';
-import { profileQueries } from '../api/profile.queries';
+import { useAccountIdentity } from '../hooks/use-account-identity';
 import { useChangeLocale } from '../hooks/use-change-locale';
 import { initialsOf } from '../profile.utils';
 
@@ -54,8 +53,6 @@ const avatarVariants = cva(
   },
 );
 
-const ITEM_CLASS = 'min-h-11 gap-2.5 px-3 text-body-sm [&_svg]:size-4.5';
-
 type UserMenuProps = {
   user: User;
   tone: NonNullable<VariantProps<typeof triggerVariants>['tone']>;
@@ -66,13 +63,12 @@ type UserMenuProps = {
 
 export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false }: UserMenuProps) {
   const { t } = useTranslation();
-  const { data: profile } = useQuery(profileQueries.detail(user.id));
+  const { roles } = useAuth();
+  const { name, email } = useAccountIdentity(user);
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
   const locale = useLocale();
   const changeLanguage = useChangeLocale(user.id);
   const otherLocale = SUPPORTED_LOCALES.find((option) => option !== locale) ?? locale;
-  const email = user.email ?? '';
-  const name = profile?.full_name ?? email;
 
   return (
     <>
@@ -98,7 +94,7 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
             <ChevronDownIcon aria-hidden className="size-4" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-65 p-1.5">
+        <DropdownMenuContent align="end" className="w-65">
           <DropdownMenuLabel className="mb-1 flex min-w-0 flex-col border-b border-border-subtle px-3 py-2.5">
             <strong title={name} className="truncate text-body-sm font-bold text-foreground">
               {name}
@@ -108,22 +104,22 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
             </span>
           </DropdownMenuLabel>
           {panelPath ? (
-            <DropdownMenuItem asChild className={ITEM_CLASS}>
+            <DropdownMenuItem asChild>
               <Link to={panelPath}>
                 <LayoutDashboardIcon aria-hidden />
                 {t(PANEL_LINK_KEYS[panelPath])}
               </Link>
             </DropdownMenuItem>
           ) : null}
-          <DropdownMenuItem asChild className={ITEM_CLASS}>
-            <Link to="/account/settings">
+          <DropdownMenuItem asChild>
+            <Link to={settingsPathFor(roles)}>
               <SettingsIcon aria-hidden />
               {t('panel.account.nav.settings')}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem
             lang={otherLocale}
-            className={ITEM_CLASS}
+
             onSelect={() => {
               changeLanguage(otherLocale);
             }}
@@ -133,7 +129,7 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
           </DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
-            className={ITEM_CLASS}
+
             onSelect={() => {
               setIsSignOutOpen(true);
             }}

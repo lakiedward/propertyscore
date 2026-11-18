@@ -2,6 +2,8 @@ import 'i18next';
 import type { resources } from './i18n';
 import type roHome from './locales/ro/home.json';
 import type roListings from './locales/ro/listings.json';
+import type roModeration from './locales/ro/moderation.json';
+import type roMyListings from './locales/ro/myListings.json';
 import type roOnlineReports from './locales/ro/onlineReports.json';
 import type roPublish from './locales/ro/publish.json';
 
@@ -13,6 +15,8 @@ declare module 'i18next' {
       listings: typeof roListings;
       publish: typeof roPublish;
       onlineReports: typeof roOnlineReports;
+      moderation: typeof roModeration;
+      myListings: typeof roMyListings;
     };
   }
 }

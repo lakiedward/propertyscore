@@ -1,4 +1,5 @@
-import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryOptions, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { authQueries } from '@/features/auth';
 import { getProfile, updateProfileLocale } from './profile.api';
 
 export const profileQueries = {
@@ -18,4 +19,11 @@ export function useUpdateProfileLocale() {
       queryClient.setQueryData(profileQueries.detail(profile.id).queryKey, profile);
     },
   });
+}
+
+export function loadAccountSettings(queryClient: QueryClient, userId: string) {
+  return Promise.all([
+    queryClient.query({ ...authQueries.accountHasPassword(userId), staleTime: 'static' }),
+    queryClient.query({ ...authQueries.accountPhone(userId), staleTime: 'static' }),
+  ]);
 }

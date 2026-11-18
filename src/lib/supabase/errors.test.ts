@@ -25,12 +25,50 @@ describe('toAppError', () => {
     ['last_admin', undefined],
     ['rate_limited', undefined],
     ['reauthentication_needed', undefined],
+    ['listing_photos_changed', undefined],
+    ['listing_not_found', undefined],
+    ['listing_already_pending', undefined],
+    ['listing_blocked', undefined],
+    ['listing_invalid_transition', undefined],
+    ['listing_incomplete', undefined],
+    ['listing_not_pending', undefined],
+    ['listing_photo_limit', undefined],
+    ['decision_reason_invalid', 'reasons'],
+    ['decision_message_required', 'message'],
+    ['decision_message_too_long', 'message'],
   ])('maps the function error %s to its reason and the %s field', (message, field) => {
     const error = toAppError(postgrestError('P0001', message));
 
     expect(error.code).toBe('validation');
     expect(error.reason).toBe(message);
     expect(error.field).toBe(field);
+  });
+
+  it.each([
+    ['listings_floor_within_building', 'listing_floor_above_building', 'floor'],
+    ['listings_price_check', 'value_out_of_range', 'price'],
+    ['listings_year_built_check', 'value_out_of_range', 'year_built'],
+    ['listings_latitude_check', 'value_out_of_range', 'pin'],
+  ])('maps the refused rule %s to the %s reason on the %s field', (constraint, reason, field) => {
+    const error = toAppError(
+      postgrestError(
+        '23514',
+        `new row for relation "listings" violates check constraint "${constraint}"`,
+      ),
+    );
+
+    expect(error.code).toBe('validation');
+    expect(error.reason).toBe(reason);
+    expect(error.field).toBe(field);
+  });
+
+  it('keeps a refused rule it cannot place on a field generic', () => {
+    const error = toAppError(
+      postgrestError('23514', 'new row for relation "x" violates check constraint "x_rule"'),
+    );
+
+    expect(error.code).toBe('validation');
+    expect(error.reason).toBeUndefined();
   });
 
   it('maps a function outcome returned as data like a function error', () => {

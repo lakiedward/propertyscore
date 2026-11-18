@@ -2,11 +2,10 @@ import livingThumb from '@/assets/publish/hero-living-160.webp';
 import livingCard from '@/assets/publish/hero-living-640.webp';
 import windowThumb from '@/assets/publish/inspection-window-160.webp';
 import bedroomThumb from '@/assets/publish/room-bedroom-160.webp';
-import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
 import type { LngLat } from '@/components/map/map.config';
 import type { Currency } from '@/i18n/format';
 
-export const PUBLISH_REDIRECT = `/publish#${PUBLISH_SECTION.steps}`;
+export const NEW_LISTING_PATH = '/account/listings/new';
 
 export const HERO_LISTING = {
   price: 142000,

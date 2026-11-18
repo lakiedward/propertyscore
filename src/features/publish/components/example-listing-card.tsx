@@ -93,7 +93,7 @@ export function ExampleListingCard() {
                 <strong className="text-title-sm leading-none font-extrabold tracking-section text-foreground tabular-nums w767:text-[34px]">
                   {formatPrice(HERO_LISTING.price, HERO_LISTING.currency)}
                 </strong>
-                <strong className="text-lg leading-[1.3] font-bold text-foreground">
+                <strong className="text-lg leading-snug-title font-bold text-foreground">
                   {t('example.title')}
                 </strong>
                 <span className="flex items-center gap-1 text-small leading-copy text-muted-foreground">
@@ -126,7 +126,7 @@ export function ExampleListingCard() {
                   </span>
                 </span>
               </span>
-              <span className="inline-flex h-9 items-center gap-1.5 rounded-md border-[1.5px] border-brand px-3 text-caption font-extrabold text-brand">
+              <span className="inline-flex h-9 items-center gap-1.5 rounded-md border-(length:--border-width-control) border-brand px-3 text-caption font-extrabold text-brand">
                 <PhoneIcon className="size-3.5" />
                 {t('hero.card.showPhone')}
               </span>

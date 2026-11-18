@@ -1,10 +1,13 @@
 import {
+  toCurrency,
   formatCurrency,
   formatDate,
   formatDateTime,
+  formatList,
   formatNumber,
   formatPercent,
   formatPrice,
+  formatPriceInThousands,
   formatPriceParts,
   formatRelative,
   parseLocaleNumber,
@@ -18,6 +21,12 @@ function plain(value: string): string {
 }
 
 describe('format', () => {
+  it('keeps the currency of the record', () => {
+    expect(toCurrency('EUR')).toBe('EUR');
+    expect(toCurrency('RON')).toBe('RON');
+    expect(toCurrency('USD')).toBe('RON');
+  });
+
   describe('in Romanian', () => {
     beforeEach(async () => {
       await changeLocale('ro');
@@ -35,6 +44,7 @@ describe('format', () => {
     it('formats prices as whole amounts with the local currency symbol', () => {
       expect(plain(formatPrice(125000, 'EUR'))).toBe('125.000 €');
       expect(plain(formatPrice(500, 'RON'))).toBe('500 lei');
+      expect(plain(formatPriceInThousands(170500, 'EUR'))).toBe('171k €');
     });
 
     it('splits a price into its amount and currency', () => {
@@ -63,6 +73,10 @@ describe('format', () => {
       expect(formatRelative(new Date('2026-10-11T12:00:00Z'), now)).toBe('ieri');
     });
 
+    it('joins a list with the Romanian conjunction', () => {
+      expect(formatList(['Apă', 'Canalizare', 'Gaze'])).toBe('Apă, Canalizare și Gaze');
+    });
+
     it('parses numbers typed with Romanian separators', () => {
       expect(parseLocaleNumber('1.250,50')).toBe(1250.5);
       expect(parseLocaleNumber(' 42 ')).toBe(42);
@@ -79,6 +93,7 @@ describe('format', () => {
     it('formats prices as whole amounts with the currency symbol', () => {
       expect(plain(formatPrice(125000, 'EUR'))).toBe('€125,000');
       expect(plain(formatPrice(500, 'RON'))).toBe('RON 500');
+      expect(plain(formatPriceInThousands(88000, 'EUR'))).toBe('€88k');
       expect(formatPriceParts(500, 'RON')).toEqual({
         amount: '500',
         currency: 'RON',
@@ -102,6 +117,10 @@ describe('format', () => {
 
     it('formats dates with the time in 24-hour style', () => {
       expect(plain(formatDateTime(new Date(2026, 2, 5, 14, 30)))).toBe('5 Mar 2026, 14:30');
+    });
+
+    it('joins a list with the English conjunction', () => {
+      expect(formatList(['Water', 'Sewerage', 'Gas'])).toBe('Water, Sewerage and Gas');
     });
 
     it('parses numbers typed with English separators', () => {

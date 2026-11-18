@@ -1,8 +1,6 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { authQueries } from '@/features/auth';
+import { authQueries, settingsPathFor } from '@/features/auth';
 import { useSyncProfileLocale } from '@/features/profile';
-
-const PROFILE_COMPLETION_PATH = '/account/settings';
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ context, location }) => {
@@ -14,8 +12,9 @@ export const Route = createFileRoute('/_authenticated')({
       ...authQueries.accountPhone(user.id),
       staleTime: 'static',
     });
-    if (phone === null && location.pathname.replace(/\/$/u, '') !== PROFILE_COMPLETION_PATH) {
-      throw redirect({ to: PROFILE_COMPLETION_PATH, search: { redirect: location.href } });
+    const settingsPath = settingsPathFor(context.auth.roles);
+    if (phone === null && location.pathname.replace(/\/$/u, '') !== settingsPath) {
+      throw redirect({ to: settingsPath, search: { redirect: location.href } });
     }
     return { user };
   },

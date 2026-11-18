@@ -35,7 +35,7 @@ export function ZoneScoreCard({
         <span className="text-eyebrow font-extrabold text-info-ink-muted uppercase">
           {t('zone.eyebrow')}
         </span>
-        <strong className="text-title-sm leading-tight font-extrabold tracking-[-0.02em]">
+        <strong className="text-title-sm leading-tight font-extrabold tracking-snug-title">
           {score === null ? t('zone.noScore') : t(`band.${scoreBand(score)}`)}
         </strong>
         {percentile === null ? null : (

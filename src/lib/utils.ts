@@ -31,6 +31,7 @@ export const FONT_SIZES = [
   'score-2xl',
   'logo-2xs',
   'nav-sm',
+  'status',
   'logo-xs',
   'logo-sm',
   'logo-md',
@@ -42,6 +43,7 @@ export const FONT_SIZES = [
   'micro',
   'body-sm',
   'title-xs',
+  'card-title',
   'title-sm',
   'title-md',
   'title-lg',
@@ -52,8 +54,12 @@ export const cn = createCn({
     classGroups: {
       'font-size': [{ text: FONT_SIZES }],
       'font-weight': [{ font: ['nav', 'action', 'control', 'title', 'display'] }],
-      leading: [{ leading: ['copy', 'compact'] }],
-      tracking: [{ tracking: ['brand', 'title', 'section', 'eyebrow', 'label'] }],
+      leading: [{ leading: ['copy', 'compact', 'heading', 'relaxed-copy', 'snug-title'] }],
+      tracking: [
+        {
+          tracking: ['brand', 'title', 'section', 'eyebrow', 'label', 'snug-title', 'figure'],
+        },
+      ],
       rounded: [
         {
           rounded: [

@@ -2,34 +2,37 @@ import { Link } from '@tanstack/react-router';
 import { HouseIcon, MenuIcon, XIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { SERVICE_PRICES } from '@/config/pricing';
 import { formatPrice } from '@/i18n/format';
-import { useSectionNav } from '@/hooks/use-section-nav';
+import { cn } from '@/lib/utils';
 import { PANEL_LINK_KEYS, type PanelPath } from './panel-paths';
-import { HOME_SECTION, type HomeSectionId, type PublishSectionId } from './site-navigation';
+import { SITE_MENU_HEADING_CLASS, SITE_MENU_LINK_CLASS } from './site-menu-styles';
+import { HOME_SECTION, type HomeSectionId, type SectionNav } from './site-navigation';
 
 type SiteMenuProps = {
   accountPath?: PanelPath | undefined;
+  accountSection?: ReactNode;
+  sectionNav?: SectionNav | undefined;
   languageSwitcher: ReactNode;
 };
 
 type MenuLink =
-  | {
-      key: string;
-      label: string;
-      hash: HomeSectionId;
-      meta?: string;
-      transaction?: 'sale' | 'rent';
-    }
-  | { key: string; label: string; to: '/publish'; hash?: PublishSectionId; meta?: string };
+  | { key: string; label: string; hash: HomeSectionId; meta?: string }
+  | { key: string; label: string; to: '/publish'; meta?: string }
+  | { key: string; label: string; to: '/listings'; transaction: 'sale' | 'rent'; meta?: string };
 
-export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
+export function SiteMenu({
+  accountPath,
+  accountSection,
+  sectionNav,
+  languageSwitcher,
+}: SiteMenuProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const sectionNav = useSectionNav();
 
   const handleNavigate = () => {
     setIsOpen(false);
@@ -37,28 +40,12 @@ export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
 
   const groups: { title: string; links: MenuLink[] }[] = [
     {
-      title: t('site.menu.onThisPage'),
-      links:
-        sectionNav.page === '/publish'
-          ? sectionNav.links.map((link) => ({
-              key: link.id,
-              label: t(link.labelKey),
-              to: sectionNav.page,
-              hash: link.id,
-            }))
-          : sectionNav.links.map((link) => ({
-              key: link.id,
-              label: t(link.labelKey),
-              hash: link.id,
-            })),
-    },
-    {
       title: t('site.menu.forSale.title'),
       links: [
         {
           key: 'sale',
           label: t('site.menu.forSale.all'),
-          hash: HOME_SECTION.listings,
+          to: '/listings',
           transaction: 'sale',
         },
       ],
@@ -69,7 +56,7 @@ export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
         {
           key: 'rent',
           label: t('site.menu.forRent.all'),
-          hash: HOME_SECTION.listings,
+          to: '/listings',
           transaction: 'rent',
         },
       ],
@@ -164,21 +151,64 @@ export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
             <HouseIcon aria-hidden className="size-5" />
             {t('site.menu.home')}
           </Link>
+          <div className="grid grid-cols-2 gap-2 w820:hidden">
+            <Button asChild variant="cta" size="nav">
+              <Link
+                to="/"
+                hash={HOME_SECTION.physical}
+                onClick={handleNavigate}
+                aria-label={t('site.header.physical')}
+              >
+                <BrandMark product="physical" size={18} />
+                <Logo product="physical" size="2xs" hasMark={false} isDecorative />
+              </Link>
+            </Button>
+            <Button asChild variant="info" size="nav">
+              <Link
+                to="/"
+                hash={HOME_SECTION.smartCheck}
+                onClick={handleNavigate}
+                aria-label={t('site.header.smartCheck')}
+              >
+                <BrandMark product="smartcheck" tone="inverse" size={18} />
+                <Logo product="smartcheck" tone="inverse" size="2xs" hasMark={false} isDecorative />
+              </Link>
+            </Button>
+            <Button asChild variant="outlineInverse" size="nav" className="col-span-2">
+              <Link to="/publish" onClick={handleNavigate}>
+                {t('site.header.publish')}
+              </Link>
+            </Button>
+          </div>
+          {sectionNav ? (
+            <section className="flex flex-col gap-1 w820:hidden">
+              <h2 className={SITE_MENU_HEADING_CLASS}>{t('site.menu.onThisPage')}</h2>
+              {sectionNav.links.map((link) => (
+                <Link
+                  key={link.id}
+                  to={sectionNav.page}
+                  hash={link.id}
+                  onClick={handleNavigate}
+                  className={SITE_MENU_LINK_CLASS}
+                >
+                  {t(link.labelKey)}
+                </Link>
+              ))}
+            </section>
+          ) : null}
           {groups.map((group) => (
             <section key={group.title} className="flex flex-col gap-1">
-              <h2 className="pb-1 font-heading text-h4 text-on-inverse">{group.title}</h2>
+              <h2 className={SITE_MENU_HEADING_CLASS}>{group.title}</h2>
               {group.links.map((link) => (
                 <Link
                   key={link.key}
-                  {...('to' in link
-                    ? { to: link.to, hash: link.hash }
-                    : {
-                        to: '/',
-                        hash: link.hash,
-                        search: link.transaction ? { transaction: link.transaction } : undefined,
-                      })}
+                  {...('transaction' in link
+                    ? { to: link.to, search: { transaction: link.transaction } }
+                    : 'to' in link
+                      ? { to: link.to }
+                      : { to: '/', hash: link.hash })}
                   onClick={handleNavigate}
-                  className="flex min-h-touch items-center justify-between gap-3 rounded-md px-1 text-body text-on-inverse-muted hover:text-on-inverse focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
+                  className={cn(SITE_MENU_LINK_CLASS, 'justify-between')}
                 >
                   <span>{link.label}</span>
                   {link.meta ? (
@@ -188,18 +218,18 @@ export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
               ))}
             </section>
           ))}
-          <section className="flex flex-col gap-1">
-            <h2 className="pb-1 font-heading text-h4 text-on-inverse">
-              {t('site.footer.account.title')}
-            </h2>
-            <Link
-              to={accountPath ?? '/login'}
-              onClick={handleNavigate}
-              className="flex min-h-touch items-center rounded-md px-1 text-body text-on-inverse-muted hover:text-on-inverse focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
-            >
-              {accountPath ? t(PANEL_LINK_KEYS[accountPath]) : t('site.header.signIn')}
-            </Link>
-          </section>
+          {accountSection ?? (
+            <section className="flex flex-col gap-1">
+              <h2 className={SITE_MENU_HEADING_CLASS}>{t('site.footer.account.title')}</h2>
+              <Link
+                to={accountPath ?? '/login'}
+                onClick={handleNavigate}
+                className={SITE_MENU_LINK_CLASS}
+              >
+                {accountPath ? t(PANEL_LINK_KEYS[accountPath]) : t('site.header.signIn')}
+              </Link>
+            </section>
+          )}
           <section className="flex flex-col gap-3">
             <h2 className="font-heading text-h4 text-on-inverse">{t('site.menu.language')}</h2>
             {languageSwitcher}

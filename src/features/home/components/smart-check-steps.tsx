@@ -22,7 +22,7 @@ export function SmartCheckSteps() {
         <div className="flex flex-wrap items-center justify-between gap-x-7 gap-y-4">
           <div className="flex flex-col gap-3">
             <Logo product="smartcheck" tone="inverse" size="lg" className="gap-2" />
-            <h3 className="text-[clamp(18px,1.6vw,22px)] leading-[1.25] font-extrabold tracking-[-0.02em]">
+            <h3 className="text-[clamp(18px,1.6vw,22px)] leading-tight font-extrabold tracking-snug-title">
               {t('smartCheck.steps.titleLead')}{' '}
               <span className="text-cta">{t('smartCheck.steps.titleAccent')}</span>
             </h3>

@@ -54,8 +54,8 @@ export function ChangePasswordSection({ hasPassword }: ChangePasswordSectionProp
           fallback={t('settings.password.failedText')}
         />
       ) : null}
-      <form onSubmit={(event) => void handleSubmit(event)} noValidate className="max-w-md">
-        <FieldGroup className="gap-4">
+      <form onSubmit={(event) => void handleSubmit(event)} noValidate className="w-full">
+        <FieldGroup className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {hasPassword ? (
             <Controller
               name="currentPassword"
@@ -102,7 +102,11 @@ export function ChangePasswordSection({ hasPassword }: ChangePasswordSectionProp
               />
             )}
           />
-          <Button type="submit" disabled={changePassword.isPending} className="self-start">
+          <Button
+            type="submit"
+            disabled={changePassword.isPending}
+            className="justify-self-start md:col-span-2 xl:col-span-3"
+          >
             {changePassword.isPending
               ? t('settings.password.pending')
               : hasPassword

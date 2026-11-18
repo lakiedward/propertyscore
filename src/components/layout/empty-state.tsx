@@ -12,6 +12,36 @@ const emptyStateIconVariants = cva('size-8', {
   },
 });
 
+const emptyStateVariants = cva(
+  'flex flex-col items-center rounded-xl border border-border px-6 py-10 text-center',
+  {
+    variants: {
+      variant: {
+        default: 'gap-3 border-dashed bg-surface-subtle',
+        card: 'gap-2.5 bg-card',
+      },
+    },
+  },
+);
+
+const emptyStateTitleVariants = cva('', {
+  variants: {
+    variant: {
+      default: 'text-h4',
+      card: 'text-[20px] font-bold tracking-snug-title',
+    },
+  },
+});
+
+const emptyStateDescriptionVariants = cva('max-w-sm text-muted-foreground', {
+  variants: {
+    variant: {
+      default: 'text-small',
+      card: 'text-caption',
+    },
+  },
+});
+
 type EmptyStateKind = 'empty' | 'error';
 
 const EMPTY_STATE_KIND = {
@@ -21,27 +51,31 @@ const EMPTY_STATE_KIND = {
 
 type EmptyStateProps = {
   kind: EmptyStateKind;
+  variant?: 'default' | 'card';
   title: string;
   description?: string;
   action?: ReactNode;
   className?: string;
 };
 
-export function EmptyState({ kind, title, description, action, className }: EmptyStateProps) {
+export function EmptyState({
+  kind,
+  variant = 'default',
+  title,
+  description,
+  action,
+  className,
+}: EmptyStateProps) {
   const { icon: Icon, role } = EMPTY_STATE_KIND[kind];
 
   return (
-    <div
-      role={role}
-      className={cn(
-        'flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-surface-subtle px-6 py-10 text-center',
-        className,
+    <div role={role} className={cn(emptyStateVariants({ variant }), className)}>
+      {variant === 'card' ? null : (
+        <Icon aria-hidden className={emptyStateIconVariants({ kind })} />
       )}
-    >
-      <Icon aria-hidden className={emptyStateIconVariants({ kind })} />
-      <p className="text-h4">{title}</p>
+      <p className={emptyStateTitleVariants({ variant })}>{title}</p>
       {description ? (
-        <p className="max-w-sm text-small text-muted-foreground">{description}</p>
+        <p className={emptyStateDescriptionVariants({ variant })}>{description}</p>
       ) : null}
       {action}
     </div>

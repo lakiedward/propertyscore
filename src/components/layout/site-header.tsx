@@ -16,6 +16,7 @@ import { HOME_SECTION } from './site-navigation';
 export type SiteHeaderAccount = {
   path: PanelPath;
   menu: ReactNode;
+  menuSection?: ReactNode;
 };
 
 type SiteHeaderProps = {
@@ -27,7 +28,7 @@ export function SiteHeader({ account, menuLanguageSwitcher }: SiteHeaderProps) {
   const { t } = useTranslation();
   const headerRef = useRef<HTMLElement>(null);
   const sectionNav = useSectionNav();
-  const activeSection = useActiveSection(sectionNav.links.map((link) => link.id));
+  const activeSection = useActiveSection(sectionNav?.links.map((link) => link.id) ?? []);
   useScrollProgress(headerRef);
 
   return (
@@ -39,37 +40,45 @@ export function SiteHeader({ account, menuLanguageSwitcher }: SiteHeaderProps) {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 -bottom-px h-0.5 origin-left scale-x-[var(--page-progress,0)] bg-primary"
       />
-      <div className="flex min-h-header flex-wrap items-center gap-x-6.5 gap-y-3 px-5 py-2 w820:py-0">
-        <SiteMenu accountPath={account?.path} languageSwitcher={menuLanguageSwitcher} />
+      <div className="flex min-h-header flex-wrap items-center gap-x-3 gap-y-3 px-5 py-2 w820:gap-x-6.5 w820:py-0">
+        <SiteMenu
+          accountPath={account?.path}
+          accountSection={account?.menuSection}
+          sectionNav={sectionNav}
+          languageSwitcher={menuLanguageSwitcher}
+        />
         <Link
           to="/"
           hash={HOME_SECTION.main}
           aria-label={t('site.header.brandHome')}
           className="rounded-md focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none"
         >
-          <Logo size="md" isDecorative className="gap-1" />
+          <Logo size="sm" isDecorative className="gap-1 w820:hidden" />
+          <Logo size="md" isDecorative className="hidden gap-1 w820:inline-flex" />
         </Link>
-        <nav
-          aria-label={t('site.sections.label')}
-          className="order-3 grid w-full grid-cols-[1fr_1.1fr_1.4fr_0.8fr] gap-1 w820:flex w820:justify-between w960:order-none w960:ml-auto w960:w-auto w960:justify-start w960:gap-3.25 w1080:gap-6.25"
-        >
-          {sectionNav.links.map((link) => (
-            <Link
-              key={link.id}
-              to={sectionNav.page}
-              hash={link.id}
-              activeOptions={{ includeHash: true }}
-              aria-current={activeSection === link.id ? 'location' : undefined}
-              data-section-active={activeSection === link.id}
-              className={cn(
-                'touch-target flex min-h-11 items-center justify-center text-nav-sm font-nav whitespace-nowrap text-nav-link hover:underline hover:underline-offset-5 focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none w520:text-meta w820:min-h-8 w1080:text-caption',
-                'data-[section-active=true]:font-extrabold data-[section-active=true]:text-brand data-[section-active=true]:underline data-[section-active=true]:decoration-2 data-[section-active=true]:underline-offset-6',
-              )}
-            >
-              {t(link.labelKey)}
-            </Link>
-          ))}
-        </nav>
+        {sectionNav ? (
+          <nav
+            aria-label={t('site.sections.label')}
+            className="order-3 hidden w-full w820:flex w820:justify-between w960:order-none w960:ml-auto w960:w-auto w960:justify-start w960:gap-3.25 w1080:gap-6.25"
+          >
+            {sectionNav.links.map((link) => (
+              <Link
+                key={link.id}
+                to={sectionNav.page}
+                hash={link.id}
+                activeOptions={{ includeHash: true }}
+                aria-current={activeSection === link.id ? 'location' : undefined}
+                data-section-active={activeSection === link.id}
+                className={cn(
+                  'touch-target flex min-h-8 items-center justify-center text-meta font-nav whitespace-nowrap text-nav-link hover:underline hover:underline-offset-5 focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none w1080:text-caption',
+                  'data-[section-active=true]:font-extrabold data-[section-active=true]:text-brand data-[section-active=true]:underline data-[section-active=true]:decoration-2 data-[section-active=true]:underline-offset-6',
+                )}
+              >
+                {t(link.labelKey)}
+              </Link>
+            ))}
+          </nav>
+        ) : null}
         <div className="ml-auto flex items-center gap-1.5">
           {account ? (
             account.menu
@@ -83,31 +92,28 @@ export function SiteHeader({ account, menuLanguageSwitcher }: SiteHeaderProps) {
               <span className="sr-only w1180:not-sr-only">{t('site.header.signIn')}</span>
             </Link>
           )}
-          <Button
-            asChild
-            variant="outline"
-            size="nav"
-            className="hidden border-border-control w560:inline-flex"
-          >
-            <Link to="/publish">{t('site.header.publish')}</Link>
-          </Button>
-          <Button asChild variant="info" size="nav" className="hidden border-info w560:inline-flex">
-            <Link to="/" hash={HOME_SECTION.smartCheck} aria-label={t('site.header.smartCheck')}>
-              <BrandMark product="smartcheck" tone="inverse" size={18} />
-              <Logo product="smartcheck" tone="inverse" size="2xs" hasMark={false} isDecorative />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="default"
-            size="nav"
-            className="border-primary hover:bg-primary-pressed"
-          >
-            <Link to="/" hash={HOME_SECTION.physical} aria-label={t('site.header.physical')}>
-              <BrandMark product="physical" size={18} />
-              <Logo product="physical" tone="inverse" size="2xs" hasMark={false} isDecorative />
-            </Link>
-          </Button>
+          <div className="hidden items-center gap-1.5 w820:flex">
+            <Button asChild variant="outline" size="nav" className="border-border-control">
+              <Link to="/publish">{t('site.header.publish')}</Link>
+            </Button>
+            <Button asChild variant="info" size="nav" className="border-info">
+              <Link to="/" hash={HOME_SECTION.smartCheck} aria-label={t('site.header.smartCheck')}>
+                <BrandMark product="smartcheck" tone="inverse" size={18} />
+                <Logo product="smartcheck" tone="inverse" size="2xs" hasMark={false} isDecorative />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="default"
+              size="nav"
+              className="border-primary hover:bg-primary-pressed"
+            >
+              <Link to="/" hash={HOME_SECTION.physical} aria-label={t('site.header.physical')}>
+                <BrandMark product="physical" size={18} />
+                <Logo product="physical" tone="inverse" size="2xs" hasMark={false} isDecorative />
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </header>

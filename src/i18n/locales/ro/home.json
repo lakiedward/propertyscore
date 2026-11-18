@@ -354,7 +354,7 @@
   },
   "deliverables": {
     "titleLead": "Un singur pachet.",
-    "titleAccent": "<home>Locuința</home> și <area>zona</area>, explicate.",
+    "titleAccent": "<home>Locuința</home> și <zone>zona</zone>, explicate.",
     "lead": "<strong>La inspecție primești și {{smartCheck}}, fără cost în plus.</strong> Raportul vizitei arată starea locuinței, iar raportul online arată cum e zona. Le primesc atât cumpărătorul, cât și vânzătorul.",
     "bundle": {
       "label": "Pachetul de {{price}}: {{physical}} și {{smartCheck}} inclus",
@@ -627,7 +627,7 @@
   },
   "pricing": {
     "titleLead": "Alege cât vrei să afli.",
-    "titleAccent": "Despre <area>zonă</area> sau despre <home>locuință</home>.",
+    "titleAccent": "Despre <zone>zonă</zone> sau despre <home>locuință</home>.",
     "lead": "<strong>Începi cu {{smartCheck}}, ca să compari adresele.</strong> Când ai găsit locuința potrivită, {{physical}} îți arată în ce stare e și ce merită clarificat înainte să decizi. {{smartCheck}} e inclus.",
     "physical": {
       "summary": "Starea locuinței, verificată la fața locului. Plus tot ce afli din {{smartCheck}}.",

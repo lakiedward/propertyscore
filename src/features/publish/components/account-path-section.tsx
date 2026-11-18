@@ -13,7 +13,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
-import { PUBLISH_REDIRECT } from '../publish.example';
+import { NEW_LISTING_PATH } from '../publish.example';
 
 type PathStepKey = 'prepare' | 'account' | 'publish';
 
@@ -94,7 +94,7 @@ export function AccountPathSection({ isSignedIn }: AccountPathSectionProps) {
                 >
                   {t(`path.steps.${step.key}.tag`)}
                 </span>
-                <strong className="text-title-xs leading-[1.25] font-bold tracking-[-0.02em]">
+                <strong className="text-title-xs leading-tight font-bold tracking-snug-title">
                   {t(`path.steps.${step.key}.title`)}
                 </strong>
                 <span
@@ -133,11 +133,11 @@ function AccountActions({ isSignedIn }: AccountActionsProps) {
     return (
       <div className="flex flex-wrap gap-2 pt-2">
         <Button asChild variant="cta" className={ACTION_CLASS}>
-          <a href={`#${PUBLISH_SECTION.steps}`}>
+          <Link to={NEW_LISTING_PATH}>
             <UserCheckIcon aria-hidden />
             {t('path.continue')}
             <ArrowRightIcon aria-hidden />
-          </a>
+          </Link>
         </Button>
       </div>
     );
@@ -146,13 +146,13 @@ function AccountActions({ isSignedIn }: AccountActionsProps) {
   return (
     <div className="flex flex-wrap gap-2 pt-2">
       <Button asChild variant="cta" className={ACTION_CLASS}>
-        <Link to="/login" search={{ redirect: PUBLISH_REDIRECT }}>
+        <Link to="/login" search={{ redirect: NEW_LISTING_PATH }}>
           <LogInIcon aria-hidden />
           {t('path.signIn')}
         </Link>
       </Button>
       <Button asChild variant="outlineInverse" className={cn(ACTION_CLASS, 'font-bold')}>
-        <Link to="/sign-up" search={{ redirect: PUBLISH_REDIRECT }}>
+        <Link to="/sign-up" search={{ redirect: NEW_LISTING_PATH }}>
           {t('path.signUp')}
         </Link>
       </Button>

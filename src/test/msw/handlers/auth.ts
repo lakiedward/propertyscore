@@ -32,4 +32,5 @@ export const authHandlers = [
   http.post(supabaseUrl('/auth/v1/recover'), () =>
     HttpResponse.json({}, { headers: API_VERSION_HEADERS }),
   ),
+  http.post(supabaseUrl('/rest/v1/rpc/account_has_password'), () => HttpResponse.json(true)),
 ];

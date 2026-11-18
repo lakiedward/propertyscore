@@ -36,13 +36,13 @@ export function PricingSection() {
                 t={t}
                 i18nKey="pricing.titleAccent"
                 components={{
-                  area: <span className="marker-info text-info" />,
+                  zone: <span className="marker-info text-info" />,
                   home: <span className="marker-cta text-brand" />,
                 }}
               />
             }
           />
-          <p className="max-w-170 text-body text-muted-foreground w520:text-lead w520:leading-[1.6]">
+          <p className="max-w-170 text-body text-muted-foreground w520:text-lead w520:leading-relaxed-copy">
             <Trans
               t={t}
               i18nKey="pricing.lead"

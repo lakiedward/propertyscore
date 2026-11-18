@@ -88,6 +88,10 @@ export const ADMIN_NAVIGATION = [
       { id: 'content', to: '/admin/content', icon: FilePenLineIcon },
     ],
   },
+  {
+    id: 'account',
+    items: [{ id: 'settings', to: '/admin/settings', icon: SettingsIcon }],
+  },
 ] as const satisfies readonly PanelNavGroup<string, string>[];
 
 export type ResolvedNavItem = PanelNavItem<string> & { label: string };

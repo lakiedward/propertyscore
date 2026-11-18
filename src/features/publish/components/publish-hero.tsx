@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/i18n/format';
 import { PUBLISH_SECTION } from '@/components/layout/site-navigation';
-import { PUBLISH_REDIRECT, PUBLISHING_COST } from '../publish.example';
+import { NEW_LISTING_PATH, PUBLISHING_COST } from '../publish.example';
 import { ExampleListingCard } from './example-listing-card';
 
 type PublishHeroProps = {
@@ -46,7 +46,7 @@ export function PublishHero({ isSignedIn }: PublishHeroProps) {
               }}
             />
           </h1>
-          <p className="max-w-130 text-lead-sm font-medium text-foreground w767:text-xl w767:leading-[1.6]">
+          <p className="max-w-130 text-lead-sm font-medium text-foreground w767:text-xl w767:leading-relaxed-copy">
             {t('hero.lead')}
           </p>
           <div className="flex w-full flex-col gap-3 w560:w-auto w560:flex-row w560:flex-wrap w560:items-center">
@@ -54,7 +54,7 @@ export function PublishHero({ isSignedIn }: PublishHeroProps) {
               asChild
               variant="outline"
               size="lg"
-              className="gap-2.5 border-[1.5px] text-lead-sm leading-[1.2] font-bold"
+              className="gap-2.5 border-(length:--border-width-control) text-lead-sm leading-[1.2] font-bold"
             >
               <a href={`#${PUBLISH_SECTION.steps}`}>
                 <CirclePlayIcon aria-hidden />
@@ -65,15 +65,15 @@ export function PublishHero({ isSignedIn }: PublishHeroProps) {
               asChild
               variant="cta"
               size="lg"
-              className="h-auto min-h-13 gap-2.5 border-[1.5px] py-2 text-lead-sm leading-tight font-bold whitespace-normal"
+              className="h-auto min-h-13 gap-2.5 border-(length:--border-width-control) py-2 text-lead-sm leading-tight font-bold whitespace-normal"
             >
               {isSignedIn ? (
-                <a href={`#${PUBLISH_SECTION.steps}`}>
+                <Link to={NEW_LISTING_PATH}>
                   {t('hero.startSignedIn')}
                   <ArrowRightIcon aria-hidden />
-                </a>
+                </Link>
               ) : (
-                <Link to="/login" search={{ redirect: PUBLISH_REDIRECT }}>
+                <Link to="/login" search={{ redirect: NEW_LISTING_PATH }}>
                   <LogInIcon aria-hidden />
                   {t('hero.startSignedOut')}
                   <ArrowRightIcon aria-hidden />
@@ -91,7 +91,7 @@ export function PublishHero({ isSignedIn }: PublishHeroProps) {
             {stats.map((stat) => (
               <div key={stat.key} className="flex flex-col-reverse gap-0.5">
                 <dt className="text-caption leading-copy text-muted-foreground">{stat.label}</dt>
-                <dd className="text-[26px] leading-copy font-extrabold tracking-[-0.03em] text-foreground tabular-nums">
+                <dd className="text-[26px] leading-copy font-extrabold tracking-figure text-foreground tabular-nums">
                   {stat.value}
                 </dd>
               </div>

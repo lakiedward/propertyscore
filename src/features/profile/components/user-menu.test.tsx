@@ -34,6 +34,20 @@ describe('UserMenu', { timeout: 20_000 }, () => {
     ).toHaveAttribute('href', '/account/settings');
   });
 
+  it('opens the admin settings for an admin', async () => {
+    const admin = signedInAs('admin');
+    const { user } = await renderWithProviders(
+      admin.user ? <UserMenu user={admin.user} tone="panel" appRole="admin" /> : null,
+      { auth: admin },
+    );
+
+    await user.click(await screen.findByRole('button', { name: new RegExp(profileName) }));
+
+    expect(
+      screen.getByRole('menuitem', { name: roCommon.panel.admin.nav.settings }),
+    ).toHaveAttribute('href', '/admin/settings');
+  });
+
   it('opens the panel for the role from the public site', async () => {
     const { user } = await renderWithProviders(
       auth.user ? <UserMenu user={auth.user} tone="light" panelPath="/admin" isNameHidden /> : null,

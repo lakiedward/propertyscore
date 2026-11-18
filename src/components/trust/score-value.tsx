@@ -59,7 +59,7 @@ const discInnerVariants = cva('grid place-items-center rounded-full tabular-nums
 const strokeNumberVariants = cva('tabular-nums', {
   variants: {
     size: {
-      sm: 'text-lead-sm font-extrabold tracking-[-0.03em] text-info-ink',
+      sm: 'text-lead-sm font-extrabold tracking-figure text-info-ink',
       lg: 'text-score-2xl text-on-inverse',
     },
   },
