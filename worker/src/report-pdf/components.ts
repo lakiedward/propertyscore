@@ -29,7 +29,7 @@ export function chapterHead(input: {
     ? `<span class="acc" style="--c:${input.color}"><i></i>Precizie: ${esc(input.precision)}</span>`
     : '';
   const lead = input.lead ? `<p class="lead">${esc(input.lead)}</p>` : '';
-  return `<div class="ch-head"><div class="eyebrow"><span style="color:${input.color}">${esc(input.eyebrow)}</span>${precision}</div><h2>${esc(input.title)}</h2>${lead}</div>`;
+  return `<div class="ch-head" style="--c:${input.color}"><div class="eyebrow"><span style="color:${input.color}">${esc(input.eyebrow)}</span>${precision}</div><h2>${esc(input.title)}</h2>${lead}</div>`;
 }
 
 export function categoryEyebrow(key: CategoryKey, summary: CategorySummary, name?: string): string {

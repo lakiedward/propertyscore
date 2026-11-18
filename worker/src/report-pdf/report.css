@@ -3649,7 +3649,7 @@ body {
   padding-inline: 48px;
 }
 .chapter + .chapter {
-  margin-top: 44px;
+  margin-top: 64px;
 }
 .chapter.cover + .chapter {
   margin-top: 28px;
@@ -3894,7 +3894,6 @@ li {
   min-height: 420px;
   border-radius: 0;
 }
-.mpD,
 .map,
 .sfW-m {
   break-inside: avoid;
@@ -3902,4 +3901,21 @@ li {
 .sfW {
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+}
+.ch-head {
+  position: relative;
+  padding: 22px 24px 20px 30px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--c) 9%, #fff);
+}
+.ch-head::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 8px;
+  border-radius: 14px 0 0 14px;
+  background: var(--c);
+}
+.ch-head .eyebrow {
+  font-size: 13px;
 }

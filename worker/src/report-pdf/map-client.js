@@ -34,7 +34,6 @@ function paint(layer) {
       'line-color': colour,
       'line-opacity': layer.opacity ?? 1,
       'line-width': layer.width ?? 2,
-      ...(layer.dashed ? { 'line-dasharray': [1.5, 2] } : {}),
       ...(layer.dotted ? { 'line-dasharray': [0.01, 1.8] } : {}),
     };
   }

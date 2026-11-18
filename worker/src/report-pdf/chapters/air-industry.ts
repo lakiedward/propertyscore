@@ -85,7 +85,7 @@ export const airIndustryChapter: ChapterBuilder = (report) => {
   const lead = industry?.nearest_m
     ? `Cea mai apropiată instalație industrială e la ${formatDistance(industry.nearest_m)}.`
     : '';
-  const head = `<div class="ch-head"><div class="eyebrow">${eyebrowPart('Aer', report.categories.air.score, airTheme.color)}${eyebrowPart('Industrie', report.categories.industry.score, industryTheme.color)}<span class="acc" style="--c:${airTheme.color}"><i></i>Precizie: aer la nivel de oraș, industrie la adresă</span></div><h2>${esc(title(air, industry))}</h2>${lead ? `<p class="lead">${esc(lead)}</p>` : ''}</div>`;
+  const head = `<div class="ch-head" style="--c:${airTheme.color}"><div class="eyebrow">${eyebrowPart('Aer', report.categories.air.score, airTheme.color)}${eyebrowPart('Industrie', report.categories.industry.score, industryTheme.color)}<span class="acc" style="--c:${airTheme.color}"><i></i>Precizie: aer la nivel de oraș, industrie la adresă</span></div><h2>${esc(title(air, industry))}</h2>${lead ? `<p class="lead">${esc(lead)}</p>` : ''}</div>`;
   const cards = `${air ? monthsCard(air) : ''}${industry ? sitesCard(industry) : ''}`;
   const period = sourceDate(report, 'cams');
   const year = industry?.source.reporting_year;

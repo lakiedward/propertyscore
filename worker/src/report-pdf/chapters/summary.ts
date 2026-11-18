@@ -14,7 +14,6 @@ type Scored = { key: CategoryKey; score: number; average: number; summary: Categ
 const HIGHLIGHTS = 3;
 const WEAK_POINT_BELOW = 55;
 const NEAR_RING_M = 500;
-const WIDE_RING_M = 1000;
 const RING_CIRCUMFERENCE = 345.58;
 const HISTOGRAM = { width: 640, height: 190, top: 34 };
 const STACK_LABEL_FROM = 6;
@@ -142,30 +141,6 @@ function highlights(report: ReportData, scored: readonly Scored[]): string {
   );
 }
 
-function zoneMap(report: ReportData, center: [number, number]): { html: string; map: MapSpec } {
-  const map: MapSpec = {
-    id: 'map-zone',
-    center,
-    fit: around(center, WIDE_RING_M),
-    padding: 40,
-    layers: [
-      { kind: 'line', data: ring(center, NEAR_RING_M), color: '#103F32', width: 2 },
-      { kind: 'line', data: ring(center, WIDE_RING_M), color: '#103F32', width: 2, dashed: true },
-    ],
-    markers: [addressMarker(center, report.addressText.split(',')[0])],
-  };
-  const stats = [
-    { value: report.sections.accessibility?.stops.length ?? 0, label: 'stații în jur' },
-    { value: report.sections.green?.parks.length ?? 0, label: 'parcuri mari' },
-    { value: report.sections.fifteen_minute?.covered ?? 0, label: 'feluri de locuri la 15 minute' },
-  ]
-    .filter((stat) => stat.value > 0)
-    .map((stat) => `<li><b>${String(stat.value)}</b>${stat.label}</li>`)
-    .join('');
-  const html = `<section class="t12 mpD"><div class="mpD-prev"><div class="mp-map">${mapHtml(map)}</div><div class="mpD-shade"></div><div class="mpD-cta"><div class="eyebrow">Harta zonei</div><h2>Zona din jurul adresei</h2><p>Cercurile arată 500 m și 1 km în jurul adresei.</p><ul class="mpD-st">${stats}</ul></div></div></section>`;
-  return { html, map };
-}
-
 function difference(item: Scored): string {
   const delta = item.score - item.average;
   if (isFlat(item.summary)) return '<span class="dl same">la fel în tot orașul</span>';
@@ -291,7 +266,6 @@ export function summaryChapter(report: ReportData): ChapterOutput {
     ],
     markers: [addressMarker(center, report.addressText.split(',')[0])],
   };
-  const zone = zoneMap(report, center);
-  const html = `<article class="chapter cover">${hero(report, scored, heroMap)}<div class="wrap"><div class="sx sC">${summaryHead(report, scored)}${highlights(report, scored)}</div></div></article><article class="chapter"><div class="wrap"><div class="sx sC">${zone.html}${allScores(report, scored)}${formation(report, scored)}</div></div></article>`;
-  return { html, maps: [heroMap, zone.map] };
+  const html = `<article class="chapter cover">${hero(report, scored, heroMap)}<div class="wrap"><div class="sx sC">${summaryHead(report, scored)}${highlights(report, scored)}</div></div></article><article class="chapter"><div class="wrap"><div class="sx sC">${allScores(report, scored)}${formation(report, scored)}</div></div></article>`;
+  return { html, maps: [heroMap] };
 }
