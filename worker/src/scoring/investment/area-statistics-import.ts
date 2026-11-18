@@ -30,8 +30,10 @@ import {
 import { shiftMonths } from './investment.dates.ts';
 import {
   beginMarketImport,
+  claimStatisticsRun,
   completeMarketImport,
   discardMarketImport,
+  finishStatisticsRun,
   hasCompletedMarketImport,
   insertAreaStatistics,
   listCoveredCities,
@@ -72,6 +74,7 @@ export type AreaStatisticsImportOptions = {
   citySlugs: readonly string[];
   contact: string;
   period: string;
+  isRetry: boolean;
   params: InvestmentParams;
   logger: Logger;
   fetch?: typeof fetch;
@@ -80,6 +83,7 @@ export type AreaStatisticsImportOptions = {
 
 export type AreaStatisticsImportResult = {
   source: MarketStatisticsSource;
+  outcome: 'imported' | 'unchanged' | 'already_read';
   period: string;
   importId: string | null;
   accepted: number;
@@ -87,13 +91,14 @@ export type AreaStatisticsImportResult = {
   rejected: Rejections;
 };
 
+function consentedCities(cities: readonly CoveredCity[]): CoveredCity[] {
+  return cities.filter((city) => APARTAMENTE_ORG_CONSENTED_CITIES.includes(city.slug));
+}
+
 async function collectStatisticsPages(context: CollectContext): Promise<Collected | null> {
   if (await context.isImported(context.period)) return null;
   const rows: AreaStatisticRow[] = [];
-  const cities = context.cities.filter((city) =>
-    APARTAMENTE_ORG_CONSENTED_CITIES.includes(city.slug),
-  );
-  for (const city of cities) {
+  for (const city of consentedCities(context.cities)) {
     for (const transaction of TRANSACTIONS) {
       const cityTarget: StatisticsPageTarget = { city: city.slug, transaction, zone: null };
       const cityResponse = await context.client.get(statisticsPagePath(cityTarget));
@@ -154,7 +159,12 @@ const SOURCE_DEFINITIONS: Record<MarketStatisticsSource, SourceDefinition> = {
   apartamente_org: { origin: APARTAMENTE_ORG_ORIGIN, collect: collectStatisticsPages },
   apartamente_org_index: {
     origin: APARTAMENTE_ORG_ORIGIN,
-    collect: (context) => collectIndexEdition(context, indexCsvPath, parseIndexCsv),
+    collect: (context) =>
+      collectIndexEdition(
+        { ...context, cities: consentedCities(context.cities) },
+        indexCsvPath,
+        parseIndexCsv,
+      ),
   },
   imospot_index: {
     origin: IMOSPOT_ORIGIN,
@@ -189,7 +199,7 @@ function keepPlausibleRows(
   return [...kept.values()];
 }
 
-async function importSource(
+async function readSource(
   options: AreaStatisticsImportOptions,
   source: MarketStatisticsSource,
   cities: readonly CoveredCity[],
@@ -222,9 +232,10 @@ async function importSource(
     reject,
   });
   if (!collected) {
-    options.logger.info('market statistics already imported this month', { source });
+    options.logger.info('market statistics edition already imported', { source });
     return {
       source,
+      outcome: 'unchanged',
       period: options.period,
       importId: null,
       accepted: 0,
@@ -240,7 +251,9 @@ async function importSource(
   const importId = await beginMarketImport(sql, {
     source,
     period: collected.period,
-    sha256: createHash('sha256').update(JSON.stringify(rows)).digest('hex'),
+    sha256: createHash('sha256')
+      .update(JSON.stringify({ source, period: collected.period, rows }))
+      .digest('hex'),
     eurRonRate: null,
     content: 'area_statistics',
   });
@@ -263,12 +276,49 @@ async function importSource(
   });
   return {
     source,
+    outcome: 'imported',
     period: collected.period,
     importId,
     accepted,
     requests: client.requestCount() - requestsBefore,
     rejected,
   };
+}
+
+async function importSource(
+  options: AreaStatisticsImportOptions,
+  source: MarketStatisticsSource,
+  cities: readonly CoveredCity[],
+  clients: Map<string, PoliteClient>,
+): Promise<AreaStatisticsImportResult> {
+  const { sql, period } = options;
+  if (!(await claimStatisticsRun(sql, source, period, options.isRetry))) {
+    options.logger.info('market statistics already read this month', { source });
+    return {
+      source,
+      outcome: 'already_read',
+      period,
+      importId: null,
+      accepted: 0,
+      requests: 0,
+      rejected: {},
+    };
+  }
+  let result: AreaStatisticsImportResult;
+  try {
+    result = await readSource(options, source, cities, clients);
+  } catch (error) {
+    await finishStatisticsRun(sql, source, period, 'failed', null);
+    throw error;
+  }
+  await finishStatisticsRun(
+    sql,
+    source,
+    period,
+    result.importId === null ? 'unchanged' : 'imported',
+    result.importId,
+  );
+  return result;
 }
 
 export async function importAreaStatistics(

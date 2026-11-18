@@ -174,6 +174,13 @@ describe('parseCommand import-market-statistics', () => {
       sources: ['apartamente_org', 'apartamente_org_index', 'imospot_index'],
       citySlugs: [],
       period: '2026-11-01',
+      isRetry: false,
+    });
+  });
+
+  it('reads a source again in the same month only when asked to', () => {
+    expect(parseCommand(['import-market-statistics', '--retry'], NOW)).toMatchObject({
+      isRetry: true,
     });
   });
 

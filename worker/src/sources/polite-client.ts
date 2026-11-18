@@ -31,13 +31,16 @@ const RESPONSE_TIMEOUT_MS = 60_000;
 const MAX_RETRY_AFTER_MS = 120_000;
 
 function isRetryableStatus(status: number): boolean {
-  return status === 408 || status === 429 || status >= 500;
+  return status === 408 || status >= 500;
 }
 
-function retryAfterMs(response: Response): number {
-  const seconds = Number(response.headers.get('retry-after'));
-  if (!Number.isFinite(seconds) || seconds <= 0) return 0;
-  return Math.min(seconds * 1000, MAX_RETRY_AFTER_MS);
+function retryAfterMs(response: Response, nowMs: number): number {
+  const header = response.headers.get('retry-after')?.trim() ?? '';
+  if (header === '') return 0;
+  const seconds = Number(header);
+  if (Number.isFinite(seconds)) return Math.max(seconds, 0) * 1000;
+  const date = Date.parse(header);
+  return Number.isNaN(date) ? 0 : Math.max(date - nowMs, 0);
 }
 
 export function createPoliteClient(options: PoliteClientOptions): PoliteClient {
@@ -49,10 +52,15 @@ export function createPoliteClient(options: PoliteClientOptions): PoliteClient {
   let lastFinishedAt: number | null = null;
   let requests = 0;
   let robots: RobotsPolicy | null = null;
+  let stopped: Error | null = null;
+
+  function intervalMs(): number {
+    return Math.max(options.minIntervalMs, robots?.crawlDelayMs ?? 0);
+  }
 
   async function requestOnce(path: string, pauseMs: number): Promise<Response> {
     if (lastFinishedAt !== null) {
-      const remaining = lastFinishedAt + Math.max(options.minIntervalMs, pauseMs) - now();
+      const remaining = lastFinishedAt + Math.max(intervalMs(), pauseMs) - now();
       if (remaining > 0) await wait(remaining);
     }
     requests += 1;
@@ -79,7 +87,7 @@ export function createPoliteClient(options: PoliteClientOptions): PoliteClient {
             cause: error,
           });
         }
-        pauseMs = options.minIntervalMs * 2 ** attempt;
+        pauseMs = intervalMs() * 2 ** attempt;
         continue;
       }
       if (response.ok) {
@@ -92,19 +100,27 @@ export function createPoliteClient(options: PoliteClientOptions): PoliteClient {
         return { status: 'redirect', location: response.headers.get('location') };
       }
       if (response.status === 404 || response.status === 410) return { status: 'missing' };
+      const askedMs = retryAfterMs(response, now());
+      if (response.status === 429 || askedMs > MAX_RETRY_AFTER_MS) {
+        stopped = new WorkerError(
+          'source_asked_to_stop',
+          `The source asked for a pause with ${String(response.status)}: ${path}`,
+        );
+        throw stopped;
+      }
       if (!isRetryableStatus(response.status) || attempt >= attempts) {
         throw new WorkerError(
           'source_download_failed',
           `Request failed with ${String(response.status)}: ${path}`,
         );
       }
-      pauseMs = Math.max(options.minIntervalMs * 2 ** attempt, retryAfterMs(response));
+      pauseMs = Math.max(intervalMs() * 2 ** attempt, askedMs);
     }
   }
 
   async function readRobots(): Promise<RobotsPolicy> {
     const response = await request(ROBOTS_PATH);
-    if (response.status === 'missing') return { isAllowed: () => true };
+    if (response.status === 'missing') return { isAllowed: () => true, crawlDelayMs: null };
     if (response.status !== 'ok') {
       throw new WorkerError('source_robots_unreadable', 'robots.txt could not be read');
     }
@@ -115,7 +131,16 @@ export function createPoliteClient(options: PoliteClientOptions): PoliteClient {
     if (!options.allowedPaths.some((pattern) => pattern.test(path))) {
       throw new WorkerError('source_path_not_allowed', `Path outside the agreed pages: ${path}`);
     }
-    robots ??= await readRobots();
+    if (stopped) throw stopped;
+    try {
+      robots ??= await readRobots();
+    } catch (error) {
+      stopped =
+        error instanceof Error
+          ? error
+          : new WorkerError('source_robots_unreadable', 'robots.txt could not be read');
+      throw stopped;
+    }
     if (!robots.isAllowed(path)) {
       throw new WorkerError('source_disallowed_by_robots', `robots.txt disallows ${path}`);
     }

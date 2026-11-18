@@ -35,13 +35,19 @@ describe('statisticsPagePath', () => {
     expect(indexCsvPath('2026-10-01')).toBe('/raport-piata/2026-10.csv');
   });
 
-  it.each(['/anunt/123', '/api/listings', '/', '/apartamente-de-vanzare/timisoara/cetate/x'])(
-    'leaves %s outside the agreed pages',
-    (path) => {
-      const patterns = [...APARTAMENTE_ORG_PAGE_PATHS, ...APARTAMENTE_ORG_INDEX_PATHS];
-      expect(patterns.some((pattern) => pattern.test(path))).toBe(false);
-    },
-  );
+  it.each([
+    '/anunt/123',
+    '/api/listings',
+    '/',
+    '/apartamente-de-vanzare/timisoara/cetate/x',
+    '/apartamente-de-vanzare/brasov',
+    '/apartamente-de-inchiriat/brasov/centru',
+    '/apartamente-de-vanzare/timisoara/sub-pretul-zonei',
+    '/apartamente-de-vanzare/timisoara/2-camere',
+  ])('leaves %s outside the agreed pages', (path) => {
+    const patterns = [...APARTAMENTE_ORG_PAGE_PATHS, ...APARTAMENTE_ORG_INDEX_PATHS];
+    expect(patterns.some((pattern) => pattern.test(path))).toBe(false);
+  });
 });
 
 describe('parseStatisticsPage', () => {
@@ -160,7 +166,7 @@ describe('parseIndexCsv', () => {
       apartment_count: 9427,
       median_eur: 108000,
       listing_count: null,
-      source_url: 'https://apartamente.org/raport-piata/2026-10',
+      source_url: 'https://apartamente.org/raport-piata/2026-10.csv',
     });
   });
 

@@ -108,6 +108,37 @@ export async function hasCompletedMarketImport(
   return row?.is_imported ?? false;
 }
 
+export async function claimStatisticsRun(
+  sql: Sql,
+  source: string,
+  runMonth: string,
+  isRetry: boolean,
+): Promise<boolean> {
+  const claimed = await sql`
+    insert into private.market_statistics_runs (source, run_month)
+    values (${source}, ${runMonth}::date)
+    on conflict (source, run_month) do update
+      set started_at = now(), finished_at = null, outcome = null, import_id = null
+      where ${isRetry}::boolean
+    returning source
+  `;
+  return claimed.length > 0;
+}
+
+export async function finishStatisticsRun(
+  sql: Sql,
+  source: string,
+  runMonth: string,
+  outcome: 'imported' | 'unchanged' | 'failed',
+  importId: string | null,
+): Promise<void> {
+  await sql`
+    update private.market_statistics_runs
+    set outcome = ${outcome}, import_id = ${importId}, finished_at = now()
+    where source = ${source} and run_month = ${runMonth}::date
+  `;
+}
+
 export async function listCoveredCities(
   sql: Sql,
   citySlugs: readonly string[],

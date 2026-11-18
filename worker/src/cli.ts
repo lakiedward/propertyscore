@@ -56,6 +56,7 @@ export type ImportCityAveragesCommand = {
 export type ImportMarketStatisticsCommand = {
   command: 'import-market-statistics';
   sources: MarketStatisticsSource[];
+  isRetry: boolean;
   citySlugs: string[];
   period: string;
 };
@@ -103,6 +104,7 @@ const importCityAveragesSchema = z.object({
 const importMarketStatisticsSchema = z.object({
   source: z.array(z.enum(MARKET_STATISTICS_SOURCES)).default([...MARKET_STATISTICS_SOURCES]),
   city: z.array(z.string().regex(CITY_SLUG)).default([]),
+  retry: z.boolean().default(false),
 });
 
 function isCategoryKey(value: string): value is CategoryKey {
@@ -261,6 +263,7 @@ function parseImportMarketStatistics(
     options: {
       source: { type: 'string', multiple: true },
       city: { type: 'string', multiple: true },
+      retry: { type: 'boolean' },
     },
   });
   const parsed = importMarketStatisticsSchema.safeParse(values);
@@ -276,6 +279,7 @@ function parseImportMarketStatistics(
     sources: MARKET_STATISTICS_SOURCES.filter((source) => parsed.data.source.includes(source)),
     citySlugs: parsed.data.city,
     period: `${currentPeriod(now)}-01`,
+    isRetry: parsed.data.retry,
   };
 }
 

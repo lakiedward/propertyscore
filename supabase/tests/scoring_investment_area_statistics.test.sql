@@ -2,11 +2,16 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(15);
+select plan(20);
 
 select ok(
   (select relrowsecurity from pg_class where oid = 'private.market_area_statistics'::regclass),
   'Row level security is enabled on the area statistics'
+);
+
+select ok(
+  (select relrowsecurity from pg_class where oid = 'private.market_statistics_runs'::regclass),
+  'Row level security is enabled on the statistics runs'
 );
 
 select id as timisoara_id from public.cities where slug = 'timisoara' \gset
@@ -182,7 +187,31 @@ select is(
   'Imports older than the requested start are left out'
 );
 
+insert into private.market_statistics_runs (source, run_month)
+values ('sample_pages', '2026-10-01');
+
+select throws_ok(
+  $$ insert into private.market_statistics_runs (source, run_month) values ('sample_pages', '2026-10-01') $$,
+  '23505',
+  null,
+  'A source has one run per month'
+);
+
+select throws_ok(
+  $$ update private.market_statistics_runs set outcome = 'imported' where source = 'sample_pages' $$,
+  '23514',
+  null,
+  'A run gets its outcome only together with the time it finished'
+);
+
 set local role anon;
+
+select throws_ok(
+  $$ select count(*) from private.market_statistics_runs $$,
+  '42501',
+  null,
+  'A visitor cannot read the statistics runs'
+);
 
 select throws_ok(
   $$ select count(*) from private.market_area_statistics $$,
@@ -198,6 +227,13 @@ select throws_ok(
   '42501',
   null,
   'A signed-in user cannot read the area statistics'
+);
+
+select throws_ok(
+  $$ select count(*) from private.market_statistics_runs $$,
+  '42501',
+  null,
+  'A signed-in user cannot read the statistics runs'
 );
 
 select * from finish();

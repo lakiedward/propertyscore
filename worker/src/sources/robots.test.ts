@@ -43,4 +43,12 @@ describe('parseRobots', () => {
       true,
     );
   });
+
+  it('reads the crawl delay of the group that applies', () => {
+    const text =
+      'User-agent: OtherBot\nCrawl-delay: 30\n\nUser-agent: *\nCrawl-delay: 4\nAllow: /\n';
+    expect(parseRobots(text, 'PropertyScore').crawlDelayMs).toBe(4000);
+    expect(parseRobots(text, 'OtherBot').crawlDelayMs).toBe(30_000);
+    expect(parseRobots(ROBOTS, 'PropertyScore').crawlDelayMs).toBeNull();
+  });
 });

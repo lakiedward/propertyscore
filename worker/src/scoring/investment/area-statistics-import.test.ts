@@ -17,7 +17,7 @@ const databaseUrl = process.env.DATABASE_URL;
 const silentLogger = createLogger('error', () => undefined);
 const PERIOD = '2031-03-01';
 const PREVIOUS_PERIOD = '2031-02-01';
-const CONTACT = 'https://propertyscore.example.test/contact';
+const CONTACT = 'contact@propertyscore.example.test';
 
 const PLAUSIBLE = {
   area_m2: [12, 400] as [number, number],
@@ -131,19 +131,21 @@ describe.skipIf(!databaseUrl)('market statistics import', () => {
   };
 
   async function removeTestImports(): Promise<void> {
+    await sql`delete from private.market_statistics_runs where run_month = ${PERIOD}::date`;
     await sql`
       delete from private.market_imports
       where period in (${PERIOD}::date, ${PREVIOUS_PERIOD}::date)
     `;
   }
 
-  function runImport() {
+  function runImport(isRetry = false) {
     return importAreaStatistics({
       sql,
       sources: ['apartamente_org', 'apartamente_org_index', 'imospot_index'],
       citySlugs: ['timisoara'],
       contact: CONTACT,
       period: PERIOD,
+      isRetry,
       params,
       logger: silentLogger,
       fetch: stubFetch,
@@ -225,12 +227,62 @@ describe.skipIf(!databaseUrl)('market statistics import', () => {
     });
   });
 
-  it('does not read a source again in the month it was imported', async () => {
+  it('sends no request for a source already read this month', async () => {
     requested.length = 0;
     const results = await runImport();
 
-    expect(results.map((result) => result.importId)).toEqual([null, null, null]);
-    expect(requested.some((request) => request.url.includes('/apartamente-de-'))).toBe(false);
-    expect(requested.some((request) => request.url.includes('imospot'))).toBe(false);
+    expect(results.map((result) => result.outcome)).toEqual([
+      'already_read',
+      'already_read',
+      'already_read',
+    ]);
+    expect(requested).toHaveLength(0);
+  });
+
+  it('asks only for the edition it does not have when a person retries the month', async () => {
+    requested.length = 0;
+    const results = await runImport(true);
+
+    expect(results.map((result) => result.outcome)).toEqual([
+      'unchanged',
+      'unchanged',
+      'unchanged',
+    ]);
+    expect(requested.map((request) => new URL(request.url).pathname)).toEqual([
+      '/robots.txt',
+      '/raport-piata/2031-03.csv',
+    ]);
+    const runs = await sql<{ outcome: string | null }[]>`
+      select outcome from private.market_statistics_runs where run_month = ${PERIOD}::date
+    `;
+    expect(runs.map((run) => run.outcome)).toEqual(['unchanged', 'unchanged', 'unchanged']);
+  });
+
+  it('remembers a failed run, so the month is not read again by itself', async () => {
+    await sql`delete from private.market_statistics_runs where run_month = ${PERIOD}::date`;
+    await sql`delete from private.market_imports where source = 'imospot_index' and period = ${PERIOD}::date`;
+    requested.length = 0;
+    const refusingFetch: typeof fetch = (input) => {
+      requested.push({ url: requestUrl(input), userAgent: null });
+      return Promise.resolve(new Response('', { status: 429 }));
+    };
+    const options = {
+      sql,
+      sources: ['imospot_index'] as const,
+      citySlugs: ['timisoara'],
+      contact: CONTACT,
+      period: PERIOD,
+      isRetry: false,
+      params,
+      logger: silentLogger,
+      fetch: refusingFetch,
+      minIntervalMs: 0,
+    };
+
+    await expect(importAreaStatistics(options)).rejects.toMatchObject({
+      code: 'source_asked_to_stop',
+    });
+    expect(await importAreaStatistics(options)).toMatchObject([{ outcome: 'already_read' }]);
+    expect(requested).toHaveLength(1);
   });
 });

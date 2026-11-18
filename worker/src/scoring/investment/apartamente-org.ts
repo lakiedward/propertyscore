@@ -26,8 +26,13 @@ export const APARTAMENTE_ORG_CONSENTED_CITIES: readonly string[] = [
   'targu-mures',
 ];
 
+const RESERVED_ZONE_SLUG = '\\d+-camere|sub-pretul-zonei';
+
 export const APARTAMENTE_ORG_PAGE_PATHS: readonly RegExp[] = [
-  /^\/apartamente-de-(vanzare|inchiriat)\/[a-z0-9]+(-[a-z0-9]+)*(\/[a-z0-9]+(-[a-z0-9]+)*)?$/,
+  new RegExp(
+    `^/apartamente-de-(vanzare|inchiriat)/(${APARTAMENTE_ORG_CONSENTED_CITIES.join('|')})` +
+      `(/(?!(${RESERVED_ZONE_SLUG})$)[a-z0-9]+(-[a-z0-9]+)*)?$`,
+  ),
 ];
 
 export const APARTAMENTE_ORG_INDEX_PATHS: readonly RegExp[] = [
@@ -41,7 +46,14 @@ const TRANSACTION_PATHS: Record<Transaction, string> = {
   rent: 'apartamente-de-inchiriat',
 };
 
-const RESERVED_ZONE_SLUGS = /^(\d+-camere|sub-pretul-zonei)$/;
+const RESERVED_ZONE_SLUGS = new RegExp(`^(${RESERVED_ZONE_SLUG})$`);
+
+const BUCHAREST_DAY = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Europe/Bucharest',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
 
 type StatisticsPageZone = { slug: string; name: string };
 
@@ -177,7 +189,7 @@ export function parseStatisticsPage(
     property_type: 'apartment',
     rooms_min: null,
     rooms_max: null,
-    observed_on: dataset.dateModified.slice(0, 10),
+    observed_on: BUCHAREST_DAY.format(new Date(dataset.dateModified)),
     listing_count: measured(dataset, 'anunțuri'),
     apartment_count: measured(dataset, 'apartamente distincte'),
     median_eur: measured(dataset, 'preț median'),
@@ -252,7 +264,7 @@ export async function parseIndexCsv(
       median_eur_m2: parsePositiveNumber(raw.eur_mp_median),
       p25_eur_m2: null,
       p75_eur_m2: null,
-      source_url: `${APARTAMENTE_ORG_ORIGIN}/raport-piata/${period.slice(0, 7)}`,
+      source_url: `${APARTAMENTE_ORG_ORIGIN}${indexCsvPath(period)}`,
     });
   }
   if (rows.length === 0 && skipped === 0) {

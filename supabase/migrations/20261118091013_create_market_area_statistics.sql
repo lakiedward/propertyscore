@@ -162,3 +162,30 @@ as $$
 $$;
 
 comment on function private.market_area_statistics_at(uuid, timestamptz, date) is 'The statistics of one city and its zones as a report sees them: for each source, its latest monthly import completed before the cutoff and not older than p_from.';
+
+create table private.market_statistics_runs (
+  source text not null check (source ~ '^[a-z][a-z0-9_]{1,39}$'),
+  run_month date not null check (run_month = date_trunc('month', run_month)::date),
+  outcome text check (outcome in ('imported', 'unchanged', 'failed')),
+  import_id uuid references private.market_imports (id) on delete set null,
+  started_at timestamptz not null default now(),
+  finished_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (source, run_month),
+  constraint market_statistics_runs_finished_with_outcome check (
+    (outcome is null) = (finished_at is null)
+  )
+);
+
+comment on table private.market_statistics_runs is 'One row per source and calendar month in which the worker read its published statistics, written before the first request. A source with a row is not read again that month, whatever the outcome, unless a person asks for a retry. Outcome: imported (a new import), unchanged (the edition was already imported), failed; null while the run is in progress or after a crash.';
+
+create index market_statistics_runs_import_id_idx on private.market_statistics_runs (import_id);
+
+alter table private.market_statistics_runs enable row level security;
+
+create trigger market_statistics_runs_set_updated_at
+  before update on private.market_statistics_runs
+  for each row execute function private.set_updated_at();
+
+revoke all on private.market_statistics_runs from anon, authenticated;

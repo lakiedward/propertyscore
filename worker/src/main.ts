@@ -144,6 +144,7 @@ async function runCommand(
         citySlugs: command.citySlugs,
         contact: env.MARKET_SOURCE_CONTACT,
         period: command.period,
+        isRetry: command.isRetry,
         params: await readActiveInvestmentParams(sql),
         logger,
       });

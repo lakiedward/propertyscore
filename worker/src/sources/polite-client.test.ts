@@ -109,4 +109,62 @@ describe('createPoliteClient', () => {
       code: 'source_download_failed',
     });
   });
+
+  it('waits as long as the server asks, in seconds or as a date', async () => {
+    const { client, waits } = harness((path, attempt) => {
+      if (path === '/robots.txt') return new Response(ROBOTS);
+      if (attempt > 1) return new Response('ok');
+      const retryAfter = path === '/statistici/secunde' ? '30' : new Date(120_000).toUTCString();
+      return new Response('', { status: 503, headers: { 'retry-after': retryAfter } });
+    });
+    await client.get('/statistici/secunde');
+    expect(waits).toEqual([2000, 30_000]);
+    await client.get('/statistici/data');
+    expect(waits.slice(2)).toEqual([2000, 85_600]);
+  });
+
+  it.each([
+    ['a 429', new Response('', { status: 429, headers: { 'retry-after': '5' } })],
+    [
+      'a pause longer than two minutes',
+      new Response('', { status: 503, headers: { 'retry-after': '3600' } }),
+    ],
+  ])('stops for good on %s, without a retry', async (_case, refusal) => {
+    const { client, calls } = harness((path) =>
+      path === '/robots.txt' ? new Response(ROBOTS) : refusal.clone(),
+    );
+    await expect(client.get('/statistici/oras')).rejects.toMatchObject({
+      code: 'source_asked_to_stop',
+    });
+    await expect(client.get('/statistici/zona')).rejects.toMatchObject({
+      code: 'source_asked_to_stop',
+    });
+    expect(calls).toHaveLength(2);
+  });
+
+  it.each([
+    ['fails', () => new Response('', { status: 503 }), 'source_download_failed', 3],
+    [
+      'redirects',
+      () => new Response(null, { status: 301, headers: { location: '/robots-nou.txt' } }),
+      'source_robots_unreadable',
+      1,
+    ],
+  ] as const)('requests no page when robots.txt %s', async (_case, respond, code, requests) => {
+    const { client, calls } = harness(respond);
+    await expect(client.get('/statistici/oras')).rejects.toMatchObject({ code });
+    await expect(client.get('/statistici/zona')).rejects.toMatchObject({ code });
+    expect(calls.map((call) => new URL(call.url).pathname)).toEqual(
+      Array.from({ length: requests }, () => '/robots.txt'),
+    );
+  });
+
+  it('keeps the crawl delay of robots.txt when it is longer than its own pause', async () => {
+    const { client, waits } = harness((path) =>
+      path === '/robots.txt' ? new Response('User-agent: *\nCrawl-delay: 5\n') : new Response('ok'),
+    );
+    await client.get('/statistici/a');
+    await client.get('/statistici/b');
+    expect(waits).toEqual([5000, 5000]);
+  });
 });
