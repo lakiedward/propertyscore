@@ -19,6 +19,8 @@ describe('buildReportDocument', () => {
     expect(document.html).toContain(report.addressText);
     expect(document.html).toContain('risc moderat, nu ridicat');
     expect(document.html).toContain('preț cerut');
+    expect(document.html).toContain('class="inv-ex">exemplu');
+    expect(document.layoutWidthPx).toBe(1120);
     expect(document.allowedHosts).toEqual(['tiles.openfreemap.org']);
     expect(document.assets.has('/assets/maplibre-gl.mjs')).toBe(true);
     expect(document.assets.has('/assets/fonts/manrope-latin-ext.woff2')).toBe(true);

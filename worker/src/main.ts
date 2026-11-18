@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
 import { parseCommand, type WorkerCommand } from './cli.ts';
-import { type Env, readEnv } from './config/env.ts';
+import { type Env, readDocumentEnv, readEnv } from './config/env.ts';
 import { createSql, type Sql } from './db/sql.ts';
 import { errorCauseExit, errorCauseTail, errorCode, WorkerError } from './lib/errors.ts';
 import { createLogger, type Logger } from './lib/logger.ts';
@@ -72,8 +72,7 @@ async function runCommand(
       return;
     case 'render-report-pdf':
       await renderReportPdf({
-        sql,
-        source: command.source,
+        source: 'reportId' in command.source ? { ...command.source, sql } : command.source,
         outputPath: command.outputPath,
         chromiumPath: env.CHROMIUM_PATH,
         logger,
@@ -169,9 +168,19 @@ async function runCommand(
 }
 
 async function main(): Promise<void> {
+  const command = parseCommand(process.argv.slice(2), new Date());
+  if (command.command === 'render-report-pdf' && 'inputPath' in command.source) {
+    const documentEnv = readDocumentEnv();
+    await renderReportPdf({
+      source: command.source,
+      outputPath: command.outputPath,
+      chromiumPath: documentEnv.CHROMIUM_PATH,
+      logger: createLogger(documentEnv.LOG_LEVEL, undefined, { service: 'worker' }),
+    });
+    return;
+  }
   const env = readEnv();
   const logger = createLogger(env.LOG_LEVEL, undefined, { service: 'worker' });
-  const command = parseCommand(process.argv.slice(2), new Date());
   const sql = createSql(env.DATABASE_URL);
   try {
     await runCommand(command, sql, env, logger);

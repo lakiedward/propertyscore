@@ -36,6 +36,7 @@ const safetyMomentSchema = z.object({
       nearest_m: z.number().nullable(),
     }),
   ),
+  far_types: z.array(z.string()).default([]),
 });
 
 const safetySchema = z.object({
@@ -92,9 +93,28 @@ const accessibilitySchema = z.object({
       wait: z.number().nullable(),
       ride: z.number().nullable(),
       transfers: z.number().nullable(),
-      route: z.object({ ref: z.string().nullable(), mode: z.string() }).nullable(),
+      route: z
+        .object({
+          ref: z.string().nullable(),
+          mode: z.string(),
+          colour: z.string().nullable().optional(),
+        })
+        .nullable(),
     }),
   ),
+  reach: z
+    .object({
+      minutes: z.number(),
+      share_pct: z.number(),
+      neighbourhoods_reached: z.number(),
+      neighbourhoods_total: z.number(),
+      isochrones: z.array(z.object({ minutes: z.number(), geometry })),
+      neighbourhoods: z.array(
+        z.object({ name: z.string(), location: position, minutes: z.number().nullable() }),
+      ),
+    })
+    .nullable()
+    .default(null),
 });
 
 const fifteenMinuteSchema = z.object({
@@ -102,10 +122,13 @@ const fifteenMinuteSchema = z.object({
   covered: z.number(),
   total: z.number(),
   distance_method: z.string(),
-  groups: z.array(z.object({ key: z.string(), n15: z.number() })),
+  groups: z.array(
+    z.object({ key: z.string(), n15: z.number(), typical_n15: z.number().nullable().optional() }),
+  ),
   categories: z.array(
     z.object({
       key: z.string(),
+      group: z.string().optional(),
       t1_min: z.number().nullable(),
       n15: z.number(),
       status: z.string(),
@@ -222,13 +245,35 @@ const seismicSchema = z.object({
   level: z.string().nullable(),
   comparison: z.array(z.object({ slug: z.string(), ag_g: z.number() })),
   building: z.object({ construction_year: z.number(), period: z.string() }).nullable(),
+  earthquakes: z
+    .object({
+      catalogue: z.string(),
+      since_year: z.number(),
+      radius_km: z.number(),
+      min_magnitude: z.number(),
+      events: z.array(
+        z.object({
+          date: z.string(),
+          magnitude: z.number(),
+          distance_km: z.number(),
+          place: z.string().nullable(),
+          location: position,
+        }),
+      ),
+    })
+    .nullable()
+    .default(null),
 });
 
 const marketSource = z.object({
   source: z.string(),
   period: z.string(),
-  url: z.string().nullable(),
+  url: z
+    .string()
+    .nullable()
+    .transform((value) => (value?.startsWith('https://') ? value : null)),
   observed_on: z.string().nullable().optional(),
+  label: z.string().optional(),
 });
 
 const investmentSchema = z.object({
@@ -252,9 +297,10 @@ const investmentSchema = z.object({
     .looseObject({
       median_eur: z.number().nullable().optional(),
       estimate_eur: z.number().nullable().optional(),
+      is_example: z.boolean().optional(),
     })
     .nullable(),
-  yield: z.object({ gross_pct: z.number().nullable() }),
+  yield: z.object({ gross_pct: z.number().nullable(), is_example: z.boolean().optional() }),
   nearby: z
     .array(
       z.object({

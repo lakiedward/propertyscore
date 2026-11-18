@@ -1,4 +1,4 @@
-import { chromium, type Route } from 'playwright-core';
+import { chromium, type Page, type Route } from 'playwright-core';
 
 import { WorkerError } from '../lib/errors.ts';
 
@@ -8,6 +8,7 @@ export type PdfDocument = {
   html: string;
   assets: ReadonlyMap<string, PdfAsset>;
   allowedHosts: readonly string[];
+  layoutWidthPx?: number;
 };
 
 export type RenderPdfOptions = {
@@ -18,7 +19,8 @@ export type RenderPdfOptions = {
 const DOCUMENT_ORIGIN = 'https://document.pdf.invalid';
 const DOCUMENT_PATH = '/index.html';
 const DEFAULT_TIMEOUT_MS = 90_000;
-const A4_VIEWPORT = { width: 794, height: 1123 };
+const A4_WIDTH_PX = 794;
+const A4_HEIGHT_PX = 1123;
 const CANVAS_SCALE = 2;
 const READY_EXPRESSION = 'document.fonts.ready.then(() => globalThis.pdfReady)';
 const CHROMIUM_ARGS = ['--no-sandbox', '--disable-dev-shm-usage', '--enable-unsafe-swiftshader'];
@@ -42,6 +44,20 @@ async function answer(route: Route, document: PdfDocument): Promise<void> {
   await route.fulfill({ contentType: asset.contentType, body: asset.body });
 }
 
+async function waitUntilReady(page: Page, timeoutMs: number): Promise<void> {
+  let timer: NodeJS.Timeout | undefined;
+  const expired = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => {
+      reject(new WorkerError('pdf_document_not_ready', 'The document did not finish drawing'));
+    }, timeoutMs);
+  });
+  try {
+    await Promise.race([page.evaluate(READY_EXPRESSION), expired]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function renderPdf(
   document: PdfDocument,
   options: RenderPdfOptions = {},
@@ -55,20 +71,27 @@ export async function renderPdf(
       });
     });
   try {
-    const page = await browser.newPage({ viewport: A4_VIEWPORT, deviceScaleFactor: CANVAS_SCALE });
+    const scale = A4_WIDTH_PX / (document.layoutWidthPx ?? A4_WIDTH_PX);
+    const page = await browser.newPage({
+      viewport: {
+        width: Math.round(A4_WIDTH_PX / scale),
+        height: Math.round(A4_HEIGHT_PX / scale),
+      },
+      deviceScaleFactor: CANVAS_SCALE,
+    });
     await page.emulateMedia({ media: 'print' });
     page.setDefaultTimeout(timeoutMs);
     const pageErrors: string[] = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
     await page.route('**/*', (route) => answer(route, document));
     await page.goto(`${DOCUMENT_ORIGIN}${DOCUMENT_PATH}`, { waitUntil: 'load' });
-    await page.evaluate(READY_EXPRESSION);
+    await waitUntilReady(page, timeoutMs);
     if (pageErrors.length > 0) {
       throw new WorkerError('pdf_page_failed', 'The document page raised a script error', {
         cause: new Error(pageErrors.join('\n')),
       });
     }
-    return await page.pdf({ preferCSSPageSize: true, printBackground: true });
+    return await page.pdf({ preferCSSPageSize: true, printBackground: true, scale });
   } catch (error) {
     if (error instanceof WorkerError) throw error;
     throw new WorkerError('pdf_render_failed', 'The PDF could not be rendered', { cause: error });

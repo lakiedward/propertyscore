@@ -1,25 +1,43 @@
 import { CATEGORY_KEYS, type CategoryKey } from '../../scoring/categories.ts';
-import { scoreBand } from '../bands.ts';
+import { SCORE_BANDS, scoreBand } from '../bands.ts';
 import type { ChapterOutput } from '../chapter.ts';
-import { card, chapter, chapterHead, scoreRing } from '../components.ts';
-import { esc, formatDate, formatMonth, lowerFirst } from '../format.ts';
-import { CATEGORY_COLORS, CATEGORY_GROUPS, CATEGORY_LABELS } from '../labels.ts';
-import { around, ring, type MapSpec } from '../maps.ts';
+import { categoryTile } from '../components.ts';
+import { esc, formatDate, formatNumber, lowerFirst } from '../format.ts';
+import { icon, logo } from '../icons.ts';
+import { CATEGORY_GROUPS, DESTINATION_KINDS } from '../labels.ts';
+import {
+  addressMarker,
+  around,
+  mapHtml,
+  ring,
+  within,
+  type MapMarker,
+  type MapSpec,
+} from '../maps.ts';
 import type { CategorySummary, ReportData } from '../report-data.ts';
+import { CATEGORY_THEME } from '../theme.ts';
 
-type Scored = { key: CategoryKey; score: number; summary: CategorySummary };
+type Scored = { key: CategoryKey; score: number; average: number; summary: CategorySummary };
 
 const HIGHLIGHTS = 3;
 const WEAK_POINT_BELOW = 55;
 const NEAR_RING_M = 500;
-const WIDE_RING_M = 1000;
-const HISTOGRAM_HEIGHT_MM = 34;
+const ZONE_REACH_M = 4000;
+const RING_CIRCUMFERENCE = 345.58;
+const HISTOGRAM = { width: 640, height: 190, top: 34 };
+const STACK_LABEL_FROM = 6;
 
 function scoredCategories(report: ReportData): Scored[] {
   return CATEGORY_KEYS.flatMap((key) => {
     const summary = report.categories[key];
-    return summary.score === null ? [] : [{ key, score: Math.round(summary.score), summary }];
-  }).sort((left, right) => right.score - left.score);
+    if (summary.score === null) return [];
+    const score = Math.round(summary.score);
+    return [{ key, score, average: Math.round(summary.city_avg ?? score), summary }];
+  });
+}
+
+function isFlat(summary: CategorySummary): boolean {
+  return summary.city_min === summary.city_max || summary.histogram.filter(Boolean).length <= 1;
 }
 
 function zonePosition(report: ReportData): string {
@@ -32,40 +50,32 @@ function zonePosition(report: ReportData): string {
   return `O zonă sub media din ${city}`;
 }
 
-function headline(report: ReportData, scored: readonly Scored[]): string {
-  const weakest = scored.at(-1);
-  const position = esc(zonePosition(report));
-  if (!weakest || weakest.score >= WEAK_POINT_BELOW) return position;
-  return `${position}, cu un punct slab: <mark>${esc(lowerFirst(CATEGORY_LABELS[weakest.key]))}</mark>`;
+function weakest(scored: readonly Scored[]): Scored | undefined {
+  const lowest = [...scored].sort((left, right) => left.score - right.score)[0];
+  return lowest && lowest.score < WEAK_POINT_BELOW ? lowest : undefined;
 }
 
-function againstCity(summary: CategorySummary, score: number): string {
-  if (summary.city_avg === null) return 'Fără medie pe oraș.';
-  const average = Math.round(summary.city_avg);
-  if (score > average) return `Peste media orașului (${String(average)}).`;
-  if (score < average) return `Sub media orașului (${String(average)}).`;
-  return `La fel ca media orașului (${String(average)}).`;
+function heroLead(scored: readonly Scored[]): string {
+  const strong = [...scored]
+    .sort((left, right) => right.score - right.average - (left.score - left.average))
+    .slice(0, 2)
+    .map((item) => lowerFirst(CATEGORY_THEME[item.key].name));
+  const weak = weakest(scored);
+  const lead =
+    strong.length === 0
+      ? 'Scorurile descriu zona din jurul adresei.'
+      : `Zona stă cel mai bine la ${strong.join(' și ')}.`;
+  return weak
+    ? `${lead} Punctul slab e ${lowerFirst(CATEGORY_THEME[weak.key].name)}.`
+    : `${lead} Niciun scor nu e slab.`;
 }
 
-function summaryCard(item: Scored): string {
-  const better =
-    item.summary.percentile === null
-      ? ''
-      : ` Mai bine decât ${String(Math.round(item.summary.percentile))}% din zone.`;
-  return `<section class="card summary-card"><span class="value">${String(item.score)}<small> /100</small></span><b>${esc(CATEGORY_LABELS[item.key])} · ${esc(scoreBand(item.score).label)}</b><p>${esc(againstCity(item.summary, item.score))}${esc(better)}</p></section>`;
+function scoreRing(score: number | null): string {
+  const offset = RING_CIRCUMFERENCE * (1 - (score ?? 0) / 100);
+  return `<div class="ring2" style="--rs:84px"><svg viewBox="0 0 124 124"><circle class="t" cx="62" cy="62" r="55"/><circle class="v" cx="62" cy="62" r="55" stroke-dasharray="${String(RING_CIRCUMFERENCE)}" style="stroke-dashoffset:${offset.toFixed(2)}"/></svg><div class="n"><b>${score === null ? '–' : String(Math.round(score))}</b><span>/100</span></div></div>`;
 }
 
-function highlights(scored: readonly Scored[]): string {
-  const good = scored.slice(0, HIGHLIGHTS);
-  const watch = scored.slice(HIGHLIGHTS).slice(-HIGHLIGHTS).reverse();
-  const block = (title: string, tone: string, items: readonly Scored[]) =>
-    items.length === 0
-      ? ''
-      : `<p class="group-title ${tone}">${title}</p><div class="grid cols-3">${items.map(summaryCard).join('')}</div>`;
-  return block('Ce e bun', 'good', good) + block('La ce să fii atent', 'watch', watch);
-}
-
-function cover(report: ReportData, scored: readonly Scored[], map: MapSpec): string {
+function hero(report: ReportData, scored: readonly Scored[], map: MapSpec): string {
   const { zone } = report;
   const band = zone.score === null ? 'Fără date' : scoreBand(Math.round(zone.score)).label;
   const average =
@@ -74,117 +84,245 @@ function cover(report: ReportData, scored: readonly Scored[], map: MapSpec): str
     zone.city_max === null || zone.city_max === undefined
       ? ''
       : ` Cel mai bun scor ${String(Math.round(zone.city_max))}.`;
-  const lead = `Am calculat ${String(scored.length)} scoruri pe o rază de până la 1,2 km, plus riscul seismic și investiția ca context. Fiecare scor are capitolul lui.`;
-  return `<section class="cover"><div class="hero"><div class="brand"><span>Smart<b>Check</b></span><span>PropertyScore</span></div><p class="eyebrow">Smart Check · Raport nr. ${String(report.number)} · ${esc(formatDate(report.generatedAt))}</p><h1>${esc(report.addressText)}</h1><div class="hero-grid"><div class="hero-meta"><p>Calculat pe datele din ${esc(formatMonth(report.snapshot.period))}.</p><p>Scorul descrie zona, nu apartamentul.</p></div><div class="zone-card">${scoreRing(zone.score, 22)}<div><p class="eyebrow">Scor de zonă</p><strong>${esc(band)}</strong><p>${esc(average + best)}</p></div></div></div></div><div class="cover-body"><header class="chapter-head" style="margin:0"><p class="eyebrow">Pe scurt · ${String(scored.length)} scoruri · 2 contexte</p><h2>${headline(report, scored)}</h2><p class="lead">${esc(lead)}</p></header><div>${highlights(scored)}</div><div class="cover-map map"><div class="map-canvas" id="${map.id}"></div><span class="map-credit">© OpenStreetMap · cercuri la 500 m și 1 km</span></div></div></section>`;
+  const area = report.sections.investment?.declared.area_m2;
+  const declared =
+    area === null || area === undefined
+      ? `<li>${icon('info')}Fără detalii declarate</li>`
+      : `<li>${icon('info')}Suprafață declarată: ${formatNumber(area)} m²</li>`;
+  const mapKey = `<div class="key"><b>Pe hartă</b><span><i style="background:#103F32;border-radius:50%;width:10px;height:10px"></i>Adresa</span><span><i style="background:#8FB05A"></i>Parcuri și grădini</span><span><i style="background:transparent;border:2px solid #3F6E1B;height:10px;width:10px;border-radius:50%"></i>Raza de ${String(NEAR_RING_M)} m</span></div>`;
+  return `<section class="hD"><div class="wrap hd-in"><span class="brand">${logo('scoreDark', 'lg')}<span class="lk score"><span>Property</span><b>Score</b></span></span><span class="hbtn sc">${logo('smart', 'lg')}<span class="lk sc"><span>Smart</span><b>Check</b></span></span></div><div class="wrap hD-g"><div class="hD-txt"><span class="eb-l">Smart Check · raport nr. ${String(report.number)} · ${esc(formatDate(report.generatedAt))}</span><h1>${esc(report.addressText)}</h1><p class="lead">${esc(heroLead(scored))}</p><span class="meta-l">${icon('db')}Calculat pe datele din ${esc(formatDate(report.snapshot.period))} · rază de până la 1,2 km</span><ul class="facts"><li class="ok2">${icon('check')}Raport gata</li>${declared}</ul></div><div class="hD-vis"><div class="hD-off"></div><div class="hD-map">${mapHtml(map, mapKey)}</div><div class="hD-float">${scoreRing(zone.score)}<div class="zt"><span class="eyebrow">Scor de zonă</span><strong>${esc(band)}</strong><small>${esc(average + best)}</small></div></div><span class="hD-lab">${icon('layers')}Spații verzi în jurul adresei · OpenStreetMap</span></div></div></section>`;
 }
 
-function scoreBars(report: ReportData): string {
-  const totalWeight =
-    CATEGORY_KEYS.reduce((sum, key) => sum + report.categories[key].weight, 0) || 1;
-  const lines = CATEGORY_GROUPS.map((group) => {
-    const items = group.keys.map((key) => {
-      const summary = report.categories[key];
-      const weight = `${String(Math.round((summary.weight / totalWeight) * 100))}%`;
-      const name = `<span class="name"><b>${esc(CATEGORY_LABELS[key])}</b><small>${weight}</small></span>`;
-      if (summary.score === null) {
-        return `${name}<span class="track"></span><span class="diff">fără date</span>`;
-      }
-      const score = Math.round(summary.score);
-      const average =
-        summary.city_avg === null
-          ? ''
-          : `<span class="avg" style="left:${String(summary.city_avg)}%"></span>`;
-      const delta = summary.city_avg === null ? null : score - Math.round(summary.city_avg);
-      const diff =
-        delta === null
-          ? ''
-          : delta === 0
-            ? 'la media orașului'
-            : `${delta > 0 ? '+' : '−'}${String(Math.abs(delta))} față de oraș`;
-      const tone = delta === null || delta === 0 ? '' : delta > 0 ? ' up' : ' down';
-      return `${name}<span class="track"><span class="fill" style="width:${String(score)}%;--fill:${scoreBand(score).fill}"></span>${average}<span class="value" style="left:${String(score)}%">${String(score)}</span></span><span class="diff${tone}">${diff}</span>`;
-    });
-    return `<span class="section">${esc(group.title)}</span>${items.join('')}`;
-  });
-  return card(
-    'Toate scorurile, față de tot orașul',
-    `<div class="bars">${lines.join('')}</div><p class="note">Bara merge până la scorul adresei. Linia neagră e media orașului. Procentul de lângă nume e ponderea în scorul de zonă.</p>`,
-    'Toate scorurile · ponderea în dreptul numelui',
+function headline(report: ReportData, scored: readonly Scored[]): string {
+  const weak = weakest(scored);
+  const position = esc(zonePosition(report));
+  if (!weak) return position;
+  return `${position}, cu un punct slab: <span class="hl">${esc(lowerFirst(CATEGORY_THEME[weak.key].name))}</span>`;
+}
+
+function summaryHead(report: ReportData, scored: readonly Scored[]): string {
+  const { zone } = report;
+  const zoneLine =
+    zone.score === null
+      ? ''
+      : ` Zona primește ${String(Math.round(zone.score))} din 100${zone.city_avg === null ? '' : `, față de ${String(Math.round(zone.city_avg))} media orașului`}.`;
+  return `<div class="sx-head"><div class="eyebrow"><span>Pe scurt</span><span class="acc" style="--c:#3F6478"><i></i>${String(scored.length)} scoruri · 2 contexte</span></div><h2>${headline(report, scored)}</h2><p class="lead">Am calculat ${String(scored.length)} scoruri pe o rază de până la 1,2 km, plus riscul seismic și investiția ca și context.${zoneLine} Fiecare scor are capitolul lui.</p></div>`;
+}
+
+function standing(item: Scored, cityName: string): string {
+  const { percentile } = item.summary;
+  if (isFlat(item.summary)) return 'Estimare la nivel de oraș, la fel pentru toate zonele.';
+  if (percentile === null) return '';
+  if (percentile >= 99) return 'Printre cele mai bune zone din oraș.';
+  if (percentile <= 1) return 'Printre cele mai slabe zone din oraș.';
+  return `Mai bine decât ${String(Math.round(percentile))}% din zonele din ${cityName}.`;
+}
+
+function cardTitle(item: Scored): string {
+  const name = CATEGORY_THEME[item.key].name;
+  if (isFlat(item.summary)) return `${name}: la fel în tot orașul`;
+  if (item.score > item.average) {
+    return (item.summary.percentile ?? 0) >= 90
+      ? `${name} mult peste oraș`
+      : `${name} peste media orașului`;
+  }
+  if (item.score < item.average) return `${name} sub media orașului`;
+  return `${name} la media orașului`;
+}
+
+function bigCard(item: Scored, cityName: string): string {
+  const theme = CATEGORY_THEME[item.key];
+  return `<div class="bigc" style="--c:${theme.color}"><span class="top">${categoryTile(item.key)}<span class="sc">${String(item.score)}<small>/100</small></span></span><b class="t">${esc(cardTitle(item))}</b><span class="d">${esc(standing(item, cityName))} Media orașului: ${String(item.average)}.</span></div>`;
+}
+
+function highlights(report: ReportData, scored: readonly Scored[]): string {
+  const byLead = [...scored].sort(
+    (left, right) => right.score - right.average - (left.score - left.average),
+  );
+  const good = byLead.slice(0, HIGHLIGHTS);
+  const watch = byLead.slice(HIGHLIGHTS).slice(-HIGHLIGHTS).reverse();
+  const block = (label: string, tone: string, iconHtml: string, items: readonly Scored[]) =>
+    items.length === 0
+      ? ''
+      : `<div class="sC-lab ${tone}">${iconHtml}${label}</div><div class="sC-cards">${items.map((item) => bigCard(item, report.city.name)).join('')}</div>`;
+  return (
+    block('Ce e bun', 'g', icon('up'), good) + block('La ce să fii atent', 'b', icon('warn'), watch)
   );
 }
 
-function zoneHistogram(report: ReportData): string {
+function zoneMap(report: ReportData, center: [number, number]): { html: string; map: MapSpec } {
+  const access = report.sections.accessibility;
+  const reachable = (access?.destinations ?? []).filter(
+    (destination) => destination.minutes !== null,
+  );
+  const pills: MapMarker[] = reachable.map((destination) => {
+    const color = DESTINATION_KINDS[destination.kind]?.color ?? CATEGORY_THEME.accessibility.color;
+    return {
+      position: destination.location,
+      html: `<span class="rp" style="--c:${color}"><b>${String(Math.round(destination.minutes ?? 0))} min</b></span>`,
+      anchor: 'left',
+      offset: [6, 0],
+    };
+  });
+  const map: MapSpec = {
+    id: 'map-zone',
+    center,
+    fit: within(
+      center,
+      reachable.map((destination) => destination.location),
+      ZONE_REACH_M,
+    ),
+    padding: 60,
+    layers: [],
+    markers: [...pills, addressMarker(center, report.addressText.split(',')[0])],
+  };
+  const parks = report.sections.green?.parks.length ?? 0;
+  const stops = access?.stops.length ?? 0;
+  const stats = [
+    { value: stops, label: 'stații în jur' },
+    { value: reachable.length, label: 'destinații cu transportul' },
+    { value: parks, label: 'parcuri mari' },
+  ]
+    .filter((stat) => stat.value > 0)
+    .map((stat) => `<li><b>${String(stat.value)}</b>${stat.label}</li>`)
+    .join('');
+  const legend = reachable
+    .map((destination) => {
+      const color =
+        DESTINATION_KINDS[destination.kind]?.color ?? CATEGORY_THEME.accessibility.color;
+      return `<span style="--c:${color}"><i></i>${esc(destination.label.ro)} <b>${String(Math.round(destination.minutes ?? 0))} min</b></span>`;
+    })
+    .join('');
+  const html = `<section class="t12 mpD"><div class="mpD-prev"><div class="mp-map">${mapHtml(map)}</div><div class="mpD-shade"></div><div class="mpD-cta"><div class="eyebrow">Harta zonei</div><h2>Zona din jurul adresei</h2><p>Locurile importante din oraș și cât faci până la ele cu transportul public.</p><ul class="mpD-st">${stats}</ul></div></div></section>${legend ? `<div class="rleg">${legend}</div>` : ''}`;
+  return { html, map };
+}
+
+function difference(item: Scored): string {
+  const delta = item.score - item.average;
+  if (isFlat(item.summary)) return '<span class="dl same">la fel în tot orașul</span>';
+  if (Math.abs(delta) < 2) return '<span class="dl same">la media orașului</span>';
+  return `<span class="dl ${delta > 0 ? 'up' : 'dn'}">${delta > 0 ? '+' : '−'}${String(Math.abs(delta))} față de oraș</span>`;
+}
+
+function allScores(report: ReportData, scored: readonly Scored[]): string {
+  const totalWeight = scored.reduce((sum, item) => sum + item.summary.weight, 0) || 1;
+  const axis = `<div class="scC-ax"><span></span><span class="sc-axis">${[0, 25, 50, 75, 100].map((value) => `<i style="left:${String(value)}%">${String(value)}</i>`).join('')}</span><span></span></div>`;
+  const groups = CATEGORY_GROUPS.map((group) => {
+    const rows = group.keys.flatMap((key) => {
+      const item = scored.find((candidate) => candidate.key === key);
+      if (!item) return [];
+      const theme = CATEGORY_THEME[key];
+      const weight = Math.round((item.summary.weight / totalWeight) * 100);
+      return [
+        `<div class="scC-r" style="--c:${theme.color};--bg:${theme.tint}"><span class="nm">${categoryTile(key)}<span><b>${esc(theme.name)}</b><small>${String(weight)}%</small></span></span><span class="pl"><span class="rg" style="left:0;width:${String(item.score)}%"></span><u style="left:${String(item.average)}%"></u><span class="dt" style="left:${String(item.score)}%"><b class="num">${String(item.score)}</b></span></span>${difference(item)}</div>`,
+      ];
+    });
+    return rows.length === 0
+      ? ''
+      : `<div class="glab scC-lab"><span>${esc(group.title)}</span></div>${rows.join('')}`;
+  });
+  const zone =
+    report.zone.score === null
+      ? ''
+      : `<p class="hint sc-note">Scorul de zonă (${String(Math.round(report.zone.score))}) este media ponderată a celor ${String(scored.length)} scoruri. Riscul seismic și investiția sunt context și nu intră în scor.</p>`;
+  return `<div class="scsec"><div class="card scC"><div class="sc-h"><div><div class="eyebrow">Toate scorurile · ponderea în scor lângă nume</div><h3>Toate scorurile, față de tot orașul</h3></div><span class="legend"><span><i></i>adresa</span><span><u></u>media orașului</span></span></div><p class="hint">Fiecare bară pornește de la 0 și se oprește la scorul adresei. Linia neagră e media orașului.</p>${axis}${groups.join('')}${zone}</div></div>`;
+}
+
+function zoneHistogram(report: ReportData, score: number): string {
+  const { histogram, city_avg: average } = report.zone;
+  const { width, height, top } = HISTOGRAM;
+  const binWidth = width / histogram.length;
+  const binSize = 100 / histogram.length;
+  const peak = Math.max(...histogram, 1);
+  const own = Math.min(histogram.length - 1, Math.floor(score / binSize));
+  const grid = [25, 50, 75]
+    .map((value) => {
+      const x = (value / 100) * width;
+      return `<line class="gl" x1="${String(x)}" x2="${String(x)}" y1="${String(top)}" y2="${String(height + top)}"/>`;
+    })
+    .join('');
+  const bars = histogram
+    .map((count, index) => {
+      const barHeight = Math.max(count ? 3 : 0, (count / peak) * (height - 8));
+      const fill = index === own ? '#2F5164' : scoreBand(index * binSize + 2).fill;
+      return `<rect class="hb" x="${String(index * binWidth + 2)}" y="${String(height + top - barHeight)}" width="${String(binWidth - 4)}" height="${String(barHeight)}" rx="4" style="fill:${fill}"/>`;
+    })
+    .join('');
+  const averageX = ((average ?? 0) / 100) * width;
+  const averageMark =
+    average === null
+      ? ''
+      : `<line class="av" x1="${String(averageX)}" x2="${String(averageX)}" y1="${String(top - 10)}" y2="${String(height + top)}"/><text class="avt" x="${String(averageX - 6)}" y="${String(top - 14)}" text-anchor="${averageX < 150 ? 'start' : 'end'}" dx="${averageX < 150 ? '12' : '0'}">media orașului · ${String(Math.round(average))}</text>`;
+  const ownX = own * binWidth + binWidth / 2;
+  const ownHeight = ((histogram[own] ?? 0) / peak) * (height - 8);
+  const pin = `<g class="mepin" transform="translate(${String(ownX)},${String(height + top - ownHeight - 10)})"><rect x="-44" y="-26" width="88" height="24" rx="12"/><text y="-9" text-anchor="middle">adresa · ${String(score)}</text><path d="M-5 -2 L0 4 L5 -2z"/></g>`;
+  const bands = SCORE_BANDS.map((band, index) => {
+    const end = SCORE_BANDS[index + 1]?.from ?? 100;
+    const x = (band.from / 100) * width;
+    const bandWidth = ((end - band.from) / 100) * width;
+    return `<rect x="${String(x + 1)}" y="${String(height + top + 8)}" width="${String(bandWidth - 2)}" height="6" rx="3" style="fill:${band.fill}"/><text x="${String(x + bandWidth / 2)}" y="${String(height + top + 30)}" text-anchor="middle">${esc(band.label)}</text>`;
+  }).join('');
+  return `<svg class="fhist d" viewBox="0 0 ${String(width)} ${String(height + top + 44)}">${grid}${bars}${averageMark}${pin}<g class="bandax">${bands}</g></svg>`;
+}
+
+function formation(report: ReportData, scored: readonly Scored[]): string {
   const { zone } = report;
   if (zone.score === null || zone.histogram.length === 0) return '';
   const score = Math.round(zone.score);
-  const peak = Math.max(...zone.histogram, 1);
+  const total = zone.histogram.reduce((sum, count) => sum + count, 0);
   const binSize = 100 / zone.histogram.length;
-  const columns = zone.histogram.map((count, index) => {
-    const from = index * binSize;
-    const isAddress =
-      score >= from && (score < from + binSize || index === zone.histogram.length - 1);
-    const fill = isAddress ? '#2F5164' : scoreBand(from).fill;
-    const height = ((count / peak) * (HISTOGRAM_HEIGHT_MM - 5)).toFixed(1);
-    const label = isAddress ? `adresa · ${String(score)}` : '';
-    return `<div class="col">${label}<i style="height:${height}mm;--swatch:${fill}"></i></div>`;
-  });
-  const better =
-    zone.percentile === null
+  const own = Math.min(zone.histogram.length - 1, Math.floor(score / binSize));
+  const below = zone.histogram.slice(0, own).reduce((sum, count) => sum + count, 0);
+  const atLeast = total - below;
+  const facts = [
+    zone.city_avg === null
       ? ''
-      : `<p class="lead" style="font-size:9pt">Mai bine decât <b>${String(Math.round(zone.percentile))}%</b> din zonele locuite din ${esc(report.city.name)}${zone.city_avg === null ? '' : `, unde media e ${String(Math.round(zone.city_avg))}`}.</p>`;
-  return card(
-    'Unde se află zona față de tot orașul',
-    `<div class="columns-chart" style="height:${String(HISTOGRAM_HEIGHT_MM)}mm">${columns.join('')}</div><div class="columns-labels"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>${better}`,
-    `Scorul zonei · ${String(score)} / 100 · ${scoreBand(score).label}`,
-  );
-}
-
-function composition(report: ReportData, scored: readonly Scored[]): string {
-  if (report.zone.score === null || scored.length === 0) return '';
-  const totalWeight = scored.reduce((sum, item) => sum + item.summary.weight, 0);
-  if (totalWeight === 0) return '';
-  const parts = CATEGORY_KEYS.flatMap((key) => {
-    const item = scored.find((candidate) => candidate.key === key);
-    if (!item) return [];
-    return [{ key, points: (item.score * item.summary.weight) / totalWeight }];
-  });
-  const earned = parts.reduce((sum, part) => sum + part.points, 0);
-  const lost = Math.max(0, 100 - earned);
-  const segments = parts.map(
-    (part) =>
-      `<i style="flex:${part.points.toFixed(2)};--swatch:${CATEGORY_COLORS[part.key]}">${part.points >= 4 ? part.points.toFixed(1).replace('.', ',') : ''}</i>`,
-  );
-  const legend = parts.map(
-    (part) =>
-      `<span><i style="--swatch:${CATEGORY_COLORS[part.key]}"></i>${esc(CATEGORY_LABELS[part.key])} ${part.points.toFixed(1).replace('.', ',')}</span>`,
-  );
-  return card(
-    `Din ce se adună cele ${String(Math.round(report.zone.score))} de puncte`,
-    `<div class="stack">${segments.join('')}<i class="lost" style="flex:${lost.toFixed(2)}">−${lost.toFixed(1).replace('.', ',')}</i></div><div class="legend">${legend.join('')}</div>`,
-  );
+      : `<li><b>${score >= zone.city_avg ? '+' : '−'}${String(Math.abs(score - Math.round(zone.city_avg)))}</b> față de media orașului</li>`,
+    total === 0
+      ? ''
+      : `<li><b>${String(Math.floor((below / total) * 100))}%</b> din zone au un scor mai mic</li>`,
+    total === 0
+      ? ''
+      : `<li>doar <b>${formatNumber(atLeast)}</b> zone din ${formatNumber(total)} au ${String(own * binSize)}+</li>`,
+  ].join('');
+  const totalWeight = scored.reduce((sum, item) => sum + item.summary.weight, 0) || 1;
+  const parts = scored
+    .map((item) => ({ item, points: (item.score * item.summary.weight) / totalWeight }))
+    .sort((left, right) => right.item.summary.weight - left.item.summary.weight);
+  const lost = Math.max(0, 100 - parts.reduce((sum, part) => sum + part.points, 0));
+  const stack = parts
+    .map(
+      (part) =>
+        `<span style="flex:${part.points.toFixed(2)};--c:${CATEGORY_THEME[part.item.key].color}">${part.points >= STACK_LABEL_FROM ? formatNumber(part.points, 1) : ''}</span>`,
+    )
+    .join('');
+  const chips = parts
+    .map(
+      (part) =>
+        `<span class="fchip" style="--c:${CATEGORY_THEME[part.item.key].color}"><i></i>${esc(CATEGORY_THEME[part.item.key].name)} <b class="num">${formatNumber(part.points, 1)}</b></span>`,
+    )
+    .join('');
+  return `<div class="fsec"><div class="card fB"><div class="fB-top"><div class="fB-score"><div class="eyebrow">Scorul zonei</div><div class="fB-big"><b class="num">${String(score)}</b><span>/100</span></div><div class="fB-band">${esc(scoreBand(score).label)}</div><ul>${facts}</ul></div><div class="fB-hist"><h3>Unde se află zona față de tot orașul</h3><p class="hint">Fiecare coloană e un grup de zone cu scoruri apropiate.</p>${zoneHistogram(report, score)}</div></div><div class="fB-form"><h3>Din ce se adună cele ${String(score)} de puncte</h3><div class="fstack">${stack}<span class="lost" style="flex:${lost.toFixed(2)}">−${formatNumber(lost, 1)}</span></div><div class="fchips">${chips}<span class="fchip lostc"><i></i>pierdut <b class="num">${formatNumber(lost, 1)}</b></span></div></div></div></div>`;
 }
 
 export function summaryChapter(report: ReportData): ChapterOutput {
   const scored = scoredCategories(report);
   const center: [number, number] = [report.longitude, report.latitude];
-  const map: MapSpec = {
-    id: 'map-cover',
+  const green = report.sections.green;
+  const heroMap: MapSpec = {
+    id: 'map-hero',
     center,
-    fit: around(center, WIDE_RING_M),
+    fit: around(center, NEAR_RING_M * 1.25),
+    padding: 10,
     layers: [
-      { kind: 'line', data: ring(center, NEAR_RING_M), color: '#103F32', width: 1.5 },
-      { kind: 'line', data: ring(center, WIDE_RING_M), color: '#103F32', width: 1, dashed: true },
+      ...(green
+        ? [{ kind: 'fill' as const, data: green.areas, color: '#8FB05A', opacity: 0.75 }]
+        : []),
+      { kind: 'line', data: ring(center, NEAR_RING_M), color: '#3F6E1B', width: 1.5 },
     ],
-    markers: [{ position: center }],
+    markers: [addressMarker(center, report.addressText.split(',')[0])],
   };
-  const overview = chapter(
-    chapterHead({
-      eyebrow: 'Scorurile adresei',
-      title: `${String(scored.length)} scoruri, comparate cu tot orașul`,
-    }) +
-      scoreBars(report) +
-      zoneHistogram(report) +
-      composition(report, scored),
-  );
-  return { html: cover(report, scored, map) + overview, maps: [map] };
+  const zone = zoneMap(report, center);
+  const html = `<article class="chapter cover">${hero(report, scored, heroMap)}<div class="wrap"><div class="sx sC">${summaryHead(report, scored)}${highlights(report, scored)}</div></div></article><article class="chapter"><div class="wrap"><div class="sx sC">${zone.html}${allScores(report, scored)}${formation(report, scored)}</div></div></article>`;
+  return { html, maps: [heroMap, zone.map] };
 }

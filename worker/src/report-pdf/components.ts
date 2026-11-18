@@ -1,78 +1,63 @@
 import type { CategoryKey } from '../scoring/categories.ts';
 import { SCORE_BANDS, bandWidthPercent, scoreBand } from './bands.ts';
-import { esc, formatNumber } from './format.ts';
-import { CATEGORY_LABELS, CATEGORY_SCOPE } from './labels.ts';
+import { esc, formatNumber, formatSourceDate } from './format.ts';
+import { icon, type IconName } from './icons.ts';
+import { CATEGORY_SCOPE, CATEGORY_SOURCES, SOURCE_LABELS } from './labels.ts';
 import type { CategorySummary, ReportData } from './report-data.ts';
+import { CATEGORY_THEME } from './theme.ts';
 
-export type Row = {
-  title: string;
-  detail?: string;
-  value?: string;
-  unit?: string;
-  marker?: string;
-  dot?: string;
-  tags?: readonly string[];
-};
+const NARROW_CITY_SPREAD = 10;
+
+export function iconTile(name: IconName, color: string, tint: string, className = 'ico'): string {
+  return `<span class="${className}" style="--ibg:${tint};--ic:${color};--c:${color}">${icon(name)}</span>`;
+}
+
+export function categoryTile(key: CategoryKey): string {
+  const theme = CATEGORY_THEME[key];
+  return iconTile(theme.icon, theme.color, theme.tint);
+}
 
 export function chapterHead(input: {
   eyebrow: string;
+  color: string;
   precision?: string;
   title: string;
   lead?: string;
 }): string {
-  const chip = input.precision ? `<span class="chip">Precizie: ${esc(input.precision)}</span>` : '';
+  const precision = input.precision
+    ? `<span class="acc" style="--c:${input.color}"><i></i>Precizie: ${esc(input.precision)}</span>`
+    : '';
   const lead = input.lead ? `<p class="lead">${esc(input.lead)}</p>` : '';
-  return `<header class="chapter-head"><p class="eyebrow">${esc(input.eyebrow)}${chip}</p><h2>${esc(input.title)}</h2>${lead}</header>`;
+  return `<div class="ch-head"><div class="eyebrow"><span style="color:${input.color}">${esc(input.eyebrow)}</span>${precision}</div><h2>${esc(input.title)}</h2>${lead}</div>`;
 }
 
-export function categoryEyebrow(key: CategoryKey, summary: CategorySummary): string {
-  const label = CATEGORY_LABELS[key];
+export function categoryEyebrow(key: CategoryKey, summary: CategorySummary, name?: string): string {
+  const label = name ?? CATEGORY_THEME[key].name;
   if (summary.score === null) return `${label} · fără date`;
   const score = Math.round(summary.score);
   return `${label} · ${String(score)} / 100 · ${scoreBand(score).label}`;
 }
 
-export function rows(items: readonly Row[], columns: 1 | 2 = 1): string {
-  const html = items.map((item) => {
-    const lead = item.marker
-      ? `<span class="num">${esc(item.marker)}</span>`
-      : item.dot
-        ? `<span class="dot" style="--dot:${esc(item.dot)}"></span>`
-        : '';
-    const detail = item.detail ? `<span>${esc(item.detail)}</span>` : '';
-    const tags = item.tags?.length
-      ? `<div class="tags">${item.tags.map((tag) => `<span class="tag">${esc(tag)}</span>`).join('')}</div>`
-      : '';
-    const unit = item.unit ? `<small>${esc(item.unit)}</small>` : '';
-    const value = item.value ? `<span class="row-value">${esc(item.value)}${unit}</span>` : '';
-    return `<div class="row">${lead}<div class="row-text"><b>${esc(item.title)}</b>${detail}${tags}</div>${value}</div>`;
-  });
-  return `<div class="rows${columns === 2 ? ' two' : ''}">${html.join('')}</div>`;
-}
-
-export function card(title: string, body: string, eyebrow?: string): string {
-  const head = eyebrow ? `<p class="eyebrow">${esc(eyebrow)}</p>` : '';
-  return `<section class="card">${head}<h3>${esc(title)}</h3>${body}</section>`;
-}
-
-export function note(text: string): string {
-  return `<p class="note">${esc(text)}</p>`;
-}
-
-function bandBar(summary: CategorySummary, score: number): string {
+function bandTrack(summary: CategorySummary, score: number, color: string): string {
   const track = SCORE_BANDS.map(
     (band, index) =>
       `<i style="flex:${String(bandWidthPercent(index))};background:${band.fill}"></i>`,
   ).join('');
-  const average =
-    summary.city_avg === null
+  const { city_min: min, city_max: max, city_avg: average } = summary;
+  const range =
+    min === null || min === undefined || max === null || max === undefined
       ? ''
-      : `<span class="band-tick" style="left:${String(summary.city_avg)}%"></span><span class="band-label" style="left:${String(summary.city_avg)}%;top:9.4mm">Media ${String(Math.round(summary.city_avg))}</span>`;
-  return `<div class="band-bar"><div class="band-track">${track}</div>${average}<span class="band-you" style="left:${String(score)}%"></span><span class="band-you-label" style="left:${String(Math.min(94, Math.max(6, score)))}%">Tu · ${String(score)}</span></div>`;
+      : `<div class="scvs-r" style="left:${String(min)}%;width:${String(max - min)}%"><span>Zonele orașului: ${String(Math.round(min))}–${String(Math.round(max))}</span></div>`;
+  const mean =
+    average === null
+      ? ''
+      : `<div class="scvs-avg" style="left:${String(average)}%"><span>Media ${String(Math.round(average))}</span></div>`;
+  return `<div class="scvs"><div class="scvs-t">${track}</div>${range}${mean}<div class="scvs-me" style="left:${String(score)}%;--c:${color}"><b>Tu · ${String(score)}</b></div></div>`;
 }
 
-function percentileTitle(summary: CategorySummary, cityName: string, better: string): string {
-  if (summary.percentile === null) {
+function standing(summary: CategorySummary, cityName: string, better: string): string {
+  const spread = (summary.city_max ?? 100) - (summary.city_min ?? 0);
+  if (summary.percentile === null || spread < NARROW_CITY_SPREAD) {
     return summary.city_avg === null
       ? ''
       : `Media orașului: <b>${String(Math.round(summary.city_avg))}</b>`;
@@ -86,35 +71,58 @@ export function scoreCard(
   options: { better?: string; label?: string } = {},
 ): string {
   const summary = report.categories[key];
-  const scope = CATEGORY_SCOPE[key];
+  const theme = CATEGORY_THEME[key];
   if (summary.score === null) {
-    return `<section class="missing"><b>${esc(CATEGORY_LABELS[key])}: fără date.</b> Scorul se adaugă când sursele lui sunt importate. Până atunci nu intră în scorul de zonă.</section>`;
+    return `<section class="card scv nodata">${icon('info')}<p><b>${esc(theme.name)}: fără date.</b> Scorul se adaugă când sursele lui sunt importate. Până atunci nu intră în scorul de zonă.</p></section>`;
   }
   const score = Math.round(summary.score);
   const band = scoreBand(score);
-  const range =
-    summary.city_min === null ||
-    summary.city_min === undefined ||
-    summary.city_max === null ||
-    summary.city_max === undefined
+  const scope = CATEGORY_SCOPE[key];
+  const label = options.label ? `<span class="scv-k">${esc(options.label)}</span>` : '';
+  return `<section class="card scv scv1" style="--c:${theme.color}"><div class="scv1-s">${label}<span class="scv-big" style="color:${theme.color}">${String(score)}<small>/100</small></span><span class="scv-pill" style="background:${band.fill};color:${band.text}">${esc(band.label)}</span></div><div class="scv1-r"><p class="scv-h">${standing(summary, report.city.name, options.better ?? 'Mai bine')}</p>${bandTrack(summary, score, theme.color)}</div><div class="scvm"><span class="y">${icon('check')}<span><b>Ține cont de</b> ${esc(scope.includes)}</span></span><span class="n">${icon('x')}<span><b>Nu ține cont de</b> ${esc(scope.excludes)}</span></span></div></section>`;
+}
+
+export function footnote(text: string): string {
+  return `<p class="sfhon">${icon('info')}<span>${esc(text)}</span></p>`;
+}
+
+export function sourceDate(report: ReportData, key: string): string | null {
+  const value = report.snapshot.sourceDates[key];
+  return value === undefined ? null : formatSourceDate(value);
+}
+
+function sourceList(report: ReportData, keys: readonly string[]): string {
+  return keys
+    .flatMap((key) => {
+      const date = sourceDate(report, key);
+      return date === null ? [] : [`${SOURCE_LABELS[key] ?? key} · ${date}`];
+    })
+    .join(' · ');
+}
+
+export function chapterSources(report: ReportData, keys: readonly CategoryKey[]): string {
+  const totalWeight =
+    Object.values(report.categories).reduce((sum, summary) => sum + summary.weight, 0) || 1;
+  const sources = sourceList(report, [...new Set(keys.flatMap((key) => CATEGORY_SOURCES[key]))]);
+  const weights = keys.flatMap((key) => {
+    const summary = report.categories[key];
+    if (summary.score === null) return [];
+    const weight = (summary.weight / totalWeight) * 100;
+    const points = (summary.score * weight) / 100;
+    const name = keys.length > 1 ? `${CATEGORY_THEME[key].name}: ` : '';
+    return [
+      `${name}${formatNumber(weight)}% din 100. Adresa aduce ${formatNumber(points, 1)} puncte din ${formatNumber(weight)}.`,
+    ];
+  });
+  const sourcesLine = sources ? `<p><b>Surse:</b> ${esc(sources)}</p>` : '';
+  const weightLine =
+    weights.length === 0
       ? ''
-      : `<p class="note" style="text-align:center;margin-top:4.5mm">Zonele orașului: ${String(Math.round(summary.city_min))}–${String(Math.round(summary.city_max))}</p>`;
-  const label = options.label ? `<p class="eyebrow">${esc(options.label)}</p>` : '';
-  return `<section class="card"><div class="score-card"><div>${label}<div class="big">${String(score)}<small> /100</small></div><span class="pill" style="background:${band.fill};color:${band.text}">${esc(band.label)}</span></div><div><h4>${percentileTitle(summary, report.city.name, options.better ?? 'Mai bine')}</h4>${bandBar(summary, score)}${range}</div></div><div class="scope"><span class="yes"><b>Ține cont de</b> ${esc(scope.includes)}</span><span class="no"><b>Nu ține cont de</b> ${esc(scope.excludes)}</span></div></section>`;
+      : `<p><b>Pondere în scorul de zonă:</b> ${esc(weights.join(' '))}</p>`;
+  if (!sourcesLine && !weightLine) return '';
+  return `<div class="how"><div class="how-t">${icon('info')}Surse și date</div><div class="in">${sourcesLine}${weightLine}</div></div>`;
 }
 
-export function scoreRing(score: number | null, sizeMm: number): string {
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
-  const filled = score === null ? 0 : (score / 100) * circumference;
-  const text = score === null ? '–' : formatNumber(Math.round(score));
-  return `<svg width="${String(sizeMm)}mm" height="${String(sizeMm)}mm" viewBox="0 0 100 100"><circle cx="50" cy="50" r="${String(radius)}" fill="none" stroke="#DCE6EC" stroke-width="8"/><circle cx="50" cy="50" r="${String(radius)}" fill="none" stroke="#2F5164" stroke-width="8" stroke-linecap="round" stroke-dasharray="${filled.toFixed(1)} ${circumference.toFixed(1)}" transform="rotate(-90 50 50)"/><text x="50" y="52" text-anchor="middle" font-size="30" font-weight="800" fill="#172B22">${esc(text)}</text><text x="50" y="68" text-anchor="middle" font-size="11" font-weight="600" fill="#52685B">/100</text></svg>`;
-}
-
-export function missingSection(text: string): string {
-  return `<section class="missing">${esc(text)}</section>`;
-}
-
-export function chapter(body: string): string {
-  return `<article class="chapter">${body}</article>`;
+export function chapter(body: string, className = ''): string {
+  return `<article class="chapter ${className}"><div class="wrap"><div class="ch">${body}</div></div></article>`;
 }

@@ -1,119 +1,226 @@
+import type { CategoryKey } from '../../scoring/categories.ts';
 import type { ChapterBuilder } from '../chapter.ts';
 import {
-  card,
   categoryEyebrow,
+  categoryTile,
   chapter,
   chapterHead,
-  note,
-  rows,
+  chapterSources,
+  footnote,
+  iconTile,
   scoreCard,
-  type Row,
+  sourceDate,
 } from '../components.ts';
-import { plural } from '../format.ts';
-import { FIFTEEN_MINUTE_CATEGORIES, FIFTEEN_MINUTE_GROUPS } from '../labels.ts';
-import { collection, mapHtml, points, type MapSpec } from '../maps.ts';
+import { esc, formatMinutes, formatNumber } from '../format.ts';
+import { icon } from '../icons.ts';
+import {
+  EDUCATION_LEVELS,
+  FIFTEEN_MINUTE_CATEGORIES,
+  FIFTEEN_MINUTE_GROUPS,
+  FIFTEEN_MINUTE_KEY,
+  HEALTH_LAYERS,
+} from '../labels.ts';
+import { addressMarker, collection, mapHtml, type MapSpec } from '../maps.ts';
 import type { ReportData } from '../report-data.ts';
+import { CATEGORY_THEME } from '../theme.ts';
 
 type FifteenMinute = NonNullable<ReportData['sections']['fifteen_minute']>;
+type Group = FifteenMinute['groups'][number];
 
-const LISTED_CATEGORIES = 8;
-const LISTED_GROUPS = 4;
-const HUE = '#8A356F';
+const WALK_LIMIT_MIN = 15;
+const TILE_COUNT = 8;
+const SAME_AS_TYPICAL = 1.25;
+const NEARBY_HEALTH_LAYERS = ['h1', 'h2', 'h3'];
+const DEFAULT_DOT = '#55607A';
 
-function nearestRows(section: FifteenMinute): Row[] {
-  return section.categories
-    .filter((category) => category.t1_min !== null)
-    .sort((left, right) => (left.t1_min ?? 0) - (right.t1_min ?? 0))
-    .slice(0, LISTED_CATEGORIES)
+function groupColor(section: FifteenMinute, categoryKey: string): string {
+  const group = section.categories.find((category) => category.key === categoryKey)?.group;
+  return FIFTEEN_MINUTE_GROUPS[group ?? '']?.color ?? DEFAULT_DOT;
+}
+
+function checklist(section: FifteenMinute): string {
+  const rows = [...section.categories]
+    .sort((left, right) => (left.t1_min ?? Infinity) - (right.t1_min ?? Infinity))
     .map((category) => {
+      const label = FIFTEEN_MINUTE_CATEGORIES[category.key] ?? category.key;
+      const reached = category.t1_min !== null && category.t1_min <= WALK_LIMIT_MIN;
       const nearest = section.places
         .filter((place) => place.category === category.key)
         .sort((left, right) => left.minutes - right.minutes)[0];
-      const choice = `${plural(category.n15, 'loc', 'locuri', 'de locuri')} în 15 min`;
-      return {
-        title: FIFTEEN_MINUTE_CATEGORIES[category.key] ?? category.key,
-        detail: nearest?.name ? `${nearest.name} · ${choice}` : choice,
-        value: String(Math.max(1, Math.round(category.t1_min ?? 0))),
-        unit: 'min',
-        dot: HUE,
-      };
+      const choice =
+        category.n15 === 1
+          ? `singurul în ${String(WALK_LIMIT_MIN)} min`
+          : `${formatNumber(category.n15)} în ${String(WALK_LIMIT_MIN)} min`;
+      const detail = reached
+        ? [nearest?.name, choice].filter(Boolean).join(' · ')
+        : `mai departe de ${String(WALK_LIMIT_MIN)} minute`;
+      const minutes =
+        category.t1_min === null
+          ? ''
+          : `<span class="fqck-m"><b>${String(Math.max(1, Math.round(category.t1_min)))}</b> min</span>`;
+      return `<li><div class="fqck-r ${reached ? 'ok' : 'no'}"><span class="fqck-i">${icon(reached ? 'check' : 'x')}</span><span class="fqck-t"><b>${esc(label)}</b><small>${esc(detail)}</small></span>${minutes}</div></li>`;
     });
+  const share = section.total === 0 ? 0 : (section.covered / section.total) * 100;
+  return `<aside class="fqC-p"><div class="fqck"><div class="ac-h"><div><div class="eyebrow">Lista ta de zi cu zi</div><h3>${String(section.covered)} din ${String(section.total)} la ${String(WALK_LIMIT_MIN)} minute pe jos</h3></div></div><div class="fqck-bar"><i style="width:${share.toFixed(0)}%"></i></div><ul class="fqck-l">${rows.join('')}</ul></div></aside>`;
 }
 
-function choiceCards(section: FifteenMinute): string {
-  const groups = section.groups
-    .filter((group) => group.n15 > 0 && group.key !== 'other')
+function comparison(group: Group): string {
+  const typical = group.typical_n15;
+  if (typical === null || typical === undefined) return '';
+  if (typical === 0) {
+    return '<em class="up">rar în alte cartiere</em><small>cartier obișnuit: niciunul</small>';
+  }
+  const ratio = group.n15 / typical;
+  const text =
+    ratio >= SAME_AS_TYPICAL
+      ? `<em class="up">de ${formatNumber(Math.round(ratio * 2) / 2, ratio % 1 === 0 ? 0 : 1)} ori mai multe</em>`
+      : ratio <= 1 / SAME_AS_TYPICAL
+        ? '<em>mai puține decât de obicei</em>'
+        : '<em>cam cât într-un cartier obișnuit</em>';
+  return `${text}<small>cartier obișnuit: ${formatNumber(typical)}</small>`;
+}
+
+function choiceTiles(section: FifteenMinute): string {
+  const tiles = section.groups
+    .filter((group) => group.n15 > 0 && FIFTEEN_MINUTE_GROUPS[group.key])
     .sort((left, right) => right.n15 - left.n15)
-    .slice(0, LISTED_GROUPS)
+    .slice(0, TILE_COUNT)
+    .map((group) => {
+      const meta = FIFTEEN_MINUTE_GROUPS[group.key];
+      if (!meta) return '';
+      return `<div class="fqx-tile" style="--c:${meta.color};--bg:${meta.tint}">${iconTile(meta.icon, meta.color, meta.tint)}<b>${formatNumber(group.n15)}</b><span class="fqx-tl">${esc(meta.label)}</span>${comparison(group)}</div>`;
+    });
+  if (tiles.length === 0) return '';
+  return `<section class="card ac fqx fqxP"><div class="ac-h"><div><div class="eyebrow">Ai de unde alege</div><h3>Nu doar un loc aproape, ci mai multe din care alegi</h3></div></div><div class="fqx-tiles">${tiles.join('')}</div></section>`;
+}
+
+function subScore(
+  key: CategoryKey,
+  report: ReportData,
+  rows: readonly { label: string; minutes: number | null; mode?: string | null }[],
+): string {
+  const summary = report.categories[key];
+  const theme = CATEGORY_THEME[key];
+  if (summary.score === null) return '';
+  const standing = [
+    summary.city_avg === null ? '' : `media orașului ${String(Math.round(summary.city_avg))}`,
+    summary.percentile === null ? '' : `mai bine decât ${String(Math.round(summary.percentile))}%`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const items = rows
     .map(
-      (group) =>
-        `<div class="soft" style="margin:0"><strong>${String(group.n15)}</strong><span>${FIFTEEN_MINUTE_GROUPS[group.key] ?? group.key}</span></div>`,
-    );
-  if (groups.length === 0) return '';
-  return card(
-    'Nu doar un loc aproape, ci mai multe din care alegi',
-    `<div class="grid" style="grid-template-columns:repeat(4,1fr);gap:2.5mm">${groups.join('')}</div>`,
-    'Ai de unde alege · locuri la 15 minute pe jos',
+      (row) =>
+        `<li><span>${esc(row.label)}</span><b>${row.minutes === null ? '–' : `${formatMinutes(row.minutes)}${row.mode === 'car' ? ' cu mașina' : ''}`}</b></li>`,
+    )
+    .join('');
+  return `<section class="card fqsub"><div class="fqsub-h">${categoryTile(key)}<span><b>${esc(theme.name)}</b><small>${esc(standing)}</small></span><span class="fqsub-s" style="color:${theme.color}">${String(Math.round(summary.score))}</span></div><ul>${items}</ul></section>`;
+}
+
+function subScores(report: ReportData): string {
+  const education = subScore(
+    'education',
+    report,
+    (report.sections.education?.levels ?? []).map((level) => ({
+      label: EDUCATION_LEVELS[level.key] ?? level.key,
+      minutes: level.nearest_min,
+    })),
   );
+  const health = subScore(
+    'health',
+    report,
+    (report.sections.health?.layers ?? [])
+      .filter((layer) => NEARBY_HEALTH_LAYERS.includes(layer.key))
+      .map((layer) => ({
+        label: HEALTH_LAYERS[layer.key] ?? layer.key,
+        minutes: layer.minutes,
+        mode: layer.mode,
+      })),
+  );
+  return education || health ? `<div class="fqsubs">${education}${health}</div>` : '';
 }
 
 export const fifteenMinuteChapter: ChapterBuilder = (report) => {
   const summary = report.categories.fifteen_minute;
   const section = report.sections.fifteen_minute;
+  const theme = CATEGORY_THEME.fifteen_minute;
+  const sources = chapterSources(report, ['fifteen_minute', 'education', 'health']);
   if (!section) {
     const head = chapterHead({
       eyebrow: categoryEyebrow('fifteen_minute', summary),
-      title: 'Ce ai la 15 minute pe jos',
+      color: theme.color,
+      title: `Ce ai la ${String(WALK_LIMIT_MIN)} minute pe jos`,
     });
     return {
-      html: chapter(head + scoreCard('fifteen_minute', report)),
+      html: chapter(head + scoreCard('fifteen_minute', report) + subScores(report) + sources),
       maps: [],
     };
   }
   const all = section.covered === section.total;
+  const better =
+    summary.percentile === null
+      ? ''
+      : ` Aici ai mai multe la îndemână decât în ${String(Math.round(summary.percentile))}% din zonele din ${report.city.name}.`;
   const head = chapterHead({
     eyebrow: categoryEyebrow('fifteen_minute', summary),
+    color: theme.color,
     precision:
-      section.distance_method === 'pedestrian_routing'
-        ? 'adresă · pe străzi reale'
-        : 'adresă · estimare',
+      section.distance_method === 'pedestrian_routing' ? theme.precision : 'adresă · estimare',
     title: all
-      ? `Toate cele ${String(section.total)} lucruri de zi cu zi, la cel mult 15 minute pe jos`
-      : `${String(section.covered)} din ${String(section.total)} lucruri de zi cu zi, la cel mult 15 minute pe jos`,
+      ? `Toate cele ${String(section.total)} lucruri de zi cu zi, la cel mult ${String(WALK_LIMIT_MIN)} minute pe jos`
+      : `${String(section.covered)} din ${String(section.total)} lucruri de zi cu zi, la cel mult ${String(WALK_LIMIT_MIN)} minute pe jos`,
     lead:
       summary.city_avg === null
         ? undefined
-        : `Media orașului e ${String(Math.round(summary.city_avg))}.`,
+        : `Media orașului e ${String(Math.round(summary.city_avg))}.${better}`,
   });
   const center: [number, number] = [report.longitude, report.latitude];
-  const widest = [...section.isochrones].sort((left, right) => right.minutes - left.minutes);
+  const widest = [...section.isochrones].sort((left, right) => right.minutes - left.minutes)[0];
   const places = section.places.map((place): [number, number] => [place.lng, place.lat]);
   const map: MapSpec = {
     id: 'map-fifteen',
     center,
     fit: places,
+    padding: 44,
     layers: [
-      ...widest.map((isochrone) => ({
-        kind: 'fill' as const,
-        data: collection([isochrone.geometry]),
-        color: HUE,
-        opacity: 0.14,
-      })),
-      { kind: 'circle', data: points(places), color: HUE, radius: 2.5 },
+      ...(widest
+        ? [
+            {
+              kind: 'fill' as const,
+              data: collection([widest.geometry]),
+              color: theme.color,
+              opacity: 0.16,
+              outline: theme.color,
+            },
+          ]
+        : []),
+      {
+        kind: 'circle',
+        data: {
+          type: 'FeatureCollection',
+          features: section.places.map((place) => ({
+            type: 'Feature',
+            properties: { color: groupColor(section, place.category) },
+            geometry: { type: 'Point', coordinates: [place.lng, place.lat] },
+          })),
+        },
+        color: DEFAULT_DOT,
+        colorProperty: 'color',
+        radius: 3.2,
+      },
     ],
-    markers: [{ position: center }],
+    markers: [addressMarker(center, report.addressText.split(',')[0])],
   };
-  const missing = section.categories
-    .filter((category) => category.status === 'missing')
-    .map((category) => FIFTEEN_MINUTE_CATEGORIES[category.key] ?? category.key);
-  const missingNote =
-    missing.length === 0 ? '' : note(`Mai departe de 15 minute: ${missing.join(', ')}.`);
+  const dots = FIFTEEN_MINUTE_KEY.map((item) => `<i style="background:${item.color}"></i>`).join(
+    '',
+  );
+  const overlay = `<span class="mapchip" style="--c:${theme.color}"><i></i>${String(WALK_LIMIT_MIN)} minute pe jos</span><div class="key"><b>Pe hartă</b><span><i style="background:#103F32;border-radius:50%;width:10px;height:10px"></i>Adresa</span><span><i style="background:rgba(138,53,111,.16);border:1.5px solid rgba(138,53,111,.7)"></i>${String(WALK_LIMIT_MIN)} minute pe jos</span><span class="fqkd">${dots}Locuri de zi cu zi</span></div>`;
+  const osm = sourceDate(report, 'osm');
+  const places15 = `<section class="fqC"><div class="fqmap fqC-m">${mapHtml(map, overlay)}</div>${checklist(section)}</section>${footnote(`Locurile: OpenStreetMap${osm ? `, ${osm}` : ''}. Drumurile pe jos urmează străzile și aleile, la 80 de metri pe minut.`)}`;
   return {
     html: chapter(
-      head +
-        `<div class="grid cols-map">${mapHtml(map, 84)}${card(`${String(section.covered)} din ${String(section.total)} la 15 minute pe jos`, rows(nearestRows(section)) + missingNote, 'Lista de zi cu zi')}</div>` +
-        choiceCards(section) +
-        scoreCard('fifteen_minute', report),
+      `${head}${places15}${choiceTiles(section)}<div class="sfB-rest">${scoreCard('fifteen_minute', report)}${subScores(report)}${sources}</div>`,
+      'fqch fqCh',
     ),
     maps: [map],
   };

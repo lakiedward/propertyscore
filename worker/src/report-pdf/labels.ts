@@ -1,28 +1,5 @@
 import type { CategoryKey } from '../scoring/categories.ts';
-
-export const CATEGORY_LABELS: Record<CategoryKey, string> = {
-  safety: 'Siguranță',
-  accessibility: 'Accesibilitate',
-  fifteen_minute: '15 minute',
-  green: 'Spații verzi',
-  noise: 'Zgomot',
-  air: 'Aer',
-  industry: 'Industrie',
-  education: 'Educație',
-  health: 'Sănătate',
-};
-
-export const CATEGORY_COLORS: Record<CategoryKey, string> = {
-  safety: '#1C6B67',
-  accessibility: '#7E5F00',
-  fifteen_minute: '#8A356F',
-  green: '#3F6E1B',
-  noise: '#1F6B9A',
-  air: '#3F6478',
-  industry: '#52685B',
-  education: '#9E4A22',
-  health: '#A63A24',
-};
+import type { IconName } from './icons.ts';
 
 export const CATEGORY_GROUPS: readonly { title: string; keys: readonly CategoryKey[] }[] = [
   { title: 'Contează cel mai mult', keys: ['accessibility', 'fifteen_minute', 'safety'] },
@@ -103,18 +80,39 @@ export const FIFTEEN_MINUTE_CATEGORIES: Record<string, string> = {
   other: 'Alt serviciu',
 };
 
-export const FIFTEEN_MINUTE_GROUPS: Record<string, string> = {
-  shops: 'cumpărături',
-  food_drink: 'restaurante și cafenele',
-  services: 'servicii',
-  pharmacies: 'farmacii',
-  medical: 'medici și clinici',
-  schools: 'școli',
-  parks: 'parcuri',
-  sport: 'sport',
-  culture: 'cultură',
-  other: 'altele',
+export const FIFTEEN_MINUTE_GROUPS: Record<
+  string,
+  { label: string; icon: IconName; color: string; tint: string }
+> = {
+  shops: { label: 'magazine', icon: 'mall', color: '#B4532D', tint: '#FBE9DF' },
+  food_drink: { label: 'restaurante și cafenele', icon: 'cup', color: '#7C3AED', tint: '#EEE7FD' },
+  services: {
+    label: 'bănci, poștă și alte servicii',
+    icon: 'bank',
+    color: '#55607A',
+    tint: '#E9ECF2',
+  },
+  pharmacies: { label: 'farmacii', icon: 'pill', color: '#BE185D', tint: '#FCE7F0' },
+  medical: { label: 'medici și clinici', icon: 'heart', color: '#BE185D', tint: '#FCE7F0' },
+  schools: { label: 'școli și grădinițe', icon: 'school', color: '#2563EB', tint: '#E3ECFD' },
+  parks: { label: 'parcuri și locuri de joacă', icon: 'tree', color: '#3F6E1B', tint: '#E6F0D8' },
+  sport: { label: 'săli și terenuri de sport', icon: 'dumb', color: '#3F6E1B', tint: '#E6F0D8' },
+  culture: {
+    label: 'cinematografe, teatre, biblioteci',
+    icon: 'ticket',
+    color: '#7C3AED',
+    tint: '#EEE7FD',
+  },
 };
+
+export const FIFTEEN_MINUTE_KEY: readonly { label: string; color: string }[] = [
+  { label: 'Cumpărături', color: '#B4532D' },
+  { label: 'Sănătate', color: '#BE185D' },
+  { label: 'Copii și școală', color: '#2563EB' },
+  { label: 'Verde și mișcare', color: '#3F6E1B' },
+  { label: 'Servicii', color: '#55607A' },
+  { label: 'Ieșit în oraș', color: '#7C3AED' },
+];
 
 export const EDUCATION_LEVELS: Record<string, string> = {
   kindergarten: 'Grădiniță',
@@ -130,21 +128,36 @@ export const HEALTH_LAYERS: Record<string, string> = {
   h5: 'Farmacie non-stop',
 };
 
-export const SAFETY_TYPES: Record<string, string> = {
-  lighting: 'Iluminat',
-  shop: 'Magazine',
-  nonstop: 'Non-stop',
-  mixed_use: 'Clădiri cu parter comercial',
-  police: 'Poliție',
-  fire_station: 'Pompieri',
-  diplomatic: 'Consulate',
-  bar: 'Baruri, cluburi',
-  park: 'Parcuri',
-  park_lit: 'Parcuri iluminate',
-  isolated_passage: 'Pasaje, căi ferate',
-  train_station: 'Gări',
-  train_halt: 'Halte',
-  transit_stop: 'Stații',
+const SAFETY_TYPES: Record<string, { label: string; icon: IconName; color: string }> = {
+  lighting: { label: 'Iluminat', icon: 'bulb', color: '#C98A12' },
+  shop: { label: 'Magazine', icon: 'mall', color: '#2F5164' },
+  nonstop: { label: 'Non-stop', icon: 'clock', color: '#6B4FA0' },
+  mixed_use: { label: 'Clădiri cu parter comercial', icon: 'house', color: '#2F5164' },
+  police: { label: 'Poliție', icon: 'shield', color: '#1F6B9A' },
+  fire_station: { label: 'Pompieri', icon: 'flame', color: '#C2410C' },
+  diplomatic: { label: 'Consulate', icon: 'flag', color: '#0F766E' },
+  bar: { label: 'Baruri, cluburi', icon: 'glass', color: '#B4235A' },
+  park: { label: 'Parcuri', icon: 'leaf', color: '#3F6E1B' },
+  park_lit: { label: 'Parcuri iluminate', icon: 'leaf', color: '#3F6E1B' },
+  isolated_passage: { label: 'Pasaje, căi ferate', icon: 'tunnel', color: '#8A3B22' },
+  train_station: { label: 'Gări', icon: 'rail', color: '#475569' },
+  train_halt: { label: 'Halte', icon: 'rail', color: '#475569' },
+  transit_stop: { label: 'Stații', icon: 'bus', color: '#55607A' },
+};
+
+const UNKNOWN_SAFETY_TYPE = { icon: 'pin', color: '#52685B' } as const;
+
+export function safetyType(type: string): { label: string; icon: IconName; color: string } {
+  return SAFETY_TYPES[type] ?? { label: type, ...UNKNOWN_SAFETY_TYPE };
+}
+
+export const DESTINATION_KINDS: Record<string, { icon: IconName; color: string; tint: string }> = {
+  centre: { icon: 'pin', color: '#2F5164', tint: '#DCE6EC' },
+  station: { icon: 'train', color: '#0F766E', tint: '#D5ECE9' },
+  university: { icon: 'uni', color: '#7C3AED', tint: '#EBE3FB' },
+  hospital: { icon: 'heart', color: '#DB2777', tint: '#FBE0EC' },
+  mall: { icon: 'mall', color: '#B91C1C', tint: '#F8DEDA' },
+  airport: { icon: 'plane', color: '#334155', tint: '#E4E8EE' },
 };
 
 export const NOISE_KINDS: Record<string, string> = {
@@ -227,4 +240,36 @@ export const MARKET_SOURCES: Record<string, string> = {
   apartamente_org: 'apartamente.org',
   apartamente_org_index: 'apartamente.org, indicele lunar',
   imospot_index: 'Indicele Imospot',
+};
+
+export const CATEGORY_SOURCES: Record<CategoryKey, readonly string[]> = {
+  safety: ['osm', 'walk_routing'],
+  accessibility: ['gtfs', 'osm', 'walk_routing'],
+  fifteen_minute: ['osm', 'walk_routing'],
+  green: ['osm', 'walk_routing'],
+  noise: ['osm'],
+  air: ['cams', 'eea_stations'],
+  industry: ['eea_industrial'],
+  education: ['siiir', 'osm'],
+  health: ['cnas', 'ms_upu', 'osm'],
+};
+
+export const TRANSIT_MODES: Record<string, string> = {
+  tram: 'tramvaiul',
+  bus: 'autobuzul',
+  trolleybus: 'troleibuzul',
+  metro: 'metroul',
+  rail: 'trenul',
+  ferry: 'vaporul',
+};
+
+export const NOISE_CLASSES: Record<string, string> = {
+  motorway: 'autostradă',
+  trunk: 'drum expres',
+  primary: 'bulevard',
+  secondary: 'stradă circulată',
+  tertiary: 'stradă de cartier',
+  residential: 'stradă liniștită',
+  tram: 'tramvai',
+  rail: 'cale ferată',
 };

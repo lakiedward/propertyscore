@@ -9,8 +9,7 @@ import { reportInputSchema, toReportData, type ReportData } from './report-data.
 import { readReadyReport } from './report-pdf.db.ts';
 
 export type RenderReportPdfOptions = {
-  sql: Sql;
-  source: { reportId: string } | { inputPath: string };
+  source: { reportId: string; sql: Sql } | { inputPath: string };
   outputPath: string;
   chromiumPath?: string;
   logger: Logger;
@@ -44,7 +43,7 @@ export async function renderReportPdf(options: RenderReportPdfOptions): Promise<
   const { source, logger } = options;
   const raw =
     'reportId' in source
-      ? await readReadyReport(options.sql, source.reportId)
+      ? await readReadyReport(source.sql, source.reportId)
       : await readInputFile(source.inputPath);
   const report = parseReportInput(raw);
   if (report.unreadableSections.length > 0) {

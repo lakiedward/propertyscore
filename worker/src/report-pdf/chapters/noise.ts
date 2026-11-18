@@ -1,17 +1,34 @@
 import type { ChapterBuilder } from '../chapter.ts';
-import { categoryEyebrow, chapter, chapterHead, note, rows, scoreCard } from '../components.ts';
-import { formatDistance } from '../format.ts';
-import { NOISE_KINDS, NOISE_REFERENCES } from '../labels.ts';
-import { around, mapHtml, type MapSpec } from '../maps.ts';
+import {
+  categoryEyebrow,
+  chapter,
+  chapterHead,
+  chapterSources,
+  footnote,
+  scoreCard,
+  sourceDate,
+} from '../components.ts';
+import { esc, formatNumber } from '../format.ts';
+import { NOISE_CLASSES, NOISE_KINDS, NOISE_REFERENCES } from '../labels.ts';
+import { addressDot, around, mapHtml, type FeatureCollection, type MapSpec } from '../maps.ts';
+import { CATEGORY_THEME } from '../theme.ts';
 
 const BAND_DB = 5;
 const MAP_RADIUS_M = 500;
 const LISTED_SOURCES = 5;
-const SOURCE_COLORS: Record<string, string> = {
-  road: '#A63A24',
-  tram: '#7A5200',
-  rail: '#38513F',
-};
+const LOUD = '#B8432B';
+const BUSY = '#E07F55';
+const MODERATE = '#F0B877';
+const RAIL = '#55607A';
+const LOUD_ROADS = ['motorway', 'trunk', 'primary'];
+const BUSY_ROADS = ['secondary'];
+const MAP_KEY = [
+  { label: 'sub 55 dB', swatch: 'background:#E9F1EF;border:1px solid #D5E2DF' },
+  { label: '55–60', swatch: 'background:#F6E3A8' },
+  { label: '60–65', swatch: `background:${MODERATE}` },
+  { label: '65–70', swatch: `background:${BUSY}` },
+  { label: 'peste 70', swatch: `background:${LOUD}` },
+];
 
 function decibelBand(value: number): string {
   const low = Math.floor(value / BAND_DB) * BAND_DB;
@@ -25,73 +42,117 @@ function reference(value: number): string {
   return closest ? `cât o ${closest.label}` : '';
 }
 
+function sourceColor(kind: string, sourceClass: string): string {
+  if (kind === 'rail') return RAIL;
+  if (kind === 'tram') return BUSY;
+  if (LOUD_ROADS.includes(sourceClass)) return LOUD;
+  return BUSY_ROADS.includes(sourceClass) ? BUSY : MODERATE;
+}
+
+function text(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
+function coloured(lines: FeatureCollection): FeatureCollection {
+  return {
+    type: 'FeatureCollection',
+    features: lines.features.map((feature) => ({
+      ...feature,
+      properties: {
+        ...feature.properties,
+        color: sourceColor(text(feature.properties?.kind), text(feature.properties?.source_class)),
+      },
+    })),
+  };
+}
+
 export const noiseChapter: ChapterBuilder = (report) => {
   const summary = report.categories.noise;
   const section = report.sections.noise;
+  const theme = CATEGORY_THEME.noise;
+  const sourcesNote = chapterSources(report, ['noise']);
   if (section?.lden == null) {
     const head = chapterHead({
       eyebrow: categoryEyebrow('noise', summary),
+      color: theme.color,
       title: 'Zgomotul din jurul adresei',
     });
     return {
-      html: chapter(head + scoreCard('noise', report, { better: 'Mai liniștit' })),
+      html: chapter(head + scoreCard('noise', report, { better: 'Mai liniștit' }) + sourcesNote),
       maps: [],
     };
   }
   const sources = [...section.sources]
     .sort((left, right) => left.distance_m - right.distance_m)
     .slice(0, LISTED_SOURCES);
+  const average =
+    summary.city_avg === null || summary.score === null
+      ? ''
+      : ` Zona are scorul ${String(Math.round(summary.score))}, ${summary.score < summary.city_avg ? 'sub' : 'peste'} media orașului (${String(Math.round(summary.city_avg))}).`;
   const loudest = sources[0];
   const head = chapterHead({
     eyebrow: categoryEyebrow('noise', summary),
-    precision:
-      section.precision === 'street' ? 'hărți strategice de zgomot' : 'estimare din străzi',
+    color: theme.color,
+    precision: section.precision === 'street' ? 'hărți strategice de zgomot' : theme.precision,
     title: `Cam ${decibelBand(section.lden)} la adresă, ${reference(section.lden)}`,
     lead: loudest
-      ? `Cea mai apropiată sursă de zgomot e ${loudest.name ?? NOISE_KINDS[loudest.kind] ?? loudest.kind}, la ${formatDistance(loudest.distance_m)}.`
-      : 'Nu am găsit surse mari de zgomot în apropiere.',
+      ? `Cea mai apropiată sursă de zgomot e ${loudest.name ?? NOISE_KINDS[loudest.kind] ?? loudest.kind}, la ${formatNumber(loudest.distance_m)} m.${average}`
+      : `Nu am găsit surse mari de zgomot în apropiere.${average}`,
   });
   const center: [number, number] = [report.longitude, report.latitude];
+  const lines = section.map.lines ? coloured(section.map.lines) : null;
   const map: MapSpec = {
     id: 'map-noise',
     center,
     fit: around(center, MAP_RADIUS_M),
-    layers: section.map.lines
-      ? [{ kind: 'line', data: section.map.lines, color: '#A63A24', width: 3, opacity: 0.55 }]
+    padding: 8,
+    layers: lines
+      ? [
+          {
+            kind: 'line',
+            data: lines,
+            color: LOUD,
+            colorProperty: 'color',
+            width: 26,
+            opacity: 0.22,
+          },
+          {
+            kind: 'line',
+            data: lines,
+            color: LOUD,
+            colorProperty: 'color',
+            width: 12,
+            opacity: 0.4,
+          },
+        ]
       : [],
-    markers: [{ position: center }],
+    markers: [addressDot(center)],
   };
+  const key = `<div class="gz-key zg-key">${MAP_KEY.map((item) => `<span><i style="${item.swatch}"></i>${item.label}</span>`).join('')}<span class="zg-est">estimare ziua</span></div>`;
   const night =
     section.lnight === null
       ? ''
-      : `<div class="soft"><strong>${decibelBand(section.lnight)}</strong><span>noaptea</span></div>`;
-  const levels = `<div class="dark slate"><strong>${decibelBand(section.lden)}</strong><span>ziua, ${reference(section.lden)}</span></div>${night}`;
+      : `<div class="fqx-big g"><b>${decibelBand(section.lnight)}</b><span>noaptea</span></div>`;
   const list =
     sources.length === 0
-      ? note('Nu am găsit surse mari de zgomot în apropiere.')
-      : rows(
-          sources.map((source) => ({
-            title: source.name ?? NOISE_KINDS[source.kind] ?? source.kind,
-            detail: NOISE_KINDS[source.kind] ?? source.kind,
-            value: formatDistance(source.distance_m),
-            dot: SOURCE_COLORS[source.kind] ?? '#52685B',
-          })),
-        );
+      ? '<p class="hint">Nu am găsit surse mari de zgomot în apropiere.</p>'
+      : `<ul class="zg-src">${sources
+          .map(
+            (source) =>
+              `<li><span class="zg-dot" style="background:${sourceColor(source.kind, source.source_class)}"></span><span class="zg-src-t"><b>${esc(source.name ?? NOISE_KINDS[source.kind] ?? source.kind)}</b><small>${esc(NOISE_CLASSES[source.source_class] ?? NOISE_KINDS[source.kind] ?? source.kind)}</small></span><span class="zg-src-m"><b>${formatNumber(source.distance_m)}</b> m</span></li>`,
+          )
+          .join('')}</ul>`;
   const scale = NOISE_REFERENCES.map(
-    (item) =>
-      `<div class="soft" style="margin:0"><strong>${String(item.db)} dB</strong><span>${item.label}</span></div>`,
+    (item) => `<span><b>${String(item.db)} dB</b>${esc(item.label)}</span>`,
   ).join('');
+  const osm = sourceDate(report, 'osm');
+  const method =
+    section.precision === 'street'
+      ? 'Valoarea vine din hărțile strategice de zgomot ale orașului.'
+      : `Estimare din străzile, liniile de tramvai, calea ferată și clădirile din OpenStreetMap${osm ? `, ${osm}` : ''}.`;
   return {
     html: chapter(
-      head +
-        `<div class="grid cols-map">${mapHtml(map, 96)}<section class="card"><p class="eyebrow">La adresă</p><div style="margin-top:2mm">${levels}</div><h3 style="margin-top:4mm">Ce se aude cel mai tare</h3>${list}</section></div>` +
-        `<div class="grid" style="grid-template-columns:repeat(4,1fr);gap:2.5mm;margin-top:4mm">${scale}</div>` +
-        note(
-          section.precision === 'street'
-            ? 'Valoarea vine din hărțile strategice de zgomot ale orașului.'
-            : 'Estimare din străzile, liniile de tramvai, calea ferată și clădirile din OpenStreetMap.',
-        ) +
-        scoreCard('noise', report, { better: 'Mai liniștit' }),
+      `${head}<section class="gzA zgA"><div class="gzA-m">${mapHtml(map)}${key}</div><aside class="gzA-p"><div class="eyebrow">La adresă</div><div class="gzA-t"><div class="fqx-big zgb"><b>${decibelBand(section.lden)}</b><span>ziua, ${reference(section.lden)}</span></div>${night}</div><h3 class="zg-h3">Ce se aude cel mai tare</h3>${list}</aside></section><div class="zg-eq">${scale}</div>${footnote(method)}<div class="sfB-rest">${scoreCard('noise', report, { better: 'Mai liniștit' })}${sourcesNote}</div>`,
     ),
     maps: [map],
   };

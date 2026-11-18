@@ -403,7 +403,7 @@
         "day": {
           "score": 72,
           "waterfall": [],
-          "far_types": [],
+          "far_types": ["police", "fire_station"],
           "contributions": [
             {
               "type": "shop",
@@ -446,7 +446,7 @@
         "night": {
           "score": 66,
           "waterfall": [],
-          "far_types": [],
+          "far_types": ["police", "fire_station"],
           "contributions": [
             {
               "type": "lighting",
@@ -633,7 +633,7 @@
           "route": {
             "ref": "14",
             "mode": "tram",
-            "colour": null
+            "colour": "E2231A"
           }
         },
         {
@@ -653,7 +653,7 @@
           "route": {
             "ref": "40",
             "mode": "tram",
-            "colour": null
+            "colour": "1F6B9A"
           }
         },
         {
@@ -673,7 +673,7 @@
           "route": {
             "ref": "33",
             "mode": "tram",
-            "colour": null
+            "colour": "3F6E1B"
           }
         },
         {
@@ -693,7 +693,7 @@
           "route": {
             "ref": "16",
             "mode": "tram",
-            "colour": null
+            "colour": "E2231A"
           }
         },
         {
@@ -713,10 +713,252 @@
           "route": {
             "ref": "E4",
             "mode": "tram",
-            "colour": null
+            "colour": "55607A"
           }
         }
-      ]
+      ],
+      "reach": {
+        "minutes": 30,
+        "share_pct": 36,
+        "neighbourhoods_reached": 17,
+        "neighbourhoods_total": 23,
+        "isochrones": [
+          {
+            "minutes": 15,
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [21.240855, 45.7537],
+                  [21.241541, 45.755183],
+                  [21.241661, 45.756555],
+                  [21.241139, 45.757766],
+                  [21.239998, 45.758786],
+                  [21.238355, 45.759608],
+                  [21.236392, 45.760243],
+                  [21.23431, 45.760721],
+                  [21.232285, 45.76108],
+                  [21.230425, 45.76136],
+                  [21.228754, 45.761595],
+                  [21.227216, 45.761807],
+                  [21.2257, 45.762001],
+                  [21.224085, 45.762165],
+                  [21.222283, 45.762269],
+                  [21.220273, 45.762272],
+                  [21.218123, 45.762127],
+                  [21.215973, 45.761791],
+                  [21.214016, 45.76123],
+                  [21.212442, 45.760428],
+                  [21.211402, 45.75939],
+                  [21.210963, 45.758143],
+                  [21.211095, 45.756736],
+                  [21.211678, 45.75523],
+                  [21.212531, 45.7537],
+                  [21.213459, 45.752217],
+                  [21.214302, 45.750845],
+                  [21.214971, 45.749634],
+                  [21.215469, 45.748614],
+                  [21.215884, 45.747792],
+                  [21.216364, 45.747157],
+                  [21.217067, 45.746679],
+                  [21.218123, 45.74632],
+                  [21.219586, 45.74604],
+                  [21.221423, 45.745805],
+                  [21.223519, 45.745593],
+                  [21.2257, 45.745399],
+                  [21.227782, 45.745235],
+                  [21.229613, 45.745131],
+                  [21.231112, 45.745128],
+                  [21.232285, 45.745273],
+                  [21.233216, 45.745609],
+                  [21.234044, 45.74617],
+                  [21.234913, 45.746972],
+                  [21.235931, 45.74801],
+                  [21.237131, 45.749257],
+                  [21.238454, 45.750664],
+                  [21.239759, 45.75217],
+                  [21.240855, 45.7537]
+                ]
+              ]
+            }
+          },
+          {
+            "minutes": 30,
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [21.262848, 45.7537],
+                  [21.262679, 45.756656],
+                  [21.26112, 45.759319],
+                  [21.258366, 45.761673],
+                  [21.254767, 45.76374],
+                  [21.250738, 45.76557],
+                  [21.246667, 45.767227],
+                  [21.242824, 45.768772],
+                  [21.239312, 45.770252],
+                  [21.236061, 45.771685],
+                  [21.23287, 45.773052],
+                  [21.229487, 45.774301],
+                  [21.2257, 45.775348],
+                  [21.221417, 45.77609],
+                  [21.216714, 45.77642],
+                  [21.21183, 45.77624],
+                  [21.207126, 45.775482],
+                  [21.202995, 45.774116],
+                  [21.199771, 45.772158],
+                  [21.197649, 45.769671],
+                  [21.196633, 45.76676],
+                  [21.196542, 45.76356],
+                  [21.197059, 45.760222],
+                  [21.197812, 45.756892],
+                  [21.198476, 45.7537],
+                  [21.198857, 45.750744],
+                  [21.198941, 45.748081],
+                  [21.198894, 45.745727],
+                  [21.199019, 45.74366],
+                  [21.199668, 45.74183],
+                  [21.201149, 45.740173],
+                  [21.203636, 45.738628],
+                  [21.207126, 45.737148],
+                  [21.211427, 45.735715],
+                  [21.216209, 45.734348],
+                  [21.221085, 45.733099],
+                  [21.2257, 45.732052],
+                  [21.229819, 45.73131],
+                  [21.233374, 45.73098],
+                  [21.236465, 45.73116],
+                  [21.239312, 45.731918],
+                  [21.242182, 45.733284],
+                  [21.245289, 45.735242],
+                  [21.248719, 45.737729],
+                  [21.252381, 45.74064],
+                  [21.256015, 45.74384],
+                  [21.259238, 45.747178],
+                  [21.261633, 45.750508],
+                  [21.262848, 45.7537]
+                ]
+              ]
+            }
+          },
+          {
+            "minutes": 45,
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [21.281112, 45.7537],
+                  [21.279091, 45.757912],
+                  [21.275674, 45.761879],
+                  [21.271331, 45.765634],
+                  [21.266549, 45.769224],
+                  [21.261726, 45.772692],
+                  [21.257083, 45.776063],
+                  [21.252632, 45.779329],
+                  [21.248205, 45.782439],
+                  [21.243521, 45.785305],
+                  [21.2383, 45.787802],
+                  [21.232361, 45.789789],
+                  [21.2257, 45.791119],
+                  [21.21852, 45.791664],
+                  [21.211196, 45.791332],
+                  [21.204201, 45.79008],
+                  [21.197994, 45.787921],
+                  [21.192917, 45.78493],
+                  [21.189116, 45.781232],
+                  [21.186516, 45.77699],
+                  [21.184851, 45.772389],
+                  [21.183747, 45.767612],
+                  [21.18283, 45.762825],
+                  [21.181837, 45.758159],
+                  [21.18069, 45.7537],
+                  [21.179529, 45.749488],
+                  [21.178675, 45.745521],
+                  [21.178554, 45.741766],
+                  [21.179582, 45.738176],
+                  [21.182057, 45.734708],
+                  [21.186074, 45.731337],
+                  [21.1915, 45.728071],
+                  [21.197994, 45.724961],
+                  [21.205092, 45.722095],
+                  [21.212309, 45.719598],
+                  [21.219253, 45.717611],
+                  [21.2257, 45.716281],
+                  [21.231627, 45.715736],
+                  [21.237187, 45.716068],
+                  [21.24263, 45.71732],
+                  [21.248205, 45.719479],
+                  [21.25405, 45.72247],
+                  [21.260125, 45.726168],
+                  [21.266185, 45.73041],
+                  [21.271818, 45.735011],
+                  [21.276524, 45.739788],
+                  [21.27983, 45.744575],
+                  [21.281399, 45.749241],
+                  [21.281112, 45.7537]
+                ]
+              ]
+            }
+          }
+        ],
+        "neighbourhoods": [
+          {
+            "name": "Fabric",
+            "location": [21.250406, 45.757861],
+            "minutes": 28
+          },
+          {
+            "name": "Elisabetin",
+            "location": [21.226138, 45.742491],
+            "minutes": 16
+          },
+          {
+            "name": "Iosefin",
+            "location": [21.209568, 45.745106],
+            "minutes": 22
+          },
+          {
+            "name": "Mehala",
+            "location": [21.204599, 45.765117],
+            "minutes": 25
+          },
+          {
+            "name": "Lipovei",
+            "location": [21.239952, 45.775954],
+            "minutes": 33
+          },
+          {
+            "name": "Soarelui",
+            "location": [21.249235, 45.734974],
+            "minutes": 28
+          },
+          {
+            "name": "Blașcovici",
+            "location": [21.2012, 45.756378],
+            "minutes": 26
+          },
+          {
+            "name": "Aradului Vest",
+            "location": [21.21898, 45.775828],
+            "minutes": 30
+          },
+          {
+            "name": "Olimpia-Stadion",
+            "location": [21.246982, 45.742175],
+            "minutes": 33
+          },
+          {
+            "name": "Dâmbovița",
+            "location": [21.199127, 45.73482],
+            "minutes": 29
+          },
+          {
+            "name": "Dorobanților",
+            "location": [21.258556, 45.763868],
+            "minutes": 29
+          }
+        ]
+      }
     },
     "fifteen_minute": {
       "schema_version": 1,
@@ -732,63 +974,72 @@
           "categories": ["supermarket", "convenience", "bakery"],
           "n5": 14,
           "n10": 22,
-          "n15": 44
+          "n15": 44,
+          "typical_n15": 9
         },
         {
           "key": "pharmacies",
           "categories": ["pharmacy"],
           "n5": 6,
           "n10": 10,
-          "n15": 20
+          "n15": 20,
+          "typical_n15": 3
         },
         {
           "key": "medical",
           "categories": ["dentist", "doctor"],
           "n5": 6,
           "n10": 10,
-          "n15": 20
+          "n15": 20,
+          "typical_n15": 4
         },
         {
           "key": "services",
           "categories": ["bank_atm", "post", "hairdresser"],
           "n5": 14,
           "n10": 21,
-          "n15": 43
+          "n15": 43,
+          "typical_n15": 6
         },
         {
           "key": "food_drink",
           "categories": ["restaurant", "cafe"],
           "n5": 64,
           "n10": 96,
-          "n15": 192
+          "n15": 192,
+          "typical_n15": 12
         },
         {
           "key": "parks",
           "categories": ["park", "playground"],
           "n5": 6,
           "n10": 9,
-          "n15": 19
+          "n15": 19,
+          "typical_n15": 2
         },
         {
           "key": "culture",
           "categories": ["cinema_theatre", "library"],
           "n5": 4,
           "n10": 6,
-          "n15": 12
+          "n15": 12,
+          "typical_n15": 0
         },
         {
           "key": "schools",
           "categories": ["school", "kindergarten"],
           "n5": 3,
           "n10": 5,
-          "n15": 11
+          "n15": 11,
+          "typical_n15": 4
         },
         {
           "key": "sport",
           "categories": ["fitness"],
           "n5": 1,
           "n10": 2,
-          "n15": 5
+          "n15": 5,
+          "typical_n15": 1
         }
       ],
       "categories": [
@@ -2466,7 +2717,435 @@
       ],
       "question_codes": [],
       "building": null,
-      "source": {}
+      "source": {},
+      "earthquakes": {
+        "catalogue": "catalogul USGS și EMSC",
+        "since_year": 1936,
+        "radius_km": 60,
+        "min_magnitude": 3.5,
+        "events": [
+          {
+            "date": "1936-09-06",
+            "magnitude": 5.2,
+            "distance_km": 20,
+            "place": "Bobda",
+            "location": [20.975033, 45.70901]
+          },
+          {
+            "date": "1959-05-27",
+            "magnitude": 5.3,
+            "distance_km": 20,
+            "place": "Sânmihaiu German",
+            "location": [20.980054, 45.695983]
+          },
+          {
+            "date": "1974-04-17",
+            "magnitude": 5.6,
+            "distance_km": 25,
+            "place": "Călacea",
+            "location": [21.140986, 45.972082]
+          },
+          {
+            "date": "1988-04-22",
+            "magnitude": 3.8,
+            "distance_km": 34,
+            "place": "Checea",
+            "location": [20.794018, 45.728008]
+          },
+          {
+            "date": "1988-11-29",
+            "magnitude": 3.9,
+            "distance_km": 26,
+            "place": "Berini",
+            "location": [21.43195, 45.565895]
+          },
+          {
+            "date": "1991-07-12",
+            "magnitude": 4.1,
+            "distance_km": 34,
+            "place": "Ghilad",
+            "location": [21.166992, 45.445938]
+          },
+          {
+            "date": "1991-07-12",
+            "magnitude": 5.6,
+            "distance_km": 45,
+            "place": "Livezile",
+            "location": [21.057044, 45.363886]
+          },
+          {
+            "date": "1991-07-13",
+            "magnitude": 3.5,
+            "distance_km": 44,
+            "place": "Soca",
+            "location": [21.136995, 45.357916]
+          },
+          {
+            "date": "1991-07-13",
+            "magnitude": 4,
+            "distance_km": 39,
+            "place": "Deta",
+            "location": [21.241021, 45.402877]
+          },
+          {
+            "date": "1991-07-14",
+            "magnitude": 4.1,
+            "distance_km": 37,
+            "place": "Ofsenița",
+            "location": [21.129012, 45.430921]
+          },
+          {
+            "date": "1991-07-19",
+            "magnitude": 3.8,
+            "distance_km": 54,
+            "place": "Partoș",
+            "location": [21.113048, 45.272879]
+          },
+          {
+            "date": "1991-07-19",
+            "magnitude": 5.1,
+            "distance_km": 51,
+            "place": "Partoș",
+            "location": [21.053053, 45.311869]
+          },
+          {
+            "date": "1991-07-19",
+            "magnitude": 4.4,
+            "distance_km": 46,
+            "place": "Partoș",
+            "location": [21.122961, 45.343894]
+          },
+          {
+            "date": "1991-07-20",
+            "magnitude": 4.1,
+            "distance_km": 46,
+            "place": "Partoș",
+            "location": [21.108027, 45.345884]
+          },
+          {
+            "date": "1991-07-20",
+            "magnitude": 3.8,
+            "distance_km": 42,
+            "place": "Deta",
+            "location": [21.239991, 45.374833]
+          },
+          {
+            "date": "1991-07-31",
+            "magnitude": 4.3,
+            "distance_km": 47,
+            "place": "Partoș",
+            "location": [21.138025, 45.334847]
+          },
+          {
+            "date": "1991-08-01",
+            "magnitude": 3.7,
+            "distance_km": 36,
+            "place": "Dolaț",
+            "location": [21.069017, 45.446933]
+          },
+          {
+            "date": "1991-08-02",
+            "magnitude": 4.7,
+            "distance_km": 56,
+            "place": "Partoș",
+            "location": [21.087042, 45.261842]
+          },
+          {
+            "date": "1991-08-06",
+            "magnitude": 4.1,
+            "distance_km": 41,
+            "place": "Livezile",
+            "location": [21.069017, 45.402877]
+          },
+          {
+            "date": "1991-08-07",
+            "magnitude": 3.8,
+            "distance_km": 51,
+            "place": "Partoș",
+            "location": [21.050993, 45.307889]
+          },
+          {
+            "date": "1991-08-12",
+            "magnitude": 4.2,
+            "distance_km": 32,
+            "place": "Ghilad",
+            "location": [21.152959, 45.466926]
+          },
+          {
+            "date": "1991-08-14",
+            "magnitude": 4.7,
+            "distance_km": 31,
+            "place": "Ghilad",
+            "location": [21.15798, 45.477872]
+          },
+          {
+            "date": "1991-08-15",
+            "magnitude": 4.5,
+            "distance_km": 30,
+            "place": "Folea",
+            "location": [21.285953, 45.484929]
+          },
+          {
+            "date": "1991-09-07",
+            "magnitude": 3.5,
+            "distance_km": 33,
+            "place": "Rudna",
+            "location": [20.987007, 45.506912]
+          },
+          {
+            "date": "1991-10-08",
+            "magnitude": 3.7,
+            "distance_km": 31,
+            "place": "Ghilad",
+            "location": [21.151028, 45.476877]
+          },
+          {
+            "date": "1991-10-14",
+            "magnitude": 4,
+            "distance_km": 34,
+            "place": "Ghilad",
+            "location": [21.129012, 45.451909]
+          },
+          {
+            "date": "1991-10-17",
+            "magnitude": 3.5,
+            "distance_km": 58,
+            "place": "Gaiu Mic",
+            "location": [21.108027, 45.233798]
+          },
+          {
+            "date": "1991-11-21",
+            "magnitude": 4.4,
+            "distance_km": 30,
+            "place": "Ghilad",
+            "location": [21.176004, 45.490899]
+          },
+          {
+            "date": "1991-12-02",
+            "magnitude": 5.5,
+            "distance_km": 30,
+            "place": "Ciacova",
+            "location": [21.114979, 45.497955]
+          },
+          {
+            "date": "1991-12-18",
+            "magnitude": 3.9,
+            "distance_km": 38,
+            "place": "Hodoș",
+            "location": [21.655966, 45.920065]
+          },
+          {
+            "date": "1991-12-19",
+            "magnitude": 4.3,
+            "distance_km": 32,
+            "place": "Nadăș",
+            "location": [21.568934, 45.907038]
+          },
+          {
+            "date": "1991-12-21",
+            "magnitude": 3.6,
+            "distance_km": 11,
+            "place": "Giarmata",
+            "location": [21.319941, 45.832043]
+          },
+          {
+            "date": "1992-03-02",
+            "magnitude": 4.6,
+            "distance_km": 38,
+            "place": "Comeat",
+            "location": [21.629959, 45.951999]
+          },
+          {
+            "date": "1992-12-19",
+            "magnitude": 4.6,
+            "distance_km": 30,
+            "place": "Ivanda",
+            "location": [20.949928, 45.560919]
+          },
+          {
+            "date": "1992-12-23",
+            "magnitude": 3.6,
+            "distance_km": 27,
+            "place": "Cebza",
+            "location": [21.031037, 45.554948]
+          },
+          {
+            "date": "1993-01-14",
+            "magnitude": 4.1,
+            "distance_km": 32,
+            "place": "Giulvăz",
+            "location": [20.95894, 45.52989]
+          },
+          {
+            "date": "1994-07-21",
+            "magnitude": 4,
+            "distance_km": 38,
+            "place": "Cruceni",
+            "location": [20.919029, 45.482938]
+          },
+          {
+            "date": "1994-10-13",
+            "magnitude": 4.7,
+            "distance_km": 34,
+            "place": "Crai Nou",
+            "location": [21.004001, 45.492889]
+          },
+          {
+            "date": "1994-10-13",
+            "magnitude": 4.1,
+            "distance_km": 22,
+            "place": "Jebel",
+            "location": [21.191969, 45.553953]
+          },
+          {
+            "date": "1994-10-15",
+            "magnitude": 4.2,
+            "distance_km": 35,
+            "place": "Crai Nou",
+            "location": [21.014944, 45.474887]
+          },
+          {
+            "date": "1994-11-12",
+            "magnitude": 4.1,
+            "distance_km": 29,
+            "place": "Giulvăz",
+            "location": [21.007992, 45.540926]
+          },
+          {
+            "date": "1995-02-12",
+            "magnitude": 3.5,
+            "distance_km": 31,
+            "place": "Rudna",
+            "location": [21.006962, 45.520934]
+          },
+          {
+            "date": "1995-08-24",
+            "magnitude": 4.4,
+            "distance_km": 34,
+            "place": "Dolaț",
+            "location": [21.070948, 45.467921]
+          },
+          {
+            "date": "1996-03-24",
+            "magnitude": 4.8,
+            "distance_km": 21,
+            "place": "Peciu Nou",
+            "location": [21.022927, 45.622978]
+          },
+          {
+            "date": "1999-10-08",
+            "magnitude": 3.6,
+            "distance_km": 47,
+            "place": "Giera",
+            "location": [20.999881, 45.359454]
+          },
+          {
+            "date": "2000-08-16",
+            "magnitude": 4.3,
+            "distance_km": 29,
+            "place": "Macedonia",
+            "location": [21.088458, 45.507545]
+          },
+          {
+            "date": "2000-08-21",
+            "magnitude": 3.5,
+            "distance_km": 9,
+            "place": "Moșnița Veche",
+            "location": [21.337708, 45.74791]
+          },
+          {
+            "date": "2000-10-30",
+            "magnitude": 3.5,
+            "distance_km": 8,
+            "place": "Moșnița Veche",
+            "location": [21.327151, 45.745739]
+          },
+          {
+            "date": "2001-06-24",
+            "magnitude": 3.7,
+            "distance_km": 42,
+            "place": "Giera",
+            "location": [21.016876, 45.401791]
+          },
+          {
+            "date": "2001-08-02",
+            "magnitude": 4.3,
+            "distance_km": 34,
+            "place": "Dolaț",
+            "location": [21.051637, 45.468102]
+          },
+          {
+            "date": "2008-02-07",
+            "magnitude": 3.6,
+            "distance_km": 44,
+            "place": "Grabăț",
+            "location": [20.689992, 45.890031]
+          },
+          {
+            "date": "2010-09-12",
+            "magnitude": 3.6,
+            "distance_km": 45,
+            "place": "Comloșu Mare",
+            "location": [20.679048, 45.89383]
+          },
+          {
+            "date": "2012-01-09",
+            "magnitude": 3.6,
+            "distance_km": 38,
+            "place": "Chizătău",
+            "location": [21.719952, 45.769984]
+          },
+          {
+            "date": "2014-05-08",
+            "magnitude": 3.7,
+            "distance_km": 22,
+            "place": "Chevereșu Mare",
+            "location": [21.490014, 45.669929]
+          },
+          {
+            "date": "2014-12-23",
+            "magnitude": 3.8,
+            "distance_km": 35,
+            "place": "Foeni",
+            "location": [20.929973, 45.519938]
+          },
+          {
+            "date": "2018-12-23",
+            "magnitude": 4.1,
+            "distance_km": 59,
+            "place": "Giera",
+            "location": [20.93641, 45.267451]
+          },
+          {
+            "date": "2023-05-22",
+            "magnitude": 4.1,
+            "distance_km": 40,
+            "place": "Tisa Nouă",
+            "location": [21.388949, 46.098914]
+          },
+          {
+            "date": "2023-05-23",
+            "magnitude": 4.1,
+            "distance_km": 43,
+            "place": "Frumușeni",
+            "location": [21.449974, 46.110042]
+          },
+          {
+            "date": "2023-06-06",
+            "magnitude": 4.7,
+            "distance_km": 37,
+            "place": "Tisa Nouă",
+            "location": [21.401437, 46.064538]
+          },
+          {
+            "date": "2024-01-13",
+            "magnitude": 3.8,
+            "distance_km": 36,
+            "place": "Opatița",
+            "location": [21.294707, 45.437706]
+          }
+        ]
+      }
     },
     "investment": {
       "schema_version": 1,
@@ -2515,12 +3194,14 @@
           "code": "apartamente_org",
           "period": "2026-11",
           "observed_on": "2026-11-18",
-          "url": "https://apartamente.org/apartamente-de-vanzare/timisoara"
-        }
+          "url": "https://apartamente.org/apartamente-de-inchiriat/timisoara"
+        },
+        "is_example": true
       },
       "yield": {
         "gross_pct": 5.8,
-        "city_gross_pct": null
+        "city_gross_pct": null,
+        "is_example": true
       },
       "city": {
         "sale_count": 0,
@@ -2588,14 +3269,24 @@
           "period": "2026-11",
           "scope": "city_statistics",
           "url": "https://apartamente.org/apartamente-de-vanzare/timisoara",
-          "observed_on": "2026-11-18"
+          "observed_on": "2026-11-18",
+          "label": "preț cerut la vânzare"
+        },
+        {
+          "source": "apartamente_org",
+          "period": "2026-11",
+          "scope": "city_statistics",
+          "url": "https://apartamente.org/apartamente-de-inchiriat/timisoara",
+          "observed_on": "2026-11-18",
+          "label": "chirie cerută · exemplu"
         },
         {
           "source": "imospot_index",
           "period": "2026-11",
           "scope": "city_statistics",
           "url": "https://imospot.ro/indice",
-          "observed_on": null
+          "observed_on": null,
+          "label": "istoricul lunar"
         }
       ]
     }

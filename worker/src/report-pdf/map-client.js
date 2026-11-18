@@ -2,22 +2,42 @@ import { LngLatBounds, Map, Marker, setWorkerUrl } from './maplibre-gl.mjs';
 
 setWorkerUrl(new URL('./maplibre-gl-worker.mjs', import.meta.url).href);
 
-const { style, maps } = JSON.parse(document.getElementById('map-specs').textContent);
+const { style, palette, maps } = JSON.parse(document.getElementById('map-specs').textContent);
+
+function recolour(map) {
+  for (const layer of map.getStyle().layers) {
+    const rule = palette.find((entry) => entry.match.some((part) => layer.id.includes(part)));
+    if (!rule) continue;
+    if (rule.hide) {
+      map.setLayoutProperty(layer.id, 'visibility', 'none');
+      continue;
+    }
+    const property = rule.paint?.[layer.type];
+    if (property) map.setPaintProperty(layer.id, property.name, property.value);
+  }
+}
 
 function paint(layer) {
+  const colour = layer.colorProperty
+    ? ['coalesce', ['get', layer.colorProperty], layer.color]
+    : layer.color;
   if (layer.kind === 'fill') {
-    return { 'fill-color': layer.color, 'fill-opacity': layer.opacity ?? 0.4 };
+    return {
+      'fill-color': colour,
+      'fill-opacity': layer.opacity ?? 0.4,
+      ...(layer.outline ? { 'fill-outline-color': layer.outline } : {}),
+    };
   }
   if (layer.kind === 'line') {
     return {
-      'line-color': layer.color,
+      'line-color': colour,
       'line-opacity': layer.opacity ?? 1,
       'line-width': layer.width ?? 2,
-      ...(layer.dashed ? { 'line-dasharray': [2, 2] } : {}),
+      ...(layer.dashed ? { 'line-dasharray': [1.5, 2] } : {}),
     };
   }
   return {
-    'circle-color': layer.color,
+    'circle-color': colour,
     'circle-opacity': layer.opacity ?? 1,
     'circle-radius': layer.radius ?? 3,
     'circle-stroke-color': '#ffffff',
@@ -27,18 +47,13 @@ function paint(layer) {
 
 function markerElement(marker) {
   const element = document.createElement('div');
-  if (marker.label === undefined) {
-    element.className = 'pin';
-    return element;
-  }
-  element.className = 'marker';
-  element.textContent = marker.label;
-  if (marker.color) element.style.setProperty('--marker', marker.color);
+  element.className = 'mk';
+  element.innerHTML = marker.html;
   return element;
 }
 
 function draw(spec) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const map = new Map({
       container: spec.id,
       style,
@@ -49,21 +64,41 @@ function draw(spec) {
       fadeDuration: 0,
       canvasContextAttributes: { preserveDrawingBuffer: true },
     });
+    map.on('error', (event) => {
+      reject(event.error ?? new Error('The map could not be drawn'));
+    });
     map.once('load', () => {
+      recolour(map);
       if (spec.fit && spec.fit.length > 0) {
         const bounds = spec.fit.reduce(
           (box, position) => box.extend(position),
-          new LngLatBounds(spec.center, spec.center),
+          new LngLatBounds(spec.fit[0], spec.fit[0]),
         );
-        map.fitBounds(bounds, { padding: 28, animate: false, maxZoom: 16 });
+        map.fitBounds(bounds, {
+          padding: spec.padding ?? 36,
+          animate: false,
+          maxZoom: spec.maxZoom ?? 16,
+        });
       }
       spec.layers.forEach((layer, index) => {
         const id = `overlay-${String(index)}`;
         map.addSource(id, { type: 'geojson', data: layer.data });
-        map.addLayer({ id, type: layer.kind, source: id, paint: paint(layer) });
+        map.addLayer({
+          id,
+          type: layer.kind,
+          source: id,
+          layout: layer.kind === 'line' ? { 'line-cap': 'round', 'line-join': 'round' } : {},
+          paint: paint(layer),
+        });
       });
       for (const marker of spec.markers) {
-        new Marker({ element: markerElement(marker) }).setLngLat(marker.position).addTo(map);
+        new Marker({
+          element: markerElement(marker),
+          anchor: marker.anchor ?? 'center',
+          offset: marker.offset ?? [0, 0],
+        })
+          .setLngLat(marker.position)
+          .addTo(map);
       }
       map.once('idle', resolve);
     });

@@ -16,15 +16,24 @@ type MapLayer = {
   width?: number;
   radius?: number;
   dashed?: boolean;
+  outline?: string;
+  colorProperty?: string;
 };
 
-type MapMarker = { position: Position; label?: string; color?: string };
+export type MapMarker = {
+  position: Position;
+  html: string;
+  anchor?: 'center' | 'bottom' | 'left' | 'right' | 'top';
+  offset?: [number, number];
+};
 
 export type MapSpec = {
   id: string;
   center: Position;
   zoom?: number;
   fit?: Position[];
+  padding?: number;
+  maxZoom?: number;
   layers: MapLayer[];
   markers: MapMarker[];
 };
@@ -33,7 +42,30 @@ const EARTH_RADIUS_M = 6_371_008.8;
 const CIRCLE_STEPS = 72;
 
 export const MAP_TILE_HOST = 'tiles.openfreemap.org';
-const MAP_STYLE_URL = `https://${MAP_TILE_HOST}/styles/bright`;
+const MAP_STYLE_URL = `https://${MAP_TILE_HOST}/styles/positron`;
+
+type PaletteRule = {
+  match: readonly string[];
+  hide?: true;
+  paint?: Partial<Record<'background' | 'fill' | 'line', { name: string; value: string }>>;
+};
+
+const fill = (value: string) => ({ name: 'fill-color', value });
+const line = (value: string) => ({ name: 'line-color', value });
+
+const MAP_PALETTE: readonly PaletteRule[] = [
+  { match: ['background'], paint: { background: { name: 'background-color', value: '#EFEDE3' } } },
+  { match: ['park', 'landcover_wood'], paint: { fill: fill('#D8E5C4') } },
+  { match: ['water'], paint: { fill: fill('#C9DCE3'), line: line('#C9DCE3') } },
+  { match: ['landuse_residential', 'road_area_pier'], paint: { fill: fill('#EFEDE3') } },
+  { match: ['building'], paint: { fill: fill('#E6E3D5') } },
+  { match: ['aeroway'], paint: { fill: fill('#E6E3D5'), line: line('#E0DDCF') } },
+  { match: ['dashline', 'shield', 'boundary'], hide: true },
+  { match: ['railway'], paint: { line: line('#C9C5B4') } },
+  { match: ['casing'], paint: { line: line('#DCD8C7') } },
+  { match: ['highway_path'], paint: { line: line('#F7F6EF') } },
+  { match: ['highway', 'tunnel', 'road_pier'], paint: { line: line('#FFFFFF') } },
+];
 
 export function collection(geometries: readonly Geometry[]): FeatureCollection {
   return {
@@ -64,12 +96,27 @@ export function around(center: Position, radiusM: number): Position[] {
   return [0, 0.5, 1, 1.5].map((quarter) => offsetPosition(center, radiusM, quarter * Math.PI));
 }
 
-export function mapHtml(spec: MapSpec, heightMm: number, credit = '© OpenStreetMap'): string {
-  return `<div class="map" style="height:${String(heightMm)}mm"><div class="map-canvas" id="${esc(spec.id)}"></div><span class="map-credit">${esc(credit)}</span></div>`;
+const ADDRESS_PIN =
+  '<svg viewBox="0 0 28 36" aria-hidden="true"><path d="M14 35C14 35 26 22.6 26 13.5A12 12 0 0 0 2 13.5C2 22.6 14 35 14 35Z" fill="#103F32" stroke="#fff" stroke-width="2"/><circle cx="14" cy="13.5" r="5" fill="#DDED69"/></svg>';
+
+export function addressMarker(position: Position, label?: string): MapMarker {
+  const text = label ? `<span class="apin-l">${esc(label)}</span>` : '';
+  return { position, html: `<span class="apin">${ADDRESS_PIN}${text}</span>`, anchor: 'bottom' };
+}
+
+export function addressDot(position: Position): MapMarker {
+  return { position, html: '<span class="adot"></span>' };
+}
+
+export function mapHtml(spec: MapSpec, overlays = '', className = ''): string {
+  return `<div class="map ${className}"><div class="map-canvas" id="${esc(spec.id)}"></div>${overlays}<div class="attr">© OpenStreetMap contributors</div></div>`;
 }
 
 export function mapSpecsScript(specs: readonly MapSpec[]): string {
-  const json = JSON.stringify({ style: MAP_STYLE_URL, maps: specs }).replace(/</g, '\\u003c');
+  const json = JSON.stringify({ style: MAP_STYLE_URL, palette: MAP_PALETTE, maps: specs }).replace(
+    /</g,
+    '\\u003c',
+  );
   return `<script type="application/json" id="map-specs">${json}</script>`;
 }
 

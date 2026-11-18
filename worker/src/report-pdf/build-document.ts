@@ -6,7 +6,6 @@ import type { ChapterBuilder } from './chapter.ts';
 import { accessibilityChapter } from './chapters/accessibility.ts';
 import { airIndustryChapter } from './chapters/air-industry.ts';
 import { closingChapter } from './chapters/closing.ts';
-import { educationHealthChapter } from './chapters/education-health.ts';
 import { fifteenMinuteChapter } from './chapters/fifteen-minute.ts';
 import { greenChapter } from './chapters/green.ts';
 import { investmentChapter } from './chapters/investment.ts';
@@ -18,6 +17,7 @@ import { esc } from './format.ts';
 import { MAP_TILE_HOST, mapSpecsScript, type MapSpec } from './maps.ts';
 import type { ReportData } from './report-data.ts';
 
+const LAYOUT_WIDTH_PX = 1120;
 const MAP_CLIENT_PATH = '/assets/map-client.js';
 
 const CHAPTERS: readonly ChapterBuilder[] = [
@@ -25,7 +25,6 @@ const CHAPTERS: readonly ChapterBuilder[] = [
   safetyChapter,
   accessibilityChapter,
   fifteenMinuteChapter,
-  educationHealthChapter,
   greenChapter,
   noiseChapter,
   airIndustryChapter,
@@ -53,5 +52,10 @@ export async function buildReportDocument(report: ReportData): Promise<PdfDocume
     ...mapLibrary,
     [MAP_CLIENT_PATH, { contentType: 'text/javascript', body: mapClient }],
   ]);
-  return { html, assets, allowedHosts: maps.length === 0 ? [] : [MAP_TILE_HOST] };
+  return {
+    html,
+    assets,
+    allowedHosts: maps.length === 0 ? [] : [MAP_TILE_HOST],
+    layoutWidthPx: LAYOUT_WIDTH_PX,
+  };
 }

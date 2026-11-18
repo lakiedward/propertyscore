@@ -28,10 +28,25 @@ const envSchema = z
     path: ['OSM_EXTRACT_API_KEY'],
   });
 
+const documentEnvSchema = z.object({
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  CHROMIUM_PATH: z.string().min(1).optional(),
+});
+
 export type Env = z.infer<typeof envSchema>;
+export type DocumentEnv = z.infer<typeof documentEnvSchema>;
 
 export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const parsed = envSchema.safeParse(source);
+  if (!parsed.success) {
+    const fields = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
+    throw new WorkerError('invalid_environment', `Invalid worker environment: ${fields}`);
+  }
+  return parsed.data;
+}
+
+export function readDocumentEnv(source: NodeJS.ProcessEnv = process.env): DocumentEnv {
+  const parsed = documentEnvSchema.safeParse(source);
   if (!parsed.success) {
     const fields = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
     throw new WorkerError('invalid_environment', `Invalid worker environment: ${fields}`);
