@@ -379,6 +379,10 @@ $$;
 
 select private.rebuild_listing_map();
 
+revoke all on function private.set_listing_map_fields() from public, anon, authenticated;
+revoke all on function private.sync_listing_map_counts() from public, anon, authenticated;
+revoke all on function private.rebuild_listing_map() from public, anon, authenticated;
+
 create function private.set_listing_map_cache_header()
 returns void
 language sql
@@ -396,64 +400,125 @@ create type private.listing_map_group as (
   sum_y double precision
 );
 
-create function private.merge_listing_map_groups(
+create function private.group_listing_map_cells(
   p_groups private.listing_map_group[],
   p_radius double precision
 )
 returns table (cx integer, cy integer, listing_count integer, center_x double precision, center_y double precision)
-language plpgsql
+language sql
 immutable
 set search_path = ''
 as $$
-declare
-  ordered private.listing_map_group[];
-  is_taken boolean[];
-  seed private.listing_map_group;
-  candidate private.listing_map_group;
-  seed_x double precision;
-  seed_y double precision;
-  total integer;
-  total_x double precision;
-  total_y double precision;
-  group_count integer;
-begin
-  ordered := array(
-    select row(groups.cx, groups.cy, groups.listing_count, groups.sum_x, groups.sum_y)::private.listing_map_group
+  with cells as materialized (
+    select
+      groups.cx::bigint * 4294967296 + groups.cy as cell_key,
+      groups.cx,
+      groups.cy,
+      groups.listing_count,
+      groups.sum_x,
+      groups.sum_y,
+      groups.sum_x / groups.listing_count as center_x,
+      groups.sum_y / groups.listing_count as center_y
     from unnest(p_groups) as groups
-    order by groups.listing_count desc, groups.cx, groups.cy
-  );
-  group_count := coalesce(cardinality(ordered), 0);
-  if group_count = 0 then
-    return;
-  end if;
-  is_taken := array_fill(false, array[group_count]);
+    where groups.listing_count > 0
+  ),
+  offsets as (
+    select offset_x.dx::bigint * 4294967296 + offset_y.dy as key_offset
+    from generate_series(-2, 2) as offset_x (dx)
+    cross join generate_series(-2, 2) as offset_y (dy)
+  ),
+  leaders as materialized (
+    select distinct on (cell.cell_key)
+      cell.cell_key,
+      neighbour.cell_key as leader_key
+    from cells as cell
+    cross join offsets
+    join cells as neighbour on neighbour.cell_key = cell.cell_key + offsets.key_offset
+    where (neighbour.center_x - cell.center_x) ^ 2 + (neighbour.center_y - cell.center_y) ^ 2 <= p_radius ^ 2
+    order by cell.cell_key, neighbour.listing_count desc, neighbour.cx, neighbour.cy
+  ),
+  roots as materialized (
+    select leaders.cell_key from leaders where leaders.leader_key = leaders.cell_key
+  ),
+  assigned as (
+    select
+      leaders.cell_key,
+      case when leaders.leader_key in (select roots.cell_key from roots)
+        then leaders.leader_key else leaders.cell_key end as group_key
+    from leaders
+  )
+  select
+    (assigned.group_key >> 32)::integer,
+    (assigned.group_key - ((assigned.group_key >> 32) << 32))::integer,
+    sum(cells.listing_count)::integer,
+    sum(cells.sum_x) / sum(cells.listing_count),
+    sum(cells.sum_y) / sum(cells.listing_count)
+  from assigned
+  join cells on cells.cell_key = assigned.cell_key
+  group by assigned.group_key;
+$$;
 
-  for seed_index in 1 .. group_count loop
-    continue when is_taken[seed_index];
-    seed := ordered[seed_index];
-    seed_x := seed.sum_x / seed.listing_count;
-    seed_y := seed.sum_y / seed.listing_count;
-    total := 0;
-    total_x := 0;
-    total_y := 0;
-    for candidate_index in seed_index .. group_count loop
-      continue when is_taken[candidate_index];
-      candidate := ordered[candidate_index];
-      if (candidate.sum_x / candidate.listing_count - seed_x) ^ 2
-        + (candidate.sum_y / candidate.listing_count - seed_y) ^ 2 <= p_radius ^ 2 then
-        is_taken[candidate_index] := true;
-        total := total + candidate.listing_count;
-        total_x := total_x + candidate.sum_x;
-        total_y := total_y + candidate.sum_y;
-      end if;
-    end loop;
-    cx := seed.cx;
-    cy := seed.cy;
-    listing_count := total;
-    center_x := total_x / total;
-    center_y := total_y / total;
-    return next;
-  end loop;
+create function private.listing_map_tile_groups(
+  p_z integer,
+  p_x integer,
+  p_y integer,
+  p_transaction public.listing_transaction,
+  p_bands smallint[]
+)
+returns table (cx integer, cy integer, listing_count integer, center_x double precision, center_y double precision)
+language plpgsql
+stable
+set search_path = ''
+as $$
+declare
+  origin constant double precision := 20037508.342789244;
+  ring constant integer := 8;
+  cell_size double precision := 2 * origin / (8 * power(2, p_z));
+  envelope extensions.geometry := extensions.st_tileenvelope(p_z, p_x, p_y);
+  groups private.listing_map_group[];
+begin
+  if p_z <= 13 then
+    select array_agg(row(cells.cx, cells.cy, cells.listing_count, cells.sum_x, cells.sum_y)::private.listing_map_group)
+    into groups
+    from (
+      select
+        cells.cx,
+        cells.cy,
+        sum(cells.listing_count)::integer as listing_count,
+        sum(cells.sum_x) as sum_x,
+        sum(cells.sum_y) as sum_y
+      from private.listing_map_cells cells
+      where cells.transaction = p_transaction
+        and cells.price_band = any (p_bands)
+        and cells.zoom = p_z
+        and cells.cx between p_x * 8 - ring and p_x * 8 + 7 + ring
+        and cells.cy between p_y * 8 - ring and p_y * 8 + 7 + ring
+      group by cells.cx, cells.cy
+    ) as cells;
+  else
+    select array_agg(row(members.cx, members.cy, members.listing_count, members.sum_x, members.sum_y)::private.listing_map_group)
+    into groups
+    from (
+      select
+        floor((extensions.st_x(listings.location_3857) + origin) / cell_size)::integer as cx,
+        floor((origin - extensions.st_y(listings.location_3857)) / cell_size)::integer as cy,
+        count(*)::integer as listing_count,
+        sum(extensions.st_x(listings.location_3857)) as sum_x,
+        sum(extensions.st_y(listings.location_3857)) as sum_y
+      from public.listings
+      where listings.status = 'approved'
+        and listings.transaction = p_transaction
+        and listings.price_band = any (p_bands)
+        and listings.location_3857 operator(extensions.&&) extensions.st_expand(envelope, ring * cell_size)
+      group by 1, 2
+    ) as members;
+  end if;
+
+  return query
+  select grouped.cx, grouped.cy, grouped.listing_count, grouped.center_x, grouped.center_y
+  from private.group_listing_map_cells(groups, cell_size) as grouped
+  where floor((grouped.center_x + origin) / cell_size)::integer between p_x * 8 and p_x * 8 + 7
+    and floor((origin - grouped.center_y) / cell_size)::integer between p_y * 8 and p_y * 8 + 7;
 end;
 $$;
 
@@ -475,8 +540,6 @@ declare
   envelope extensions.geometry;
   cell_size double precision;
   origin constant double precision := 20037508.342789244;
-  ring constant integer := 2;
-  groups private.listing_map_group[];
   tile bytea;
 begin
   if p_z is null or p_x is null or p_y is null
@@ -512,48 +575,8 @@ begin
     return coalesce(tile, ''::bytea);
   end if;
 
-  if p_z <= 13 then
-    select array_agg(row(cells.cx, cells.cy, cells.listing_count, cells.sum_x, cells.sum_y)::private.listing_map_group)
-    into groups
-    from (
-      select
-        cells.cx,
-        cells.cy,
-        sum(cells.listing_count)::integer as listing_count,
-        sum(cells.sum_x) as sum_x,
-        sum(cells.sum_y) as sum_y
-      from private.listing_map_cells cells
-      where cells.transaction = p_transaction
-        and cells.price_band = any (bands)
-        and cells.zoom = p_z
-        and cells.cx between p_x * 8 - ring and p_x * 8 + 7 + ring
-        and cells.cy between p_y * 8 - ring and p_y * 8 + 7 + ring
-      group by cells.cx, cells.cy
-    ) as cells;
-  else
-    select array_agg(row(members.cx, members.cy, members.listing_count, members.sum_x, members.sum_y)::private.listing_map_group)
-    into groups
-    from (
-      select
-        floor((extensions.st_x(listings.location_3857) + origin) / cell_size)::integer as cx,
-        floor((origin - extensions.st_y(listings.location_3857)) / cell_size)::integer as cy,
-        count(*)::integer as listing_count,
-        sum(extensions.st_x(listings.location_3857)) as sum_x,
-        sum(extensions.st_y(listings.location_3857)) as sum_y
-      from public.listings
-      where listings.status = 'approved'
-        and listings.transaction = p_transaction
-        and listings.price_band = any (bands)
-        and listings.location_3857 operator(extensions.&&) extensions.st_expand(envelope, ring * cell_size)
-      group by 1, 2
-    ) as members;
-  end if;
-
   with merged as (
-    select merged.*
-    from private.merge_listing_map_groups(groups, cell_size) as merged
-    where floor((merged.center_x + origin) / cell_size)::integer between p_x * 8 and p_x * 8 + 7
-      and floor((origin - merged.center_y) / cell_size)::integer between p_y * 8 and p_y * 8 + 7
+    select * from private.listing_map_tile_groups(p_z, p_x, p_y, p_transaction, bands)
   ),
   singles as (
     select single.id, single.price, single.currency, single.location_3857

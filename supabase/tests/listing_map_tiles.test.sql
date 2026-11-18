@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(34);
+select plan(36);
 
 delete from public.listings;
 
@@ -218,7 +218,7 @@ select is(
 select results_eq(
   $$
     select cx, cy, listing_count, center_x::numeric(10, 2)
-    from private.merge_listing_map_groups(
+    from private.group_listing_map_cells(
       array[
         row(0, 0, 5, 0, 0)::private.listing_map_group,
         row(1, 0, 1, 10, 0)::private.listing_map_group,
@@ -401,6 +401,58 @@ select throws_ok(
 select ok(
   length(pg_temp.tile_at(16, 'c0000000-0000-4000-8000-000000000001')) > 0,
   'Signed-in users get tiles'
+);
+
+reset role;
+
+insert into public.listings (
+  owner_id, status, transaction, title, street_label, city, rooms, area_m2, price, currency,
+  latitude, longitude, published_at
+)
+select
+  '11111111-1111-1111-1111-111111111111', 'approved', 'sale', 'Grilă ' || g, 'Str. Mare, 1', 'Iași', 2, 50, 90000, 'EUR',
+  47.0 + ((g * 37) % 600) / 1000.0, 27.3 + ((g * 53) % 600) / 1000.0, now()
+from generate_series(1, 400) as g;
+
+select is(
+  (
+    with zooms as (
+      select zoom, power(2, zoom) as tiles_per_side from generate_series(8, 14) as zoom
+    ),
+    ranges as (
+      select
+        zooms.zoom,
+        floor((27.3 + 180) / 360 * zooms.tiles_per_side)::integer as x0,
+        floor((27.9 + 180) / 360 * zooms.tiles_per_side)::integer as x1,
+        floor((1 - ln(tan(radians(47.6)) + 1 / cos(radians(47.6))) / pi()) / 2 * zooms.tiles_per_side)::integer as y0,
+        floor((1 - ln(tan(radians(47.0)) + 1 / cos(radians(47.0))) / pi()) / 2 * zooms.tiles_per_side)::integer as y1
+      from zooms
+    ),
+    totals as (
+      select ranges.zoom, sum(groups.listing_count)::integer as counted
+      from ranges
+      cross join lateral generate_series(ranges.x0, ranges.x1) as tile_x
+      cross join lateral generate_series(ranges.y0, ranges.y1) as tile_y
+      cross join lateral private.listing_map_tile_groups(ranges.zoom, tile_x, tile_y, 'sale', array[1, 2, 3, 4]::smallint[]) as groups
+      group by ranges.zoom
+    )
+    select count(*)::integer from totals
+    where counted <> (
+      select count(*) from public.listings
+      where status = 'approved' and transaction = 'sale'
+        and latitude between 47.0 and 47.6 and longitude between 27.3 and 27.9
+    )
+  ),
+  0,
+  'Every listing is counted exactly once across the tiles of every zoom'
+);
+
+select public.listing_map_tile(10, 590, 361, 'sale');
+
+select is(
+  current_setting('response.headers', true),
+  '[{"Cache-Control": "public, max-age=60"}]',
+  'A tile can be cached by the browser for a minute'
 );
 
 select * from finish();
