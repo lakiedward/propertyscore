@@ -8,10 +8,11 @@ import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/com
 import { SERVICE_PRICES } from '@/config/pricing';
 import { formatPrice } from '@/i18n/format';
 import { useSectionNav } from '@/hooks/use-section-nav';
+import { PANEL_LINK_KEYS, type PanelPath } from './panel-paths';
 import { HOME_SECTION, type HomeSectionId, type PublishSectionId } from './site-navigation';
 
 type SiteMenuProps = {
-  isSignedIn: boolean;
+  accountPath?: PanelPath | undefined;
   languageSwitcher: ReactNode;
 };
 
@@ -25,7 +26,7 @@ type MenuLink =
     }
   | { key: string; label: string; to: '/publish'; hash?: PublishSectionId; meta?: string };
 
-export function SiteMenu({ isSignedIn, languageSwitcher }: SiteMenuProps) {
+export function SiteMenu({ accountPath, languageSwitcher }: SiteMenuProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const sectionNav = useSectionNav();
@@ -192,11 +193,11 @@ export function SiteMenu({ isSignedIn, languageSwitcher }: SiteMenuProps) {
               {t('site.footer.account.title')}
             </h2>
             <Link
-              to={isSignedIn ? '/account' : '/login'}
+              to={accountPath ?? '/login'}
               onClick={handleNavigate}
               className="flex min-h-touch items-center rounded-md px-1 text-body text-on-inverse-muted hover:text-on-inverse focus-visible:ring-3 focus-visible:ring-focus-inverse focus-visible:outline-none"
             >
-              {t(isSignedIn ? 'site.header.account' : 'site.header.signIn')}
+              {accountPath ? t(PANEL_LINK_KEYS[accountPath]) : t('site.header.signIn')}
             </Link>
           </section>
           <section className="flex flex-col gap-3">

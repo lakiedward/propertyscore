@@ -24,7 +24,7 @@ select
   extensions.crypt('Parola-Test-2026', extensions.gen_salt('bf')),
   now(),
   '{"provider": "email", "providers": ["email"]}',
-  jsonb_build_object('locale', seed.locale, 'full_name', seed.full_name),
+  jsonb_build_object('locale', seed.locale, 'full_name', seed.full_name, 'phone', seed.phone),
   now(),
   now(),
   '',
@@ -33,10 +33,11 @@ select
   ''
 from (
   values
-    ('a0000000-0000-4000-8000-000000000001'::uuid, 'ana.ro@example.test', 'ro', 'Ana Mărginean'),
-    ('a0000000-0000-4000-8000-000000000002'::uuid, 'emma.en@example.test', 'en', 'Emma Stănescu'),
-    ('a0000000-0000-4000-8000-000000000003'::uuid, 'ion.ro@example.test', 'ro', 'Ion Țurcanu')
-) as seed (id, email, locale, full_name);
+    ('a0000000-0000-4000-8000-000000000001'::uuid, 'ana.ro@example.test', 'ro', 'Ana Mărginean', '+40722000001'),
+    ('a0000000-0000-4000-8000-000000000002'::uuid, 'emma.en@example.test', 'en', 'Emma Stănescu', '+40722000002'),
+    ('a0000000-0000-4000-8000-000000000003'::uuid, 'ion.ro@example.test', 'ro', 'Ion Țurcanu', '+40722000003'),
+    ('a0000000-0000-4000-8000-000000000004'::uuid, 'admin.ro@example.test', 'ro', 'Radu Marin', '+40722000004')
+) as seed (id, email, locale, full_name, phone);
 
 insert into auth.identities (
   id,
@@ -59,6 +60,11 @@ select
   now()
 from auth.users as users
 where users.email like '%@example.test';
+
+update public.user_roles
+set role = 'admin'
+where user_id = 'a0000000-0000-4000-8000-000000000004'
+  and role = 'user';
 
 insert into public.listings (
   id,

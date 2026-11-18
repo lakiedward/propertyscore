@@ -60,6 +60,10 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-sidebar: var(--sidebar);
+  --color-sidebar-control: var(--sidebar-control);
+  --color-sidebar-control-hover: var(--sidebar-control-hover);
+  --color-sidebar-group: var(--sidebar-group);
+  --color-sidebar-icon: var(--sidebar-icon);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
@@ -211,10 +215,6 @@
   --color-on-cta-soft: var(--on-cta-soft);
   --color-zone-chip: var(--zone-chip);
   --color-border-declared: var(--border-declared);
-  --color-social-apple: var(--social-apple);
-  --color-social-apple-hover: var(--social-apple-hover);
-  --color-social-facebook: var(--social-facebook);
-  --color-social-facebook-hover: var(--social-facebook-hover);
   --color-google-red: var(--google-red);
   --color-google-blue: var(--google-blue);
   --color-google-yellow: var(--google-yellow);
@@ -287,6 +287,7 @@
   --tracking-title: -0.04em;
   --tracking-section: -0.035em;
   --tracking-eyebrow: 0.06em;
+  --tracking-label: 0.08em;
 
   --tracking-brand: -0.04em;
   --radius-wordmark: 0.24em 0.24em 0.24em 0.06em;
@@ -490,10 +491,6 @@
   --ps-green-declared: #b9c9bd;
   --ps-slate-mist: #dce7ee;
   --ps-slate-chip: #e2eaf0;
-  --ps-black: #000000;
-  --ps-black-hover: #1f1f1f;
-  --ps-facebook: #1877f2;
-  --ps-facebook-hover: #166fe0;
   --ps-google-red: #ea4335;
   --ps-google-blue: #4285f4;
   --ps-google-yellow: #fbbc05;
@@ -592,14 +589,18 @@
   --chart-3: var(--ps-lime-500);
   --chart-4: var(--ps-amber-400);
   --chart-5: var(--ps-green-400);
-  --sidebar: var(--ps-white);
-  --sidebar-foreground: var(--ps-ink-900);
-  --sidebar-primary: var(--ps-green-800);
-  --sidebar-primary-foreground: var(--ps-white);
-  --sidebar-accent: var(--ps-green-100);
-  --sidebar-accent-foreground: var(--ps-green-800);
-  --sidebar-border: var(--ps-green-200);
-  --sidebar-ring: var(--ps-blue-500);
+  --sidebar: var(--ps-green-800);
+  --sidebar-foreground: color-mix(in srgb, var(--ps-white) 86%, transparent);
+  --sidebar-primary: var(--ps-white);
+  --sidebar-primary-foreground: var(--ps-green-800);
+  --sidebar-accent: color-mix(in srgb, var(--ps-white) 8%, transparent);
+  --sidebar-accent-foreground: var(--ps-white);
+  --sidebar-border: color-mix(in srgb, var(--ps-white) 12%, transparent);
+  --sidebar-ring: var(--ps-lime-300);
+  --sidebar-control: color-mix(in srgb, var(--ps-white) 6%, transparent);
+  --sidebar-control-hover: color-mix(in srgb, var(--ps-white) 12%, transparent);
+  --sidebar-group: color-mix(in srgb, var(--ps-white) 50%, transparent);
+  --sidebar-icon: var(--ps-lime-300);
 
   --primary-hover: var(--ps-green-700);
   --primary-pressed: var(--ps-green-900);
@@ -744,10 +745,6 @@
   --on-cta-soft: var(--ps-green-on-lime);
   --zone-chip: var(--ps-slate-chip);
   --border-declared: var(--ps-green-declared);
-  --social-apple: var(--ps-black);
-  --social-apple-hover: var(--ps-black-hover);
-  --social-facebook: var(--ps-facebook);
-  --social-facebook-hover: var(--ps-facebook-hover);
   --google-red: var(--ps-google-red);
   --google-blue: var(--ps-google-blue);
   --google-yellow: var(--ps-google-yellow);
@@ -829,6 +826,13 @@
   &::-webkit-scrollbar-thumb {
     border-radius: 999px;
     background: color-mix(in srgb, var(--on-inverse) 28%, transparent);
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 

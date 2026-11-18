@@ -12,6 +12,15 @@ test.describe('Sign in', () => {
     await expect(new AppShellPage(page, 'ro').accountHeading).toBeVisible();
   });
 
+  test('signs an admin in and lands on the admin panel', async ({ page }) => {
+    const loginPage = new LoginPage(page, 'ro');
+    await loginPage.goto();
+    await loginPage.signIn(testUsers.admin.email, testUsers.admin.password);
+
+    await expect(page).toHaveURL(/\/admin$/);
+    await expect(new AppShellPage(page, 'ro').adminHeading).toBeAttached();
+  });
+
   test('rejects a wrong password with a translated message', async ({ page }) => {
     const loginPage = new LoginPage(page, 'ro');
     await loginPage.goto();

@@ -6,7 +6,16 @@ export type AppErrorReason =
   | 'email_not_confirmed'
   | 'user_already_exists'
   | 'weak_password'
-  | 'rate_limited';
+  | 'same_password'
+  | 'captcha_failed'
+  | 'rate_limited'
+  | 'current_password_invalid'
+  | 'current_password_required'
+  | 'reauthentication_needed'
+  | 'link_expired'
+  | 'invalid_password'
+  | 'email_mismatch'
+  | 'last_admin';
 
 type AppErrorOptions = {
   cause?: unknown;

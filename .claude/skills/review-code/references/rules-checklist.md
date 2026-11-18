@@ -59,7 +59,7 @@ The rule files are the source; this checklist is the index a reviewer works thro
 - Usage rules in `design-system.md` §5: one `cta` button per screen; forest = physical, blue = online; `TrustBadge` on every property; `DataLabel` on report values with `missing` instead of empty or zero; `StatusPill` with text and icon; card styling; focus ring; touch targets ≥ `--touch-min`; text on forest and lime; density from the shell only; `marker-*` highlights; gradients only from system colours; logos only through brand components; category hues only for categories.
 - A new token or shared component updates `design-system.md` and `globals.css` together, both themes.
 - Layout: mobile first, only the standard and the design's breakpoints, no `max-*` beyond a single undo, no horizontal scroll at 360px, no fixed widths on text, `truncate` + `Tooltip`.
-- Icons only `lucide-react` (Google/Facebook marks excepted), `size-4` / `size-5`; no emoji, inline SVG copies or second icon set. Fonts self-hosted with `latin-ext`. No `outline-none` without replacement.
+- Icons only `lucide-react` (the Google mark excepted), `size-4` / `size-5`; no emoji, inline SVG copies or second icon set. Fonts self-hosted with `latin-ext`. No `outline-none` without replacement.
 
 ### 2.5 i18n.md
 
@@ -84,7 +84,7 @@ The rule files are the source; this checklist is the index a reviewer works thro
 
 - Migrations created with `supabase migration new <verb>_<object>`, SQL only, types regenerated and committed in the same change.
 - Tables: `id uuid default gen_random_uuid()`, `created_at`/`updated_at timestamptz not null default now()`, `updated_at` trigger, owner column with `default auth.uid()` and `on delete cascade` when user-owned; constraints in the database aligned with the Zod schema; indexes on every foreign key, policy column and filtered/sorted column; money `numeric(12, 2)` plus `currency` check; enums with English codes; `unaccent` search and `"ro-x-icu"` collation where text is searched or sorted.
-- RLS: enabled in the creating migration; one policy per operation with an explicit role and an English-sentence name; `with check` on insert and update; `(select auth.uid())`; complex checks in a `private` `security definer` function with `set search_path = ''`; roles from the `user_role` claim; protected columns revoked or guarded by a trigger; pgTAP for both outcomes (owner can, other user and `anon` cannot).
+- RLS: enabled in the creating migration; one policy per operation with an explicit role and an English-sentence name; `with check` on insert and update; `(select auth.uid())`; complex checks in a `private` `security definer` function with `set search_path = ''`; roles from the `user_roles` claim (inline in policies, `private.has_role` in definer functions); protected columns revoked or guarded by a trigger; pgTAP for both outcomes (owner can, other user and `anon` cannot).
 - Functions `security invoker` by default, `security definer` only with `set search_path = ''` and qualified names; errors raised with codes, not sentences; views `security_invoker = true`; internals in `private`.
 - Storage: private unless truly public, size limit and MIME types set in the migration, `<owner_id>/<entity_id>/<filename>` paths, `storage.objects` policies with tests.
 - Edge Functions only for secrets, webhooks or secret-key work; Zod-validated body; JWT verified (or webhook signature); client with the caller's `Authorization`; `{ "error": "<code>" }` responses; JSON logs with a request id and no personal data.

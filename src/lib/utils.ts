@@ -53,7 +53,7 @@ export const cn = createCn({
       'font-size': [{ text: FONT_SIZES }],
       'font-weight': [{ font: ['nav', 'action', 'control', 'title', 'display'] }],
       leading: [{ leading: ['copy', 'compact'] }],
-      tracking: [{ tracking: ['brand', 'title', 'section', 'eyebrow'] }],
+      tracking: [{ tracking: ['brand', 'title', 'section', 'eyebrow', 'label'] }],
       rounded: [
         {
           rounded: [

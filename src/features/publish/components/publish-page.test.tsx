@@ -1,12 +1,12 @@
 import { screen } from '@testing-library/react';
 import enPublish from '@/i18n/locales/en/publish.json';
 import roPublish from '@/i18n/locales/ro/publish.json';
-import { buildSession } from '@/test/factories/auth';
+import { signedInAs } from '@/test/factories/auth';
 import { renderAppRoute } from '@/test/render';
 
 vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 
-const signedIn = { session: buildSession(), user: buildSession().user };
+const signedIn = signedInAs();
 
 function withoutTags(text: string) {
   return text.replace(/<\/?\w+>/g, '');

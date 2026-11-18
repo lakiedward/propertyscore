@@ -1,14 +1,23 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { AppShell } from '@/components/layout/app-shell';
-import { SignOutButton } from '@/features/auth';
-import { LanguageSwitcher, useSyncProfileLocale } from '@/features/profile';
+import { authQueries } from '@/features/auth';
+import { useSyncProfileLocale } from '@/features/profile';
+
+const PROFILE_COMPLETION_PATH = '/account/settings';
 
 export const Route = createFileRoute('/_authenticated')({
-  beforeLoad: ({ context, location }) => {
-    if (!context.auth.user) {
+  beforeLoad: async ({ context, location }) => {
+    const { user } = context.auth;
+    if (!user) {
       throw redirect({ to: '/login', search: { redirect: location.href } });
     }
-    return { user: context.auth.user };
+    const phone = await context.queryClient.query({
+      ...authQueries.accountPhone(user.id),
+      staleTime: 'static',
+    });
+    if (phone === null && location.pathname.replace(/\/$/u, '') !== PROFILE_COMPLETION_PATH) {
+      throw redirect({ to: PROFILE_COMPLETION_PATH, search: { redirect: location.href } });
+    }
+    return { user };
   },
   component: AuthenticatedLayout,
 });
@@ -17,16 +26,5 @@ function AuthenticatedLayout() {
   const { user } = Route.useRouteContext();
   useSyncProfileLocale(user.id);
 
-  return (
-    <AppShell
-      actions={
-        <>
-          <LanguageSwitcher userId={user.id} />
-          <SignOutButton />
-        </>
-      }
-    >
-      <Outlet />
-    </AppShell>
-  );
+  return <Outlet />;
 }

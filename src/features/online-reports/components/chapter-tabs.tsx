@@ -17,7 +17,7 @@ export function ChapterTabs({ scoreOf }: ChapterTabsProps) {
       <TabsList
         variant="line"
         aria-label={t('tabs.label')}
-        className="mx-auto flex h-auto w-full max-w-wide [scrollbar-width:none] justify-start gap-1 overflow-x-auto px-gutter"
+        className="mx-auto scrollbar-none flex h-auto w-full max-w-wide justify-start gap-1 overflow-x-auto px-gutter"
       >
         {CHAPTER_IDS.map((chapter) => {
           const Icon = isScoreChapter(chapter) ? CATEGORY_ICON[chapter] : CHAPTER_ICON[chapter];

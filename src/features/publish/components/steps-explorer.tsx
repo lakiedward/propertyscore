@@ -73,7 +73,7 @@ export function StepsExplorer({ activeKey, onStepChange }: StepsExplorerProps) {
           </div>
         </div>
         <Tabs value={activeKey} onValueChange={handleValueChange} className="gap-5">
-          <div className="[scrollbar-width:none] overflow-x-auto p-0.5 pb-2 w1059:overflow-visible w1059:pb-0.5">
+          <div className="scrollbar-none overflow-x-auto p-0.5 pb-2 w1059:overflow-visible w1059:pb-0.5">
             <TabsList
               variant="line"
               aria-label={t('steps.listLabel')}
