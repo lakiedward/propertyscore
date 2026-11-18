@@ -124,14 +124,13 @@ describe('createPoliteClient', () => {
   });
 
   it.each([
-    ['a 429', new Response('', { status: 429, headers: { 'retry-after': '5' } })],
-    [
-      'a pause longer than two minutes',
-      new Response('', { status: 503, headers: { 'retry-after': '3600' } }),
-    ],
-  ])('stops for good on %s, without a retry', async (_case, refusal) => {
+    ['a 429', 429, '5'],
+    ['a pause longer than two minutes', 503, '3600'],
+  ])('stops for good on %s, without a retry', async (_case, status, retryAfter) => {
     const { client, calls } = harness((path) =>
-      path === '/robots.txt' ? new Response(ROBOTS) : refusal.clone(),
+      path === '/robots.txt'
+        ? new Response(ROBOTS)
+        : new Response('', { status, headers: { 'retry-after': retryAfter } }),
     );
     await expect(client.get('/statistici/oras')).rejects.toMatchObject({
       code: 'source_asked_to_stop',
