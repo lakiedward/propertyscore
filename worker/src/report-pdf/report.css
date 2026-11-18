@@ -3860,3 +3860,7 @@ li {
 .sfwfc + .sfwfc {
   margin-top: 18px;
 }
+.maplibregl-map,
+.mk {
+  font-family: var(--font);
+}

@@ -7,6 +7,7 @@ import type { CategorySummary, ReportData } from './report-data.ts';
 import { CATEGORY_THEME } from './theme.ts';
 
 const NARROW_CITY_SPREAD = 10;
+const CLOSE_TO_AVERAGE = 12;
 
 export function iconTile(name: IconName, color: string, tint: string, className = 'ico'): string {
   return `<span class="${className}" style="--ibg:${tint};--ic:${color};--c:${color}">${icon(name)}</span>`;
@@ -48,10 +49,12 @@ function bandTrack(summary: CategorySummary, score: number, color: string): stri
     min === null || min === undefined || max === null || max === undefined
       ? ''
       : `<div class="scvs-r" style="left:${String(min)}%;width:${String(max - min)}%"><span>Zonele orașului: ${String(Math.round(min))}–${String(Math.round(max))}</span></div>`;
-  const mean =
-    average === null
+  const label =
+    average !== null && Math.abs(average - score) < CLOSE_TO_AVERAGE
       ? ''
-      : `<div class="scvs-avg" style="left:${String(average)}%"><span>Media ${String(Math.round(average))}</span></div>`;
+      : `<span>Media ${String(Math.round(average ?? 0))}</span>`;
+  const mean =
+    average === null ? '' : `<div class="scvs-avg" style="left:${String(average)}%">${label}</div>`;
   return `<div class="scvs"><div class="scvs-t">${track}</div>${range}${mean}<div class="scvs-me" style="left:${String(score)}%;--c:${color}"><b>Tu · ${String(score)}</b></div></div>`;
 }
 

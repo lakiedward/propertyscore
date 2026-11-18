@@ -169,13 +169,15 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
     ),
     padding: 64,
     layers: [
-      ...reachable.map((destination) => ({
-        kind: 'line' as const,
-        data: collection([{ type: 'LineString', coordinates: [center, destination.location] }]),
-        color: kindOf(destination).color,
-        width: 3,
-        dashed: destination.by_walking,
-      })),
+      ...reachable.flatMap((destination) =>
+        destination.path.map((leg) => ({
+          kind: 'line' as const,
+          data: collection([{ type: 'LineString', coordinates: leg.coordinates }]),
+          color: kindOf(destination).color,
+          width: leg.mode === 'walk' ? 3 : 4,
+          dashed: leg.mode === 'walk',
+        })),
+      ),
       {
         kind: 'circle',
         data: points(section.stops.map((stop) => stop.location)),
@@ -193,17 +195,24 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
       addressMarker(center, report.addressText.split(',')[0]),
     ],
   };
-  const mapOverlay = `<span class="mapchip" style="--c:#0F766E"><i></i>Trasee transport</span><div class="key"><b>Pe hartă</b><span><i style="background:#103F32;border-radius:50%;width:10px;height:10px"></i>Adresa</span><span><i style="background:#0F766E;height:4px;border-radius:2px"></i>Spre destinație</span><span><i style="background:#52685B;border-radius:50%;width:8px;height:8px"></i>Stații din jur</span></div>`;
+  const mapOverlay = `<span class="mapchip" style="--c:#0F766E"><i></i>Trasee transport</span><div class="key"><b>Pe hartă</b><span><i style="background:#103F32;border-radius:50%;width:10px;height:10px"></i>Adresa</span><span><i style="background:#0F766E;height:4px;border-radius:2px"></i>Cu vehiculul</span><span><i style="background:transparent;border-top:3px dotted #0F766E;height:0;border-radius:0"></i>Pe jos</span><span><i style="background:#52685B;border-radius:50%;width:8px;height:8px"></i>Stații din jur</span></div>`;
   const legend = reachable
     .map(
       (destination) =>
         `<span style="--c:${kindOf(destination).color}"><i></i>${esc(destination.label.ro)} <b>${String(Math.round(destination.minutes ?? 0))} min</b></span>`,
     )
     .join('');
+  const unrouted = reachable.filter((destination) => destination.path.length === 0).length;
+  const routesNote =
+    unrouted === 0
+      ? 'Traseele de pe hartă urmează străzile și liniile, de la adresă la destinație.'
+      : unrouted === reachable.length
+        ? 'Traseele pe străzi nu sunt disponibile pentru această adresă: harta arată doar destinațiile.'
+        : 'Traseele de pe hartă urmează străzile și liniile. Unde traseul lipsește, apare doar destinația.';
   const schedule =
     section.data_quality === 'gtfs' && section.reference_date
-      ? `Liniile, stațiile și orarul: operatorul de transport, orar din ${formatDate(section.reference_date)}, o zi lucrătoare. Liniile de pe hartă leagă adresa de destinație în linie dreaptă.`
-      : 'Orașul nu publică orarul în format deschis: stațiile și liniile vin din OpenStreetMap.';
+      ? `Liniile, stațiile și orarul: operatorul de transport, orar din ${formatDate(section.reference_date)}, o zi lucrătoare. ${routesNote}`
+      : `Orașul nu publică orarul în format deschis: stațiile și liniile vin din OpenStreetMap. ${routesNote}`;
   const trips =
     reachable.length === 0
       ? '<p class="hint">Nu am putut calcula drumurile spre locurile importante.</p>'

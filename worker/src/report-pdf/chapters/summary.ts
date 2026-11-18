@@ -4,16 +4,8 @@ import type { ChapterOutput } from '../chapter.ts';
 import { categoryTile } from '../components.ts';
 import { esc, formatDate, formatNumber, lowerFirst } from '../format.ts';
 import { icon, logo } from '../icons.ts';
-import { CATEGORY_GROUPS, DESTINATION_KINDS } from '../labels.ts';
-import {
-  addressMarker,
-  around,
-  mapHtml,
-  ring,
-  within,
-  type MapMarker,
-  type MapSpec,
-} from '../maps.ts';
+import { CATEGORY_GROUPS } from '../labels.ts';
+import { addressMarker, around, mapHtml, ring, type MapSpec } from '../maps.ts';
 import type { CategorySummary, ReportData } from '../report-data.ts';
 import { CATEGORY_THEME } from '../theme.ts';
 
@@ -22,7 +14,7 @@ type Scored = { key: CategoryKey; score: number; average: number; summary: Categ
 const HIGHLIGHTS = 3;
 const WEAK_POINT_BELOW = 55;
 const NEAR_RING_M = 500;
-const ZONE_REACH_M = 4000;
+const WIDE_RING_M = 1000;
 const RING_CIRCUMFERENCE = 345.58;
 const HISTOGRAM = { width: 640, height: 190, top: 34 };
 const STACK_LABEL_FROM = 6;
@@ -151,49 +143,26 @@ function highlights(report: ReportData, scored: readonly Scored[]): string {
 }
 
 function zoneMap(report: ReportData, center: [number, number]): { html: string; map: MapSpec } {
-  const access = report.sections.accessibility;
-  const reachable = (access?.destinations ?? []).filter(
-    (destination) => destination.minutes !== null,
-  );
-  const pills: MapMarker[] = reachable.map((destination) => {
-    const color = DESTINATION_KINDS[destination.kind]?.color ?? CATEGORY_THEME.accessibility.color;
-    return {
-      position: destination.location,
-      html: `<span class="rp" style="--c:${color}"><b>${String(Math.round(destination.minutes ?? 0))} min</b></span>`,
-      anchor: 'left',
-      offset: [6, 0],
-    };
-  });
   const map: MapSpec = {
     id: 'map-zone',
     center,
-    fit: within(
-      center,
-      reachable.map((destination) => destination.location),
-      ZONE_REACH_M,
-    ),
-    padding: 60,
-    layers: [],
-    markers: [...pills, addressMarker(center, report.addressText.split(',')[0])],
+    fit: around(center, WIDE_RING_M),
+    padding: 40,
+    layers: [
+      { kind: 'line', data: ring(center, NEAR_RING_M), color: '#103F32', width: 2 },
+      { kind: 'line', data: ring(center, WIDE_RING_M), color: '#103F32', width: 2, dashed: true },
+    ],
+    markers: [addressMarker(center, report.addressText.split(',')[0])],
   };
-  const parks = report.sections.green?.parks.length ?? 0;
-  const stops = access?.stops.length ?? 0;
   const stats = [
-    { value: stops, label: 'stații în jur' },
-    { value: reachable.length, label: 'destinații cu transportul' },
-    { value: parks, label: 'parcuri mari' },
+    { value: report.sections.accessibility?.stops.length ?? 0, label: 'stații în jur' },
+    { value: report.sections.green?.parks.length ?? 0, label: 'parcuri mari' },
+    { value: report.sections.fifteen_minute?.covered ?? 0, label: 'feluri de locuri la 15 minute' },
   ]
     .filter((stat) => stat.value > 0)
     .map((stat) => `<li><b>${String(stat.value)}</b>${stat.label}</li>`)
     .join('');
-  const legend = reachable
-    .map((destination) => {
-      const color =
-        DESTINATION_KINDS[destination.kind]?.color ?? CATEGORY_THEME.accessibility.color;
-      return `<span style="--c:${color}"><i></i>${esc(destination.label.ro)} <b>${String(Math.round(destination.minutes ?? 0))} min</b></span>`;
-    })
-    .join('');
-  const html = `<section class="t12 mpD"><div class="mpD-prev"><div class="mp-map">${mapHtml(map)}</div><div class="mpD-shade"></div><div class="mpD-cta"><div class="eyebrow">Harta zonei</div><h2>Zona din jurul adresei</h2><p>Locurile importante din oraș și cât faci până la ele cu transportul public.</p><ul class="mpD-st">${stats}</ul></div></div></section>${legend ? `<div class="rleg">${legend}</div>` : ''}`;
+  const html = `<section class="t12 mpD"><div class="mpD-prev"><div class="mp-map">${mapHtml(map)}</div><div class="mpD-shade"></div><div class="mpD-cta"><div class="eyebrow">Harta zonei</div><h2>Zona din jurul adresei</h2><p>Cercurile arată 500 m și 1 km în jurul adresei.</p><ul class="mpD-st">${stats}</ul></div></div></section>`;
   return { html, map };
 }
 

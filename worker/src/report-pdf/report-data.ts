@@ -100,6 +100,9 @@ const accessibilitySchema = z.object({
           colour: z.string().nullable().optional(),
         })
         .nullable(),
+      path: z
+        .array(z.object({ mode: z.enum(['walk', 'transit']), coordinates: z.array(position) }))
+        .default([]),
     }),
   ),
   reach: z

@@ -2,6 +2,7 @@ import { LngLatBounds, Map, Marker, setWorkerUrl } from './maplibre-gl.mjs';
 
 setWorkerUrl(new URL('./maplibre-gl-worker.mjs', import.meta.url).href);
 
+const tolerated = 4;
 const { style, palette, maps } = JSON.parse(document.getElementById('map-specs').textContent);
 
 function recolour(map) {
@@ -64,7 +65,9 @@ function draw(spec) {
       fadeDuration: 0,
       canvasContextAttributes: { preserveDrawingBuffer: true },
     });
+    let failedTiles = 0;
     map.on('error', (event) => {
+      if (event.tile && (failedTiles += 1) <= tolerated) return;
       reject(event.error ?? new Error('The map could not be drawn'));
     });
     map.once('load', () => {
