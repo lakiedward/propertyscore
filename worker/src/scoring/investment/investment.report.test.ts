@@ -188,7 +188,7 @@ describe.skipIf(!databaseUrl)('market listings import and the Investment assessm
   it('gives the asking price, the estimate, the rent and the yield around the address', async () => {
     const report = await assessInvestmentAtAddress(
       sql,
-      { cityId, cutoff: new Date() },
+      { cityId, cutoff: new Date(), statisticsCutoff: new Date() },
       {
         params,
         ...CETATE,
@@ -217,7 +217,11 @@ describe.skipIf(!databaseUrl)('market listings import and the Investment assessm
   it('ignores the imports completed after the snapshot', async () => {
     const report = await assessInvestmentAtAddress(
       sql,
-      { cityId, cutoff: new Date('2020-01-01T00:00:00Z') },
+      {
+        cityId,
+        cutoff: new Date('2020-01-01T00:00:00Z'),
+        statisticsCutoff: new Date('2020-01-01T00:00:00Z'),
+      },
       {
         params,
         ...CETATE,

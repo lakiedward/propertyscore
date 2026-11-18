@@ -1,3 +1,21 @@
+import {
+  assessCityAverages,
+  type CityAverage,
+  type CityAverageMarket,
+  type CityAverageRentBlock,
+  type CityAverageSaleBlock,
+} from './investment.city-averages.ts';
+import {
+  assessCityStatistics,
+  type CitySaleMonth,
+  type CityStatistic,
+  type CityStatisticsMarket,
+  type CityStatisticsRentBlock,
+  type CityStatisticsSaleBlock,
+  type NearbyLocality,
+  type SaleHistory,
+} from './investment.city-statistics.ts';
+import { daysBetween, shiftDate } from './investment.dates.ts';
 import type { InvestmentParams } from './investment.params.ts';
 
 export type MarketListing = {
@@ -39,7 +57,13 @@ export const EMPTY_CITY_SUMMARY: CityMarketSummary = {
   goneCount: 0,
 };
 
-export type MarketSourcePeriod = { source: string; period: string };
+export type MarketSourcePeriod = {
+  source: string;
+  period: string;
+  scope: 'listings' | 'city_average' | 'city_statistics';
+  url: string | null;
+  observed_on?: string | null;
+};
 
 export type DeclaredHome = {
   areaM2: number | null;
@@ -61,6 +85,12 @@ export type InvestmentInputs = {
   rent: readonly MarketListing[];
   city: { sale: CityMarketSummary; rent: CityMarketSummary };
   sources: readonly MarketSourcePeriod[];
+  cutoffDate: string;
+  cityAverages: readonly CityAverage[];
+  cityStatistics: readonly CityStatistic[];
+  citySaleHistory: readonly CitySaleMonth[];
+  statisticsCutoffDate: string;
+  statisticSourceOrder: readonly string[];
 };
 
 type Status = 'context' | 'no_data';
@@ -107,8 +137,8 @@ export type InvestmentReport = {
     floor: number | null;
     construction_year: number | null;
   };
-  sale: SaleBlock | null;
-  rent: RentBlock | null;
+  sale: SaleBlock | CityStatisticsSaleBlock | CityAverageSaleBlock | null;
+  rent: RentBlock | CityStatisticsRentBlock | CityAverageRentBlock | null;
   yield: { gross_pct: number | null; city_gross_pct: number | null };
   city: {
     sale_count: number;
@@ -118,11 +148,12 @@ export type InvestmentReport = {
     days_listed: number | null;
   };
   histogram: { bin_eur_m2: number; bins: HistogramBin[] } | null;
+  nearby: NearbyLocality[];
+  history: SaleHistory | null;
   sources: MarketSourcePeriod[];
 };
 
 const EARTH_RADIUS_M = 6_371_008.8;
-const DAY_MS = 86_400_000;
 
 export function quantile(sortedValues: readonly number[], probability: number): number | null {
   const count = sortedValues.length;
@@ -305,14 +336,6 @@ function roundTo(value: number, step: number): number {
 
 function roundOneDecimal(value: number): number {
   return Math.round(value * 10) / 10;
-}
-
-function daysBetween(from: string, to: string): number {
-  return Math.round((Date.parse(to) - Date.parse(from)) / DAY_MS);
-}
-
-export function shiftDate(date: string, days: number): string {
-  return new Date(Date.parse(date) + days * DAY_MS).toISOString().slice(0, 10);
 }
 
 function daysListed(
@@ -558,15 +581,75 @@ function emptyReport(inputs: InvestmentInputs, reason: NoDataReason): Investment
       days_listed: null,
     },
     histogram: null,
+    nearby: [],
+    history: null,
     sources: [...inputs.sources],
   };
 }
 
+function cityStatisticsReport(
+  inputs: InvestmentInputs,
+  market: CityStatisticsMarket,
+): InvestmentReport {
+  const report = emptyReport(inputs, 'no_market_data');
+  return {
+    ...report,
+    status: 'context',
+    reason: null,
+    reference_date: market.referenceDate,
+    sale: market.sale,
+    rent: market.rent,
+    yield: { gross_pct: market.grossYieldPct, city_gross_pct: null },
+    nearby: market.nearby,
+    history: market.history,
+    sources: [
+      ...inputs.sources,
+      ...market.sources.map((source) => ({ ...source, scope: 'city_statistics' as const })),
+    ],
+  };
+}
+
+function cityAverageReport(inputs: InvestmentInputs, market: CityAverageMarket): InvestmentReport {
+  const report = emptyReport(inputs, 'no_market_data');
+  return {
+    ...report,
+    status: 'context',
+    reason: null,
+    reference_date: market.referenceDate,
+    sale: market.sale,
+    rent: market.rent,
+    yield: { gross_pct: market.grossYieldPct, city_gross_pct: market.cityGrossYieldPct },
+    sources: [
+      ...inputs.sources,
+      ...market.sources.map((source) => ({ ...source, scope: 'city_average' as const })),
+    ],
+  };
+}
+
+function fallBackToCityFigures(inputs: InvestmentInputs, reason: NoDataReason): InvestmentReport {
+  const statistics = assessCityStatistics({
+    statistics: inputs.cityStatistics,
+    history: inputs.citySaleHistory,
+    sourceOrder: inputs.statisticSourceOrder,
+    cutoffDate: inputs.statisticsCutoffDate,
+    areaM2: inputs.declared.areaM2,
+  });
+  if (statistics) return cityStatisticsReport(inputs, statistics);
+  const market = assessCityAverages({
+    averages: inputs.cityAverages,
+    cutoffDate: inputs.cutoffDate,
+    windowDays: inputs.params.window_days,
+    areaM2: inputs.declared.areaM2,
+    rooms: inputs.declared.rooms,
+  });
+  return market ? cityAverageReport(inputs, market) : emptyReport(inputs, reason);
+}
+
 export function buildInvestmentReport(inputs: InvestmentInputs): InvestmentReport {
   const referenceDate = inputs.referenceDate;
-  if (referenceDate === null) return emptyReport(inputs, 'no_market_data');
+  if (referenceDate === null) return fallBackToCityFigures(inputs, 'no_market_data');
   const selection = selectSale(inputs);
-  if (!selection) return emptyReport(inputs, 'insufficient_data');
+  if (!selection) return fallBackToCityFigures(inputs, 'insufficient_data');
 
   const sale = buildSaleBlock(inputs, selection, referenceDate);
   const rent = selectRent(inputs);
@@ -604,6 +687,8 @@ export function buildInvestmentReport(inputs: InvestmentInputs): InvestmentRepor
           : Math.round(citySale.p50DaysListed),
     },
     histogram,
+    nearby: [],
+    history: null,
     sources: [...inputs.sources],
   };
 }
