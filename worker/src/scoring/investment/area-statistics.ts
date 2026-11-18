@@ -4,6 +4,7 @@ export type AreaStatisticRow = {
   city: string;
   zone_slug: string | null;
   zone_name: string | null;
+  is_nearby_locality: boolean;
   transaction: 'sale' | 'rent';
   property_type: 'apartment';
   rooms_min: number | null;
@@ -17,13 +18,14 @@ export type AreaStatisticRow = {
   median_eur_m2: number | null;
   p25_eur_m2: number | null;
   p75_eur_m2: number | null;
+  median_area_m2: number | null;
   source_url: string;
 };
 
 export type CoveredCity = { slug: string; name: string };
 
 export type AreaStatisticRejection =
-  'no_figures' | 'implausible_price' | 'invalid_interval' | 'invalid_zone';
+  'no_figures' | 'implausible_price' | 'implausible_area' | 'invalid_interval' | 'invalid_zone';
 
 const ZONE_SLUG_MAX_LENGTH = 80;
 const ZONE_NAME_MAX_LENGTH = 120;
@@ -99,6 +101,7 @@ export function checkAreaStatistic(
   ) {
     return 'implausible_price';
   }
+  if (!isInside(row.median_area_m2, plausible.area_m2)) return 'implausible_area';
   return null;
 }
 

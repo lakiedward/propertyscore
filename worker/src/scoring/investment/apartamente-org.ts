@@ -185,6 +185,7 @@ export function parseStatisticsPage(
     city: target.city,
     zone_slug: target.zone?.slug ?? null,
     zone_name: target.zone?.name ?? null,
+    is_nearby_locality: false,
     transaction: target.transaction,
     property_type: 'apartment',
     rooms_min: null,
@@ -198,6 +199,7 @@ export function parseStatisticsPage(
     median_eur_m2: measured(dataset, 'preț median pe metru pătrat'),
     p25_eur_m2: null,
     p75_eur_m2: null,
+    median_area_m2: null,
     source_url: url,
   };
   return {
@@ -251,6 +253,7 @@ export async function parseIndexCsv(
       city,
       zone_slug: null,
       zone_name: null,
+      is_nearby_locality: false,
       transaction,
       property_type: 'apartment',
       rooms_min: null,
@@ -264,6 +267,7 @@ export async function parseIndexCsv(
       median_eur_m2: parsePositiveNumber(raw.eur_mp_median),
       p25_eur_m2: null,
       p75_eur_m2: null,
+      median_area_m2: null,
       source_url: `${APARTAMENTE_ORG_ORIGIN}${indexCsvPath(period)}`,
     });
   }

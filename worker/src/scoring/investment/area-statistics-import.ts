@@ -27,7 +27,7 @@ import {
   imospotIndexCsvPath,
   parseImospotIndexCsv,
 } from './imospot.ts';
-import { shiftMonths } from './investment.dates.ts';
+import { monthStart, shiftMonths } from './investment.dates.ts';
 import {
   beginMarketImport,
   claimStatisticsRun,
@@ -48,6 +48,8 @@ export const MARKET_STATISTICS_SOURCES = [
 
 export type MarketStatisticsSource = (typeof MARKET_STATISTICS_SOURCES)[number];
 
+export const PAST_EDITION_SOURCES: readonly MarketStatisticsSource[] = ['imospot_index'];
+
 const PRODUCT_TOKEN = 'PropertyScore';
 const MIN_REQUEST_INTERVAL_MS = 2500;
 const TRANSACTIONS = ['sale', 'rent'] as const;
@@ -64,6 +66,7 @@ type CollectContext = {
   client: PoliteClient;
   cities: readonly CoveredCity[];
   period: string;
+  isPastEdition: boolean;
   isImported: (period: string) => Promise<boolean>;
   reject: (code: string, count?: number) => void;
 };
@@ -139,7 +142,10 @@ async function collectIndexEdition(
     cities: readonly CoveredCity[],
   ) => Promise<{ rows: AreaStatisticRow[]; skipped: number }>,
 ): Promise<Collected | null> {
-  for (const period of [context.period, shiftMonths(context.period, -1)]) {
+  const editions = context.isPastEdition
+    ? [context.period]
+    : [context.period, shiftMonths(context.period, -1)];
+  for (const period of editions) {
     if (await context.isImported(period)) return null;
     const response = await context.client.get(pathOf(period));
     if (response.status !== 'ok') continue;
@@ -147,7 +153,7 @@ async function collectIndexEdition(
     if (parsed.skipped > 0) context.reject('invalid_row', parsed.skipped);
     return { period, rows: parsed.rows };
   }
-  throw new WorkerError('source_edition_missing', 'No index edition for this month or the last');
+  throw new WorkerError('source_edition_missing', 'No index edition for the requested month');
 }
 
 type SourceDefinition = {
@@ -228,6 +234,7 @@ async function readSource(
     client,
     cities,
     period: options.period,
+    isPastEdition: isPastEdition(options.period),
     isImported: (period) => hasCompletedMarketImport(sql, source, period),
     reject,
   });
@@ -285,6 +292,10 @@ async function readSource(
   };
 }
 
+function isPastEdition(period: string): boolean {
+  return period < monthStart(new Date().toISOString().slice(0, 10));
+}
+
 async function importSource(
   options: AreaStatisticsImportOptions,
   source: MarketStatisticsSource,
@@ -292,6 +303,9 @@ async function importSource(
   clients: Map<string, PoliteClient>,
 ): Promise<AreaStatisticsImportResult> {
   const { sql, period } = options;
+  if (isPastEdition(period) && !PAST_EDITION_SOURCES.includes(source)) {
+    throw new WorkerError('past_edition_not_agreed', `${source} may not be read for a past month`);
+  }
   if (!(await claimStatisticsRun(sql, source, period, options.isRetry))) {
     options.logger.info('market statistics already read this month', { source });
     return {

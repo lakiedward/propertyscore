@@ -62,6 +62,7 @@ describe('parseStatisticsPage', () => {
       city: 'timisoara',
       zone_slug: null,
       zone_name: null,
+      is_nearby_locality: false,
       transaction: 'sale',
       property_type: 'apartment',
       rooms_min: null,
@@ -75,6 +76,7 @@ describe('parseStatisticsPage', () => {
       median_eur_m2: 1984.13,
       p25_eur_m2: null,
       p75_eur_m2: null,
+      median_area_m2: null,
       source_url: 'https://apartamente.org/apartamente-de-vanzare/timisoara',
     });
     expect(page?.rows[1]).toMatchObject({

@@ -104,6 +104,10 @@ function inputs(overrides: Partial<InvestmentInputs> = {}): InvestmentInputs {
     sources: [],
     cutoffDate: '2026-10-02',
     cityAverages: SAMPLE_AVERAGES,
+    cityStatistics: [],
+    citySaleHistory: [],
+    statisticsCutoffDate: '2026-10-02',
+    statisticSourceOrder: [],
     ...overrides,
   };
 }

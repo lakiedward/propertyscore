@@ -194,7 +194,7 @@ describe.skipIf(!databaseUrl)('city averages import and the Investment fallback'
   it('gives the city average, its change over a year, the estimate, the rent and the yield', async () => {
     const report = await assessInvestmentAtAddress(
       sql,
-      { cityId, cutoff: new Date() },
+      { cityId, cutoff: new Date(), statisticsCutoff: new Date() },
       {
         params,
         ...CETATE,
@@ -221,7 +221,11 @@ describe.skipIf(!databaseUrl)('city averages import and the Investment fallback'
   it('ignores the averages imported after the snapshot', async () => {
     const report = await assessInvestmentAtAddress(
       sql,
-      { cityId, cutoff: new Date('2020-01-01T00:00:00Z') },
+      {
+        cityId,
+        cutoff: new Date('2020-01-01T00:00:00Z'),
+        statisticsCutoff: new Date('2020-01-01T00:00:00Z'),
+      },
       {
         params,
         ...CETATE,
