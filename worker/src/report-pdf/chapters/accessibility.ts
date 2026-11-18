@@ -33,6 +33,24 @@ const WALK_METRES_PER_MINUTE = 80;
 const DEFAULT_LINE = '#55607A';
 const LIGHT_LINE_FROM = 150;
 const REACH_SHADES = ['#7E5F00', '#C9A227', '#EBCF6E'];
+const REACH_OPACITY = [0.85, 0.6, 0.4];
+const REACH_OUTLINE = '#2A2100';
+
+function northernmost(geometry: unknown): [number, number] | null {
+  const points: [number, number][] = [];
+  const collect = (value: unknown): void => {
+    if (!Array.isArray(value)) return;
+    const items: unknown[] = value;
+    const [first, second] = items;
+    if (typeof first === 'number' && typeof second === 'number') points.push([first, second]);
+    else items.forEach(collect);
+  };
+  collect((geometry as { coordinates?: unknown }).coordinates);
+  return points.reduce<[number, number] | null>(
+    (top, point) => (top === null || point[1] > top[1] ? point : top),
+    null,
+  );
+}
 
 function kindOf(destination: Destination) {
   return DESTINATION_KINDS[destination.kind] ?? { icon: 'pin' as const, color: '#2F5164' };
@@ -92,13 +110,37 @@ function reachCard(reach: Reach, center: [number, number]): { html: string; map:
     center,
     fit: reach.neighbourhoods.map((place) => place.location),
     padding: 48,
-    layers: bands.map((band, index) => ({
-      kind: 'fill' as const,
-      data: collection([band.geometry]),
-      color: REACH_SHADES[bands.length - 1 - index] ?? REACH_SHADES[0] ?? DEFAULT_LINE,
-      opacity: 0.55,
-    })),
+    layers: bands.flatMap((band, index) => {
+      const data = collection([band.geometry]);
+      const step = bands.length - 1 - index;
+      return [
+        {
+          kind: 'fill' as const,
+          data,
+          color: REACH_SHADES[step] ?? REACH_SHADES[0] ?? DEFAULT_LINE,
+          opacity: REACH_OPACITY[step] ?? 0.5,
+        },
+        {
+          kind: 'line' as const,
+          data,
+          color: REACH_OUTLINE,
+          width: step === 0 ? 3 : 1.8,
+          dotted: step === bands.length - 1 && bands.length > 1,
+        },
+      ];
+    }),
     markers: [
+      ...bands.flatMap((band): MapMarker[] => {
+        const top = northernmost(band.geometry);
+        return top
+          ? [
+              {
+                position: top,
+                html: `<span class="reach-b">${String(band.minutes)} min</span>`,
+              },
+            ]
+          : [];
+      }),
       ...reach.neighbourhoods.map((place): MapMarker => {
         const inside = place.minutes !== null && place.minutes <= reach.minutes;
         return {
@@ -115,7 +157,7 @@ function reachCard(reach: Reach, center: [number, number]): { html: string; map:
     .reverse()
     .map((band, index, all) => {
       const from = index === 0 ? 'sub ' : `${String(all[index - 1]?.minutes ?? 0)}–`;
-      return `<span><i style="background:${REACH_SHADES[index] ?? DEFAULT_LINE}"></i>${from}${String(band.minutes)} min</span>`;
+      return `<span><i style="background:${REACH_SHADES[index] ?? DEFAULT_LINE};border:1.5px solid ${REACH_OUTLINE}"></i>${from}${String(band.minutes)} min</span>`;
     })
     .join('');
   const html = `<section class="card ac acn acnA"><div class="ac-h"><div><div class="eyebrow">Cât de departe ajungi</div><h3>Orașul, în minute de la ușa ta</h3></div><div class="seg acnseg"><span class="on">${String(reach.minutes)} min</span></div></div><div class="acnA-g"><div class="acnA-t"><div class="acn-big"><b>${formatNumber(reach.share_pct)}%</b><span>din oraș</span></div><p class="acn-s">În <b>${String(reach.minutes)} de minute</b>, cu transportul public și pe jos, ajungi în ${formatNumber(reach.share_pct)}% din oraș.</p><p class="acn-n"><b>${String(reach.neighbourhoods_reached)} din ${String(reach.neighbourhoods_total)}</b> cartiere, plecând la 8 dimineața.</p><div class="acn-key">${key}</div></div><div class="acnA-m">${mapHtml(map)}</div></div></section>`;

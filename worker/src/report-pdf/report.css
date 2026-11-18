@@ -3417,8 +3417,9 @@ body {
   margin-top: 18px;
 }
 .card,
-.sfwfc,
 .acr,
+.fqC,
+.gzB,
 .gzA,
 .how,
 .sfhon,
@@ -3626,8 +3627,8 @@ li {
 .ch-head::after {
   content: '';
   display: block;
-  height: 520px;
-  margin-bottom: -520px;
+  height: 450px;
+  margin-bottom: -450px;
 }
 .ac-h {
   break-inside: avoid;
@@ -3674,4 +3675,47 @@ li {
 }
 .ch-head .eyebrow {
   font-size: 13px;
+}
+.reach-b {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1.5px solid #2a2100;
+  color: #2a2100;
+  font-size: 11.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.fqC,
+.gzB {
+  display: block;
+}
+.fqC .fqC-m .map {
+  height: 440px !important;
+  min-height: 0;
+}
+.gzB-m .map {
+  flex: none;
+  height: 400px !important;
+  min-height: 0;
+}
+.fqck-l {
+  columns: 2;
+  column-gap: 28px;
+}
+.gzB-l {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.ch-head:has(+ .fqC)::after {
+  height: 900px;
+  margin-bottom: -900px;
+}
+.ch-head:has(+ .gzB)::after {
+  height: 760px;
+  margin-bottom: -760px;
+}
+.ch-head:has(+ .gzA)::after {
+  height: 690px;
+  margin-bottom: -690px;
 }
