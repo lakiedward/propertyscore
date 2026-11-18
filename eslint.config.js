@@ -181,6 +181,10 @@ export default defineConfig([
     },
   },
   {
+    files: ['worker/src/report-pdf/map-client.js'],
+    languageOptions: { globals: globals.browser },
+  },
+  {
     files: ['worker/**/*.ts'],
     languageOptions: { globals: globals.node },
     rules: {

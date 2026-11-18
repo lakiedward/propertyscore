@@ -22,15 +22,31 @@ const envSchema = z
     AIR_EEA_PM25_MAP_URL: z.url({ protocol: /^https$/ }).optional(),
     AIR_EEA_NO2_MAP_URL: z.url({ protocol: /^https$/ }).optional(),
     MARKET_SOURCE_CONTACT: z.email().optional(),
+    CHROMIUM_PATH: z.string().min(1).optional(),
   })
   .refine((env) => !env.SOURCE_MIRROR_URL || env.OSM_EXTRACT_API_KEY, {
     path: ['OSM_EXTRACT_API_KEY'],
   });
 
+const documentEnvSchema = z.object({
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  CHROMIUM_PATH: z.string().min(1).optional(),
+});
+
 export type Env = z.infer<typeof envSchema>;
+export type DocumentEnv = z.infer<typeof documentEnvSchema>;
 
 export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const parsed = envSchema.safeParse(source);
+  if (!parsed.success) {
+    const fields = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
+    throw new WorkerError('invalid_environment', `Invalid worker environment: ${fields}`);
+  }
+  return parsed.data;
+}
+
+export function readDocumentEnv(source: NodeJS.ProcessEnv = process.env): DocumentEnv {
+  const parsed = documentEnvSchema.safeParse(source);
   if (!parsed.success) {
     const fields = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
     throw new WorkerError('invalid_environment', `Invalid worker environment: ${fields}`);

@@ -62,9 +62,16 @@ export type ImportMarketStatisticsCommand = {
   period: string;
 };
 
+export type RenderReportPdfCommand = {
+  command: 'render-report-pdf';
+  source: { reportId: string } | { inputPath: string };
+  outputPath: string;
+};
+
 export type WorkerCommand =
   | BuildSnapshotCommand
   | GenerateReportCommand
+  | RenderReportPdfCommand
   | CreateReportCommand
   | ImportMarketListingsCommand
   | ImportCityAveragesCommand
@@ -153,6 +160,35 @@ function parseGenerateReport(argv: readonly string[]): GenerateReportCommand {
     throw new WorkerError('invalid_report_id', 'generate-report needs --report <uuid>');
   }
   return { command: 'generate-report', reportId: reportId.data };
+}
+
+function parseRenderReportPdf(argv: readonly string[]): RenderReportPdfCommand {
+  const { values } = parseArgs({
+    args: [...argv],
+    options: { report: { type: 'string' }, input: { type: 'string' }, out: { type: 'string' } },
+  });
+  if (!values.out || (values.report === undefined) === (values.input === undefined)) {
+    throw new WorkerError(
+      'invalid_render_report_pdf',
+      'render-report-pdf needs --out <file.pdf> and either --report <uuid> or --input <file.json>',
+    );
+  }
+  if (values.input !== undefined) {
+    return {
+      command: 'render-report-pdf',
+      source: { inputPath: values.input },
+      outputPath: values.out,
+    };
+  }
+  const reportId = reportIdSchema.safeParse(values.report);
+  if (!reportId.success) {
+    throw new WorkerError('invalid_report_id', 'render-report-pdf needs --report <uuid>');
+  }
+  return {
+    command: 'render-report-pdf',
+    source: { reportId: reportId.data },
+    outputPath: values.out,
+  };
 }
 
 function parseCreateReport(argv: readonly string[]): CreateReportCommand {
@@ -305,6 +341,8 @@ export function parseCommand(argv: readonly string[], now: Date): WorkerCommand 
       return parseBuildSnapshot(rest, now);
     case 'generate-report':
       return parseGenerateReport(rest);
+    case 'render-report-pdf':
+      return parseRenderReportPdf(rest);
     case 'create-report':
       return parseCreateReport(rest);
     case 'import-health-sources':

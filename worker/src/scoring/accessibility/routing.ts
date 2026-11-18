@@ -1,8 +1,10 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+
+import { z } from 'zod';
 
 import { WorkerError } from '../../lib/errors.ts';
 import { readCsvRecords } from './csv.ts';
@@ -67,12 +69,20 @@ export type DestinationTiming = {
   walkMinutes: number | null;
 };
 
+type TripLeg = {
+  mode: 'walk' | 'transit';
+  routeId: string | null;
+  coordinates: [number, number][];
+};
+
 export type Itinerary = {
   walkMinutes: number;
   waitMinutes: number;
   rideMinutes: number;
   transfers: number;
   routeId: string | null;
+  legs?: TripLeg[];
+  walkLegs?: TripLeg[];
 };
 
 export type RoutingResult = {
@@ -105,6 +115,25 @@ function nested<T>(map: Map<string, Map<string, T>>, outer: string): Map<string,
   const created = new Map<string, T>();
   map.set(outer, created);
   return created;
+}
+
+const coordinatesSchema = z.array(z.tuple([z.number(), z.number()]));
+
+function parseCoordinates(value: string | undefined): [number, number][] {
+  try {
+    const parsed = coordinatesSchema.safeParse(JSON.parse(value ?? ''));
+    return parsed.success ? parsed.data : [];
+  } catch {
+    return [];
+  }
+}
+
+async function* readOptionalCsvRecords(path: string): AsyncGenerator<Record<string, string>> {
+  const isPresent = await access(path).then(
+    () => true,
+    () => false,
+  );
+  if (isPresent) yield* readCsvRecords(path);
 }
 
 function routedGtfsArchives(gtfs: readonly string[], outputDir: string): string[] {
@@ -142,6 +171,18 @@ async function readRoutingOutputs(
       transfers: optionalNumber(row.transfers) ?? 0,
       routeId: nonEmpty(row.route_id),
     });
+  }
+  for await (const row of readOptionalCsvRecords(join(outputDir, 'itinerary_legs.csv'))) {
+    const itinerary = itineraries.get(row.origin_id ?? '')?.get(row.destination_id ?? '');
+    const coordinates = parseCoordinates(row.coordinates);
+    if (!itinerary || coordinates.length < 2) continue;
+    const leg: TripLeg = {
+      mode: row.mode === 'walk' ? 'walk' : 'transit',
+      routeId: nonEmpty(row.route_id),
+      coordinates,
+    };
+    if (row.trip === 'walk') itinerary.walkLegs = [...(itinerary.walkLegs ?? []), leg];
+    else itinerary.legs = [...(itinerary.legs ?? []), leg];
   }
   return {
     walkToStops,
