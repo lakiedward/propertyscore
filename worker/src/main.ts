@@ -8,6 +8,7 @@ import { createLogger, type Logger } from './lib/logger.ts';
 import { generateReport } from './report/generate-report.ts';
 import { insertReport } from './report/report.db.ts';
 import { REPORT_SECTIONS } from './report/sections.ts';
+import { renderReportPdf } from './report-pdf/render-report-pdf.ts';
 import { importHealthSources } from './scoring/health/import-health-sources.ts';
 import { createValhallaClient, type ValhallaClient } from './routing/valhalla.ts';
 import { importAreaStatistics } from './scoring/investment/area-statistics-import.ts';
@@ -66,6 +67,15 @@ async function runCommand(
         reportId: command.reportId,
         sections: REPORT_SECTIONS,
         router: reportRouter(env),
+        logger,
+      });
+      return;
+    case 'render-report-pdf':
+      await renderReportPdf({
+        sql,
+        source: command.source,
+        outputPath: command.outputPath,
+        chromiumPath: env.CHROMIUM_PATH,
         logger,
       });
       return;

@@ -19,6 +19,8 @@
       ]
     },
     "worker": {
+      "ignoreUnresolved": ["./maplibre-gl.mjs"],
+      "ignoreDependencies": ["maplibre-gl"],
       "ignoreBinaries": ["osmium", "gdalinfo", "gdal_translate", "gdallocationinfo", "xls2csv"]
     }
   }

@@ -1,0 +1,2603 @@
+{
+  "number": 1,
+  "address_text": "Piața Victoriei, Timișoara",
+  "latitude": 45.7537,
+  "longitude": 21.2257,
+  "generated_at": "2026-11-18T09:00:00Z",
+  "result": {
+    "city": {
+      "name": "Timișoara",
+      "slug": "timisoara"
+    },
+    "zone": {
+      "score": 79,
+      "city_avg": 46,
+      "city_max": 79,
+      "city_min": 20,
+      "histogram": [0, 0, 0, 0, 33, 128, 131, 118, 86, 97, 77, 65, 89, 89, 58, 12, 0, 0, 0, 0],
+      "percentile": 100
+    },
+    "formula": {
+      "label": "v1",
+      "weights": {
+        "air": 5,
+        "green": 10,
+        "noise": 12,
+        "health": 7,
+        "safety": 15,
+        "industry": 5,
+        "education": 8,
+        "accessibility": 20,
+        "fifteen_minute": 18
+      }
+    },
+    "snapshot": {
+      "period": "2026-11-01",
+      "source_dates": {
+        "osm": "2026-11-02",
+        "cams": "2025-11/2026-10",
+        "cnas": "2024-12-01",
+        "gtfs": "2026-11-03",
+        "siiir": "2025-10-08",
+        "ms_upu": "2026-11-01",
+        "eea_stations": "2025-11/2026-10",
+        "walk_routing": "2026-11-04",
+        "eea_industrial": "v16",
+        "eea_industrial_year": "2024"
+      }
+    },
+    "categories": {
+      "air": {
+        "score": 70,
+        "weight": 5,
+        "city_avg": 72,
+        "city_max": 74,
+        "city_min": 70,
+        "histogram": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 983, 0, 0, 0, 0, 0],
+        "percentile": 2
+      },
+      "green": {
+        "score": 84,
+        "weight": 10,
+        "city_avg": 31,
+        "city_max": 100,
+        "city_min": 0,
+        "histogram": [
+          140, 74, 100, 76, 74, 61, 69, 64, 69, 54, 47, 34, 23, 17, 14, 10, 10, 9, 13, 25
+        ],
+        "percentile": 95
+      },
+      "noise": {
+        "score": 48,
+        "weight": 12,
+        "city_avg": 55,
+        "city_max": 73,
+        "city_min": 4,
+        "histogram": [1, 1, 1, 5, 14, 38, 40, 37, 61, 74, 104, 230, 156, 126, 95, 0, 0, 0, 0, 0],
+        "percentile": 26
+      },
+      "health": {
+        "score": 100,
+        "weight": 7,
+        "city_avg": 49,
+        "city_max": 100,
+        "city_min": 0,
+        "histogram": [
+          3, 15, 106, 83, 106, 57, 47, 54, 46, 35, 34, 32, 24, 26, 35, 31, 47, 48, 81, 73
+        ],
+        "percentile": 99
+      },
+      "safety": {
+        "score": 66,
+        "weight": 15,
+        "city_avg": 53,
+        "city_max": 76,
+        "city_min": 37,
+        "histogram": [0, 0, 0, 0, 0, 0, 0, 3, 29, 132, 560, 133, 68, 40, 14, 4, 0, 0, 0, 0],
+        "percentile": 96
+      },
+      "industry": {
+        "score": 83,
+        "weight": 5,
+        "city_avg": 82,
+        "city_max": 100,
+        "city_min": 31,
+        "histogram": [0, 0, 0, 0, 0, 0, 1, 3, 6, 15, 23, 37, 47, 64, 80, 108, 106, 107, 139, 247],
+        "percentile": 47
+      },
+      "education": {
+        "score": 98,
+        "weight": 8,
+        "city_avg": 53,
+        "city_max": 100,
+        "city_min": 0,
+        "histogram": [
+          161, 20, 22, 31, 38, 30, 34, 48, 30, 36, 41, 34, 40, 41, 26, 33, 43, 58, 63, 154
+        ],
+        "percentile": 92
+      },
+      "accessibility": {
+        "score": 81,
+        "weight": 20,
+        "city_avg": 24,
+        "city_max": 81,
+        "city_min": 0,
+        "histogram": [
+          222, 123, 115, 82, 40, 45, 64, 38, 33, 34, 40, 47, 35, 27, 19, 18, 1, 0, 0, 0
+        ],
+        "percentile": 100
+      },
+      "fifteen_minute": {
+        "score": 91,
+        "weight": 18,
+        "city_avg": 46,
+        "city_max": 92,
+        "city_min": 0,
+        "histogram": [
+          71, 42, 54, 72, 63, 54, 68, 46, 37, 39, 35, 31, 35, 44, 31, 71, 100, 75, 15, 0
+        ],
+        "percentile": 100
+      }
+    },
+    "schema_version": 1,
+    "green": {
+      "schema_version": 1,
+      "status": "scored",
+      "radii_m": [500, 1000],
+      "near_radius_m": 500,
+      "wide_radius_m": 1000,
+      "share_cap": 0.3,
+      "share": {
+        "500": 0.21,
+        "1000": 0.17
+      },
+      "city_avg_share_near": 0.07,
+      "distance_method": "pedestrian_routing",
+      "nearest_small_id": "p1",
+      "nearest_large_id": "p2",
+      "components": [],
+      "thresholds": {
+        "small_min_ha": 0.5,
+        "small_full_m": 300,
+        "large_min_ha": 5,
+        "large_full_m": 800
+      },
+      "parks": [
+        {
+          "id": "p1",
+          "name": "Parcul Castelului",
+          "kind": "park",
+          "area_ha": 1.6,
+          "amenities": ["playground"],
+          "walk_m": 160,
+          "center": [21.226215, 45.75361]
+        },
+        {
+          "id": "p2",
+          "name": "Parcul Central Anton von Scudier",
+          "kind": "park",
+          "area_ha": 7.9,
+          "amenities": ["playground", "sports"],
+          "walk_m": 240,
+          "center": [21.220293, 45.752072]
+        },
+        {
+          "id": "p3",
+          "name": "Parcul Catedralei",
+          "kind": "park",
+          "area_ha": 5.2,
+          "amenities": ["playground"],
+          "walk_m": 250,
+          "center": [21.223125, 45.750715]
+        },
+        {
+          "id": "p4",
+          "name": "Parcul Ion C. Brătianu",
+          "kind": "park",
+          "area_ha": 1.6,
+          "amenities": [],
+          "walk_m": 400,
+          "center": [21.229949, 45.753338]
+        },
+        {
+          "id": "p5",
+          "name": "Parcul Justiției",
+          "kind": "park",
+          "area_ha": 3.4,
+          "amenities": [],
+          "walk_m": 420,
+          "center": [21.227245, 45.74981]
+        },
+        {
+          "id": "p6",
+          "name": "Parcul Civic",
+          "kind": "park",
+          "area_ha": 2.7,
+          "amenities": ["playground"],
+          "walk_m": 430,
+          "center": [21.230592, 45.755057]
+        },
+        {
+          "id": "p7",
+          "name": "Parcul Rozelor",
+          "kind": "park",
+          "area_ha": 3.9,
+          "amenities": [],
+          "walk_m": 640,
+          "center": [21.232395, 45.749448]
+        },
+        {
+          "id": "p8",
+          "name": "Parcul Botanic",
+          "kind": "park",
+          "area_ha": 8.2,
+          "amenities": ["dog_park"],
+          "walk_m": 760,
+          "center": [21.224155, 45.75949]
+        }
+      ],
+      "areas": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "p1"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [21.225156, 45.753169],
+                  [21.227274, 45.753169],
+                  [21.227274, 45.75405],
+                  [21.225156, 45.75405],
+                  [21.225156, 45.753169]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "p2"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [21.217941, 45.751094],
+                  [21.222645, 45.751094],
+                  [21.222645, 45.75305],
+                  [21.217941, 45.75305],
+                  [21.217941, 45.751094]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "p3"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [21.221217, 45.749921],
+                  [21.225033, 45.749921],
+                  [21.225033, 45.751508],
+                  [21.221217, 45.751508],
+                  [21.221217, 45.749921]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "p4"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [21.22889, 45.752898],
+                  [21.231007, 45.752898],
+                  [21.231007, 45.753778],
+                  [21.22889, 45.753778],
+                  [21.22889, 45.752898]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "p5"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [21.225702, 45.749168],
+                  [21.228788, 45.749168],
+                  [21.228788, 45.750452],
+                  [21.225702, 45.750452],
+                  [21.225702, 45.749168]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "p6"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [21.229217, 45.754485],
+                  [21.231967, 45.754485],
+                  [21.231967, 45.755629],
+                  [21.229217, 45.755629],
+                  [21.229217, 45.754485]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "p7"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [21.230742, 45.748761],
+                  [21.234047, 45.748761],
+                  [21.234047, 45.750135],
+                  [21.230742, 45.750135],
+                  [21.230742, 45.748761]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "p8"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [21.221759, 45.758493],
+                  [21.226551, 45.758493],
+                  [21.226551, 45.760486],
+                  [21.221759, 45.760486],
+                  [21.221759, 45.758493]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "safety": {
+      "schema_version": 1,
+      "status": "scored",
+      "day": 72,
+      "night": 66,
+      "moment_weights": {
+        "day": 0.5,
+        "night": 0.5
+      },
+      "excluded_types": [],
+      "distance_method": "pedestrian_routing",
+      "address": {
+        "score": 69,
+        "start": 50,
+        "day": {
+          "score": 72,
+          "waterfall": [],
+          "far_types": [],
+          "contributions": [
+            {
+              "type": "shop",
+              "points": 19,
+              "count": 205,
+              "nearest_m": 30
+            },
+            {
+              "type": "lighting",
+              "points": 3,
+              "count": 25,
+              "nearest_m": 10
+            },
+            {
+              "type": "nonstop",
+              "points": 3,
+              "count": 5,
+              "nearest_m": 40
+            },
+            {
+              "type": "diplomatic",
+              "points": 1,
+              "count": 3,
+              "nearest_m": 290
+            },
+            {
+              "type": "park",
+              "points": -2,
+              "count": 1,
+              "nearest_m": 70
+            },
+            {
+              "type": "isolated_passage",
+              "points": -2,
+              "count": 2,
+              "nearest_m": 110
+            }
+          ]
+        },
+        "night": {
+          "score": 66,
+          "waterfall": [],
+          "far_types": [],
+          "contributions": [
+            {
+              "type": "lighting",
+              "points": 9,
+              "count": 25,
+              "nearest_m": 10
+            },
+            {
+              "type": "nonstop",
+              "points": 6,
+              "count": 5,
+              "nearest_m": 40
+            },
+            {
+              "type": "shop",
+              "points": 5,
+              "count": 205,
+              "nearest_m": 30
+            },
+            {
+              "type": "bar",
+              "points": -3,
+              "count": 14,
+              "nearest_m": 60
+            },
+            {
+              "type": "park",
+              "points": -5,
+              "count": 1,
+              "nearest_m": 70
+            },
+            {
+              "type": "isolated_passage",
+              "points": -4,
+              "count": 2,
+              "nearest_m": 110
+            }
+          ]
+        }
+      },
+      "landmarks": [
+        {
+          "id": "l1",
+          "type": "nonstop",
+          "name": "Central Market",
+          "location": [21.226086, 45.753926],
+          "distance_m": 40
+        },
+        {
+          "id": "l2",
+          "type": "police",
+          "name": "Poliția Locală Timișoara",
+          "location": [21.216688, 45.75958],
+          "distance_m": 1200
+        },
+        {
+          "id": "l3",
+          "type": "fire_station",
+          "name": "Detașamentul 2 Pompieri",
+          "location": [21.242437, 45.745558],
+          "distance_m": 1800
+        },
+        {
+          "id": "l4",
+          "type": "diplomatic",
+          "name": "Consulatul Germaniei",
+          "location": [21.228404, 45.755419],
+          "distance_m": 290
+        },
+        {
+          "id": "l5",
+          "type": "train_station",
+          "name": "Gara Timișoara Nord",
+          "location": [21.201238, 45.758223],
+          "distance_m": 2100
+        }
+      ]
+    },
+    "accessibility": {
+      "schema_version": 1,
+      "status": "scored",
+      "data_quality": "gtfs",
+      "reference_date": "2026-11-05",
+      "components": [],
+      "directions": 8,
+      "stops": [
+        {
+          "id": "s0",
+          "name": "Piața Victoriei",
+          "modes": ["tram"],
+          "location": [21.226472, 45.754514],
+          "walk_min": 2,
+          "walk_m": 160,
+          "routes": ["1", "2", "4"]
+        },
+        {
+          "id": "s1",
+          "name": "Catedrala Mitropolitană",
+          "modes": ["tram"],
+          "location": [21.225185, 45.751348],
+          "walk_min": 4,
+          "walk_m": 320,
+          "routes": ["6", "8", "9", "33"]
+        },
+        {
+          "id": "s2",
+          "name": "Piața Regina Maria",
+          "modes": ["tram"],
+          "location": [21.221451, 45.754243],
+          "walk_min": 5,
+          "walk_m": 400,
+          "routes": ["14", "16", "18"]
+        },
+        {
+          "id": "s3",
+          "name": "Piața Huniade",
+          "modes": ["tram"],
+          "location": [21.227631, 45.755238],
+          "walk_min": 3,
+          "walk_m": 240,
+          "routes": ["15", "E2", "M30"]
+        },
+        {
+          "id": "s4",
+          "name": "Continental",
+          "modes": ["tram"],
+          "location": [21.230592, 45.754786],
+          "walk_min": 5,
+          "walk_m": 400,
+          "routes": ["40"]
+        },
+        {
+          "id": "s5",
+          "name": "Piața Traian Grozăvescu",
+          "modes": ["tram"],
+          "location": [21.231107, 45.752976],
+          "walk_min": 6,
+          "walk_m": 480,
+          "routes": ["40", "E4"]
+        }
+      ],
+      "routes": [
+        {
+          "key": "tram:1",
+          "ref": "1",
+          "mode": "tram",
+          "name": null,
+          "colour": null,
+          "text_colour": null,
+          "peak_per_hour": 6
+        }
+      ],
+      "destinations": [
+        {
+          "id": "d1",
+          "kind": "university",
+          "label": {
+            "ro": "Universitatea de Vest",
+            "en": "Universitatea de Vest"
+          },
+          "location": [21.237287, 45.74782],
+          "minutes": 14,
+          "by_walking": true,
+          "walk": 14,
+          "wait": null,
+          "ride": null,
+          "transfers": null,
+          "route": null
+        },
+        {
+          "id": "d2",
+          "kind": "station",
+          "label": {
+            "ro": "Gara Timișoara Nord",
+            "en": "Gara Timișoara Nord"
+          },
+          "location": [21.201238, 45.758223],
+          "minutes": 19,
+          "by_walking": false,
+          "walk": 5,
+          "wait": 7,
+          "ride": 7,
+          "transfers": 0,
+          "route": {
+            "ref": "14",
+            "mode": "tram",
+            "colour": null
+          }
+        },
+        {
+          "id": "d3",
+          "kind": "mall",
+          "label": {
+            "ro": "Iulius Town",
+            "en": "Iulius Town"
+          },
+          "location": [21.233425, 45.76727],
+          "minutes": 24,
+          "by_walking": false,
+          "walk": 11,
+          "wait": 5,
+          "ride": 8,
+          "transfers": 0,
+          "route": {
+            "ref": "40",
+            "mode": "tram",
+            "colour": null
+          }
+        },
+        {
+          "id": "d4",
+          "kind": "mall",
+          "label": {
+            "ro": "Shopping City",
+            "en": "Shopping City"
+          },
+          "location": [21.221838, 45.724751],
+          "minutes": 25,
+          "by_walking": false,
+          "walk": 4,
+          "wait": 3,
+          "ride": 18,
+          "transfers": 0,
+          "route": {
+            "ref": "33",
+            "mode": "tram",
+            "colour": null
+          }
+        },
+        {
+          "id": "d5",
+          "kind": "hospital",
+          "label": {
+            "ro": "Spitalul Județean Pius Brînzeu",
+            "en": "Spitalul Județean Pius Brînzeu"
+          },
+          "location": [21.245012, 45.731084],
+          "minutes": 28,
+          "by_walking": false,
+          "walk": 4,
+          "wait": 6,
+          "ride": 18,
+          "transfers": 0,
+          "route": {
+            "ref": "16",
+            "mode": "tram",
+            "colour": null
+          }
+        },
+        {
+          "id": "d6",
+          "kind": "airport",
+          "label": {
+            "ro": "Aeroportul Traian Vuia",
+            "en": "Aeroportul Traian Vuia"
+          },
+          "location": [21.348008, 45.779935],
+          "minutes": 51,
+          "by_walking": false,
+          "walk": 13,
+          "wait": 10,
+          "ride": 28,
+          "transfers": 0,
+          "route": {
+            "ref": "E4",
+            "mode": "tram",
+            "colour": null
+          }
+        }
+      ]
+    },
+    "fifteen_minute": {
+      "schema_version": 1,
+      "status": "scored",
+      "score": 89,
+      "covered": 18,
+      "total": 18,
+      "walk_speed_kmh": 4.8,
+      "distance_method": "pedestrian_routing",
+      "groups": [
+        {
+          "key": "shops",
+          "categories": ["supermarket", "convenience", "bakery"],
+          "n5": 14,
+          "n10": 22,
+          "n15": 44
+        },
+        {
+          "key": "pharmacies",
+          "categories": ["pharmacy"],
+          "n5": 6,
+          "n10": 10,
+          "n15": 20
+        },
+        {
+          "key": "medical",
+          "categories": ["dentist", "doctor"],
+          "n5": 6,
+          "n10": 10,
+          "n15": 20
+        },
+        {
+          "key": "services",
+          "categories": ["bank_atm", "post", "hairdresser"],
+          "n5": 14,
+          "n10": 21,
+          "n15": 43
+        },
+        {
+          "key": "food_drink",
+          "categories": ["restaurant", "cafe"],
+          "n5": 64,
+          "n10": 96,
+          "n15": 192
+        },
+        {
+          "key": "parks",
+          "categories": ["park", "playground"],
+          "n5": 6,
+          "n10": 9,
+          "n15": 19
+        },
+        {
+          "key": "culture",
+          "categories": ["cinema_theatre", "library"],
+          "n5": 4,
+          "n10": 6,
+          "n15": 12
+        },
+        {
+          "key": "schools",
+          "categories": ["school", "kindergarten"],
+          "n5": 3,
+          "n10": 5,
+          "n15": 11
+        },
+        {
+          "key": "sport",
+          "categories": ["fitness"],
+          "n5": 1,
+          "n10": 2,
+          "n15": 5
+        }
+      ],
+      "categories": [
+        {
+          "key": "supermarket",
+          "group": "shops",
+          "t1_min": 3,
+          "distance_m": 240,
+          "n5": 3,
+          "n10": 4,
+          "n15": 9,
+          "status": "ok"
+        },
+        {
+          "key": "convenience",
+          "group": "shops",
+          "t1_min": 1,
+          "distance_m": 80,
+          "n5": 6,
+          "n10": 9,
+          "n15": 19,
+          "status": "ok"
+        },
+        {
+          "key": "pharmacy",
+          "group": "pharmacies",
+          "t1_min": 1,
+          "distance_m": 80,
+          "n5": 6,
+          "n10": 10,
+          "n15": 20,
+          "status": "ok"
+        },
+        {
+          "key": "dentist",
+          "group": "medical",
+          "t1_min": 1,
+          "distance_m": 80,
+          "n5": 2,
+          "n10": 3,
+          "n15": 6,
+          "status": "ok"
+        },
+        {
+          "key": "bank_atm",
+          "group": "services",
+          "t1_min": 1,
+          "distance_m": 80,
+          "n5": 7,
+          "n10": 11,
+          "n15": 22,
+          "status": "ok"
+        },
+        {
+          "key": "restaurant",
+          "group": "food_drink",
+          "t1_min": 1,
+          "distance_m": 80,
+          "n5": 44,
+          "n10": 66,
+          "n15": 132,
+          "status": "ok"
+        },
+        {
+          "key": "bakery",
+          "group": "shops",
+          "t1_min": 2,
+          "distance_m": 160,
+          "n5": 5,
+          "n10": 8,
+          "n15": 16,
+          "status": "ok"
+        },
+        {
+          "key": "park",
+          "group": "parks",
+          "t1_min": 2,
+          "distance_m": 160,
+          "n5": 4,
+          "n10": 6,
+          "n15": 13,
+          "status": "ok"
+        },
+        {
+          "key": "post",
+          "group": "services",
+          "t1_min": 2,
+          "distance_m": 160,
+          "n5": 1,
+          "n10": 1,
+          "n15": 3,
+          "status": "ok"
+        },
+        {
+          "key": "cinema_theatre",
+          "group": "culture",
+          "t1_min": 2,
+          "distance_m": 160,
+          "n5": 3,
+          "n10": 5,
+          "n15": 10,
+          "status": "ok"
+        },
+        {
+          "key": "school",
+          "group": "schools",
+          "t1_min": 4,
+          "distance_m": 320,
+          "n5": 2,
+          "n10": 3,
+          "n15": 7,
+          "status": "ok"
+        },
+        {
+          "key": "kindergarten",
+          "group": "schools",
+          "t1_min": 5,
+          "distance_m": 400,
+          "n5": 1,
+          "n10": 2,
+          "n15": 4,
+          "status": "ok"
+        },
+        {
+          "key": "doctor",
+          "group": "medical",
+          "t1_min": 3,
+          "distance_m": 240,
+          "n5": 4,
+          "n10": 7,
+          "n15": 14,
+          "status": "ok"
+        },
+        {
+          "key": "cafe",
+          "group": "food_drink",
+          "t1_min": 1,
+          "distance_m": 80,
+          "n5": 20,
+          "n10": 30,
+          "n15": 60,
+          "status": "ok"
+        },
+        {
+          "key": "fitness",
+          "group": "sport",
+          "t1_min": 5,
+          "distance_m": 400,
+          "n5": 1,
+          "n10": 2,
+          "n15": 5,
+          "status": "ok"
+        },
+        {
+          "key": "library",
+          "group": "culture",
+          "t1_min": 6,
+          "distance_m": 480,
+          "n5": 0,
+          "n10": 1,
+          "n15": 2,
+          "status": "ok"
+        },
+        {
+          "key": "hairdresser",
+          "group": "services",
+          "t1_min": 2,
+          "distance_m": 160,
+          "n5": 6,
+          "n10": 9,
+          "n15": 18,
+          "status": "ok"
+        },
+        {
+          "key": "playground",
+          "group": "parks",
+          "t1_min": 4,
+          "distance_m": 320,
+          "n5": 2,
+          "n10": 3,
+          "n15": 6,
+          "status": "ok"
+        }
+      ],
+      "places": [
+        {
+          "id": "supermarket0",
+          "category": "supermarket",
+          "name": "Profi City",
+          "lat": 45.75552,
+          "lng": 21.224404,
+          "distance_m": 225,
+          "minutes": 3
+        },
+        {
+          "id": "supermarket1",
+          "category": "supermarket",
+          "name": null,
+          "lat": 45.751048,
+          "lng": 21.222992,
+          "distance_m": 360,
+          "minutes": 5
+        },
+        {
+          "id": "supermarket2",
+          "category": "supermarket",
+          "name": null,
+          "lat": 45.753113,
+          "lng": 21.222058,
+          "distance_m": 290,
+          "minutes": 4
+        },
+        {
+          "id": "supermarket3",
+          "category": "supermarket",
+          "name": null,
+          "lat": 45.755487,
+          "lng": 21.232366,
+          "distance_m": 554,
+          "minutes": 7
+        },
+        {
+          "id": "supermarket4",
+          "category": "supermarket",
+          "name": null,
+          "lat": 45.755139,
+          "lng": 21.234234,
+          "distance_m": 681,
+          "minutes": 9
+        },
+        {
+          "id": "supermarket5",
+          "category": "supermarket",
+          "name": null,
+          "lat": 45.756065,
+          "lng": 21.232871,
+          "distance_m": 615,
+          "minutes": 8
+        },
+        {
+          "id": "convenience0",
+          "category": "convenience",
+          "name": "Palmira Shop on the Go",
+          "lat": 45.754066,
+          "lng": 21.226513,
+          "distance_m": 75,
+          "minutes": 1
+        },
+        {
+          "id": "convenience1",
+          "category": "convenience",
+          "name": null,
+          "lat": 45.749528,
+          "lng": 21.228813,
+          "distance_m": 520,
+          "minutes": 7
+        },
+        {
+          "id": "convenience2",
+          "category": "convenience",
+          "name": null,
+          "lat": 45.755528,
+          "lng": 21.226142,
+          "distance_m": 204,
+          "minutes": 3
+        },
+        {
+          "id": "convenience3",
+          "category": "convenience",
+          "name": null,
+          "lat": 45.751558,
+          "lng": 21.234642,
+          "distance_m": 733,
+          "minutes": 9
+        },
+        {
+          "id": "convenience4",
+          "category": "convenience",
+          "name": null,
+          "lat": 45.757424,
+          "lng": 21.218716,
+          "distance_m": 680,
+          "minutes": 9
+        },
+        {
+          "id": "convenience5",
+          "category": "convenience",
+          "name": null,
+          "lat": 45.756571,
+          "lng": 21.239261,
+          "distance_m": 1100,
+          "minutes": 14
+        },
+        {
+          "id": "pharmacy0",
+          "category": "pharmacy",
+          "name": "Farmado",
+          "lat": 45.753173,
+          "lng": 21.226308,
+          "distance_m": 75,
+          "minutes": 1
+        },
+        {
+          "id": "pharmacy1",
+          "category": "pharmacy",
+          "name": null,
+          "lat": 45.7564,
+          "lng": 21.228709,
+          "distance_m": 379,
+          "minutes": 5
+        },
+        {
+          "id": "pharmacy2",
+          "category": "pharmacy",
+          "name": null,
+          "lat": 45.755377,
+          "lng": 21.224781,
+          "distance_m": 198,
+          "minutes": 2
+        },
+        {
+          "id": "pharmacy3",
+          "category": "pharmacy",
+          "name": null,
+          "lat": 45.761345,
+          "lng": 21.230759,
+          "distance_m": 931,
+          "minutes": 12
+        },
+        {
+          "id": "pharmacy4",
+          "category": "pharmacy",
+          "name": null,
+          "lat": 45.748948,
+          "lng": 21.220027,
+          "distance_m": 685,
+          "minutes": 9
+        },
+        {
+          "id": "pharmacy5",
+          "category": "pharmacy",
+          "name": null,
+          "lat": 45.752454,
+          "lng": 21.219968,
+          "distance_m": 466,
+          "minutes": 6
+        },
+        {
+          "id": "dentist0",
+          "category": "dentist",
+          "name": "Ortho Select",
+          "lat": 45.753961,
+          "lng": 21.226591,
+          "distance_m": 75,
+          "minutes": 1
+        },
+        {
+          "id": "dentist1",
+          "category": "dentist",
+          "name": null,
+          "lat": 45.754897,
+          "lng": 21.226184,
+          "distance_m": 137,
+          "minutes": 2
+        },
+        {
+          "id": "dentist2",
+          "category": "dentist",
+          "name": null,
+          "lat": 45.756838,
+          "lng": 21.21657,
+          "distance_m": 789,
+          "minutes": 10
+        },
+        {
+          "id": "dentist3",
+          "category": "dentist",
+          "name": null,
+          "lat": 45.751825,
+          "lng": 21.221223,
+          "distance_m": 404,
+          "minutes": 5
+        },
+        {
+          "id": "dentist4",
+          "category": "dentist",
+          "name": null,
+          "lat": 45.758442,
+          "lng": 21.223518,
+          "distance_m": 550,
+          "minutes": 7
+        },
+        {
+          "id": "dentist5",
+          "category": "dentist",
+          "name": null,
+          "lat": 45.745895,
+          "lng": 21.222013,
+          "distance_m": 909,
+          "minutes": 11
+        },
+        {
+          "id": "bank_atm0",
+          "category": "bank_atm",
+          "name": "BRD",
+          "lat": 45.754378,
+          "lng": 21.225736,
+          "distance_m": 75,
+          "minutes": 1
+        },
+        {
+          "id": "bank_atm1",
+          "category": "bank_atm",
+          "name": null,
+          "lat": 45.752733,
+          "lng": 21.217078,
+          "distance_m": 678,
+          "minutes": 8
+        },
+        {
+          "id": "bank_atm2",
+          "category": "bank_atm",
+          "name": null,
+          "lat": 45.744784,
+          "lng": 21.224052,
+          "distance_m": 993,
+          "minutes": 12
+        },
+        {
+          "id": "bank_atm3",
+          "category": "bank_atm",
+          "name": null,
+          "lat": 45.753276,
+          "lng": 21.23052,
+          "distance_m": 377,
+          "minutes": 5
+        },
+        {
+          "id": "bank_atm4",
+          "category": "bank_atm",
+          "name": null,
+          "lat": 45.754586,
+          "lng": 21.22347,
+          "distance_m": 198,
+          "minutes": 2
+        },
+        {
+          "id": "bank_atm5",
+          "category": "bank_atm",
+          "name": null,
+          "lat": 45.760125,
+          "lng": 21.23217,
+          "distance_m": 869,
+          "minutes": 11
+        },
+        {
+          "id": "restaurant0",
+          "category": "restaurant",
+          "name": "Victoria del gusto",
+          "lat": 45.753747,
+          "lng": 21.224737,
+          "distance_m": 75,
+          "minutes": 1
+        },
+        {
+          "id": "restaurant1",
+          "category": "restaurant",
+          "name": null,
+          "lat": 45.752785,
+          "lng": 21.224965,
+          "distance_m": 116,
+          "minutes": 1
+        },
+        {
+          "id": "restaurant2",
+          "category": "restaurant",
+          "name": null,
+          "lat": 45.750183,
+          "lng": 21.215568,
+          "distance_m": 877,
+          "minutes": 11
+        },
+        {
+          "id": "restaurant3",
+          "category": "restaurant",
+          "name": null,
+          "lat": 45.761983,
+          "lng": 21.220709,
+          "distance_m": 994,
+          "minutes": 12
+        },
+        {
+          "id": "restaurant4",
+          "category": "restaurant",
+          "name": null,
+          "lat": 45.74963,
+          "lng": 21.217105,
+          "distance_m": 805,
+          "minutes": 10
+        },
+        {
+          "id": "restaurant5",
+          "category": "restaurant",
+          "name": null,
+          "lat": 45.755381,
+          "lng": 21.217226,
+          "distance_m": 683,
+          "minutes": 9
+        },
+        {
+          "id": "bakery0",
+          "category": "bakery",
+          "name": "Prospero",
+          "lat": 45.752554,
+          "lng": 21.226734,
+          "distance_m": 150,
+          "minutes": 2
+        },
+        {
+          "id": "bakery1",
+          "category": "bakery",
+          "name": null,
+          "lat": 45.75527,
+          "lng": 21.212093,
+          "distance_m": 1071,
+          "minutes": 13
+        },
+        {
+          "id": "bakery2",
+          "category": "bakery",
+          "name": null,
+          "lat": 45.756384,
+          "lng": 21.235231,
+          "distance_m": 797,
+          "minutes": 10
+        },
+        {
+          "id": "bakery3",
+          "category": "bakery",
+          "name": null,
+          "lat": 45.747677,
+          "lng": 21.219233,
+          "distance_m": 833,
+          "minutes": 10
+        },
+        {
+          "id": "bakery4",
+          "category": "bakery",
+          "name": null,
+          "lat": 45.744599,
+          "lng": 21.231987,
+          "distance_m": 1118,
+          "minutes": 14
+        },
+        {
+          "id": "bakery5",
+          "category": "bakery",
+          "name": null,
+          "lat": 45.756243,
+          "lng": 21.221554,
+          "distance_m": 427,
+          "minutes": 5
+        },
+        {
+          "id": "park0",
+          "category": "park",
+          "name": "Parcul Castelului",
+          "lat": 45.752516,
+          "lng": 21.224755,
+          "distance_m": 150,
+          "minutes": 2
+        },
+        {
+          "id": "park1",
+          "category": "park",
+          "name": null,
+          "lat": 45.754071,
+          "lng": 21.223549,
+          "distance_m": 171,
+          "minutes": 2
+        },
+        {
+          "id": "park2",
+          "category": "park",
+          "name": null,
+          "lat": 45.755605,
+          "lng": 21.228695,
+          "distance_m": 313,
+          "minutes": 4
+        },
+        {
+          "id": "park3",
+          "category": "park",
+          "name": null,
+          "lat": 45.751835,
+          "lng": 21.226005,
+          "distance_m": 207,
+          "minutes": 3
+        },
+        {
+          "id": "park4",
+          "category": "park",
+          "name": null,
+          "lat": 45.756198,
+          "lng": 21.225753,
+          "distance_m": 276,
+          "minutes": 3
+        },
+        {
+          "id": "park5",
+          "category": "park",
+          "name": null,
+          "lat": 45.750227,
+          "lng": 21.230426,
+          "distance_m": 531,
+          "minutes": 7
+        },
+        {
+          "id": "post0",
+          "category": "post",
+          "name": "Oficiul Poștal nr. 1",
+          "lat": 45.754358,
+          "lng": 21.227389,
+          "distance_m": 150,
+          "minutes": 2
+        },
+        {
+          "id": "post1",
+          "category": "post",
+          "name": null,
+          "lat": 45.752074,
+          "lng": 21.218493,
+          "distance_m": 587,
+          "minutes": 7
+        },
+        {
+          "id": "post2",
+          "category": "post",
+          "name": null,
+          "lat": 45.745404,
+          "lng": 21.23119,
+          "distance_m": 1011,
+          "minutes": 13
+        },
+        {
+          "id": "cinema_theatre0",
+          "category": "cinema_theatre",
+          "name": "Cinema Studio",
+          "lat": 45.752676,
+          "lng": 21.226968,
+          "distance_m": 150,
+          "minutes": 2
+        },
+        {
+          "id": "cinema_theatre1",
+          "category": "cinema_theatre",
+          "name": null,
+          "lat": 45.755635,
+          "lng": 21.221024,
+          "distance_m": 421,
+          "minutes": 5
+        },
+        {
+          "id": "cinema_theatre2",
+          "category": "cinema_theatre",
+          "name": null,
+          "lat": 45.750693,
+          "lng": 21.230505,
+          "distance_m": 499,
+          "minutes": 6
+        },
+        {
+          "id": "cinema_theatre3",
+          "category": "cinema_theatre",
+          "name": null,
+          "lat": 45.761665,
+          "lng": 21.233836,
+          "distance_m": 1083,
+          "minutes": 14
+        },
+        {
+          "id": "cinema_theatre4",
+          "category": "cinema_theatre",
+          "name": null,
+          "lat": 45.756593,
+          "lng": 21.226169,
+          "distance_m": 321,
+          "minutes": 4
+        },
+        {
+          "id": "cinema_theatre5",
+          "category": "cinema_theatre",
+          "name": null,
+          "lat": 45.754022,
+          "lng": 21.220862,
+          "distance_m": 377,
+          "minutes": 5
+        },
+        {
+          "id": "school0",
+          "category": "school",
+          "name": "Colegiul Național C. D. Loga",
+          "lat": 45.752258,
+          "lng": 21.222428,
+          "distance_m": 300,
+          "minutes": 4
+        },
+        {
+          "id": "school1",
+          "category": "school",
+          "name": null,
+          "lat": 45.75382,
+          "lng": 21.232351,
+          "distance_m": 516,
+          "minutes": 6
+        },
+        {
+          "id": "school2",
+          "category": "school",
+          "name": null,
+          "lat": 45.757976,
+          "lng": 21.220038,
+          "distance_m": 645,
+          "minutes": 8
+        },
+        {
+          "id": "school3",
+          "category": "school",
+          "name": null,
+          "lat": 45.751684,
+          "lng": 21.235152,
+          "distance_m": 767,
+          "minutes": 10
+        },
+        {
+          "id": "school4",
+          "category": "school",
+          "name": null,
+          "lat": 45.752935,
+          "lng": 21.214557,
+          "distance_m": 869,
+          "minutes": 11
+        },
+        {
+          "id": "school5",
+          "category": "school",
+          "name": null,
+          "lat": 45.74715,
+          "lng": 21.221039,
+          "distance_m": 809,
+          "minutes": 10
+        },
+        {
+          "id": "kindergarten0",
+          "category": "kindergarten",
+          "name": "Grădinița PP 23",
+          "lat": 45.754829,
+          "lng": 21.230253,
+          "distance_m": 375,
+          "minutes": 5
+        },
+        {
+          "id": "kindergarten1",
+          "category": "kindergarten",
+          "name": null,
+          "lat": 45.744372,
+          "lng": 21.22823,
+          "distance_m": 1049,
+          "minutes": 13
+        },
+        {
+          "id": "kindergarten2",
+          "category": "kindergarten",
+          "name": null,
+          "lat": 45.744793,
+          "lng": 21.229632,
+          "distance_m": 1030,
+          "minutes": 13
+        },
+        {
+          "id": "kindergarten3",
+          "category": "kindergarten",
+          "name": null,
+          "lat": 45.75729,
+          "lng": 21.218762,
+          "distance_m": 669,
+          "minutes": 8
+        },
+        {
+          "id": "doctor0",
+          "category": "doctor",
+          "name": "CMI Dr. Popa",
+          "lat": 45.754933,
+          "lng": 21.228005,
+          "distance_m": 225,
+          "minutes": 3
+        },
+        {
+          "id": "doctor1",
+          "category": "doctor",
+          "name": null,
+          "lat": 45.756445,
+          "lng": 21.235173,
+          "distance_m": 795,
+          "minutes": 10
+        },
+        {
+          "id": "doctor2",
+          "category": "doctor",
+          "name": null,
+          "lat": 45.756198,
+          "lng": 21.226642,
+          "distance_m": 285,
+          "minutes": 4
+        },
+        {
+          "id": "doctor3",
+          "category": "doctor",
+          "name": null,
+          "lat": 45.756534,
+          "lng": 21.223139,
+          "distance_m": 371,
+          "minutes": 5
+        },
+        {
+          "id": "doctor4",
+          "category": "doctor",
+          "name": null,
+          "lat": 45.753704,
+          "lng": 21.229206,
+          "distance_m": 272,
+          "minutes": 3
+        },
+        {
+          "id": "doctor5",
+          "category": "doctor",
+          "name": null,
+          "lat": 45.755645,
+          "lng": 21.229436,
+          "distance_m": 361,
+          "minutes": 5
+        },
+        {
+          "id": "cafe0",
+          "category": "cafe",
+          "name": "Cafeneaua Verde",
+          "lat": 45.754213,
+          "lng": 21.225068,
+          "distance_m": 75,
+          "minutes": 1
+        },
+        {
+          "id": "cafe1",
+          "category": "cafe",
+          "name": null,
+          "lat": 45.753046,
+          "lng": 21.226623,
+          "distance_m": 101,
+          "minutes": 1
+        },
+        {
+          "id": "cafe2",
+          "category": "cafe",
+          "name": null,
+          "lat": 45.758933,
+          "lng": 21.231215,
+          "distance_m": 719,
+          "minutes": 9
+        },
+        {
+          "id": "cafe3",
+          "category": "cafe",
+          "name": null,
+          "lat": 45.756217,
+          "lng": 21.223186,
+          "distance_m": 339,
+          "minutes": 4
+        },
+        {
+          "id": "cafe4",
+          "category": "cafe",
+          "name": null,
+          "lat": 45.756586,
+          "lng": 21.22992,
+          "distance_m": 457,
+          "minutes": 6
+        },
+        {
+          "id": "cafe5",
+          "category": "cafe",
+          "name": null,
+          "lat": 45.753321,
+          "lng": 21.23813,
+          "distance_m": 966,
+          "minutes": 12
+        },
+        {
+          "id": "fitness0",
+          "category": "fitness",
+          "name": "World Class",
+          "lat": 45.754419,
+          "lng": 21.220982,
+          "distance_m": 375,
+          "minutes": 5
+        },
+        {
+          "id": "fitness1",
+          "category": "fitness",
+          "name": null,
+          "lat": 45.75713,
+          "lng": 21.23385,
+          "distance_m": 737,
+          "minutes": 9
+        },
+        {
+          "id": "fitness2",
+          "category": "fitness",
+          "name": null,
+          "lat": 45.757113,
+          "lng": 21.222503,
+          "distance_m": 451,
+          "minutes": 6
+        },
+        {
+          "id": "fitness3",
+          "category": "fitness",
+          "name": null,
+          "lat": 45.749135,
+          "lng": 21.229211,
+          "distance_m": 573,
+          "minutes": 7
+        },
+        {
+          "id": "fitness4",
+          "category": "fitness",
+          "name": null,
+          "lat": 45.754349,
+          "lng": 21.23202,
+          "distance_m": 496,
+          "minutes": 6
+        },
+        {
+          "id": "library0",
+          "category": "library",
+          "name": "Biblioteca Județeană",
+          "lat": 45.752466,
+          "lng": 21.231221,
+          "distance_m": 450,
+          "minutes": 6
+        },
+        {
+          "id": "library1",
+          "category": "library",
+          "name": null,
+          "lat": 45.75951,
+          "lng": 21.231982,
+          "distance_m": 806,
+          "minutes": 10
+        },
+        {
+          "id": "hairdresser0",
+          "category": "hairdresser",
+          "name": "Salon Ema",
+          "lat": 45.753336,
+          "lng": 21.223839,
+          "distance_m": 150,
+          "minutes": 2
+        },
+        {
+          "id": "hairdresser1",
+          "category": "hairdresser",
+          "name": null,
+          "lat": 45.75342,
+          "lng": 21.223465,
+          "distance_m": 176,
+          "minutes": 2
+        },
+        {
+          "id": "hairdresser2",
+          "category": "hairdresser",
+          "name": null,
+          "lat": 45.746139,
+          "lng": 21.234987,
+          "distance_m": 1104,
+          "minutes": 14
+        },
+        {
+          "id": "hairdresser3",
+          "category": "hairdresser",
+          "name": null,
+          "lat": 45.761179,
+          "lng": 21.224955,
+          "distance_m": 828,
+          "minutes": 10
+        },
+        {
+          "id": "hairdresser4",
+          "category": "hairdresser",
+          "name": null,
+          "lat": 45.757682,
+          "lng": 21.228954,
+          "distance_m": 507,
+          "minutes": 6
+        },
+        {
+          "id": "hairdresser5",
+          "category": "hairdresser",
+          "name": null,
+          "lat": 45.752039,
+          "lng": 21.214322,
+          "distance_m": 902,
+          "minutes": 11
+        },
+        {
+          "id": "playground0",
+          "category": "playground",
+          "name": null,
+          "lat": 45.751031,
+          "lng": 21.226401,
+          "distance_m": 300,
+          "minutes": 4
+        },
+        {
+          "id": "playground1",
+          "category": "playground",
+          "name": null,
+          "lat": 45.7588,
+          "lng": 21.226941,
+          "distance_m": 571,
+          "minutes": 7
+        },
+        {
+          "id": "playground2",
+          "category": "playground",
+          "name": null,
+          "lat": 45.752871,
+          "lng": 21.238126,
+          "distance_m": 969,
+          "minutes": 12
+        },
+        {
+          "id": "playground3",
+          "category": "playground",
+          "name": null,
+          "lat": 45.74518,
+          "lng": 21.230158,
+          "distance_m": 1003,
+          "minutes": 13
+        },
+        {
+          "id": "playground4",
+          "category": "playground",
+          "name": null,
+          "lat": 45.744896,
+          "lng": 21.224902,
+          "distance_m": 975,
+          "minutes": 12
+        },
+        {
+          "id": "playground5",
+          "category": "playground",
+          "name": null,
+          "lat": 45.753213,
+          "lng": 21.219468,
+          "distance_m": 487,
+          "minutes": 6
+        }
+      ],
+      "isochrones": [
+        {
+          "minutes": 5,
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [21.230077, 45.7537],
+                [21.230173, 45.754132],
+                [21.230167, 45.754551],
+                [21.230043, 45.754944],
+                [21.229794, 45.755299],
+                [21.229429, 45.755611],
+                [21.22897, 45.755875],
+                [21.228446, 45.75609],
+                [21.227889, 45.756257],
+                [21.227324, 45.756381],
+                [21.226769, 45.756465],
+                [21.226229, 45.756514],
+                [21.2257, 45.75653],
+                [21.225171, 45.756514],
+                [21.224631, 45.756465],
+                [21.224076, 45.756381],
+                [21.223511, 45.756257],
+                [21.222954, 45.75609],
+                [21.22243, 45.755875],
+                [21.221971, 45.755611],
+                [21.221606, 45.755299],
+                [21.221357, 45.754944],
+                [21.221233, 45.754551],
+                [21.221227, 45.754132],
+                [21.221323, 45.7537],
+                [21.221493, 45.753268],
+                [21.221711, 45.752849],
+                [21.221955, 45.752456],
+                [21.222212, 45.752101],
+                [21.222484, 45.751789],
+                [21.22278, 45.751525],
+                [21.223117, 45.75131],
+                [21.223511, 45.751143],
+                [21.223974, 45.751019],
+                [21.224503, 45.750935],
+                [21.225086, 45.750886],
+                [21.2257, 45.75087],
+                [21.226314, 45.750886],
+                [21.226897, 45.750935],
+                [21.227426, 45.751019],
+                [21.227889, 45.751143],
+                [21.228283, 45.75131],
+                [21.22862, 45.751525],
+                [21.228916, 45.751789],
+                [21.229188, 45.752101],
+                [21.229445, 45.752456],
+                [21.229689, 45.752849],
+                [21.229907, 45.753268],
+                [21.230077, 45.7537]
+              ]
+            ]
+          }
+        },
+        {
+          "minutes": 10,
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [21.234455, 45.7537],
+                [21.234645, 45.754565],
+                [21.234635, 45.755402],
+                [21.234386, 45.756187],
+                [21.233888, 45.756899],
+                [21.233159, 45.757522],
+                [21.232241, 45.75805],
+                [21.231193, 45.758479],
+                [21.230077, 45.758814],
+                [21.228948, 45.759062],
+                [21.227838, 45.75923],
+                [21.226758, 45.759328],
+                [21.2257, 45.759359],
+                [21.224642, 45.759328],
+                [21.223562, 45.75923],
+                [21.222452, 45.759062],
+                [21.221323, 45.758814],
+                [21.220207, 45.758479],
+                [21.219159, 45.75805],
+                [21.218241, 45.757522],
+                [21.217512, 45.756899],
+                [21.217014, 45.756187],
+                [21.216765, 45.755402],
+                [21.216755, 45.754565],
+                [21.216945, 45.7537],
+                [21.217286, 45.752835],
+                [21.217722, 45.751998],
+                [21.21821, 45.751213],
+                [21.218725, 45.750501],
+                [21.219268, 45.749878],
+                [21.21986, 45.74935],
+                [21.220534, 45.748921],
+                [21.221323, 45.748586],
+                [21.222247, 45.748338],
+                [21.223306, 45.74817],
+                [21.224473, 45.748072],
+                [21.2257, 45.748041],
+                [21.226927, 45.748072],
+                [21.228094, 45.74817],
+                [21.229153, 45.748338],
+                [21.230077, 45.748586],
+                [21.230866, 45.748921],
+                [21.23154, 45.74935],
+                [21.232132, 45.749878],
+                [21.232675, 45.750501],
+                [21.23319, 45.751213],
+                [21.233678, 45.751998],
+                [21.234114, 45.752835],
+                [21.234455, 45.7537]
+              ]
+            ]
+          }
+        },
+        {
+          "minutes": 15,
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [21.238832, 45.7537],
+                [21.239118, 45.754997],
+                [21.239102, 45.756254],
+                [21.238729, 45.757431],
+                [21.237982, 45.758498],
+                [21.236888, 45.759434],
+                [21.235511, 45.760225],
+                [21.233939, 45.760869],
+                [21.232266, 45.761372],
+                [21.230572, 45.761743],
+                [21.228907, 45.761996],
+                [21.227287, 45.762142],
+                [21.2257, 45.762189],
+                [21.224113, 45.762142],
+                [21.222493, 45.761996],
+                [21.220828, 45.761743],
+                [21.219134, 45.761372],
+                [21.217461, 45.760869],
+                [21.215889, 45.760225],
+                [21.214512, 45.759434],
+                [21.213418, 45.758498],
+                [21.212671, 45.757431],
+                [21.212298, 45.756254],
+                [21.212282, 45.754997],
+                [21.212568, 45.7537],
+                [21.213079, 45.752403],
+                [21.213733, 45.751146],
+                [21.214464, 45.749969],
+                [21.215237, 45.748902],
+                [21.216052, 45.747966],
+                [21.21694, 45.747175],
+                [21.21795, 45.746531],
+                [21.219134, 45.746028],
+                [21.220521, 45.745657],
+                [21.222109, 45.745404],
+                [21.223859, 45.745258],
+                [21.2257, 45.745211],
+                [21.227541, 45.745258],
+                [21.229291, 45.745404],
+                [21.230879, 45.745657],
+                [21.232266, 45.746028],
+                [21.23345, 45.746531],
+                [21.23446, 45.747175],
+                [21.235348, 45.747966],
+                [21.236163, 45.748902],
+                [21.236936, 45.749969],
+                [21.237667, 45.751146],
+                [21.238321, 45.752403],
+                [21.238832, 45.7537]
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    "noise": {
+      "schema_version": 1,
+      "status": "scored",
+      "score": 48,
+      "precision": "estimate",
+      "method": "osm_proxy",
+      "round": null,
+      "lden": 53,
+      "lnight": 44,
+      "band": "50-55",
+      "bands_db": [55, 60, 65, 70],
+      "map_radius_m": 500,
+      "who": {
+        "road": {
+          "lden": 53,
+          "lnight": 45
+        },
+        "rail": {
+          "lden": 54,
+          "lnight": 44
+        },
+        "air": {
+          "lden": 45,
+          "lnight": 40
+        }
+      },
+      "per_source": [],
+      "sources": [
+        {
+          "kind": "road",
+          "source_class": "primary",
+          "name": "Bulevardul Regele Mihai I",
+          "distance_m": 113,
+          "lden_band": null
+        },
+        {
+          "kind": "road",
+          "source_class": "primary",
+          "name": "Bulevardul Regele Ferdinand I",
+          "distance_m": 178,
+          "lden_band": null
+        },
+        {
+          "kind": "rail",
+          "source_class": "rail",
+          "name": null,
+          "distance_m": 440,
+          "lden_band": null
+        },
+        {
+          "kind": "road",
+          "source_class": "secondary",
+          "name": "Calea Circumvalațiunii",
+          "distance_m": 619,
+          "lden_band": null
+        }
+      ],
+      "map": {
+        "lines": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {
+                "kind": "road",
+                "source_class": "primary",
+                "name": "Bulevardul Regele Mihai I"
+              },
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [21.219005, 45.751891],
+                  [21.224413, 45.752705],
+                  [21.23188, 45.752253]
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "kind": "road",
+                "source_class": "primary",
+                "name": "Bulevardul Regele Ferdinand I"
+              },
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [21.223383, 45.758404],
+                  [21.223511, 45.754605],
+                  [21.223125, 45.749358]
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "kind": "rail",
+                "source_class": "rail",
+                "name": null
+              },
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [21.219263, 45.757952],
+                  [21.2257, 45.75768],
+                  [21.232137, 45.758404]
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "sources_meta": []
+    },
+    "air": {
+      "schema_version": 1,
+      "status": "scored",
+      "data_status": "ok",
+      "calibrated": {
+        "pm25": true,
+        "no2": true
+      },
+      "spatial_method": "cams_10km",
+      "months": [
+        "2025-11",
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10"
+      ],
+      "pm25_monthly": [21, 27, 31, 19, 12, 10, 8, 11, 10, 12, 9, 13],
+      "no2_monthly": [null, null, null, null, null, null, null, null, null, null, null, null],
+      "pm25_annual": 15.3,
+      "no2_annual": 18.2,
+      "months_over_limit": {
+        "pm25": 7,
+        "no2": 0
+      },
+      "limits": {
+        "pm25": 10,
+        "no2": 20
+      },
+      "weights": {
+        "pm25": 0.7,
+        "no2": 0.3
+      },
+      "sub_scores": {},
+      "verdict_code": "winter_peaks",
+      "watch_item": true,
+      "city_avg": {
+        "pm25": 15.1,
+        "no2": 17.9
+      }
+    },
+    "industry": {
+      "schema_version": 1,
+      "status": "scored",
+      "score": 82,
+      "nearest_m": 1700,
+      "count_near": 0,
+      "count_radius": 6,
+      "near_m": 1000,
+      "radius_m": 5000,
+      "sites": [
+        {
+          "id": "i0",
+          "name": "Ursus Breweries",
+          "sector_code": "food",
+          "impact_codes": [],
+          "distance_m": 1700,
+          "bearing_deg": null,
+          "location": [21.241021, 45.764465],
+          "points_lost": 0,
+          "reporting_year": 2024
+        },
+        {
+          "id": "i1",
+          "name": "CET Centru",
+          "sector_code": "energy",
+          "impact_codes": ["air", "seasonal_winter"],
+          "distance_m": 1700,
+          "bearing_deg": null,
+          "location": [21.241021, 45.764465],
+          "points_lost": 0,
+          "reporting_year": 2024
+        },
+        {
+          "id": "i2",
+          "name": "Filtration Group",
+          "sector_code": "other",
+          "impact_codes": [],
+          "distance_m": 3100,
+          "bearing_deg": null,
+          "location": [21.253638, 45.773331],
+          "points_lost": 0,
+          "reporting_year": 2024
+        },
+        {
+          "id": "i3",
+          "name": "Azur",
+          "sector_code": "chemicals",
+          "impact_codes": ["air"],
+          "distance_m": 3100,
+          "bearing_deg": null,
+          "location": [21.253638, 45.773331],
+          "points_lost": 0,
+          "reporting_year": 2024
+        },
+        {
+          "id": "i4",
+          "name": "Linde Gaz",
+          "sector_code": "chemicals",
+          "impact_codes": [],
+          "distance_m": 3200,
+          "bearing_deg": null,
+          "location": [21.254539, 45.773964],
+          "points_lost": 0,
+          "reporting_year": 2024
+        },
+        {
+          "id": "i5",
+          "name": "Dräxlmaier",
+          "sector_code": "other",
+          "impact_codes": [],
+          "distance_m": 3300,
+          "bearing_deg": null,
+          "location": [21.25544, 45.774597],
+          "points_lost": 0,
+          "reporting_year": 2024
+        }
+      ],
+      "source": {
+        "dataset": "EEA Industrial Reporting",
+        "version": "v16",
+        "reporting_year": 2024
+      }
+    },
+    "education": {
+      "schema_version": 1,
+      "status": "scored",
+      "distance_method": "pedestrian_routing",
+      "levels": [
+        {
+          "key": "kindergarten",
+          "nearest_min": 5,
+          "second_min": 7,
+          "points": 1,
+          "weight": 0.3,
+          "full_min": 5,
+          "zero_min": 20
+        },
+        {
+          "key": "school",
+          "nearest_min": 4,
+          "second_min": 6,
+          "points": 1,
+          "weight": 0.4,
+          "full_min": 8,
+          "zero_min": 25
+        },
+        {
+          "key": "high_school",
+          "nearest_min": 4,
+          "second_min": 8,
+          "points": 1,
+          "weight": 0.3,
+          "full_min": 10,
+          "zero_min": 30
+        }
+      ],
+      "counts": {},
+      "institutions": [
+        {
+          "id": "e1",
+          "name": "Grădinița cu Program Prelungit nr. 23",
+          "levels": ["kindergarten"],
+          "ownership": "public",
+          "location": [21.228919, 45.756414],
+          "walk_m": 400
+        },
+        {
+          "id": "e2",
+          "name": "Colegiul Național „Constantin Diaconovici Loga”",
+          "levels": ["school", "high_school"],
+          "ownership": "public",
+          "location": [21.229562, 45.752343],
+          "walk_m": 330
+        }
+      ]
+    },
+    "health": {
+      "schema_version": 1,
+      "status": "scored",
+      "distance_method": "pedestrian_routing",
+      "car_distance_method": "car_routing",
+      "missing": [],
+      "layers": [
+        {
+          "key": "h1",
+          "points": 1,
+          "minutes": 1,
+          "count": 20,
+          "mode": "walk",
+          "weight": 0.2,
+          "place": {
+            "id": "h1",
+            "name": "Farmado",
+            "location": [21.226215, 45.753971]
+          }
+        },
+        {
+          "key": "h2",
+          "points": 1,
+          "minutes": 3,
+          "count": 14,
+          "mode": "walk",
+          "weight": 0.2,
+          "place": {
+            "id": "h2",
+            "name": "CMI Dr. Popa",
+            "location": [21.227631, 45.754514]
+          }
+        },
+        {
+          "key": "h3",
+          "points": 1,
+          "minutes": 6,
+          "count": 4,
+          "mode": "walk",
+          "weight": 0.2,
+          "place": {
+            "id": "h3",
+            "name": "Policlinica Bega",
+            "location": [21.221838, 45.755509]
+          }
+        },
+        {
+          "key": "h4",
+          "points": 1,
+          "minutes": 5,
+          "count": 1,
+          "mode": "car",
+          "weight": 0.3,
+          "place": {
+            "id": "h4",
+            "name": "Spitalul Județean Pius Brînzeu",
+            "location": [21.245012, 45.731084]
+          }
+        },
+        {
+          "key": "h5",
+          "points": 1,
+          "minutes": 9,
+          "count": 1,
+          "mode": "walk",
+          "weight": 0.1,
+          "place": {
+            "id": "h5",
+            "name": "Farmacia Vlad",
+            "location": [21.22055, 45.750534]
+          }
+        }
+      ]
+    },
+    "seismic": {
+      "schema_version": 1,
+      "status": "context",
+      "code": "P100-1/2013",
+      "return_period_years": 225,
+      "exceedance": {
+        "probability": 0.2,
+        "years": 50
+      },
+      "precision": "city",
+      "ag_g": 0.2,
+      "level": "moderate",
+      "address_ag_g": 0.2,
+      "city": {
+        "slug": "timisoara",
+        "ag_g": 0.2,
+        "varies_within_city": false
+      },
+      "comparison": [
+        {
+          "slug": "cluj-napoca",
+          "ag_g": 0.1
+        },
+        {
+          "slug": "oradea",
+          "ag_g": 0.15
+        },
+        {
+          "slug": "targu-mures",
+          "ag_g": 0.15
+        },
+        {
+          "slug": "timisoara",
+          "ag_g": 0.2
+        },
+        {
+          "slug": "constanta",
+          "ag_g": 0.2
+        },
+        {
+          "slug": "craiova",
+          "ag_g": 0.2
+        },
+        {
+          "slug": "sibiu",
+          "ag_g": 0.2
+        },
+        {
+          "slug": "iasi",
+          "ag_g": 0.25
+        },
+        {
+          "slug": "bucuresti",
+          "ag_g": 0.3
+        }
+      ],
+      "question_codes": [],
+      "building": null,
+      "source": {}
+    },
+    "investment": {
+      "schema_version": 1,
+      "status": "context",
+      "reason": null,
+      "reference_date": "2026-11-18",
+      "window_days": 90,
+      "declared": {
+        "area_m2": 62,
+        "rooms": 2,
+        "floor": null,
+        "construction_year": null
+      },
+      "sale": {
+        "precision": "city_statistics",
+        "property_type": "apartment",
+        "price_kind": "asking",
+        "count": 952,
+        "median_eur_m2": 1984,
+        "p25_eur_m2": 1748,
+        "p75_eur_m2": 2318,
+        "typical": {
+          "area_m2": 53,
+          "price_eur": 107000
+        },
+        "estimate_eur": 123000,
+        "estimate_low_eur": 108000,
+        "estimate_high_eur": 144000,
+        "source": {
+          "code": "apartamente_org",
+          "period": "2026-11",
+          "observed_on": "2026-11-18",
+          "url": "https://apartamente.org/apartamente-de-vanzare/timisoara"
+        }
+      },
+      "rent": {
+        "precision": "city_statistics",
+        "property_type": "apartment",
+        "price_kind": "asking",
+        "count": 310,
+        "basis": "per_m2",
+        "median_eur": 520,
+        "median_eur_m2": 9.6,
+        "estimate_eur": 595,
+        "source": {
+          "code": "apartamente_org",
+          "period": "2026-11",
+          "observed_on": "2026-11-18",
+          "url": "https://apartamente.org/apartamente-de-vanzare/timisoara"
+        }
+      },
+      "yield": {
+        "gross_pct": 5.8,
+        "city_gross_pct": null
+      },
+      "city": {
+        "sale_count": 0,
+        "rent_count": 0,
+        "median_sale_eur_m2": null,
+        "median_rent_eur_m2": null,
+        "days_listed": null
+      },
+      "histogram": null,
+      "nearby": [
+        {
+          "slug": "dumbravita",
+          "name": "Dumbrăvița",
+          "count": 43,
+          "median_eur_m2": 2310,
+          "p25_eur_m2": 2059,
+          "p75_eur_m2": 2458,
+          "source": {
+            "code": "apartamente_org",
+            "period": "2026-11",
+            "observed_on": "2026-11-18",
+            "url": "https://apartamente.org/apartamente-de-vanzare/timisoara"
+          }
+        },
+        {
+          "slug": "giroc",
+          "name": "Giroc",
+          "count": 171,
+          "median_eur_m2": 1917,
+          "p25_eur_m2": 1754,
+          "p75_eur_m2": 2128,
+          "source": {
+            "code": "apartamente_org",
+            "period": "2026-11",
+            "observed_on": "2026-11-18",
+            "url": "https://apartamente.org/apartamente-de-vanzare/timisoara"
+          }
+        }
+      ],
+      "history": {
+        "source": "imospot_index",
+        "url": "https://imospot.ro/indice",
+        "months": [
+          {
+            "period": "2026-08",
+            "median_eur_m2": 1939
+          },
+          {
+            "period": "2026-09",
+            "median_eur_m2": 1930
+          },
+          {
+            "period": "2026-10",
+            "median_eur_m2": 1943
+          },
+          {
+            "period": "2026-11",
+            "median_eur_m2": 1984
+          }
+        ]
+      },
+      "sources": [
+        {
+          "source": "apartamente_org",
+          "period": "2026-11",
+          "scope": "city_statistics",
+          "url": "https://apartamente.org/apartamente-de-vanzare/timisoara",
+          "observed_on": "2026-11-18"
+        },
+        {
+          "source": "imospot_index",
+          "period": "2026-11",
+          "scope": "city_statistics",
+          "url": "https://imospot.ro/indice",
+          "observed_on": null
+        }
+      ]
+    }
+  }
+}

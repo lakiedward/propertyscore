@@ -61,6 +61,41 @@ describe('parseCommand for reports', () => {
     );
   });
 
+  it('reads the report to render as a PDF from the database or from a file', () => {
+    expect(
+      parseCommand(
+        [
+          'render-report-pdf',
+          '--report',
+          'd0000000-0000-4000-8000-000000000001',
+          '--out',
+          'report.pdf',
+        ],
+        NOW,
+      ),
+    ).toEqual({
+      command: 'render-report-pdf',
+      source: { reportId: 'd0000000-0000-4000-8000-000000000001' },
+      outputPath: 'report.pdf',
+    });
+    expect(
+      parseCommand(['render-report-pdf', '--input', 'report.json', '--out', 'report.pdf'], NOW),
+    ).toEqual({
+      command: 'render-report-pdf',
+      source: { inputPath: 'report.json' },
+      outputPath: 'report.pdf',
+    });
+    expect(() => parseCommand(['render-report-pdf', '--input', 'report.json'], NOW)).toThrow(
+      expect.objectContaining({ code: 'invalid_render_report_pdf' }),
+    );
+    expect(() =>
+      parseCommand(
+        ['render-report-pdf', '--report', '42', '--input', 'report.json', '--out', 'report.pdf'],
+        NOW,
+      ),
+    ).toThrow(expect.objectContaining({ code: 'invalid_render_report_pdf' }));
+  });
+
   it('reads a report request with Romanian as the default language', () => {
     expect(
       parseCommand(
