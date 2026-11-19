@@ -133,6 +133,7 @@ export async function assessNoiseAtAddress(
 
 export const noiseReportSection: ReportSection = {
   key: 'noise',
+  addressScore: (section) => (typeof section.score === 'number' ? section.score : null),
   build: async ({ sql, snapshotId, cellId, latitude, longitude, params }) => {
     const noiseParams = parseNoiseParams(sectionParams(params, 'noise'));
     const cell = await readCellCategory(sql, snapshotId, cellId, 'noise');

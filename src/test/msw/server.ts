@@ -3,7 +3,6 @@ import { authHandlers } from './handlers/auth';
 import { geoHandlers, listingHandlers, listingMapHandlers } from './handlers/listings';
 import { moderationHandlers } from './handlers/moderation';
 import { myListingHandlers } from './handlers/my-listings';
-import { onlineReportHandlers } from './handlers/online-reports';
 import { profileHandlers } from './handlers/profile';
 
 export const server = setupServer(
@@ -14,5 +13,4 @@ export const server = setupServer(
   ...listingHandlers,
   ...listingMapHandlers,
   ...geoHandlers,
-  ...onlineReportHandlers,
 );

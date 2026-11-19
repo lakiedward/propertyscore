@@ -1,4 +1,4 @@
-import type { HazardLevel, SeismicParams } from './seismic.params.ts';
+import type { BuildingPeriod, HazardLevel, SeismicParams } from './seismic.params.ts';
 
 export function hazardLevel(
   agG: number,
@@ -10,4 +10,13 @@ export function hazardLevel(
 
 export function roundAcceleration(agG: number): number {
   return Math.round(agG * 100) / 100;
+}
+
+export function buildingPeriod(
+  constructionYear: number,
+  periods: readonly BuildingPeriod[],
+): BuildingPeriod | undefined {
+  return periods.find(
+    (period) => period.until_year === null || constructionYear <= period.until_year,
+  );
 }

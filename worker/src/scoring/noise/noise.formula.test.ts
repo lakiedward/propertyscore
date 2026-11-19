@@ -25,12 +25,20 @@ function contour(
 }
 
 describe('noiseScore', () => {
-  it('reproduces the plan example: Lden 55 and Lnight 47 give 58', () => {
-    expect(noiseScore(55, 47, NOISE_PARAMS)).toBe(58);
+  it('reproduces the plan example: Lden 55 and Lnight 47 give 66', () => {
+    expect(noiseScore(55, 47, NOISE_PARAMS)).toBe(66);
+  });
+
+  it('gives 73 at the WHO road guideline of Lden 53 and Lnight 45', () => {
+    expect(noiseScore(53, 45, NOISE_PARAMS)).toBe(73);
+  });
+
+  it('gives 83 at the quietest level the OSM estimate reaches', () => {
+    expect(noiseScore(50, 42, NOISE_PARAMS)).toBe(83);
   });
 
   it('is 100 at the quiet end, 0 at the loud end and clamps outside', () => {
-    expect(noiseScore(40, 35, NOISE_PARAMS)).toBe(100);
+    expect(noiseScore(45, 37, NOISE_PARAMS)).toBe(100);
     expect(noiseScore(75, 65, NOISE_PARAMS)).toBe(0);
     expect(noiseScore(30, 20, NOISE_PARAMS)).toBe(100);
     expect(noiseScore(90, 80, NOISE_PARAMS)).toBe(0);
@@ -67,13 +75,13 @@ describe('assessPoint', () => {
       BOTH,
       NOISE_PARAMS,
     );
-    expect(point).toMatchObject({ lden: 57.5, lnight: 47.5, precision: 'street', score: 53 });
+    expect(point).toMatchObject({ lden: 57.5, lnight: 47.5, precision: 'street', score: 60 });
     expect(point.datasetIds).toEqual(['rail-lden', 'road-lden', 'road-lnight']);
   });
 
   it('treats a point outside every contour as below the mapped range', () => {
     const point = assessPoint([contour('road', 'lden', null)], BOTH, NOISE_PARAMS);
-    expect(point).toMatchObject({ lden: 50, lnight: 42, precision: 'street', score: 73 });
+    expect(point).toMatchObject({ lden: 50, lnight: 42, precision: 'street', score: 83 });
   });
 
   it('adds the intermittent penalty to railways before summing', () => {
@@ -141,7 +149,7 @@ describe('assessPoint', () => {
       lden: 50,
       lnight: 42,
       precision: 'estimate',
-      score: 73,
+      score: 83,
     });
   });
 });

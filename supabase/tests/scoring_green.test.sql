@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(25);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -101,6 +101,24 @@ select results_eq(
 select ok(
   (select bool_and((shares ->> '500')::numeric between 0 and 1) from measured),
   'Every share is between 0 and 1'
+);
+
+select results_eq(
+  format(
+    $$
+      select point.shares = cell.shares, point.nearest_small_m, point.nearest_large_m
+      from private.measure_green_point(
+        %L, %L,
+        (select center from private.grid_cells where id = %L),
+        array[300, 500, 1000], 0.5, 5
+      ) as point
+      cross join measured as cell
+      where cell.cell_id = %L
+    $$,
+    :'snapshot_id', :'sibiu_id', :'park_cell', :'park_cell'
+  ),
+  $$ values (true, 0.0, 0.0) $$,
+  'Measuring at an address gives the same shares and distances as a cell centred on it'
 );
 
 create temporary table park_walks on commit drop as

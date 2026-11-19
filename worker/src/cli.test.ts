@@ -61,6 +61,41 @@ describe('parseCommand for reports', () => {
     );
   });
 
+  it('reads the report to render as a PDF from the database or from a file', () => {
+    expect(
+      parseCommand(
+        [
+          'render-report-pdf',
+          '--report',
+          'd0000000-0000-4000-8000-000000000001',
+          '--out',
+          'report.pdf',
+        ],
+        NOW,
+      ),
+    ).toEqual({
+      command: 'render-report-pdf',
+      source: { reportId: 'd0000000-0000-4000-8000-000000000001' },
+      outputPath: 'report.pdf',
+    });
+    expect(
+      parseCommand(['render-report-pdf', '--input', 'report.json', '--out', 'report.pdf'], NOW),
+    ).toEqual({
+      command: 'render-report-pdf',
+      source: { inputPath: 'report.json' },
+      outputPath: 'report.pdf',
+    });
+    expect(() => parseCommand(['render-report-pdf', '--input', 'report.json'], NOW)).toThrow(
+      expect.objectContaining({ code: 'invalid_render_report_pdf' }),
+    );
+    expect(() =>
+      parseCommand(
+        ['render-report-pdf', '--report', '42', '--input', 'report.json', '--out', 'report.pdf'],
+        NOW,
+      ),
+    ).toThrow(expect.objectContaining({ code: 'invalid_render_report_pdf' }));
+  });
+
   it('reads a report request with Romanian as the default language', () => {
     expect(
       parseCommand(
@@ -134,5 +169,94 @@ describe('parseCommand for the Health sources import', () => {
     expect(() =>
       parseCommand(['import-health-sources', '--valid-from', '2026-13-01'], NOW),
     ).toThrow(expect.objectContaining({ code: 'invalid_valid_from' }));
+  });
+});
+
+describe('parseCommand for the city averages import', () => {
+  it('reads the source, the file and the exchange rate', () => {
+    expect(
+      parseCommand(
+        [
+          'import-city-averages',
+          '--source',
+          'imobiliare_index',
+          '--file',
+          '/data/city-averages.csv',
+          '--eur-ron',
+          '4.97',
+        ],
+        NOW,
+      ),
+    ).toEqual({
+      command: 'import-city-averages',
+      source: 'imobiliare_index',
+      filePath: '/data/city-averages.csv',
+      eurRonRate: 4.97,
+    });
+  });
+
+  it('names the invalid fields', () => {
+    expect(() => parseCommand(['import-city-averages', '--source', 'Imobiliare'], NOW)).toThrow(
+      expect.objectContaining({ code: 'invalid_city_averages_import' }),
+    );
+  });
+});
+
+describe('parseCommand import-market-statistics', () => {
+  it('reads every source for every covered city in the current month by default', () => {
+    expect(parseCommand(['import-market-statistics'], NOW)).toEqual({
+      command: 'import-market-statistics',
+      sources: ['apartamente_org', 'apartamente_org_index', 'imospot_index'],
+      citySlugs: [],
+      period: '2026-11-01',
+      isRetry: false,
+    });
+  });
+
+  it('reads a source again in the same month only when asked to', () => {
+    expect(parseCommand(['import-market-statistics', '--retry'], NOW)).toMatchObject({
+      isRetry: true,
+    });
+  });
+
+  it('narrows the sources and the cities, keeping the source order', () => {
+    expect(
+      parseCommand(
+        [
+          'import-market-statistics',
+          '--source',
+          'imospot_index',
+          '--source',
+          'apartamente_org',
+          '--city',
+          'timisoara',
+        ],
+        NOW,
+      ),
+    ).toMatchObject({ sources: ['apartamente_org', 'imospot_index'], citySlugs: ['timisoara'] });
+  });
+
+  it('reads a past edition only of the index that allows it', () => {
+    expect(
+      parseCommand(
+        ['import-market-statistics', '--source', 'imospot_index', '--period', '2026-08'],
+        NOW,
+      ),
+    ).toMatchObject({ sources: ['imospot_index'], period: '2026-08-01' });
+    expect(() => parseCommand(['import-market-statistics', '--period', '2026-08'], NOW)).toThrow(
+      expect.objectContaining({ code: 'past_edition_not_agreed' }),
+    );
+    expect(() =>
+      parseCommand(
+        ['import-market-statistics', '--source', 'imospot_index', '--period', '2026-12'],
+        NOW,
+      ),
+    ).toThrow(expect.objectContaining({ code: 'invalid_period' }));
+  });
+
+  it('refuses a source without an agreement', () => {
+    expect(() =>
+      parseCommand(['import-market-statistics', '--source', 'imobiliare_ro'], NOW),
+    ).toThrow(expect.objectContaining({ code: 'invalid_market_statistics_import' }));
   });
 });

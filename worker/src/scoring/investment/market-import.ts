@@ -153,7 +153,7 @@ export function normalizeMarketRow(
   };
 }
 
-async function fileSha256(path: string): Promise<string> {
+export async function fileSha256(path: string): Promise<string> {
   const hash = createHash('sha256');
   for await (const chunk of createReadStream(path)) hash.update(chunk as Buffer);
   return hash.digest('hex');
@@ -187,6 +187,7 @@ export async function importMarketListings(
     period: options.period,
     sha256,
     eurRonRate: options.eurRonRate,
+    content: 'listings',
   });
 
   const rejected: Partial<Record<RejectionCode, number>> = {};

@@ -2,7 +2,12 @@ import type { JsonObject, Sql } from '../../db/sql.ts';
 import { readCellCategory, sectionParams } from '../../report/cell-category.ts';
 import type { ReportSection } from '../../report/report-section.ts';
 import { importedReportingYear, listSitesNear, type NearbySite } from './industry.db.ts';
-import { pointsLostPerSite, type IndustryParams } from './industry.formula.ts';
+import {
+  industryPressure,
+  industryScore,
+  pointsLostPerSite,
+  type IndustryParams,
+} from './industry.formula.ts';
 import { parseIndustryParams, siteContribution } from './industry.module.ts';
 
 type IndustryReportSite = {
@@ -19,6 +24,7 @@ type IndustryReportSite = {
 
 export type IndustryReport = {
   score: number | null;
+  cell_score: number | null;
   reason?: string;
   nearest_m: number | null;
   count_near: number;
@@ -46,6 +52,7 @@ export function industryReportFromSites(input: {
     return {
       ...base,
       score: null,
+      cell_score: cellScore,
       reason: 'no_source_data',
       nearest_m: null,
       count_near: 0,
@@ -59,10 +66,15 @@ export function industryReportFromSites(input: {
   const contributions = sorted.map((site) =>
     siteContribution({ ...site, id: site.site_id }, site.distance_m, params),
   );
-  const lost = pointsLostPerSite(contributions, cellScore);
+  const score = industryScore(
+    industryPressure(contributions.filter((site) => site.factor > 0)),
+    params.k,
+  );
+  const lost = pointsLostPerSite(contributions, score);
   return {
     ...base,
-    score: cellScore,
+    score,
+    cell_score: cellScore,
     nearest_m: sorted[0] ? Math.round(sorted[0].distance_m) : null,
     count_near: sorted.filter((site) => site.distance_m <= params.near_m).length,
     count_radius: sorted.length,
@@ -101,6 +113,7 @@ export async function buildIndustryReport(
 
 export const industryReportSection: ReportSection = {
   key: 'industry',
+  addressScore: (section) => (typeof section.score === 'number' ? section.score : null),
   build: async ({ sql, snapshotId, cellId, latitude, longitude, params }) => {
     const cell = await readCellCategory(sql, snapshotId, cellId, 'industry');
     if (!cell) return null;

@@ -19,4 +19,5 @@ type ReportSectionContext = {
 export type ReportSection = {
   key: CategoryKey | ContextKey;
   build: (context: ReportSectionContext) => Promise<JsonObject | null>;
+  addressScore?: (section: JsonObject) => number | null;
 };

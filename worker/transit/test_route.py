@@ -35,6 +35,31 @@ class SummarizeItineraryTest(unittest.TestCase):
         self.assertEqual(route.best_itinerary([slow, fast])["route_id"], "8")
         self.assertIsNone(route.best_itinerary([]))
 
+    def test_leg_rows_keep_the_path_of_each_leg(self):
+        class Line:
+            def __init__(self, coords):
+                self.coords = coords
+
+        legs = [
+            {"transport_mode": "WALK", "travel_time": datetime.timedelta(minutes=3), "wait_time": None, "route_id": None, "geometry": Line([(21.2257001, 45.7537001), (21.2257001, 45.7537001), (21.2301, 45.7551)])},
+            {"transport_mode": "TRAM", "travel_time": datetime.timedelta(minutes=9), "wait_time": datetime.timedelta(minutes=2), "route_id": 8, "geometry": Line([(21.2301, 45.7551), (21.25, 45.76)])},
+            {"transport_mode": "WALK", "travel_time": datetime.timedelta(minutes=1), "wait_time": None, "route_id": None, "geometry": None},
+        ]
+        self.assertEqual(
+            route.leg_rows("address", "gara", "best", legs),
+            [
+                ("address", "gara", "best", 0, "walk", "", "[[21.2257,45.7537],[21.2301,45.7551]]"),
+                ("address", "gara", "best", 1, "transit", "8", "[[21.2301,45.7551],[21.25,45.76]]"),
+            ],
+        )
+        self.assertEqual(route.leg_rows("address", "gara", "walk", None), [])
+
+    def test_walking_legs_ignore_options_that_ride(self):
+        walk = [{"transport_mode": "WALK", "travel_time": datetime.timedelta(minutes=30), "wait_time": None, "route_id": None}]
+        ride = [{"transport_mode": "TRAM", "travel_time": datetime.timedelta(minutes=10), "wait_time": None, "route_id": "8"}]
+        self.assertIs(route.walking_legs([ride, walk]), walk)
+        self.assertIsNone(route.walking_legs([ride]))
+
 
 class EncodeMatrixTest(unittest.TestCase):
     def test_writes_big_endian_minutes_in_origin_order(self):

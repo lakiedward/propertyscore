@@ -261,8 +261,9 @@ export function accessibilitySection(input: {
     destinations: transit.destinations.flatMap((entry) => {
       const destination = destinationsById.get(entry.destination_id);
       if (!destination) return [];
-      const trip =
-        entry.by_walking || entry.minutes === null ? undefined : addressTrips.get(destination.id);
+      const planned = entry.minutes === null ? undefined : addressTrips.get(destination.id);
+      const trip = entry.by_walking ? undefined : planned;
+      const legs = entry.by_walking ? planned?.walkLegs : planned?.legs;
       return [
         {
           id: destination.id,
@@ -276,6 +277,11 @@ export function accessibilitySection(input: {
           ride: trip ? Math.round(trip.rideMinutes) : entry.ride,
           transfers: trip ? trip.transfers : entry.transfers,
           route: routeLabel(trip ? routeKeyOf(trip.routeId) : entry.route_key),
+          path: (legs ?? []).map((leg) => ({
+            mode: leg.mode,
+            route: routeLabel(routeKeyOf(leg.routeId)),
+            coordinates: leg.coordinates,
+          })),
         },
       ];
     }),
@@ -311,10 +317,7 @@ export const accessibilityReportSection: ReportSection = {
       destinations: destinations
         .filter((destination) =>
           transit.data.destinations.some(
-            (entry) =>
-              entry.destination_id === destination.id &&
-              !entry.by_walking &&
-              entry.minutes !== null,
+            (entry) => entry.destination_id === destination.id && entry.minutes !== null,
           ),
         )
         .map((destination) => ({
@@ -328,7 +331,8 @@ export const accessibilityReportSection: ReportSection = {
       addressTrips.size === 0 ? [] : await readRouteKeys(sql, snapshotId, cell.cityId),
     );
     const tripRouteKeys = [...addressTrips.values()]
-      .map((trip) => routeKeyOf(trip.routeId))
+      .flatMap((trip) => [trip.routeId, ...(trip.legs ?? []).map((leg) => leg.routeId)])
+      .map((routeId) => routeKeyOf(routeId))
       .filter((key): key is string => key !== null);
     const tripRoutes = await readRoutesByKeys(sql, snapshotId, cell.cityId, tripRouteKeys);
     return accessibilitySection({

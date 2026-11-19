@@ -55,7 +55,7 @@ const greenParamsSchema = z.object({
   weights: z.object({ c1: weight, c2: weight, c3: weight, c4: weight, c5: weight }),
 });
 
-type GreenParams = z.infer<typeof greenParamsSchema>;
+export type GreenParams = z.infer<typeof greenParamsSchema>;
 
 const BATCH_SIZE = 500;
 
@@ -63,7 +63,7 @@ const PARK_WALK_CANDIDATES = 5;
 
 type ParkWalk = { green_area_id: string | null; walk_m: number | null };
 
-type GreenCellWalks = {
+export type GreenCellWalks = {
   small: ParkWalk;
   large: ParkWalk;
   distanceMethod: DistanceMethod;
