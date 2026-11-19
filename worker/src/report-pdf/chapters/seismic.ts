@@ -68,6 +68,38 @@ function longDate(isoDate: string): string {
   return `${String(Number(day))} ${MONTHS[Number(month) - 1] ?? ''} ${year}`;
 }
 
+type Earthquake = Earthquakes['events'][number];
+
+const SHARED_LABEL_KM = 4;
+const KM_PER_DEGREE = 111.2;
+
+function kilometresApart(left: Earthquake, right: Earthquake): number {
+  const latitude = ((left.location[1] + right.location[1]) / 2) * (Math.PI / 180);
+  const dx = (left.location[0] - right.location[0]) * Math.cos(latitude);
+  const dy = left.location[1] - right.location[1];
+  return Math.hypot(dx, dy) * KM_PER_DEGREE;
+}
+
+function markerLabels(top: readonly Earthquake[]): Map<Earthquake, string> {
+  const ranks = new Map<Earthquake, number[]>();
+  top.forEach((event, index) => {
+    const anchor = [...ranks.keys()].find(
+      (kept) => kilometresApart(kept, event) <= SHARED_LABEL_KM,
+    );
+    if (anchor) ranks.get(anchor)?.push(index + 1);
+    else ranks.set(event, [index + 1]);
+  });
+  const labels = new Map<Earthquake, string>(top.map((event) => [event, '']));
+  for (const [event, numbers] of ranks) labels.set(event, numbers.join('·'));
+  return labels;
+}
+
+function markerHtml(event: Earthquake, label: string | undefined): string {
+  const size = `--s:${((event.magnitude - 3) * 14).toFixed(1)}px`;
+  if (label === undefined) return `<span class="se-q" style="${size}"></span>`;
+  return `<span class="se-q b" style="${size}">${label ? `<b class="se-qn">${label}</b>` : ''}</span>`;
+}
+
 function catalogueCredit(earthquakes: Earthquakes): string {
   if (earthquakes.sources.length === 0) return earthquakes.catalogue;
   return earthquakes.sources.map((source) => `${source.name} (${source.license})`).join(' și ');
@@ -144,11 +176,16 @@ function earthquakeBlock(
 ): { html: string; map: MapSpec } {
   const center: [number, number] = [report.longitude, report.latitude];
   const top = strongest(earthquakes);
+  const labels = markerLabels(top);
   const markers: MapMarker[] = [...earthquakes.events]
-    .sort((left, right) => left.magnitude - right.magnitude)
+    .sort(
+      (left, right) =>
+        left.magnitude - right.magnitude ||
+        Number(Boolean(labels.get(left))) - Number(Boolean(labels.get(right))),
+    )
     .map((event) => ({
       position: event.location,
-      html: `<span class="se-q${top.includes(event) ? ' b' : ''}" style="--s:${((event.magnitude - 3) * 14).toFixed(1)}px"></span>`,
+      html: markerHtml(event, labels.get(event)),
     }));
   const map: MapSpec = {
     id: 'map-seismic',
@@ -158,11 +195,11 @@ function earthquakeBlock(
     layers: [],
     markers: [...markers, addressDot(center)],
   };
-  const key = `<div class="gz-key"><span><i class="se-k1"></i>cutremur, cu cât mai mare cercul, cu atât mai puternic</span><span><i class="se-k2"></i>cele mai puternice ${String(top.length)}</span></div>`;
+  const key = `<div class="gz-key"><span><i class="se-k1"></i>cutremur, cu cât mai mare cercul, cu atât mai puternic</span><span><i class="se-k2"></i>cele mai puternice ${String(top.length)}, cu numărul din listă</span></div>`;
   const list = top
     .map(
-      (event) =>
-        `<li><span class="se-mb" style="--s:${String(Math.round(26 + (event.magnitude - 4) * 10))}px">${formatNumber(event.magnitude, 1)}</span><span class="zg-src-t"><b>${esc(longDate(event.date))}</b>${event.place ? `<small>lângă ${esc(event.place)}</small>` : ''}</span><span class="zg-src-m"><b>${formatNumber(event.distance_km)}</b> km</span></li>`,
+      (event, index) =>
+        `<li><span class="se-n">${String(index + 1)}</span><span class="se-mb" style="--s:${String(Math.round(26 + (event.magnitude - 4) * 10))}px">${formatNumber(event.magnitude, 1)}</span><span class="zg-src-t"><b>${esc(longDate(event.date))}</b>${event.place ? `<small>lângă ${esc(event.place)}</small>` : ''}</span><span class="zg-src-m"><b>${formatNumber(event.distance_km)}</b> km</span></li>`,
     )
     .join('');
   return {
