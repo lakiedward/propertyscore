@@ -39,7 +39,7 @@ const REACH_BANDS = [
 const REACH_FALLBACK = '#F6E7B4';
 const REACH_FILL_OPACITY = 0.55;
 const REACH_LINE_OPACITY = 0.9;
-const REACH_LABEL_SPACING = 0.17;
+const REACH_LABEL_SPACING = 0.11;
 const REACH_FRAME_MARGIN = 0.15;
 const REACH_PLACE_ORDER = ['suburb', 'quarter', 'neighbourhood'];
 const METRES_PER_DEGREE = 111_195;
@@ -180,11 +180,9 @@ function labelledPlaces(
 }
 
 function reachCard(reach: Reach, center: [number, number]): { html: string; map: MapSpec } {
-  const shown = reach.isochrones
-    .filter((band) => band.minutes <= reach.minutes)
-    .sort((left, right) => right.minutes - left.minutes);
-  const headline = shown[0];
-  const frame = headline ? ringPositions(headline.geometry) : [];
+  const shown = [...reach.isochrones].sort((left, right) => right.minutes - left.minutes);
+  const outermost = shown[0];
+  const frame = outermost ? ringPositions(outermost.geometry) : [];
   const view = widened(frame);
   const places = labelledPlaces(reach, view, center);
   const map: MapSpec = {
@@ -203,7 +201,8 @@ function reachCard(reach: Reach, center: [number, number]): { html: string; map:
     }),
     markers: [
       ...places.map((place): MapMarker => {
-        const inside = place.minutes !== null && place.minutes <= reach.minutes;
+        const inside =
+          place.minutes !== null && outermost !== undefined && place.minutes <= outermost.minutes;
         return {
           position: place.location,
           html: `<span class="acn-lb${inside ? ' on' : ''}"><b>${esc(place.name)}</b><i></i><small>${String(Math.round(place.minutes ?? 0))} min</small></span>`,
