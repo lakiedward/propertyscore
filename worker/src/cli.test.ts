@@ -170,6 +170,27 @@ describe('parseCommand for reports', () => {
     });
   });
 
+  it('refuses an empty number option instead of reading it as zero', () => {
+    expect(() =>
+      parseCommand(
+        [
+          'create-report',
+          '--email',
+          'a@b.ro',
+          '--lat',
+          '45',
+          '--lon',
+          '21',
+          '--address',
+          'Strada 1',
+          '--floor',
+          '',
+        ],
+        NOW,
+      ),
+    ).toThrow(expect.objectContaining({ code: 'invalid_report_request' }));
+  });
+
   it('refuses an elevator answer other than yes or no', () => {
     expect(() =>
       parseCommand(

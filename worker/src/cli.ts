@@ -86,18 +86,25 @@ const ISO_DATE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
 const reportIdSchema = z.uuid();
 
+function numericOption(schema: z.ZodType<number>) {
+  return z.preprocess(
+    (value) => (typeof value === 'string' && value.trim() === '' ? Number.NaN : value),
+    schema,
+  );
+}
+
 const createReportSchema = z.object({
   email: z.email(),
   lat: z.coerce.number().min(-90).max(90),
   lon: z.coerce.number().min(-180).max(180),
   address: z.string().trim().min(3).max(300),
   locale: z.enum(['ro', 'en']).default('ro'),
-  area: z.coerce.number().positive().max(99999).optional(),
-  rooms: z.coerce.number().int().min(1).max(20).optional(),
-  floor: z.coerce.number().int().min(-2).max(60).optional(),
-  'building-floors': z.coerce.number().int().min(1).max(60).optional(),
+  area: numericOption(z.coerce.number().positive().max(99999)).optional(),
+  rooms: numericOption(z.coerce.number().int().min(1).max(20)).optional(),
+  floor: numericOption(z.coerce.number().int().min(-2).max(60)).optional(),
+  'building-floors': numericOption(z.coerce.number().int().min(1).max(60)).optional(),
   elevator: z.enum(['yes', 'no']).optional(),
-  year: z.coerce.number().int().min(1800).max(2100).optional(),
+  year: numericOption(z.coerce.number().int().min(1800).max(2100)).optional(),
 });
 
 const CITY_SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
