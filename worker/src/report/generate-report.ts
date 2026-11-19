@@ -5,6 +5,7 @@ import { errorCode } from '../lib/errors.ts';
 import type { Logger } from '../lib/logger.ts';
 import type { ValhallaClient } from '../routing/valhalla.ts';
 import { CATEGORY_KEYS, type CategoryKey } from '../scoring/categories.ts';
+import type { EarthquakeCatalog } from '../scoring/seismic/earthquake-catalog.ts';
 import {
   interpolateAddressCategories,
   overallScore,
@@ -21,6 +22,7 @@ export type GenerateReportOptions = {
   sections: readonly ReportSection[];
   logger: Logger;
   router?: ValhallaClient | null;
+  earthquakes?: EarthquakeCatalog | null;
 };
 
 const weightsSchema = z.record(z.string(), z.number());
@@ -52,6 +54,7 @@ export async function generateReport(options: GenerateReportOptions): Promise<vo
         sql,
         logger,
         router: options.router ?? null,
+        earthquakes: options.earthquakes ?? null,
       });
       if (payload === null) continue;
       built[section.key] = payload;

@@ -2,6 +2,7 @@ import type { JsonObject, Sql } from '../db/sql.ts';
 import type { Logger } from '../lib/logger.ts';
 import type { ValhallaClient } from '../routing/valhalla.ts';
 import type { CategoryKey, ContextKey } from '../scoring/categories.ts';
+import type { EarthquakeCatalog } from '../scoring/seismic/earthquake-catalog.ts';
 
 type ReportSectionContext = {
   sql: Sql;
@@ -14,6 +15,7 @@ type ReportSectionContext = {
   params: unknown;
   logger: Logger;
   router?: ValhallaClient | null;
+  earthquakes?: EarthquakeCatalog | null;
 };
 
 export type ReportSection = {

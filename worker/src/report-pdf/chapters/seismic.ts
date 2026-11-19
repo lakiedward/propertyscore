@@ -68,6 +68,21 @@ function longDate(isoDate: string): string {
   return `${String(Number(day))} ${MONTHS[Number(month) - 1] ?? ''} ${year}`;
 }
 
+function catalogueCredit(earthquakes: Earthquakes): string {
+  if (earthquakes.sources.length === 0) return earthquakes.catalogue;
+  return earthquakes.sources.map((source) => `${source.name} (${source.license})`).join(' și ');
+}
+
+function sourceLinks(earthquakes: Earthquakes): string {
+  if (earthquakes.sources.length === 0) return esc(earthquakes.catalogue);
+  return earthquakes.sources
+    .map((source) => {
+      const label = `${esc(source.name)}, ${esc(source.license)}`;
+      return source.url ? `<a href="${esc(source.url)}">${label}</a>` : label;
+    })
+    .join(' · ');
+}
+
 function strongest(earthquakes: Earthquakes): Earthquakes['events'] {
   return [...earthquakes.events]
     .sort((left, right) => right.magnitude - left.magnitude || left.distance_km - right.distance_km)
@@ -152,7 +167,7 @@ function earthquakeBlock(
     .join('');
   return {
     map,
-    html: `<section class="gzA seA"><div class="gzA-m">${mapHtml(map)}${key}</div><aside class="gzA-p"><div class="eyebrow" style="color:${COLOR}">Din ${String(earthquakes.since_year)} încoace</div><h3>Cele mai puternice cutremure la mai puțin de ${formatNumber(earthquakes.radius_km)} km</h3><ul class="zg-src se-ql-list">${list}</ul>${conclusionBox(seismic.level, seismic.building)}</aside></section>${footnote(`Cutremure: ${earthquakes.catalogue}, din ${String(earthquakes.since_year)} încoace, magnitudine de cel puțin ${formatNumber(earthquakes.min_magnitude, 1)}. Hartă: OpenStreetMap.`)}`,
+    html: `<section class="gzA seA"><div class="gzA-m">${mapHtml(map)}${key}</div><aside class="gzA-p"><div class="eyebrow" style="color:${COLOR}">Din ${String(earthquakes.since_year)} încoace</div><h3>Cele mai puternice cutremure la mai puțin de ${formatNumber(earthquakes.radius_km)} km</h3><ul class="zg-src se-ql-list">${list}</ul>${conclusionBox(seismic.level, seismic.building)}</aside></section>${footnote(`Cutremure: ${catalogueCredit(earthquakes)}, din ${String(earthquakes.since_year)} încoace, magnitudine de cel puțin ${formatNumber(earthquakes.min_magnitude, 1)}${earthquakes.retrieved_on ? `, citite pe ${longDate(earthquakes.retrieved_on)}` : ''}. Hartă: OpenStreetMap.`)}`,
   };
 }
 
@@ -191,7 +206,7 @@ export const seismicChapter: ChapterBuilder = (report) => {
   const block = earthquakes ? earthquakeBlock(earthquakes, seismic, report) : null;
   return {
     html: chapter(
-      `${head}${block ? block.html : conclusionBox(seismic.level, seismic.building)}<div class="sfB-rest se-rest">${scaleCard(seismic, report)}<div class="how"><div class="how-t">${icon('info')}Surse și date</div><div class="in"><p><b>Surse:</b> Cod seismic ${esc(seismic.code)}${earthquakes ? ` · ${esc(earthquakes.catalogue)}` : ''}</p><p><b>Pondere în scorul de zonă:</b> nu intră în scor. E context.</p></div></div></div>`,
+      `${head}${block ? block.html : conclusionBox(seismic.level, seismic.building)}<div class="sfB-rest se-rest">${scaleCard(seismic, report)}<div class="how"><div class="how-t">${icon('info')}Surse și date</div><div class="in"><p><b>Surse:</b> Cod seismic ${esc(seismic.code)}${earthquakes ? ` · ${sourceLinks(earthquakes)}` : ''}</p><p><b>Pondere în scorul de zonă:</b> nu intră în scor. E context.</p></div></div></div>`,
     ),
     maps: block ? [block.map] : [],
   };

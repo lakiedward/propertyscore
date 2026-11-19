@@ -1,7 +1,11 @@
 import type { JsonObject } from '../../db/sql.ts';
+import { errorCode } from '../../lib/errors.ts';
+import type { Logger } from '../../lib/logger.ts';
 import { sectionParams } from '../../report/cell-category.ts';
 import { readDeclaredDetails } from '../../report/declared.ts';
 import type { ReportSection } from '../../report/report-section.ts';
+import type { EarthquakeCatalog } from './earthquake-catalog.ts';
+import { buildEarthquakeReport, type EarthquakeReport } from './earthquakes.ts';
 import { cityHazards, hazardAt, type AddressHazard, type CityHazard } from './seismic.db.ts';
 import { buildingPeriod, hazardLevel, roundAcceleration } from './seismic.formula.ts';
 import { parseSeismicParams, type HazardLevel, type SeismicParams } from './seismic.params.ts';
@@ -27,6 +31,7 @@ export type SeismicReport = {
     period: string;
     codes: string[];
   } | null;
+  earthquakes: EarthquakeReport | null;
   source: SeismicParams['source'];
 };
 
@@ -36,6 +41,7 @@ export function seismicReportFromHazards(input: {
   cities: readonly CityHazard[];
   params: SeismicParams;
   constructionYear?: number | null;
+  earthquakes?: EarthquakeReport | null;
 }): SeismicReport {
   const { params } = input;
   const year = input.constructionYear ?? null;
@@ -76,20 +82,45 @@ export function seismicReportFromHazards(input: {
     comparison: input.cities.map((row) => ({ slug: row.slug, ag_g: roundAcceleration(row.ag_g) })),
     question_codes: questionCodes,
     building,
+    earthquakes: input.earthquakes ?? null,
     source: params.source,
   };
 }
 
+export async function nearbyEarthquakes(input: {
+  catalog: EarthquakeCatalog | null;
+  longitude: number;
+  latitude: number;
+  logger: Logger;
+  now?: Date;
+}): Promise<EarthquakeReport | null> {
+  if (input.catalog === null) return null;
+  try {
+    const { usgs, emsc } = await input.catalog.near(input);
+    return buildEarthquakeReport({
+      longitude: input.longitude,
+      latitude: input.latitude,
+      usgs,
+      emsc,
+      retrievedOn: (input.now ?? new Date()).toISOString().slice(0, 10),
+    });
+  } catch (error) {
+    input.logger.warn('earthquake catalogue skipped', { code: errorCode(error) });
+    return null;
+  }
+}
+
 export const seismicReportSection: ReportSection = {
   key: 'seismic',
-  build: async ({ sql, reportId, citySlug, latitude, longitude, params }) => {
+  build: async ({ sql, reportId, citySlug, latitude, longitude, params, logger, earthquakes }) => {
     const raw = sectionParams(params, 'seismic');
     if (raw === undefined) return null;
     const seismic = parseSeismicParams(raw);
-    const [address, cities, declared] = await Promise.all([
+    const [address, cities, declared, nearby] = await Promise.all([
       hazardAt(sql, { longitude, latitude, code: seismic.code, snapM: seismic.snap_m }),
       cityHazards(sql, seismic.code),
       readDeclaredDetails(sql, reportId),
+      nearbyEarthquakes({ catalog: earthquakes ?? null, longitude, latitude, logger }),
     ]);
     const section: JsonObject = seismicReportFromHazards({
       citySlug,
@@ -97,6 +128,7 @@ export const seismicReportSection: ReportSection = {
       cities,
       params: seismic,
       constructionYear: declared.constructionYear,
+      earthquakes: nearby,
     });
     return section;
   },
