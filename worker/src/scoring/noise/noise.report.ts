@@ -7,6 +7,7 @@ import {
   type CityNoiseCoverage,
   type NearestNoiseSource,
 } from './noise.db.ts';
+import { createLogger } from '../../lib/logger.ts';
 import { noiseHeatGrid } from './noise.heat.ts';
 import { assessPoint, type NoisePrecision, type PointNoise } from './noise.formula.ts';
 import { parseNoiseParams, type NoiseParams } from './noise.params.ts';
@@ -102,6 +103,21 @@ export function buildNoiseReportBlock(
   };
 }
 
+async function heatGridOrNull(
+  sql: Sql,
+  input: Parameters<typeof noiseHeatGrid>[1],
+  params: NoiseParams,
+): Promise<JsonObject | null> {
+  try {
+    return await noiseHeatGrid(sql, input, params);
+  } catch (error) {
+    createLogger('warn', undefined, { service: 'worker' }).warn('noise heat map skipped', {
+      error: error instanceof Error ? error.message.slice(0, 200) : 'unknown',
+    });
+    return null;
+  }
+}
+
 export async function assessNoiseAtAddress(
   sql: Sql,
   input: { snapshotId: string; cityId: string; location: { lon: number; lat: number } },
@@ -129,17 +145,15 @@ export async function assessNoiseAtAddress(
     params.nearest_radius_m,
   );
   const layers = await noiseMapLayers(sql, snapshotId, cityId, location, params.map_clip_m);
-  const map =
+  const heat =
     point.score === null
-      ? layers
-      : {
-          ...layers,
-          heat: await noiseHeatGrid(
-            sql,
-            { snapshotId, cityId, location, coverage: noiseCoverage },
-            params,
-          ),
-        };
+      ? null
+      : await heatGridOrNull(
+          sql,
+          { snapshotId, cityId, location, coverage: noiseCoverage },
+          params,
+        );
+  const map = heat === null ? layers : { ...layers, heat };
   return buildNoiseReportBlock(point, coverage, sources, map, params);
 }
 

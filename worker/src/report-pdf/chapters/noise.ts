@@ -31,10 +31,10 @@ const BAND_COLORS: readonly (readonly [number, string])[] = [
 ];
 const LOUD_ROADS = ['motorway', 'trunk', 'primary'];
 const BUSY_ROADS = ['secondary'];
-const HEAT_FIRST_DB = 54;
+const HEAT_FIRST_DB = 55;
 const HEAT_STEP_M = 25;
 const MAP_KEY = [
-  { label: 'sub 55 dB', swatch: 'background:#E9F1EF;border:1px solid #D5E2DF' },
+  { label: 'sub 55 dB', swatch: 'background:#EFEDE3;border:1px solid #DCD8C7' },
   { label: '55–60', swatch: 'background:#FBE3A0' },
   { label: '60–65', swatch: 'background:#F4C06F' },
   { label: '65–70', swatch: 'background:#E78A55' },

@@ -257,19 +257,21 @@ export async function gridNoiseSamples(
   points: readonly { lon: number; lat: number }[],
   radiusM: number,
 ): Promise<Map<number, NoiseSample[]>> {
-  const rows = await sql<SampleRow[]>`
+  const rows = await withLongStatements(sql, async (transaction) => [
+    ...(await transaction<SampleRow[]>`
     select point_no, kind, measure, indicator, dataset_id, db_low, source_class, distance_m, buildings_crossed
     from private.noise_samples(
       ${snapshotId},
       ${cityId},
       (
         select array_agg(extensions.st_point(p.lon, p.lat, 4326)::extensions.geography order by p.n)
-        from jsonb_to_recordset(${sql.json(points.map((point, index) => ({ n: index + 1, lon: point.lon, lat: point.lat })))}::jsonb)
+        from jsonb_to_recordset(${transaction.json(points.map((point, index) => ({ n: index + 1, lon: point.lon, lat: point.lat })))}::jsonb)
           as p (n integer, lon double precision, lat double precision)
       ),
       ${radiusM}
     )
-  `;
+  `),
+  ]);
   const byPoint = new Map<number, NoiseSample[]>();
   for (const row of rows) {
     const sample = toSample(row);

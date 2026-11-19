@@ -102,7 +102,7 @@ export const SAFETY_HEAT_RAMP = [
 export const SAFETY_HEAT_OPACITY = 0.8;
 
 export const NOISE_HEAT_RAMP = [
-  [54, [255, 243, 204]],
+  [55, [255, 243, 204]],
   [57, [251, 227, 160]],
   [62, [244, 192, 111]],
   [67, [231, 138, 85]],
