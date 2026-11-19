@@ -435,7 +435,7 @@ export function MapCanvas({
     <div
       role="region"
       aria-label={label}
-      className={cn('relative overflow-hidden rounded-xl bg-surface-alt', className)}
+      className={cn('relative isolate overflow-hidden rounded-xl bg-surface-alt', className)}
     >
       <div ref={containerRef} className="size-full" />
       {map
