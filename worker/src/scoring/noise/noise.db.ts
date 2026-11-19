@@ -250,35 +250,55 @@ export async function pointNoiseSamples(
   });
 }
 
-export async function gridNoiseSamples(
+export type GridBox = { west: number; south: number; east: number; north: number };
+
+export async function noiseGridLines(
   sql: Sql,
   snapshotId: string,
   cityId: string,
-  points: readonly { lon: number; lat: number }[],
-  radiusM: number,
-): Promise<Map<number, NoiseSample[]>> {
-  const rows = await withLongStatements(sql, async (transaction) => [
-    ...(await transaction<SampleRow[]>`
-    select point_no, kind, measure, indicator, dataset_id, db_low, source_class, distance_m, buildings_crossed
-    from private.noise_samples(
-      ${snapshotId},
-      ${cityId},
-      (
-        select array_agg(extensions.st_point(p.lon, p.lat, 4326)::extensions.geography order by p.n)
-        from jsonb_to_recordset(${transaction.json(points.map((point, index) => ({ n: index + 1, lon: point.lon, lat: point.lat })))}::jsonb)
-          as p (n integer, lon double precision, lat double precision)
-      ),
-      ${radiusM}
-    )
-  `),
-  ]);
-  const byPoint = new Map<number, NoiseSample[]>();
-  for (const row of rows) {
-    const sample = toSample(row);
-    if (sample === null || row.point_no === undefined) continue;
-    byPoint.set(row.point_no, [...(byPoint.get(row.point_no) ?? []), sample]);
-  }
-  return byPoint;
+  box: GridBox,
+): Promise<{ kind: NoiseKind; sourceClass: string; coordinates: [number, number][] }[]> {
+  const rows = await sql<
+    { kind: NoiseKind; source_class: string; coordinates: [number, number][] }[]
+  >`
+    select
+      s.kind,
+      s.source_class,
+      (extensions.st_asgeojson(s.geometry::extensions.geometry, 6)::jsonb -> 'coordinates') as coordinates
+    from private.noise_sources s
+    where s.snapshot_id = ${snapshotId}
+      and s.city_id = ${cityId}
+      and s.geometry operator(extensions.&&) extensions.st_makeenvelope(${box.west}, ${box.south}, ${box.east}, ${box.north}, 4326)::extensions.geography
+  `;
+  return rows.map((row) => ({
+    kind: row.kind,
+    sourceClass: row.source_class,
+    coordinates: row.coordinates,
+  }));
+}
+
+export async function noiseGridBuildings(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+  box: GridBox,
+): Promise<[number, number][][]> {
+  const rows = await sql<{ rings: [number, number][][] }[]>`
+    select coalesce(
+      jsonb_agg(polygon -> 0),
+      '[]'::jsonb
+    ) as rings
+    from (
+      select jsonb_array_elements(
+        extensions.st_asgeojson(b.geometry::extensions.geometry, 6)::jsonb -> 'coordinates'
+      ) as polygon
+      from private.noise_buildings b
+      where b.snapshot_id = ${snapshotId}
+        and b.city_id = ${cityId}
+        and b.geometry operator(extensions.&&) extensions.st_makeenvelope(${box.west}, ${box.south}, ${box.east}, ${box.north}, 4326)::extensions.geography
+    ) polygons
+  `;
+  return rows[0]?.rings ?? [];
 }
 
 export async function nearestNoiseSources(

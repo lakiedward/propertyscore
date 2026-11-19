@@ -32,7 +32,7 @@ const BAND_COLORS: readonly (readonly [number, string])[] = [
 const LOUD_ROADS = ['motorway', 'trunk', 'primary'];
 const BUSY_ROADS = ['secondary'];
 const HEAT_FIRST_DB = 55;
-const HEAT_STEP_M = 25;
+const HEAT_STEP_M = 8;
 const MAP_KEY = [
   { label: 'sub 55 dB', swatch: 'background:#EFEDE3;border:1px solid #DCD8C7' },
   { label: '55–60', swatch: 'background:#FBE3A0' },
@@ -103,24 +103,28 @@ function heatLayers(
   heat: NonNullable<NonNullable<ReportData['sections']['noise']>['map']['heat']>,
   center: [number, number],
 ): MapSpec['layers'] {
-  const width = 2 * heat.half + 1;
   const latStep = heat.step_m / 111_320;
   const lonStep = heat.step_m / (111_320 * Math.cos((heat.center[1] * Math.PI) / 180));
   const cells = heat.levels.flatMap((level, index): [number, number, number][] => {
-    if (level === null || level < HEAT_FIRST_DB) return [];
-    const row = Math.floor(index / width) - heat.half;
-    const column = (index % width) - heat.half;
-    return [[heat.center[0] + column * lonStep, heat.center[1] - row * latStep, level]];
+    if (level < HEAT_FIRST_DB) return [];
+    const row = Math.floor(index / heat.columns);
+    const column = index % heat.columns;
+    return [
+      [
+        heat.center[0] + (column - (heat.columns - 1) / 2) * lonStep,
+        heat.center[1] + ((heat.rows - 1) / 2 - row) * latStep,
+        level,
+      ],
+    ];
   });
   if (cells.length === 0) return [];
-  const radius = heat.half * heat.step_m;
   return [
     {
       kind: 'image',
       ...heatRaster(cells, {
         center,
-        halfWidthM: radius,
-        halfHeightM: radius,
+        halfWidthM: (heat.columns * heat.step_m) / 2,
+        halfHeightM: (heat.rows * heat.step_m) / 2,
         stepM: HEAT_STEP_M,
         cellSizeM: heat.step_m,
         ramp: NOISE_HEAT_RAMP,

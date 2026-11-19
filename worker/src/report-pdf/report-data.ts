@@ -195,8 +195,9 @@ const noiseSchema = z.object({
       .object({
         center: z.tuple([z.number(), z.number()]),
         step_m: z.number().positive(),
-        half: z.number().int().positive(),
-        levels: z.array(z.number().nullable()),
+        columns: z.number().int().positive(),
+        rows: z.number().int().positive(),
+        levels: z.array(z.number()),
       })
       .optional(),
   }),

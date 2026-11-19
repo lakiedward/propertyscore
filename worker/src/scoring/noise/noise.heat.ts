@@ -1,78 +1,79 @@
 import type { JsonObject, Sql } from '../../db/sql.ts';
-import { mapWithConcurrency } from '../../lib/concurrency.ts';
-import { gridNoiseSamples } from './noise.db.ts';
-import { assessPoint, type NoiseCoverage } from './noise.formula.ts';
+import { noiseGridBuildings, noiseGridLines, type GridBox } from './noise.db.ts';
+import type { NoiseCoverage } from './noise.formula.ts';
+import { noiseLevelGrid, toMetres, type GridBuilding, type GridLine } from './noise.grid.ts';
 import type { NoiseParams } from './noise.params.ts';
 
-type GridPoint = { lon: number; lat: number };
+type Location = { lon: number; lat: number };
 
-type GridCell = GridPoint & { index: number };
-
-const GRID_STEP_M = 50;
+const GRID_STEP_M = 20;
+const HALF_WIDTH_M = 1160;
+const HALF_HEIGHT_M = 1000;
+const FIRST_DRAWN_DB = 55;
+const BUILDING_REACH_M = 600;
 const METRES_PER_DEGREE = 111_320;
-const CHUNK_SIZE = 150;
-const CHUNK_CONCURRENCY = 4;
 
-export function gridAround(
-  center: GridPoint,
-  radiusM: number,
-  stepM: number,
-): { half: number; cells: GridCell[] } {
-  const latStep = stepM / METRES_PER_DEGREE;
-  const lonStep = stepM / (METRES_PER_DEGREE * Math.cos((center.lat * Math.PI) / 180));
-  const half = Math.floor(radiusM / stepM);
-  const width = 2 * half + 1;
-  const cells: GridCell[] = [];
-  for (let row = -half; row <= half; row += 1) {
-    for (let column = -half; column <= half; column += 1) {
-      if (Math.hypot(row, column) * stepM <= radiusM) {
-        cells.push({
-          lon: center.lon + column * lonStep,
-          lat: center.lat - row * latStep,
-          index: (row + half) * width + column + half,
-        });
-      }
-    }
-  }
-  return { half, cells };
+function boxAround(location: Location, eastM: number, northM: number): GridBox {
+  const latSpan = northM / METRES_PER_DEGREE;
+  const lonSpan = eastM / (METRES_PER_DEGREE * Math.cos((location.lat * Math.PI) / 180));
+  return {
+    west: location.lon - lonSpan,
+    east: location.lon + lonSpan,
+    south: location.lat - latSpan,
+    north: location.lat + latSpan,
+  };
 }
 
 export async function noiseHeatGrid(
   sql: Sql,
-  input: {
-    snapshotId: string;
-    cityId: string;
-    location: GridPoint;
-    coverage: NoiseCoverage;
-  },
+  input: { snapshotId: string; cityId: string; location: Location; coverage: NoiseCoverage },
   params: NoiseParams,
-): Promise<JsonObject> {
-  const { half, cells } = gridAround(input.location, params.map_clip_m, GRID_STEP_M);
-  const width = 2 * half + 1;
-  const levels: (number | null)[] = Array.from({ length: width * width }, () => null);
-  const chunks = Array.from({ length: Math.ceil(cells.length / CHUNK_SIZE) }, (_, index) =>
-    cells.slice(index * CHUNK_SIZE, (index + 1) * CHUNK_SIZE),
-  );
-  await mapWithConcurrency(chunks, CHUNK_CONCURRENCY, async (chunk) => {
-    const samples = await gridNoiseSamples(
+): Promise<JsonObject | null> {
+  if (input.coverage.hasMaps || !input.coverage.hasProxySources) return null;
+  const { snapshotId, cityId, location } = input;
+  const columns = 2 * Math.round(HALF_WIDTH_M / GRID_STEP_M) + 1;
+  const rows = 2 * Math.round(HALF_HEIGHT_M / GRID_STEP_M) + 1;
+  const [rawLines, rawBuildings] = await Promise.all([
+    noiseGridLines(
       sql,
-      input.snapshotId,
-      input.cityId,
-      chunk,
-      params.nearest_radius_m,
-    );
-    chunk.forEach((cell, position) => {
-      levels[cell.index] = assessPoint(
-        samples.get(position + 1) ?? [],
-        input.coverage,
-        params,
-      ).lden;
-    });
-  });
+      snapshotId,
+      cityId,
+      boxAround(
+        location,
+        HALF_WIDTH_M + params.nearest_radius_m,
+        HALF_HEIGHT_M + params.nearest_radius_m,
+      ),
+    ),
+    noiseGridBuildings(
+      sql,
+      snapshotId,
+      cityId,
+      boxAround(location, HALF_WIDTH_M + BUILDING_REACH_M, HALF_HEIGHT_M + BUILDING_REACH_M),
+    ),
+  ]);
+  const lines: GridLine[] = rawLines.map((line) => ({
+    kind: line.kind,
+    sourceClass: line.sourceClass,
+    points: line.coordinates.map(([lon, lat]) => toMetres(location, lon, lat)),
+  }));
+  const buildings: GridBuilding[] = rawBuildings.map((ring) => ({
+    ring: ring.map(([lon, lat]) => toMetres(location, lon, lat)),
+  }));
+  const levels = noiseLevelGrid(
+    {
+      spec: { columns, rows, stepM: GRID_STEP_M },
+      lines,
+      buildings,
+      coverage: input.coverage,
+      firstDrawnDb: FIRST_DRAWN_DB,
+    },
+    params,
+  );
   return {
-    center: [input.location.lon, input.location.lat],
+    center: [location.lon, location.lat],
     step_m: GRID_STEP_M,
-    half,
+    columns,
+    rows,
     levels,
   };
 }
