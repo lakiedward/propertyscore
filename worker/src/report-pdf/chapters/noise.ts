@@ -11,7 +11,9 @@ import {
 import { esc, formatNumber } from '../format.ts';
 import { NOISE_CLASSES, NOISE_KINDS, NOISE_REFERENCES } from '../labels.ts';
 import { addressDot, around, mapHtml, type FeatureCollection, type MapSpec } from '../maps.ts';
-import { CATEGORY_THEME } from '../theme.ts';
+import { bandRaster } from '../band-grid.ts';
+import type { ReportData } from '../report-data.ts';
+import { CATEGORY_THEME, NOISE_BAND_OPACITY, NOISE_BANDS } from '../theme.ts';
 
 const BAND_DB = 5;
 const MAP_RADIUS_M = 500;
@@ -21,20 +23,16 @@ const LOUD = '#B8432B';
 const BUSY = '#E07F55';
 const MODERATE = '#F0B877';
 const RAIL = '#55607A';
-const QUIET = '#F6E3A8';
-const BAND_COLORS: readonly (readonly [number, string])[] = [
-  [70, LOUD],
-  [65, BUSY],
-  [60, MODERATE],
-];
 const LOUD_ROADS = ['motorway', 'trunk', 'primary'];
 const BUSY_ROADS = ['secondary'];
+const BAND_PIXEL_M = 4;
+const BAND_FLOOR_DB = 50;
 const MAP_KEY = [
-  { label: 'sub 55 dB', swatch: 'background:#E9F1EF;border:1px solid #D5E2DF' },
+  { label: 'sub 55 dB', swatch: 'background:#EFEDE3;border:1px solid #DCD8C7' },
   { label: '55–60', swatch: 'background:#F6E3A8' },
-  { label: '60–65', swatch: `background:${MODERATE}` },
-  { label: '65–70', swatch: `background:${BUSY}` },
-  { label: 'peste 70', swatch: `background:${LOUD}` },
+  { label: '60–65', swatch: 'background:#F0B877' },
+  { label: '65–70', swatch: 'background:#E07F55' },
+  { label: 'peste 70', swatch: 'background:#B8432B' },
 ];
 
 const LINES_KEY = [
@@ -67,21 +65,6 @@ function text(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
-function bandColor(level: unknown): string {
-  const value = typeof level === 'number' ? level : 0;
-  return BAND_COLORS.find(([low]) => value >= low)?.[1] ?? QUIET;
-}
-
-function banded(bands: FeatureCollection): FeatureCollection {
-  return {
-    type: 'FeatureCollection',
-    features: bands.features.map((feature) => ({
-      ...feature,
-      properties: { ...feature.properties, color: bandColor(feature.properties?.db_low) },
-    })),
-  };
-}
-
 function coloured(lines: FeatureCollection): FeatureCollection {
   return {
     type: 'FeatureCollection',
@@ -93,6 +76,27 @@ function coloured(lines: FeatureCollection): FeatureCollection {
       },
     })),
   };
+}
+
+function heatLayers(
+  heat: NonNullable<NonNullable<ReportData['sections']['noise']>['map']['heat']>,
+): MapSpec['layers'] {
+  return [
+    {
+      kind: 'image',
+      ...bandRaster({
+        center: heat.center,
+        columns: heat.columns,
+        rows: heat.rows,
+        cellM: heat.step_m,
+        levels: heat.levels,
+        pixelM: BAND_PIXEL_M,
+        floor: BAND_FLOOR_DB,
+        bands: NOISE_BANDS,
+        opacity: NOISE_BAND_OPACITY,
+      }),
+    },
+  ];
 }
 
 export const noiseChapter: ChapterBuilder = (report) => {
@@ -129,15 +133,15 @@ export const noiseChapter: ChapterBuilder = (report) => {
       : `Nu am găsit surse mari de zgomot în apropiere.${average}`,
   });
   const center: [number, number] = [report.longitude, report.latitude];
-  const bands = section.map.bands ? banded(section.map.bands) : null;
+  const heat = section.map.heat ?? null;
   const lines = section.map.lines ? coloured(section.map.lines) : null;
   const map: MapSpec = {
     id: 'map-noise',
     center,
-    fit: around(center, bands ? BANDS_RADIUS_M : MAP_RADIUS_M),
+    fit: around(center, heat ? BANDS_RADIUS_M : MAP_RADIUS_M),
     padding: 0,
-    layers: bands
-      ? [{ kind: 'fill', data: bands, color: QUIET, colorProperty: 'color', opacity: 0.55 }]
+    layers: heat
+      ? heatLayers(heat)
       : lines
         ? [
             { kind: 'line', data: lines, color: '#FFFFFF', width: 7 },
@@ -146,12 +150,12 @@ export const noiseChapter: ChapterBuilder = (report) => {
         : [],
     markers: [addressDot(center)],
   };
-  const keyItems = bands
+  const keyItems = heat
     ? `${MAP_KEY.map((item) => `<span><i style="${item.swatch}"></i>${item.label}</span>`).join('')}<span class="zg-est">estimare ziua</span>`
     : LINES_KEY.map(
         (item) => `<span><i style="background:${item.color}"></i>${item.label}</span>`,
       ).join('');
-  const key = bands || lines ? `<div class="gz-key zg-key">${keyItems}</div>` : '';
+  const key = heat || lines ? `<div class="gz-key zg-key">${keyItems}</div>` : '';
   const night =
     section.lnight === null
       ? ''

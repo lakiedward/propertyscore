@@ -1,4 +1,5 @@
 import type { CategoryKey } from '../scoring/categories.ts';
+import type { BandStep } from './band-grid.ts';
 import type { HeatStop } from './heat-grid.ts';
 import type { IconName } from './icons.ts';
 
@@ -100,3 +101,12 @@ export const SAFETY_HEAT_RAMP = [
 ] as const satisfies readonly HeatStop[];
 
 export const SAFETY_HEAT_OPACITY = 0.8;
+
+export const NOISE_BANDS = [
+  [55, [246, 227, 168]],
+  [60, [240, 184, 119]],
+  [65, [224, 127, 85]],
+  [70, [184, 67, 43]],
+] as const satisfies readonly BandStep[];
+
+export const NOISE_BAND_OPACITY = 0.5;
