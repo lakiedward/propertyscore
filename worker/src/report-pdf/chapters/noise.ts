@@ -29,12 +29,23 @@ const BAND_COLORS: readonly (readonly [number, string])[] = [
 ];
 const LOUD_ROADS = ['motorway', 'trunk', 'primary'];
 const BUSY_ROADS = ['secondary'];
+const HEAT_STOPS: readonly (readonly [number, string])[] = [
+  [50, '#FFF3CC'],
+  [55, '#FBE3A0'],
+  [60, '#F4C06F'],
+  [65, '#E78A55'],
+  [70, '#C8472F'],
+  [75, '#8E2A1E'],
+];
+const HEAT_FADE_FROM_DB = 51;
+const HEAT_FADE_TO_DB = 56;
+const HEAT_OPACITY = 0.78;
 const MAP_KEY = [
   { label: 'sub 55 dB', swatch: 'background:#E9F1EF;border:1px solid #D5E2DF' },
-  { label: '55–60', swatch: 'background:#F6E3A8' },
-  { label: '60–65', swatch: `background:${MODERATE}` },
-  { label: '65–70', swatch: `background:${BUSY}` },
-  { label: 'peste 70', swatch: `background:${LOUD}` },
+  { label: '55–60', swatch: 'background:#FBE3A0' },
+  { label: '60–65', swatch: 'background:#F4C06F' },
+  { label: '65–70', swatch: 'background:#E78A55' },
+  { label: 'peste 70', swatch: 'background:#C8472F' },
 ];
 
 const LINES_KEY = [
@@ -129,29 +140,42 @@ export const noiseChapter: ChapterBuilder = (report) => {
       : `Nu am găsit surse mari de zgomot în apropiere.${average}`,
   });
   const center: [number, number] = [report.longitude, report.latitude];
-  const bands = section.map.bands ? banded(section.map.bands) : null;
+  const heat = section.map.heat ?? null;
+  const bands = !heat && section.map.bands ? banded(section.map.bands) : null;
   const lines = section.map.lines ? coloured(section.map.lines) : null;
   const map: MapSpec = {
     id: 'map-noise',
     center,
-    fit: around(center, bands ? BANDS_RADIUS_M : MAP_RADIUS_M),
+    fit: around(center, heat || bands ? BANDS_RADIUS_M : MAP_RADIUS_M),
     padding: 0,
-    layers: bands
-      ? [{ kind: 'fill', data: bands, color: QUIET, colorProperty: 'color', opacity: 0.55 }]
-      : lines
-        ? [
-            { kind: 'line', data: lines, color: '#FFFFFF', width: 7 },
-            { kind: 'line', data: lines, color: LOUD, colorProperty: 'color', width: 4 },
-          ]
-        : [],
+    layers: heat
+      ? [
+          {
+            kind: 'heat',
+            grid: heat,
+            stops: HEAT_STOPS,
+            fadeFromDb: HEAT_FADE_FROM_DB,
+            fadeToDb: HEAT_FADE_TO_DB,
+            opacity: HEAT_OPACITY,
+          },
+        ]
+      : bands
+        ? [{ kind: 'fill', data: bands, color: QUIET, colorProperty: 'color', opacity: 0.55 }]
+        : lines
+          ? [
+              { kind: 'line', data: lines, color: '#FFFFFF', width: 7 },
+              { kind: 'line', data: lines, color: LOUD, colorProperty: 'color', width: 4 },
+            ]
+          : [],
     markers: [addressDot(center)],
   };
-  const keyItems = bands
-    ? `${MAP_KEY.map((item) => `<span><i style="${item.swatch}"></i>${item.label}</span>`).join('')}<span class="zg-est">estimare ziua</span>`
-    : LINES_KEY.map(
-        (item) => `<span><i style="background:${item.color}"></i>${item.label}</span>`,
-      ).join('');
-  const key = bands || lines ? `<div class="gz-key zg-key">${keyItems}</div>` : '';
+  const keyItems =
+    heat || bands
+      ? `${MAP_KEY.map((item) => `<span><i style="${item.swatch}"></i>${item.label}</span>`).join('')}<span class="zg-est">estimare ziua</span>`
+      : LINES_KEY.map(
+          (item) => `<span><i style="background:${item.color}"></i>${item.label}</span>`,
+        ).join('');
+  const key = heat || bands || lines ? `<div class="gz-key zg-key">${keyItems}</div>` : '';
   const night =
     section.lnight === null
       ? ''

@@ -7,7 +7,7 @@ import {
   type CityNoiseCoverage,
   type NearestNoiseSource,
 } from './noise.db.ts';
-import { noiseBandLayer } from './noise.bands.ts';
+import { noiseHeatGrid } from './noise.heat.ts';
 import { assessPoint, type NoisePrecision, type PointNoise } from './noise.formula.ts';
 import { parseNoiseParams, type NoiseParams } from './noise.params.ts';
 import { readCellCategory, sectionParams } from '../../report/cell-category.ts';
@@ -134,7 +134,7 @@ export async function assessNoiseAtAddress(
       ? layers
       : {
           ...layers,
-          bands: await noiseBandLayer(
+          heat: await noiseHeatGrid(
             sql,
             { snapshotId, cityId, location, coverage: noiseCoverage },
             params,

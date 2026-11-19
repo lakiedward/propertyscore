@@ -20,6 +20,15 @@ type MapLayer = {
   colorProperty?: string;
 };
 
+type HeatLayer = {
+  kind: 'heat';
+  grid: { center: Position; step_m: number; half: number; levels: (number | null)[] };
+  stops: readonly (readonly [number, string])[];
+  fadeFromDb: number;
+  fadeToDb: number;
+  opacity: number;
+};
+
 export type MapMarker = {
   position: Position;
   html: string;
@@ -34,7 +43,7 @@ export type MapSpec = {
   fit?: Position[];
   padding?: number;
   maxZoom?: number;
-  layers: MapLayer[];
+  layers: (MapLayer | HeatLayer)[];
   markers: MapMarker[];
 };
 
