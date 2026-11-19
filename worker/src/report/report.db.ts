@@ -1,6 +1,7 @@
 import type { JsonObject, Sql } from '../db/sql.ts';
 import { WorkerError } from '../lib/errors.ts';
 import type { AddressScores } from './address-scores.ts';
+import type { DeclaredDetails } from './declared.ts';
 
 export type StartedReport = {
   snapshotId: string;
@@ -18,6 +19,7 @@ export type ReportRequest = {
   longitude: number;
   addressText: string;
   locale: 'ro' | 'en';
+  declared?: DeclaredDetails;
 };
 
 export async function beginReport(sql: Sql, reportId: string): Promise<StartedReport> {
@@ -87,14 +89,25 @@ export async function insertReport(sql: Sql, request: ReportRequest): Promise<st
   `;
   if (!city) throw new WorkerError('outside_coverage', 'The address is in no covered city');
 
+  const declared = request.declared;
   const [report] = await sql<{ id: string }[]>`
-    insert into public.online_reports (owner_id, city_id, location, address_text, locale)
+    insert into public.online_reports (
+      owner_id, city_id, location, address_text, locale,
+      declared_area_m2, declared_rooms, declared_floor, declared_building_floors,
+      declared_has_elevator, declared_construction_year
+    )
     values (
       ${owner.id},
       ${city.id},
       extensions.st_point(${request.longitude}, ${request.latitude}, 4326)::extensions.geography,
       ${request.addressText},
-      ${request.locale}
+      ${request.locale},
+      ${declared?.areaM2 ?? null},
+      ${declared?.rooms ?? null},
+      ${declared?.floor ?? null},
+      ${declared?.buildingFloors ?? null},
+      ${declared?.hasElevator ?? null},
+      ${declared?.constructionYear ?? null}
     )
     returning id
   `;

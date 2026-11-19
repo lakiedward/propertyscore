@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+import { createLogger } from '../../lib/logger.ts';
 
 import type { CityHazard } from './seismic.db.ts';
 import { parseSeismicParams } from './seismic.params.ts';
-import { seismicReportFromHazards } from './seismic.report.ts';
+import { nearbyEarthquakes, seismicReportFromHazards } from './seismic.report.ts';
 
 const RAW_PARAMS = {
   code: 'P100-1/2013',
@@ -157,6 +159,7 @@ describe('seismicReportFromHazards', () => {
       ],
       question_codes: ['consolidation_and_expertise'],
       building: null,
+      earthquakes: null,
       source: { dataset: 'p100_1_2013_ag_zoning', digitized_by: 'ccers_utcb' },
     });
   });
@@ -216,5 +219,51 @@ describe('seismicReportFromHazards', () => {
       city: null,
       comparison: [],
     });
+  });
+});
+
+describe('nearbyEarthquakes', () => {
+  const location = { longitude: 21.18007, latitude: 45.72912 };
+
+  it('writes nothing without a catalogue', async () => {
+    const logger = createLogger('error', () => undefined);
+    await expect(nearbyEarthquakes({ ...location, catalog: null, logger })).resolves.toBeNull();
+  });
+
+  it('writes the nearby earthquakes with the day they were read', async () => {
+    const logger = createLogger('error', () => undefined);
+    const report = await nearbyEarthquakes({
+      ...location,
+      logger,
+      now: new Date('2026-11-19T12:00:00Z'),
+      catalog: {
+        near: () =>
+          Promise.resolve({
+            usgs: [
+              {
+                catalogue: 'usgs',
+                time: '1991-12-02T08:49:40.000Z',
+                magnitude: 5.5,
+                longitude: 21.28,
+                latitude: 45.5,
+                place: 'Ciacova',
+              },
+            ],
+            emsc: [],
+            failed: [],
+          }),
+      },
+    });
+    expect(report?.retrieved_on).toBe('2026-11-19');
+    expect(report?.events.map((event) => event.place)).toEqual(['Ciacova']);
+  });
+
+  it('leaves the earthquakes out and logs the code when a catalogue fails', async () => {
+    const lines: string[] = [];
+    const logger = createLogger('warn', (line) => lines.push(line));
+    const near = vi.fn(() => Promise.reject(new Error('down')));
+    await expect(nearbyEarthquakes({ ...location, catalog: { near }, logger })).resolves.toBeNull();
+    expect(near).toHaveBeenCalledOnce();
+    expect(lines.join('')).toContain('earthquake catalogue skipped');
   });
 });

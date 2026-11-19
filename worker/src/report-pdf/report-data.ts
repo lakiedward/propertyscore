@@ -263,6 +263,19 @@ const seismicSchema = z.object({
       since_year: z.number(),
       radius_km: z.number(),
       min_magnitude: z.number(),
+      retrieved_on: z.string().nullable().default(null),
+      sources: z
+        .array(
+          z.object({
+            name: z.string(),
+            license: z.string(),
+            url: z
+              .string()
+              .nullable()
+              .transform((value) => (value?.startsWith('https://') ? value : null)),
+          }),
+        )
+        .default([]),
       events: z.array(
         z.object({
           date: z.string(),
@@ -331,6 +344,10 @@ const investmentSchema = z.object({
   sources: z.array(marketSource).default([]),
 });
 
+const questionsSchema = z.object({
+  codes: z.array(z.string()),
+});
+
 const SECTION_SCHEMAS = {
   safety: safetySchema,
   accessibility: accessibilitySchema,
@@ -343,6 +360,7 @@ const SECTION_SCHEMAS = {
   health: healthSchema,
   seismic: seismicSchema,
   investment: investmentSchema,
+  questions: questionsSchema,
 } as const;
 
 type SectionKey = keyof typeof SECTION_SCHEMAS;
@@ -432,6 +450,7 @@ export function toReportData(input: z.infer<typeof reportInputSchema>): ReportDa
       health: section('health'),
       seismic: section('seismic'),
       investment: section('investment'),
+      questions: section('questions'),
     },
     unreadableSections,
   };
