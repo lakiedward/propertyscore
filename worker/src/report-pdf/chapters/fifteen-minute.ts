@@ -29,7 +29,7 @@ type Group = FifteenMinute['groups'][number];
 
 const WALK_LIMIT_MIN = 15;
 const TILE_COUNT = 8;
-const SAME_AS_TYPICAL = 1.25;
+const MORE_THAN_TYPICAL = 1.5;
 const NEARBY_HEALTH_LAYERS = ['h1', 'h2', 'h3'];
 const DEFAULT_DOT = '#55607A';
 
@@ -64,6 +64,11 @@ function checklist(section: FifteenMinute): string {
   return `<aside class="fqC-p"><div class="fqck"><div class="ac-h"><div><div class="eyebrow">Lista ta de zi cu zi</div><h3>${String(section.covered)} din ${String(section.total)} la ${String(WALK_LIMIT_MIN)} minute pe jos</h3></div></div><div class="fqck-bar"><i style="width:${share.toFixed(0)}%"></i></div><ul class="fqck-l">${rows.join('')}</ul></div></aside>`;
 }
 
+function ratioText(ratio: number): string {
+  const rounded = ratio >= 10 ? Math.round(ratio) : Math.round(ratio * 2) / 2;
+  return formatNumber(rounded, Number.isInteger(rounded) ? 0 : 1);
+}
+
 function comparison(group: Group): string {
   const typical = group.typical_n15;
   if (typical === null || typical === undefined) return '';
@@ -72,26 +77,40 @@ function comparison(group: Group): string {
   }
   const ratio = group.n15 / typical;
   const text =
-    ratio >= SAME_AS_TYPICAL
-      ? `<em class="up">de ${formatNumber(Math.round(ratio * 2) / 2, ratio % 1 === 0 ? 0 : 1)} ori mai multe</em>`
-      : ratio <= 1 / SAME_AS_TYPICAL
+    ratio >= MORE_THAN_TYPICAL
+      ? `<em class="up">de ${ratioText(ratio)} ori mai multe</em>`
+      : ratio <= 1 / MORE_THAN_TYPICAL
         ? '<em>mai puține decât de obicei</em>'
         : '<em>cam cât într-un cartier obișnuit</em>';
   return `${text}<small>cartier obișnuit: ${formatNumber(typical)}</small>`;
 }
 
+function fewerNote(groups: readonly Group[]): string {
+  const fewer = groups.flatMap((group) => {
+    const meta = FIFTEEN_MINUTE_GROUPS[group.key];
+    const typical = group.typical_n15;
+    if (!meta || typical === null || typical === undefined || group.n15 >= typical) return [];
+    return [
+      `${meta.label}, ${formatNumber(group.n15)} (un cartier obișnuit are ${formatNumber(typical)})`,
+    ];
+  });
+  if (fewer.length === 0) return '';
+  return `<p class="fqx-foot">${icon('info')}<span>${esc(`Mai puține decât de obicei: ${fewer.join('; ')}.`)}</span></p>`;
+}
+
 function choiceTiles(section: FifteenMinute): string {
-  const tiles = section.groups
+  const shown = section.groups
     .filter((group) => group.n15 > 0 && FIFTEEN_MINUTE_GROUPS[group.key])
     .sort((left, right) => right.n15 - left.n15)
-    .slice(0, TILE_COUNT)
-    .map((group) => {
-      const meta = FIFTEEN_MINUTE_GROUPS[group.key];
-      if (!meta) return '';
-      return `<div class="fqx-tile" style="--c:${meta.color};--bg:${meta.tint}">${iconTile(meta.icon, meta.color, meta.tint)}<b>${formatNumber(group.n15)}</b><span class="fqx-tl">${esc(meta.label)}</span>${comparison(group)}</div>`;
-    });
+    .slice(0, TILE_COUNT);
+  const tiles = shown.map((group) => {
+    const meta = FIFTEEN_MINUTE_GROUPS[group.key];
+    if (!meta) return '';
+    return `<div class="fqx-tile" style="--c:${meta.color};--bg:${meta.tint}">${iconTile(meta.icon, meta.color, meta.tint)}<b>${formatNumber(group.n15)}</b><span class="fqx-tl">${esc(meta.label)}</span>${comparison(group)}</div>`;
+  });
   if (tiles.length === 0) return '';
-  return `<section class="card ac fqx fqxP"><div class="ac-h"><div><div class="eyebrow">Ai de unde alege</div><h3>Nu doar un loc aproape, ci mai multe din care alegi</h3></div></div><div class="fqx-tiles">${tiles.join('')}</div></section>`;
+  const rest = section.groups.filter((group) => !shown.includes(group));
+  return `<section class="card ac fqx fqxP"><div class="ac-h"><div><div class="eyebrow">Ai de unde alege</div><h3>Nu doar un loc aproape, ci mai multe din care alegi</h3></div></div><div class="fqx-tiles">${tiles.join('')}</div>${fewerNote(rest)}</section>`;
 }
 
 function subScore(
