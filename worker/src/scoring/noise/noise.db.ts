@@ -291,8 +291,8 @@ export async function bandPolygons(
     select
       c.db_low,
       extensions.st_asgeojson(
-        extensions.st_chaikinsmoothing(
-          extensions.st_simplifypreservetopology(
+        extensions.st_simplifypreservetopology(
+          extensions.st_chaikinsmoothing(
             extensions.st_union(
               extensions.st_makeenvelope(
                 c.lon - ${half.halfLonDegrees},
@@ -302,11 +302,11 @@ export async function bandPolygons(
                 4326
               )
             ),
-            0.00001
+            2
           ),
-          2
+          0.00003
         ),
-        6
+        5
       )::jsonb as geometry
     from jsonb_to_recordset(${sql.json(cells.map((cell) => ({ lon: cell.lon, lat: cell.lat, db_low: cell.dbLow })))}::jsonb)
       as c (lon double precision, lat double precision, db_low integer)

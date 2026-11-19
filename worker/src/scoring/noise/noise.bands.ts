@@ -1,3 +1,4 @@
+import { mapWithConcurrency } from '../../lib/concurrency.ts';
 import type { JsonObject, Sql } from '../../db/sql.ts';
 import { bandPolygons, gridNoiseSamples, type BandCell } from './noise.db.ts';
 import { assessPoint, type NoiseCoverage } from './noise.formula.ts';
@@ -5,10 +6,11 @@ import type { NoiseParams } from './noise.params.ts';
 
 type GridPoint = { lon: number; lat: number };
 
-const GRID_STEP_M = 25;
+const GRID_STEP_M = 50;
 const FIRST_DRAWN_DB = 55;
 const METRES_PER_DEGREE = 111_320;
-const CHUNK_SIZE = 400;
+const CHUNK_SIZE = 150;
+const CHUNK_CONCURRENCY = 4;
 
 export function gridAround(center: GridPoint, radiusM: number, stepM: number): GridPoint[] {
   const latStep = stepM / METRES_PER_DEGREE;
@@ -40,9 +42,10 @@ export async function noiseBandLayer(
   params: NoiseParams,
 ): Promise<JsonObject> {
   const points = gridAround(input.location, params.map_clip_m, GRID_STEP_M);
-  const cells: BandCell[] = [];
-  for (let start = 0; start < points.length; start += CHUNK_SIZE) {
-    const chunk = points.slice(start, start + CHUNK_SIZE);
+  const chunks = Array.from({ length: Math.ceil(points.length / CHUNK_SIZE) }, (_, index) =>
+    points.slice(index * CHUNK_SIZE, (index + 1) * CHUNK_SIZE),
+  );
+  const cellsByChunk = await mapWithConcurrency(chunks, CHUNK_CONCURRENCY, async (chunk) => {
     const samples = await gridNoiseSamples(
       sql,
       input.snapshotId,
@@ -50,13 +53,14 @@ export async function noiseBandLayer(
       chunk,
       params.nearest_radius_m,
     );
-    chunk.forEach((point, index) => {
+    return chunk.flatMap((point, index): BandCell[] => {
       const level = assessPoint(samples.get(index + 1) ?? [], input.coverage, params).lden;
-      if (level === null) return;
+      if (level === null) return [];
       const dbLow = bandLow(level, params.band_width_db);
-      if (dbLow >= FIRST_DRAWN_DB) cells.push({ ...point, dbLow });
+      return dbLow >= FIRST_DRAWN_DB ? [{ ...point, dbLow }] : [];
     });
-  }
+  });
+  const cells = cellsByChunk.flat();
   return bandPolygons(sql, cells, {
     halfLatDegrees: GRID_STEP_M / 2 / METRES_PER_DEGREE,
     halfLonDegrees:
