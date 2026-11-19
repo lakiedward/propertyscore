@@ -134,11 +134,12 @@ describe.skipIf(!databaseUrl)('industryModule against the local database', () =>
       params,
     });
     expect(report).toMatchObject({
-      score: 85,
+      score: 75,
+      cell_score: 85,
       count_radius: 1,
       count_near: 1,
       source: { version: VERSION, reporting_year: 2024 },
-      sites: [{ name: 'Uzina de test', sector_code: 'metals', points_lost: 15 }],
+      sites: [{ name: 'Uzina de test', sector_code: 'metals', points_lost: 25 }],
     });
     expect(report.nearest_m).toBeGreaterThan(700);
     expect(report.nearest_m).toBeLessThan(850);

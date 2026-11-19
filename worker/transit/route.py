@@ -56,9 +56,53 @@ def summarize_itinerary(legs):
     }
 
 
+def best_legs(options):
+    candidates = [legs for legs in options if legs]
+    return min(candidates, key=lambda legs: summarize_itinerary(legs)["total"], default=None)
+
+
 def best_itinerary(options):
-    summaries = [summarize_itinerary(legs) for legs in options if legs]
-    return min(summaries, key=lambda summary: summary["total"], default=None)
+    legs = best_legs(options)
+    return None if legs is None else summarize_itinerary(legs)
+
+
+def walking_legs(options):
+    return best_legs(
+        [legs for legs in options if all(is_walk(leg["transport_mode"]) for leg in legs)]
+    )
+
+
+def leg_coordinates(geometry):
+    if geometry is None:
+        return []
+    points = []
+    for part in getattr(geometry, "geoms", [geometry]):
+        for coordinate in part.coords:
+            point = [round(coordinate[0], 5), round(coordinate[1], 5)]
+            if not points or points[-1] != point:
+                points.append(point)
+    return points if len(points) > 1 else []
+
+
+def leg_rows(origin, destination, trip, legs):
+    rows = []
+    for leg in legs or []:
+        coordinates = leg_coordinates(leg.get("geometry"))
+        if not coordinates:
+            continue
+        walk = is_walk(leg["transport_mode"])
+        rows.append(
+            (
+                origin,
+                destination,
+                trip,
+                len(rows),
+                "walk" if walk else "transit",
+                "" if walk or leg.get("route_id") is None else str(leg["route_id"]),
+                json.dumps(coordinates, separators=(",", ":")),
+            )
+        )
+    return rows
 
 
 def encode_minutes(value):
@@ -142,6 +186,7 @@ def detailed_itineraries(network, origins, destinations, job, transit_modes, max
     import r5py
 
     rows = []
+    paths = []
     detailed = r5py.DetailedItineraries(
         network,
         origins=frame(origins),
@@ -164,12 +209,15 @@ def detailed_itineraries(network, origins, destinations, job, transit_modes, max
                 "travel_time": row.travel_time,
                 "wait_time": row.wait_time,
                 "route_id": row.route_id,
+                "geometry": getattr(row, "geometry", None),
             }
         )
     for (origin, destination), by_option in options.items():
         summary = best_itinerary(by_option.values())
         if summary is None:
             continue
+        paths.extend(leg_rows(origin, destination, "best", best_legs(by_option.values())))
+        paths.extend(leg_rows(origin, destination, "walk", walking_legs(by_option.values())))
         rows.append(
             (
                 origin,
@@ -181,7 +229,7 @@ def detailed_itineraries(network, origins, destinations, job, transit_modes, max
                 summary["route_id"],
             )
         )
-    return rows
+    return rows, paths
 
 
 def run(job):
@@ -227,6 +275,7 @@ def run(job):
 
     destination_rows = []
     itinerary_rows = []
+    leg_path_rows = []
     if destinations:
         transit = r5py.TravelTimeMatrix(
             network,
@@ -257,7 +306,7 @@ def run(job):
                 )
             )
         if job["itineraries"]:
-            itinerary_rows = detailed_itineraries(
+            itinerary_rows, leg_path_rows = detailed_itineraries(
                 network, origins, destinations, job, transit_modes, max_time, speed
             )
     write_rows(
@@ -277,6 +326,11 @@ def run(job):
             "route_id",
         ],
         itinerary_rows,
+    )
+    write_rows(
+        output_dir / "itinerary_legs.csv",
+        ["origin_id", "destination_id", "trip", "sequence", "mode", "route_id", "coordinates"],
+        leg_path_rows,
     )
 
     if job["matrix"]:

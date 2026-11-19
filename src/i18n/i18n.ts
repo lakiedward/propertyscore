@@ -28,7 +28,6 @@ export const FEATURE_NAMESPACES = [
   'home',
   'listings',
   'publish',
-  'onlineReports',
   'moderation',
   'myListings',
 ] as const;

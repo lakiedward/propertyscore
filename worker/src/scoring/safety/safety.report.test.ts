@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { walkedLandmarks } from './safety.report.ts';
+import type { PointSafety } from './safety.formula.ts';
+import { smoothedAddressScore, walkedLandmarks } from './safety.report.ts';
 import { v1Params } from './safety.test-params.ts';
 
 const params = v1Params();
@@ -60,5 +61,42 @@ describe('walkedLandmarks', () => {
       ['police', 300 * params.walk_detour_factor],
       ['fire', 500 * params.walk_detour_factor],
     ]);
+  });
+});
+
+describe('smoothedAddressScore', () => {
+  const moment = (rawScore: number) => ({
+    score: Math.round(rawScore),
+    rawScore,
+    waterfall: { rows: [], farTypes: [], total: 0 },
+    contributions: [],
+  });
+  const point: PointSafety = {
+    score: 0,
+    day: moment(80),
+    night: moment(60),
+    excludedTypes: [],
+  };
+
+  it('blends the address with the raw scores of the neighbouring cells like the snapshot does', () => {
+    const params = v1Params();
+    const neighbours = [
+      { day_unsmoothed: 60, night_unsmoothed: 40 },
+      { day_unsmoothed: 60, night_unsmoothed: 40 },
+    ];
+    const day = Math.round(params.smoothing.self * 80 + params.smoothing.neighbours * 60);
+    const night = Math.round(params.smoothing.self * 60 + params.smoothing.neighbours * 40);
+    const weights = params.moment_weights;
+    expect(smoothedAddressScore(point, neighbours, params)).toBe(
+      Math.round((weights.day * day + weights.night * night) / (weights.day + weights.night)),
+    );
+  });
+
+  it('keeps the address score when no neighbour has raw scores', () => {
+    const params = v1Params();
+    const weights = params.moment_weights;
+    expect(smoothedAddressScore(point, [{ reason: 'no_data' }], params)).toBe(
+      Math.round((weights.day * 80 + weights.night * 60) / (weights.day + weights.night)),
+    );
   });
 });

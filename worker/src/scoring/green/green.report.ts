@@ -9,7 +9,13 @@ import {
   type DistanceMethod,
   walkCellCandidates,
 } from '../../routing/walk-access.ts';
-import { parseGreenParams } from './green.module.ts';
+import type { GreenCellMeasure } from './green.db.ts';
+import {
+  parseGreenParams,
+  scoreGreenCell,
+  type GreenCellWalks,
+  type GreenParams,
+} from './green.module.ts';
 
 const PARKS_RADIUS_M = 1500;
 const PARK_LIMIT = 6;
@@ -52,7 +58,7 @@ type SurroundingPark = z.infer<typeof surroundingsSchema>['parks'][number];
 
 type Position = { latitude: number; longitude: number };
 
-type CellRow = { inputs: unknown; city_avg_share_near: number | null };
+type CellRow = { inputs: unknown; city_avg_share_near: number | null; city_id: string };
 
 async function readCell(
   sql: Sql,
@@ -63,9 +69,11 @@ async function readCell(
   const [row] = await sql<CellRow[]>`
     select
       cs.inputs -> 'green' as inputs,
-      (s.stats #>> array['green', ${citySlug}, 'avg_share_near'])::float8 as city_avg_share_near
+      (s.stats #>> array['green', ${citySlug}, 'avg_share_near'])::float8 as city_avg_share_near,
+      g.city_id
     from private.cell_scores cs
     join public.score_snapshots s on s.id = cs.snapshot_id
+    join private.grid_cells g on g.id = cs.cell_id
     where cs.snapshot_id = ${snapshotId} and cs.cell_id = ${cellId}
   `;
   return row;
@@ -143,6 +151,56 @@ async function walkToParks(
   return new Map((cell?.routed ?? []).map((park) => [park.poi_id, park.leg]));
 }
 
+const pointMeasureSchema = z.object({
+  shares: z.record(z.string(), z.coerce.number()),
+  nearest_small_id: z.string().nullable(),
+  nearest_small_m: z.coerce.number().nullable(),
+  nearest_large_id: z.string().nullable(),
+  nearest_large_m: z.coerce.number().nullable(),
+});
+
+async function measureAddress(
+  sql: Sql,
+  input: { snapshotId: string; cityId: string; position: Position; params: GreenParams },
+): Promise<GreenCellMeasure> {
+  const { params, position } = input;
+  const [row] = await sql`
+    select shares, nearest_small_id, nearest_small_m, nearest_large_id, nearest_large_m
+    from private.measure_green_point(
+      ${input.snapshotId},
+      ${input.cityId},
+      extensions.st_point(${position.longitude}, ${position.latitude}, 4326)::extensions.geography,
+      ${params.radii_m}::integer[],
+      ${params.small_min_ha},
+      ${params.large_min_ha}
+    )
+  `;
+  return { cell_id: 'address', ...pointMeasureSchema.parse(row) };
+}
+
+export function addressWalks(
+  measure: GreenCellMeasure,
+  legs: ReadonlyMap<string, Leg | null>,
+  walkDetourFactor: number,
+): GreenCellWalks {
+  const walk = (id: string | null, straightM: number | null) => {
+    const leg = id === null ? undefined : legs.get(id);
+    if (leg) return { green_area_id: id, walk_m: Math.round(leg.meters), routed: true };
+    return {
+      green_area_id: id,
+      walk_m: straightM === null ? null : Math.round(straightM * walkDetourFactor),
+      routed: false,
+    };
+  };
+  const small = walk(measure.nearest_small_id, measure.nearest_small_m);
+  const large = walk(measure.nearest_large_id, measure.nearest_large_m);
+  return {
+    small: { green_area_id: small.green_area_id, walk_m: small.walk_m },
+    large: { green_area_id: large.green_area_id, walk_m: large.walk_m },
+    distanceMethod: small.routed || large.routed ? 'pedestrian_routing' : 'straight_line',
+  };
+}
+
 export function walkedParks(
   parks: readonly SurroundingPark[],
   legs: ReadonlyMap<string, Leg | null>,
@@ -173,6 +231,8 @@ function componentValue(
 
 export const greenReportSection: ReportSection = {
   key: 'green',
+  addressScore: (section) =>
+    typeof section.address_score === 'number' ? section.address_score : null,
   build: async ({
     sql,
     router,
@@ -206,16 +266,28 @@ export const greenReportSection: ReportSection = {
     }
 
     const radii = { near: greenParams.near_radius_m, wide: greenParams.wide_radius_m };
+    const position = { latitude, longitude };
     const surroundings = await readSurroundings(
       sql,
       snapshotId,
-      { latitude, longitude },
+      position,
       Math.max(radii.wide, PARKS_RADIUS_M),
       greenParams.small_min_ha,
     );
     const legs = router
-      ? await walkToParks(sql, router, snapshotId, { latitude, longitude }, surroundings.parks)
+      ? await walkToParks(sql, router, snapshotId, position, surroundings.parks)
       : new Map<string, Leg | null>();
+    const measure = await measureAddress(sql, {
+      snapshotId,
+      cityId: cell.city_id,
+      position,
+      params: greenParams,
+    });
+    const address = scoreGreenCell(
+      measure,
+      greenParams,
+      addressWalks(measure, legs, greenParams.walk_detour_factor),
+    );
     const distanceMethod: DistanceMethod = [...legs.values()].some(Boolean)
       ? 'pedestrian_routing'
       : 'straight_line';
@@ -223,6 +295,8 @@ export const greenReportSection: ReportSection = {
     const section: JsonObject = {
       schema_version: 1,
       status: 'scored',
+      address_score: address.score,
+      address: address.inputs,
       radii_m: greenParams.radii_m,
       near_radius_m: radii.near,
       wide_radius_m: radii.wide,

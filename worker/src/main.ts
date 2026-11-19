@@ -1,15 +1,18 @@
 import { join } from 'node:path';
 
 import { parseCommand, type WorkerCommand } from './cli.ts';
-import { type Env, readEnv } from './config/env.ts';
+import { type Env, readDocumentEnv, readEnv } from './config/env.ts';
 import { createSql, type Sql } from './db/sql.ts';
-import { errorCauseExit, errorCauseTail, errorCode } from './lib/errors.ts';
+import { errorCauseExit, errorCauseTail, errorCode, WorkerError } from './lib/errors.ts';
 import { createLogger, type Logger } from './lib/logger.ts';
 import { generateReport } from './report/generate-report.ts';
 import { insertReport } from './report/report.db.ts';
 import { REPORT_SECTIONS } from './report/sections.ts';
+import { renderReportPdf } from './report-pdf/render-report-pdf.ts';
 import { importHealthSources } from './scoring/health/import-health-sources.ts';
 import { createValhallaClient, type ValhallaClient } from './routing/valhalla.ts';
+import { importAreaStatistics } from './scoring/investment/area-statistics-import.ts';
+import { importCityAverages } from './scoring/investment/city-averages-import.ts';
 import { readActiveInvestmentParams } from './scoring/investment/investment.db.ts';
 import { importMarketListings } from './scoring/investment/market-import.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
@@ -67,6 +70,14 @@ async function runCommand(
         logger,
       });
       return;
+    case 'render-report-pdf':
+      await renderReportPdf({
+        source: 'reportId' in command.source ? { ...command.source, sql } : command.source,
+        outputPath: command.outputPath,
+        chromiumPath: env.CHROMIUM_PATH,
+        logger,
+      });
+      return;
     case 'create-report': {
       const reportId = await insertReport(sql, command);
       logger.info('report created', { report_id: reportId });
@@ -113,13 +124,63 @@ async function runCommand(
       });
       return;
     }
+    case 'import-city-averages': {
+      const result = await importCityAverages({
+        sql,
+        source: command.source,
+        filePath: command.filePath,
+        eurRonRate: command.eurRonRate,
+        params: await readActiveInvestmentParams(sql),
+        logger,
+      });
+      logger.info('import-city-averages done', {
+        import_id: result.importId,
+        period: result.period,
+        accepted: result.accepted,
+      });
+      return;
+    }
+    case 'import-market-statistics': {
+      if (!env.MARKET_SOURCE_CONTACT) {
+        throw new WorkerError(
+          'market_source_contact_required',
+          'import-market-statistics needs MARKET_SOURCE_CONTACT',
+        );
+      }
+      const results = await importAreaStatistics({
+        sql,
+        sources: command.sources,
+        citySlugs: command.citySlugs,
+        contact: env.MARKET_SOURCE_CONTACT,
+        period: command.period,
+        isRetry: command.isRetry,
+        params: await readActiveInvestmentParams(sql),
+        logger,
+      });
+      logger.info('import-market-statistics done', {
+        imports: results.filter((result) => result.importId !== null).length,
+        accepted: results.reduce((sum, result) => sum + result.accepted, 0),
+        requests: results.reduce((sum, result) => sum + result.requests, 0),
+      });
+      return;
+    }
   }
 }
 
 async function main(): Promise<void> {
+  const command = parseCommand(process.argv.slice(2), new Date());
+  if (command.command === 'render-report-pdf' && 'inputPath' in command.source) {
+    const documentEnv = readDocumentEnv();
+    await renderReportPdf({
+      source: command.source,
+      outputPath: command.outputPath,
+      chromiumPath: documentEnv.CHROMIUM_PATH,
+      logger: createLogger(documentEnv.LOG_LEVEL, undefined, { service: 'worker' }),
+    });
+    return;
+  }
   const env = readEnv();
   const logger = createLogger(env.LOG_LEVEL, undefined, { service: 'worker' });
-  const command = parseCommand(process.argv.slice(2), new Date());
   const sql = createSql(env.DATABASE_URL);
   try {
     await runCommand(command, sql, env, logger);
@@ -128,13 +189,22 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((error: unknown) => {
-  const logger = createLogger('error', undefined, { service: 'worker' });
-  logger.error('worker failed', {
-    code: errorCode(error),
-    error: error instanceof Error ? error.message : String(error),
-    cause: errorCauseTail(error),
-    cause_exit: errorCauseExit(error),
-  });
-  process.exitCode = 1;
-});
+function exitAfterOutput(code: number): void {
+  process.stdout.write('', () => process.exit(code));
+}
+
+main().then(
+  () => {
+    exitAfterOutput(0);
+  },
+  (error: unknown) => {
+    const logger = createLogger('error', undefined, { service: 'worker' });
+    logger.error('worker failed', {
+      code: errorCode(error),
+      error: error instanceof Error ? error.message : String(error),
+      cause: errorCauseTail(error),
+      cause_exit: errorCauseExit(error),
+    });
+    exitAfterOutput(1);
+  },
+);
