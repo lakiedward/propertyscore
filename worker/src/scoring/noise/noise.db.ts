@@ -23,6 +23,8 @@ type SampleRow = {
   buildings_crossed: number | null;
 };
 
+export type BandCell = { lon: number; lat: number; dbLow: number };
+
 export type CellSample = { cellId: string; pointIndex: number; sample: NoiseSample };
 
 export type CityNoiseCoverage = {
@@ -248,6 +250,77 @@ export async function pointNoiseSamples(
     const sample = toSample(row);
     return sample === null ? [] : [sample];
   });
+}
+
+export async function gridNoiseSamples(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+  points: readonly { lon: number; lat: number }[],
+  radiusM: number,
+): Promise<Map<number, NoiseSample[]>> {
+  const rows = await sql<SampleRow[]>`
+    select point_no, kind, measure, indicator, dataset_id, db_low, source_class, distance_m, buildings_crossed
+    from private.noise_samples(
+      ${snapshotId},
+      ${cityId},
+      (
+        select array_agg(extensions.st_point(p.lon, p.lat, 4326)::extensions.geography order by p.n)
+        from jsonb_to_recordset(${sql.json(points.map((point, index) => ({ n: index + 1, lon: point.lon, lat: point.lat })))}::jsonb)
+          as p (n integer, lon double precision, lat double precision)
+      ),
+      ${radiusM}
+    )
+  `;
+  const byPoint = new Map<number, NoiseSample[]>();
+  for (const row of rows) {
+    const sample = toSample(row);
+    if (sample === null || row.point_no === undefined) continue;
+    byPoint.set(row.point_no, [...(byPoint.get(row.point_no) ?? []), sample]);
+  }
+  return byPoint;
+}
+
+export async function bandPolygons(
+  sql: Sql,
+  cells: readonly BandCell[],
+  half: { halfLatDegrees: number; halfLonDegrees: number },
+): Promise<JsonObject> {
+  if (cells.length === 0) return { type: 'FeatureCollection', features: [] };
+  const rows = await sql<{ db_low: number; geometry: JsonObject }[]>`
+    select
+      c.db_low,
+      extensions.st_asgeojson(
+        extensions.st_chaikinsmoothing(
+          extensions.st_simplifypreservetopology(
+            extensions.st_union(
+              extensions.st_makeenvelope(
+                c.lon - ${half.halfLonDegrees},
+                c.lat - ${half.halfLatDegrees},
+                c.lon + ${half.halfLonDegrees},
+                c.lat + ${half.halfLatDegrees},
+                4326
+              )
+            ),
+            0.00001
+          ),
+          2
+        ),
+        6
+      )::jsonb as geometry
+    from jsonb_to_recordset(${sql.json(cells.map((cell) => ({ lon: cell.lon, lat: cell.lat, db_low: cell.dbLow })))}::jsonb)
+      as c (lon double precision, lat double precision, db_low integer)
+    group by c.db_low
+    order by c.db_low
+  `;
+  return {
+    type: 'FeatureCollection',
+    features: rows.map((row) => ({
+      type: 'Feature',
+      properties: { db_low: row.db_low },
+      geometry: row.geometry,
+    })),
+  };
 }
 
 export async function nearestNoiseSources(

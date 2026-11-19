@@ -7,6 +7,7 @@ import {
   type CityNoiseCoverage,
   type NearestNoiseSource,
 } from './noise.db.ts';
+import { noiseBandLayer } from './noise.bands.ts';
 import { assessPoint, type NoisePrecision, type PointNoise } from './noise.formula.ts';
 import { parseNoiseParams, type NoiseParams } from './noise.params.ts';
 import { readCellCategory, sectionParams } from '../../report/cell-category.ts';
@@ -115,11 +116,11 @@ export async function assessNoiseAtAddress(
     location,
     params.nearest_radius_m,
   );
-  const point = assessPoint(
-    samples,
-    { hasMaps: coverage.datasets.length > 0, hasProxySources: coverage.sourceCount > 0 },
-    params,
-  );
+  const noiseCoverage = {
+    hasMaps: coverage.datasets.length > 0,
+    hasProxySources: coverage.sourceCount > 0,
+  };
+  const point = assessPoint(samples, noiseCoverage, params);
   const sources = await nearestNoiseSources(
     sql,
     snapshotId,
@@ -127,7 +128,18 @@ export async function assessNoiseAtAddress(
     location,
     params.nearest_radius_m,
   );
-  const map = await noiseMapLayers(sql, snapshotId, cityId, location, params.map_clip_m);
+  const layers = await noiseMapLayers(sql, snapshotId, cityId, location, params.map_clip_m);
+  const map =
+    point.score === null
+      ? layers
+      : {
+          ...layers,
+          bands: await noiseBandLayer(
+            sql,
+            { snapshotId, cityId, location, coverage: noiseCoverage },
+            params,
+          ),
+        };
   return buildNoiseReportBlock(point, coverage, sources, map, params);
 }
 
