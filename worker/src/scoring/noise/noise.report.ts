@@ -103,13 +103,30 @@ export function buildNoiseReportBlock(
   };
 }
 
+const MAP_DISAGREEMENT_DB = 5;
+
+function warnWhenMapDisagrees(heat: JsonObject | null, addressLden: number | null): void {
+  if (heat === null || addressLden === null) return;
+  const { columns, rows, levels } = heat;
+  if (typeof columns !== 'number' || typeof rows !== 'number' || !Array.isArray(levels)) return;
+  const centre: unknown = levels[((rows - 1) / 2) * columns + (columns - 1) / 2];
+  if (typeof centre !== 'number' || Math.abs(centre - addressLden) < MAP_DISAGREEMENT_DB) return;
+  createLogger('warn', undefined, { service: 'worker' }).warn('noise map differs from address', {
+    map_db: centre,
+    address_db: Math.round(addressLden),
+  });
+}
+
 async function heatGridOrNull(
   sql: Sql,
   input: Parameters<typeof noiseHeatGrid>[1],
   params: NoiseParams,
+  addressLden: number | null,
 ): Promise<JsonObject | null> {
   try {
-    return await noiseHeatGrid(sql, input, params);
+    const heat = await noiseHeatGrid(sql, input, params);
+    warnWhenMapDisagrees(heat, addressLden);
+    return heat;
   } catch (error) {
     createLogger('warn', undefined, { service: 'worker' }).warn('noise heat map skipped', {
       error: error instanceof Error ? error.message.slice(0, 200) : 'unknown',
@@ -152,6 +169,7 @@ export async function assessNoiseAtAddress(
           sql,
           { snapshotId, cityId, location, coverage: noiseCoverage },
           params,
+          point.lden,
         );
   const map = heat === null ? layers : { ...layers, heat };
   return buildNoiseReportBlock(point, coverage, sources, map, params);
