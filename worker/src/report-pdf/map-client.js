@@ -46,6 +46,33 @@ function paint(layer) {
   };
 }
 
+function imageUrl(layer) {
+  const canvas = document.createElement('canvas');
+  canvas.width = layer.width;
+  canvas.height = layer.height;
+  const context = canvas.getContext('2d');
+  context.putImageData(
+    new ImageData(Uint8ClampedArray.from(layer.rgba), layer.width, layer.height),
+    0,
+    0,
+  );
+  return canvas.toDataURL('image/png');
+}
+
+function addImageLayer(map, id, layer) {
+  const labels = map.getStyle().layers.find((entry) => entry.type === 'symbol');
+  map.addSource(id, { type: 'image', url: imageUrl(layer), coordinates: layer.coordinates });
+  map.addLayer(
+    {
+      id,
+      type: 'raster',
+      source: id,
+      paint: { 'raster-resampling': 'linear', 'raster-fade-duration': 0 },
+    },
+    labels?.id,
+  );
+}
+
 function markerElement(marker) {
   const element = document.createElement('div');
   element.className = 'mk';
@@ -85,6 +112,10 @@ function draw(spec) {
       }
       spec.layers.forEach((layer, index) => {
         const id = `overlay-${String(index)}`;
+        if (layer.kind === 'image') {
+          addImageLayer(map, id, layer);
+          return;
+        }
         map.addSource(id, { type: 'geojson', data: layer.data });
         map.addLayer({
           id,

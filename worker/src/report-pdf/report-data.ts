@@ -58,6 +58,12 @@ const safetySchema = z.object({
       distance_m: z.number(),
     }),
   ),
+  heat: z
+    .object({
+      cell_size_m: z.number().positive(),
+      cells: z.array(z.tuple([z.number(), z.number(), score, score])),
+    })
+    .optional(),
 });
 
 const accessibilitySchema = z.object({

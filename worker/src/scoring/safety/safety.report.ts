@@ -39,6 +39,15 @@ const LANDMARK_TYPES: readonly SafetyType[] = [
   'train_station',
 ];
 
+const HEAT_RADIUS_M = 2300;
+
+const heatCellSchema = z.object({
+  longitude: z.number(),
+  latitude: z.number(),
+  day: z.number(),
+  night: z.number(),
+});
+
 const cellInputsSchema = z.object({
   day: z.number(),
   night: z.number(),
@@ -208,6 +217,65 @@ async function readLandmarks(
   return z.array(landmarkSchema).parse(rows);
 }
 
+async function readHeatCells(
+  sql: Sql,
+  snapshotId: string,
+  cellId: string,
+  position: Position,
+): Promise<{ sizeM: number | null; cells: z.infer<typeof heatCellSchema>[] }> {
+  const rows = await sql<Record<string, unknown>[]>`
+    with origin as (
+      select
+        extensions.st_point(${position.longitude}, ${position.latitude}, 4326)::extensions.geography as point,
+        g.city_id,
+        g.size_m
+      from private.grid_cells g
+      where g.id = ${cellId}
+    )
+    select
+      origin.size_m,
+      round(extensions.st_x(g.center::extensions.geometry)::numeric, 6)::float8 as longitude,
+      round(extensions.st_y(g.center::extensions.geometry)::numeric, 6)::float8 as latitude,
+      (cs.inputs #>> '{safety,day}')::float8 as day,
+      (cs.inputs #>> '{safety,night}')::float8 as night
+    from origin
+    join private.grid_cells g
+      on g.city_id = origin.city_id
+      and g.size_m = origin.size_m
+      and extensions.st_dwithin(g.center, origin.point, ${HEAT_RADIUS_M}, false)
+    join private.cell_scores cs on cs.snapshot_id = ${snapshotId} and cs.cell_id = g.id
+    where cs.categories ->> 'safety' is not null
+      and jsonb_typeof(cs.inputs #> '{safety,day}') = 'number'
+      and jsonb_typeof(cs.inputs #> '{safety,night}') = 'number'
+    order by g.id
+  `;
+  const sizeM = z.number().safeParse(rows[0]?.size_m);
+  return {
+    sizeM: sizeM.success ? sizeM.data : null,
+    cells: rows.flatMap((row) => {
+      const parsed = heatCellSchema.safeParse(row);
+      return parsed.success ? [parsed.data] : [];
+    }),
+  };
+}
+
+export function heatJson(
+  sizeM: number | null,
+  cells: readonly z.infer<typeof heatCellSchema>[],
+): JsonObject | null {
+  if (sizeM === null || cells.length === 0) return null;
+  return {
+    cell_size_m: sizeM,
+    radius_m: HEAT_RADIUS_M,
+    cells: cells.map((cell) => [
+      cell.longitude,
+      cell.latitude,
+      Math.round(cell.day),
+      Math.round(cell.night),
+    ]),
+  };
+}
+
 function pointInputs(
   rows: readonly z.infer<typeof distanceRowSchema>[],
   walked: readonly CellDistances[],
@@ -308,6 +376,7 @@ function safetySection(input: {
   point: PointSafety;
   addressScore: number;
   landmarks: readonly Landmark[];
+  heat: JsonObject | null;
   params: SafetyParams;
   distanceMethod: DistanceMethod;
 }): JsonObject {
@@ -335,6 +404,7 @@ function safetySection(input: {
       location: [Number(landmark.longitude.toFixed(6)), Number(landmark.latitude.toFixed(6))],
       distance_m: Math.round(landmark.distance_m),
     })),
+    ...(input.heat ? { heat: input.heat } : {}),
   };
 }
 
@@ -381,11 +451,13 @@ export const safetyReportSection: ReportSection = {
       position,
       Math.max(...Object.values(reach)),
     );
+    const heat = await readHeatCells(sql, snapshotId, cellId, position);
     return safetySection({
       cell: inputs.data,
       point,
       addressScore: smoothedAddressScore(point, neighbours, safetyParams),
       landmarks: walkedLandmarks(landmarks, walked, safetyParams),
+      heat: heatJson(heat.sizeM, heat.cells),
       params: safetyParams,
       distanceMethod: walked?.routed.some((candidate) => candidate.leg)
         ? 'pedestrian_routing'

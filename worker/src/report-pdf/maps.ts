@@ -8,7 +8,15 @@ type Feature = { type: 'Feature'; properties: Record<string, unknown> | null; ge
 
 export type FeatureCollection = { type: 'FeatureCollection'; features: Feature[] };
 
-type MapLayer = {
+type ImageLayer = {
+  kind: 'image';
+  coordinates: [Position, Position, Position, Position];
+  width: number;
+  height: number;
+  rgba: number[];
+};
+
+type VectorLayer = {
   kind: 'fill' | 'line' | 'circle';
   data: FeatureCollection;
   color: string;
@@ -19,6 +27,8 @@ type MapLayer = {
   outline?: string;
   colorProperty?: string;
 };
+
+type MapLayer = VectorLayer | ImageLayer;
 
 export type MapMarker = {
   position: Position;

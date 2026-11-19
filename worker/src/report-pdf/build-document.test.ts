@@ -19,6 +19,7 @@ describe('buildReportDocument', () => {
     expect(document.html).toContain(report.addressText);
     expect(document.html).toContain('risc moderat, nu ridicat');
     expect(document.html).toContain('preț cerut');
+    expect(document.html).toContain('mai puțin sigur');
     expect(document.html).toContain('class="inv-ex">exemplu');
     expect(document.layoutWidthPx).toBe(1120);
     expect(document.allowedHosts).toEqual(['tiles.openfreemap.org']);

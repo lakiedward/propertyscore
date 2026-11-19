@@ -9,12 +9,13 @@ import {
   scoreCard,
   sourceDate,
 } from '../components.ts';
+import { heatRaster } from '../heat-grid.ts';
 import { esc, formatDistance, formatMinutes, formatNumber, walkMinutes } from '../format.ts';
 import { icon, type IconName } from '../icons.ts';
 import { HEALTH_LAYERS, safetyType } from '../labels.ts';
 import { addressMarker, mapHtml, around, type MapSpec } from '../maps.ts';
 import type { ReportData } from '../report-data.ts';
-import { CATEGORY_THEME } from '../theme.ts';
+import { CATEGORY_THEME, SAFETY_HEAT_OPACITY, SAFETY_HEAT_RAMP } from '../theme.ts';
 
 type Safety = NonNullable<ReportData['sections']['safety']>;
 type Moment = Safety['address']['day'];
@@ -30,6 +31,9 @@ type HelpRow = {
 };
 
 const MAP_REACH_M = 650;
+const HEAT_HALF_WIDTH_M = 1900;
+const HEAT_HALF_HEIGHT_M = 1200;
+const HEAT_STEP_M = 25;
 const WALKABLE_M = 1500;
 const BAR_HEADROOM = 1.08;
 const HELP_LANDMARKS = ['nonstop', 'police', 'fire_station'];
@@ -73,6 +77,37 @@ function waterfall(safety: Safety, moment: Moment, when: string): string {
   const column = (title: string, tone: string, items: readonly Contribution[]) =>
     `<div><div class="sfh ${tone}">${icon('up')}${title}</div>${items.length === 0 ? '<p class="sfsrc">Nimic din jur.</p>' : items.map(contributionRow).join('')}</div>`;
   return `<div class="sfwfc"><h3>De ce are adresa ${String(score)} ${when}</h3>${bar}${equation}<div class="sfcols">${column('Ce ridică scorul', 'u', raises)}${column('Ce coboară scorul', 'd', lowers)}</div>${farTypes(safety, moment)}</div>`;
+}
+
+function heatLayers(safety: Safety, center: [number, number]): MapSpec['layers'] {
+  if (!safety.heat || safety.heat.cells.length === 0) return [];
+  const raster = heatRaster(
+    safety.heat.cells.map(([longitude, latitude, day]) => [longitude, latitude, day] as const),
+    {
+      center,
+      halfWidthM: HEAT_HALF_WIDTH_M,
+      halfHeightM: HEAT_HALF_HEIGHT_M,
+      stepM: HEAT_STEP_M,
+      cellSizeM: safety.heat.cell_size_m,
+      ramp: SAFETY_HEAT_RAMP,
+      opacity: SAFETY_HEAT_OPACITY,
+    },
+  );
+  return [{ kind: 'image', ...raster }];
+}
+
+function heatGradient(): string {
+  const first = SAFETY_HEAT_RAMP[0][0];
+  const span = (SAFETY_HEAT_RAMP.at(-1)?.[0] ?? 100) - first;
+  const stops = SAFETY_HEAT_RAMP.map(
+    ([score, [red, green, blue]]) =>
+      `rgb(${String(red)},${String(green)},${String(blue)}) ${String(Math.round(((score - first) / span) * 100))}%`,
+  );
+  return `linear-gradient(90deg,${stops.join(',')})`;
+}
+
+function heatLegend(): string {
+  return `<span class="sfleg-t"><b>Heat map</b><span>mai puțin sigur</span><i class="sframp" style="--ramp:${heatGradient()}"></i><span>mai sigur</span></span>`;
 }
 
 function helpRows(report: ReportData, safety: Safety): HelpRow[] {
@@ -154,7 +189,7 @@ export const safetyChapter: ChapterBuilder = (report) => {
     center,
     fit: around(center, MAP_REACH_M),
     padding: 0,
-    layers: [],
+    layers: heatLayers(safety, center),
     markers: [
       ...safety.landmarks.map((landmark) => {
         const type = safetyType(landmark.type);
@@ -167,14 +202,19 @@ export const safetyChapter: ChapterBuilder = (report) => {
     ],
   };
   const moments = `<div class="seg sfseg"><span class="on">${icon('sun')}Ziua <b>${String(Math.round(safety.day))}</b></span><span>${icon('moon')}Noaptea <b>${String(Math.round(safety.night))}</b></span></div>`;
-  const chips = shown
+  const hasHeat = (safety.heat?.cells.length ?? 0) > 0;
+  const heatChip = hasHeat
+    ? `<span class="sfc sfc-h"><i class="sframp sm" style="--ramp:${heatGradient()}"></i>Heat map</span>`
+    : '';
+  const typeChips = shown
     .map((key) => {
       const type = safetyType(key);
       return `<span class="sfc" style="--c:${type.color}"><span class="sfci">${icon(type.icon)}</span>${esc(type.label)}</span>`;
     })
     .join('');
+  const chips = heatChip + typeChips;
   const legend = chips
-    ? `<div class="sfov-leg"><div class="sfleg"><div class="sfchips">${chips}</div></div></div>`
+    ? `<div class="sfov-leg">${hasHeat ? `<div class="sfleg">${heatLegend()}</div>` : ''}<div class="sfchips">${chips}</div></div>`
     : '';
   const osm = sourceDate(report, 'osm');
   const body = `<section class="sfW"><div class="sfmap sfW-m">${mapHtml(map, `<div class="sfov-top">${moments}</div>${legend}`)}</div><div class="sfW-wf">${waterfall(safety, safety.address.day, 'ziua')}${waterfall(safety, safety.address.night, 'noaptea')}</div>${footnote(`Elementele de pe hartă sunt din OpenStreetMap${osm ? ` (extras din ${osm})` : ''}.`)}</section>`;
