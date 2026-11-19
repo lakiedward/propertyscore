@@ -1501,6 +1501,35 @@ svg.i {
   width: 13px;
   height: 13px;
 }
+.sframp {
+  display: inline-block;
+  width: 92px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--ramp);
+  flex: none;
+}
+.sframp.sm {
+  width: 22px;
+  height: 8px;
+}
+.sfleg-t {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.sfleg-t b {
+  color: var(--ink);
+  font-size: 12.5px;
+  margin-right: 2px;
+}
+.sfc-h {
+  padding-left: 10px;
+}
 .sfseg {
   margin: 0;
   width: auto;
