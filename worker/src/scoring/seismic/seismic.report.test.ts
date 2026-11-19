@@ -250,6 +250,7 @@ describe('nearbyEarthquakes', () => {
               },
             ],
             emsc: [],
+            failed: [],
           }),
       },
     });

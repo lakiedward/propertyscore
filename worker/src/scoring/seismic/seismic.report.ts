@@ -96,7 +96,13 @@ export async function nearbyEarthquakes(input: {
 }): Promise<EarthquakeReport | null> {
   if (input.catalog === null) return null;
   try {
-    const { usgs, emsc } = await input.catalog.near(input);
+    const { usgs, emsc, failed } = await input.catalog.near(input);
+    for (const failure of failed) {
+      input.logger.warn('earthquake catalogue skipped', {
+        catalogue: failure.catalogue,
+        code: errorCode(failure.error),
+      });
+    }
     return buildEarthquakeReport({
       longitude: input.longitude,
       latitude: input.latitude,

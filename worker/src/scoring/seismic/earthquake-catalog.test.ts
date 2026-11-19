@@ -44,11 +44,39 @@ describe('createEarthquakeCatalog', () => {
     expect(usgs.searchParams.get('maxradiuskm')).toBe('65');
     expect(usgs.searchParams.get('minmagnitude')).toBe('3.5');
     const emsc = new URL(urls.find((url) => url.includes('seismicportal.eu')) ?? '');
-    expect(emsc.searchParams.get('lat')).toBe('45.72912');
+    expect(emsc.searchParams.get('lat')).toBe('45.729');
+    expect(usgs.searchParams.get('longitude')).toBe('21.180');
     expect(emsc.searchParams.get('maxradius')).toBe('0.585');
   });
 
-  it('fails with a code when a catalogue answers an error', async () => {
+  it('keeps the catalogue that answered when the other fails', async () => {
+    const catalog = createEarthquakeCatalog((input) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      if (url.includes('usgs.gov')) return Promise.resolve(jsonResponse({}, 503));
+      return Promise.resolve(
+        jsonResponse({
+          features: [
+            {
+              properties: {
+                mag: 3.8,
+                time: '2024-01-13T09:08:27.97Z',
+                lat: 45.4378,
+                lon: 21.2947,
+                evtype: 'ke',
+              },
+            },
+          ],
+        }),
+      );
+    });
+    const result = await catalog.near(QUERY);
+    expect(result.usgs).toEqual([]);
+    expect(result.emsc).toHaveLength(1);
+    expect(result.failed.map((failure) => failure.catalogue)).toEqual(['usgs']);
+    expect(result.failed[0]?.error).toMatchObject({ code: 'earthquake_catalogue_failed' });
+  });
+
+  it('fails with a code when both catalogues answer an error', async () => {
     const catalog = createEarthquakeCatalog(() => Promise.resolve(jsonResponse({}, 503)));
     await expect(catalog.near(QUERY)).rejects.toMatchObject({
       code: 'earthquake_catalogue_failed',

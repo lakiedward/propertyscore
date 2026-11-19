@@ -17,15 +17,27 @@ type Fetch = typeof fetch;
 
 type EarthquakeQuery = { longitude: number; latitude: number };
 
+type CatalogueKey = CatalogueEvent['catalogue'];
+
 export type EarthquakeCatalog = {
-  near: (query: EarthquakeQuery) => Promise<{ usgs: CatalogueEvent[]; emsc: CatalogueEvent[] }>;
+  near: (query: EarthquakeQuery) => Promise<{
+    usgs: CatalogueEvent[];
+    emsc: CatalogueEvent[];
+    failed: { catalogue: CatalogueKey; error: unknown }[];
+  }>;
 };
+
+const COORDINATE_DECIMALS = 3;
+
+function coordinate(value: number): string {
+  return value.toFixed(COORDINATE_DECIMALS);
+}
 
 function usgsUrl({ longitude, latitude }: EarthquakeQuery): string {
   const params = new URLSearchParams({
     format: 'geojson',
-    latitude: String(latitude),
-    longitude: String(longitude),
+    latitude: coordinate(latitude),
+    longitude: coordinate(longitude),
     maxradiuskm: String(EARTHQUAKE_QUERY.radiusKm + QUERY_MARGIN_KM),
     minmagnitude: String(EARTHQUAKE_QUERY.minMagnitude),
     starttime: `${String(EARTHQUAKE_QUERY.startYear)}-01-01`,
@@ -38,8 +50,8 @@ function usgsUrl({ longitude, latitude }: EarthquakeQuery): string {
 function emscUrl({ longitude, latitude }: EarthquakeQuery): string {
   const params = new URLSearchParams({
     format: 'json',
-    lat: String(latitude),
-    lon: String(longitude),
+    lat: coordinate(latitude),
+    lon: coordinate(longitude),
     maxradius: ((EARTHQUAKE_QUERY.radiusKm + QUERY_MARGIN_KM) / KM_PER_DEGREE).toFixed(3),
     minmag: String(EARTHQUAKE_QUERY.minMagnitude),
     start: `${String(EARTHQUAKE_QUERY.startYear)}-01-01`,
@@ -90,11 +102,24 @@ async function readJson(
 export function createEarthquakeCatalog(fetchImpl: Fetch = fetch): EarthquakeCatalog {
   return {
     near: async (query) => {
-      const [usgs, emsc] = await Promise.all([
-        readJson(fetchImpl, usgsUrl(query), null),
-        readJson(fetchImpl, emscUrl(query), 204),
+      const [usgs, emsc] = await Promise.allSettled([
+        readJson(fetchImpl, usgsUrl(query), null).then(parseUsgsEvents),
+        readJson(fetchImpl, emscUrl(query), 204).then(parseEmscEvents),
       ]);
-      return { usgs: parseUsgsEvents(usgs), emsc: parseEmscEvents(emsc) };
+      if (usgs.status === 'rejected' && emsc.status === 'rejected') throw usgs.reason;
+      const failed = [
+        ...(usgs.status === 'rejected'
+          ? [{ catalogue: 'usgs' as const, error: usgs.reason as unknown }]
+          : []),
+        ...(emsc.status === 'rejected'
+          ? [{ catalogue: 'emsc' as const, error: emsc.reason as unknown }]
+          : []),
+      ];
+      return {
+        usgs: usgs.status === 'fulfilled' ? usgs.value : [],
+        emsc: emsc.status === 'fulfilled' ? emsc.value : [],
+        failed,
+      };
     },
   };
 }
