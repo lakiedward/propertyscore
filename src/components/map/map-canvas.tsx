@@ -5,16 +5,35 @@ import {
   Map as MapLibreMap,
   Marker,
   NavigationControl,
+  prewarm,
   setWorkerUrl,
+  type RequestParameters,
 } from 'maplibre-gl';
 import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
-import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { MAP_STYLE_URL, type LngLat, type LngLatBounds } from './map.config';
+import { removeLayersAndSource } from './map-layers';
+import { themeColor } from './map.theme';
+import {
+  tileRequestPrefix,
+  useMapListingTiles,
+  type MapListingTiles,
+} from './use-map-listing-tiles';
+import { useMapRegions } from './use-map-regions';
 
 setWorkerUrl(mapWorkerUrl);
+prewarm();
 
 type MapGeometry =
   | { type: 'LineString'; coordinates: LngLat[] }
@@ -39,14 +58,47 @@ export type MapOverlay = {
 
 export type MapFocus = {
   position: LngLat;
+  zoom?: number;
   requestId: number;
 };
+
+export type MapCanvasController = {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  fitBounds: (bounds: LngLatBounds) => void;
+};
+
+type RegionPolygon = readonly (readonly (readonly [number, number])[])[];
+
+export type MapRegionArea = {
+  id: string;
+  label: string;
+  weight: number;
+  coordinates: readonly RegionPolygon[];
+};
+
+export type MapRegions = {
+  outline: readonly RegionPolygon[];
+  areas: readonly MapRegionArea[];
+  selectedId: string | undefined;
+  onSelect: (id: string) => void;
+};
+
+export type MapViewport = {
+  bounds: LngLatBounds;
+  zoom: number;
+};
+
+const FLY_DURATION_MS = 800;
+const DEFAULT_BOUNDS_PADDING = 48;
+const RAISED_MARKER_Z_INDEX = '2';
 
 export type MapMarkerItem = {
   id: string;
   position: LngLat;
   node: ReactNode;
   anchor?: 'bottom' | 'center' | 'left';
+  isRaised?: boolean;
 };
 
 type MapCanvasProps = {
@@ -54,12 +106,23 @@ type MapCanvasProps = {
   center: LngLat;
   zoom: number;
   bounds?: LngLatBounds | undefined;
+  boundsPadding?: number;
+  boundsRequestId?: number;
   focus?: MapFocus | undefined;
   markers: readonly MapMarkerItem[];
   overlays?: readonly MapOverlay[];
+  listingTiles?: MapListingTiles | undefined;
+  regions?: MapRegions | undefined;
   onError: () => void;
+  onPick?: (position: LngLat) => void;
+  onViewportChange?: (viewport: MapViewport) => void;
+  hidesPointsOfInterest?: boolean;
+  isScrollZoomEnabled?: boolean;
+  hasCooperativeGestures?: boolean;
   isPrintable?: boolean;
+  hasNavigationControl?: boolean;
   className?: string;
+  ref?: Ref<MapCanvasController>;
 };
 
 type MapLabels = {
@@ -68,11 +131,9 @@ type MapLabels = {
   title: string;
   toggleAttribution: string;
   mapFeedback: string;
+  cooperativeDesktop: string;
+  cooperativeMobile: string;
 };
-
-function themeColor(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-}
 
 function labelElement(container: HTMLElement, selector: string, text: string) {
   const element = container.querySelector(selector);
@@ -82,8 +143,17 @@ function labelElement(container: HTMLElement, selector: string, text: string) {
   }
 }
 
+function setText(container: HTMLElement, selector: string, text: string) {
+  const element = container.querySelector(selector);
+  if (element) {
+    element.textContent = text;
+  }
+}
+
 function applyLabels(map: MapLibreMap, labels: MapLabels) {
   const container = map.getContainer();
+  setText(container, '.maplibregl-desktop-message', labels.cooperativeDesktop);
+  setText(container, '.maplibregl-mobile-message', labels.cooperativeMobile);
   labelElement(container, '.maplibregl-ctrl-zoom-in', labels.zoomIn);
   labelElement(container, '.maplibregl-ctrl-zoom-out', labels.zoomOut);
   labelElement(container, '.maplibregl-ctrl-attrib-button', labels.toggleAttribution);
@@ -95,25 +165,49 @@ export function MapCanvas({
   center,
   zoom,
   bounds,
+  boundsPadding = DEFAULT_BOUNDS_PADDING,
+  boundsRequestId = 0,
   focus,
   markers,
   overlays = [],
+  listingTiles,
+  regions,
   onError,
+  onPick,
+  onViewportChange,
+  hidesPointsOfInterest = false,
+  isScrollZoomEnabled = false,
+  hasCooperativeGestures = false,
   isPrintable = false,
+  hasNavigationControl = true,
   className,
+  ref,
 }: MapCanvasProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<MapLibreMap>();
   const [isStyleReady, setIsStyleReady] = useState(false);
   const appliedOverlays = useRef(new Map<string, string>());
-  const initialView = useRef({ center, zoom, isPrintable });
+  const tileRequest = useRef<{ prefix: string; headers: Readonly<Record<string, string>> }>(
+    undefined,
+  );
+  const initialView = useRef({
+    center,
+    zoom,
+    isPrintable,
+    hidesPointsOfInterest,
+    isScrollZoomEnabled,
+    hasCooperativeGestures,
+    hasNavigationControl,
+  });
   const labels: MapLabels = {
     zoomIn: t('map.zoomIn'),
     zoomOut: t('map.zoomOut'),
     title: t('map.title'),
     toggleAttribution: t('map.toggleAttribution'),
     mapFeedback: t('map.mapFeedback'),
+    cooperativeDesktop: t('map.cooperativeDesktop'),
+    cooperativeMobile: t('map.cooperativeMobile'),
   };
   const reportError = useEffectEvent(() => {
     onError();
@@ -134,14 +228,24 @@ export function MapCanvas({
         center: initialView.current.center,
         zoom: initialView.current.zoom,
         attributionControl: false,
-        scrollZoom: false,
+        scrollZoom: initialView.current.isScrollZoomEnabled,
+        cooperativeGestures: initialView.current.hasCooperativeGestures,
         canvasContextAttributes: { preserveDrawingBuffer: initialView.current.isPrintable },
+        transformRequest: (url, resourceType): RequestParameters => {
+          const request = tileRequest.current;
+          return String(resourceType) === 'Tile' && request && url.startsWith(request.prefix)
+            ? { url, headers: { ...request.headers } }
+            : { url };
+        },
         locale: {
           'Map.Title': initialLabels.title,
           'NavigationControl.ZoomIn': initialLabels.zoomIn,
           'NavigationControl.ZoomOut': initialLabels.zoomOut,
           'AttributionControl.ToggleAttribution': initialLabels.toggleAttribution,
           'AttributionControl.MapFeedback': initialLabels.mapFeedback,
+          'CooperativeGesturesHandler.WindowsHelpText': initialLabels.cooperativeDesktop,
+          'CooperativeGesturesHandler.MacHelpText': initialLabels.cooperativeDesktop,
+          'CooperativeGesturesHandler.MobileHelpText': initialLabels.cooperativeMobile,
         },
       });
     } catch {
@@ -149,7 +253,9 @@ export function MapCanvas({
       return;
     }
     const overlayRegistry = appliedOverlays.current;
-    instance.addControl(new NavigationControl({ showCompass: false }), 'top-right');
+    if (initialView.current.hasNavigationControl) {
+      instance.addControl(new NavigationControl({ showCompass: false }), 'top-right');
+    }
     instance.addControl(new AttributionControl({ compact: true }), 'bottom-right');
     instance.on('style.load', () => {
       if (instance.getLayer('background')) {
@@ -157,6 +263,13 @@ export function MapCanvas({
       }
       if (instance.getLayer('water')) {
         instance.setPaintProperty('water', 'fill-color', themeColor('--map-water'));
+      }
+      if (initialView.current.hidesPointsOfInterest) {
+        for (const layer of instance.getStyle().layers) {
+          if (layer.id.startsWith('poi')) {
+            instance.setLayoutProperty(layer.id, 'visibility', 'none');
+          }
+        }
       }
       overlayRegistry.clear();
       setIsStyleReady(true);
@@ -181,22 +294,33 @@ export function MapCanvas({
   }, []);
 
   useEffect(() => {
-    if (map) {
-      applyLabels(map, {
-        zoomIn: labels.zoomIn,
-        zoomOut: labels.zoomOut,
-        title: labels.title,
-        toggleAttribution: labels.toggleAttribution,
-        mapFeedback: labels.mapFeedback,
-      });
+    if (!map) {
+      return;
     }
+    if (hasCooperativeGestures) {
+      map.cooperativeGestures.enable();
+    } else {
+      map.cooperativeGestures.disable();
+    }
+    applyLabels(map, {
+      zoomIn: labels.zoomIn,
+      zoomOut: labels.zoomOut,
+      title: labels.title,
+      toggleAttribution: labels.toggleAttribution,
+      mapFeedback: labels.mapFeedback,
+      cooperativeDesktop: labels.cooperativeDesktop,
+      cooperativeMobile: labels.cooperativeMobile,
+    });
   }, [
     map,
+    hasCooperativeGestures,
     labels.zoomIn,
     labels.zoomOut,
     labels.title,
     labels.toggleAttribution,
     labels.mapFeedback,
+    labels.cooperativeDesktop,
+    labels.cooperativeMobile,
   ]);
 
   useEffect(() => {
@@ -208,7 +332,7 @@ export function MapCanvas({
 
   const fitToBounds = useEffectEvent((target: MapLibreMap) => {
     if (bounds) {
-      target.fitBounds(bounds, { padding: 48, maxZoom: 15, duration: 0 });
+      target.fitBounds(bounds, { padding: boundsPadding, maxZoom: 15, duration: 0 });
     }
   });
   const boundsKey = bounds ? bounds.flat().join(',') : '';
@@ -216,11 +340,70 @@ export function MapCanvas({
     if (map) {
       fitToBounds(map);
     }
-  }, [map, boundsKey]);
+  }, [map, boundsKey, boundsRequestId]);
+
+  const pickPosition = useEffectEvent((position: LngLat) => {
+    onPick?.(position);
+  });
+  const isPickable = onPick !== undefined;
+  useEffect(() => {
+    if (!map || !isPickable) {
+      return;
+    }
+    const handleClick = (event?: { lngLat: { lng: number; lat: number } }) => {
+      if (event) {
+        pickPosition([event.lngLat.lng, event.lngLat.lat]);
+      }
+    };
+    map.on('click', handleClick);
+    return () => {
+      map.off('click', handleClick);
+    };
+  }, [map, isPickable]);
+
+  const reportViewport = useEffectEvent((target: MapLibreMap) => {
+    const visible = target.getBounds();
+    onViewportChange?.({
+      bounds: [
+        [visible.getWest(), visible.getSouth()],
+        [visible.getEast(), visible.getNorth()],
+      ],
+      zoom: target.getZoom(),
+    });
+  });
+  const isViewportTracked = onViewportChange !== undefined;
+  useEffect(() => {
+    if (!map || !isStyleReady || !isViewportTracked) {
+      return;
+    }
+    const handleMoveEnd = () => {
+      reportViewport(map);
+    };
+    handleMoveEnd();
+    map.on('moveend', handleMoveEnd);
+    return () => {
+      map.off('moveend', handleMoveEnd);
+    };
+  }, [map, isStyleReady, isViewportTracked]);
+
+  const tilesUrl = listingTiles?.url;
+  const tilesHeaders = listingTiles?.headers;
+  useEffect(() => {
+    tileRequest.current =
+      tilesUrl === undefined || tilesHeaders === undefined
+        ? undefined
+        : { prefix: tileRequestPrefix(tilesUrl), headers: tilesHeaders };
+  }, [tilesUrl, tilesHeaders]);
+  useMapListingTiles(map, isStyleReady, listingTiles);
 
   const moveToFocus = useEffectEvent((target: MapLibreMap) => {
-    if (focus) {
+    if (!focus) {
+      return;
+    }
+    if (focus.zoom === undefined) {
       target.easeTo({ center: focus.position });
+    } else {
+      target.flyTo({ center: focus.position, zoom: focus.zoom, duration: FLY_DURATION_MS });
     }
   });
   const focusRequestId = focus?.requestId;
@@ -229,6 +412,24 @@ export function MapCanvas({
       moveToFocus(map);
     }
   }, [map, focusRequestId]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      zoomIn: () => {
+        map?.zoomIn();
+      },
+      zoomOut: () => {
+        map?.zoomOut();
+      },
+      fitBounds: (target) => {
+        map?.fitBounds(target, { padding: 10, duration: FLY_DURATION_MS });
+      },
+    }),
+    [map],
+  );
+
+  const regionTooltip = useMapRegions(map, isStyleReady, regions);
 
   return (
     <div
@@ -244,11 +445,21 @@ export function MapCanvas({
               map={map}
               position={marker.position}
               anchor={marker.anchor ?? 'bottom'}
+              isRaised={marker.isRaised ?? false}
             >
               {marker.node}
             </MapMarker>
           ))
         : null}
+      {regionTooltip ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-md border border-border bg-card px-2.25 py-1.25 text-meta font-bold whitespace-nowrap text-foreground shadow-map-control"
+          style={{ left: regionTooltip.x, top: regionTooltip.y - 12 }}
+        >
+          {regionTooltip.label}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -258,14 +469,7 @@ function overlayLayerIds(id: string): string[] {
 }
 
 function removeOverlay(map: MapLibreMap, id: string) {
-  for (const layerId of overlayLayerIds(id)) {
-    if (map.getLayer(layerId)) {
-      map.removeLayer(layerId);
-    }
-  }
-  if (map.getSource(id)) {
-    map.removeSource(id);
-  }
+  removeLayersAndSource(map, id, overlayLayerIds(id));
 }
 
 function syncOverlays(
@@ -353,19 +557,21 @@ type MapMarkerProps = {
   map: MapLibreMap;
   position: LngLat;
   anchor: 'bottom' | 'center' | 'left';
+  isRaised: boolean;
   children: ReactNode;
 };
 
-function MapMarker({ map, position, anchor, children }: MapMarkerProps) {
+function MapMarker({ map, position, anchor, isRaised, children }: MapMarkerProps) {
   const [element] = useState(() => document.createElement('div'));
   const [longitude, latitude] = position;
 
   useEffect(() => {
     const marker = new Marker({ element, anchor }).setLngLat([longitude, latitude]).addTo(map);
+    marker.getElement().style.zIndex = isRaised ? RAISED_MARKER_Z_INDEX : '';
     return () => {
       marker.remove();
     };
-  }, [map, element, anchor, longitude, latitude]);
+  }, [map, element, anchor, longitude, latitude, isRaised]);
 
   return createPortal(children, element);
 }

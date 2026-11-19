@@ -19,6 +19,70 @@ describe('toAppError', () => {
     expect(toAppError(postgrestError(code)).code).toBe(expected);
   });
 
+  it.each([
+    ['invalid_password', 'confirmation'],
+    ['email_mismatch', 'confirmation'],
+    ['last_admin', undefined],
+    ['rate_limited', undefined],
+    ['reauthentication_needed', undefined],
+    ['listing_photos_changed', undefined],
+    ['listing_not_found', undefined],
+    ['listing_already_pending', undefined],
+    ['listing_blocked', undefined],
+    ['listing_invalid_transition', undefined],
+    ['listing_incomplete', undefined],
+    ['listing_not_pending', undefined],
+    ['listing_photo_limit', undefined],
+    ['decision_reason_invalid', 'reasons'],
+    ['decision_message_required', 'message'],
+    ['decision_message_too_long', 'message'],
+  ])('maps the function error %s to its reason and the %s field', (message, field) => {
+    const error = toAppError(postgrestError('P0001', message));
+
+    expect(error.code).toBe('validation');
+    expect(error.reason).toBe(message);
+    expect(error.field).toBe(field);
+  });
+
+  it.each([
+    ['listings_floor_within_building', 'listing_floor_above_building', 'floor'],
+    ['listings_price_check', 'value_out_of_range', 'price'],
+    ['listings_year_built_check', 'value_out_of_range', 'year_built'],
+    ['listings_latitude_check', 'value_out_of_range', 'pin'],
+  ])('maps the refused rule %s to the %s reason on the %s field', (constraint, reason, field) => {
+    const error = toAppError(
+      postgrestError(
+        '23514',
+        `new row for relation "listings" violates check constraint "${constraint}"`,
+      ),
+    );
+
+    expect(error.code).toBe('validation');
+    expect(error.reason).toBe(reason);
+    expect(error.field).toBe(field);
+  });
+
+  it('keeps a refused rule it cannot place on a field generic', () => {
+    const error = toAppError(
+      postgrestError('23514', 'new row for relation "x" violates check constraint "x_rule"'),
+    );
+
+    expect(error.code).toBe('validation');
+    expect(error.reason).toBeUndefined();
+  });
+
+  it('maps a function outcome returned as data like a function error', () => {
+    const error = toAppError({ code: 'P0001', message: 'invalid_password', details: null });
+
+    expect(error.code).toBe('validation');
+    expect(error.reason).toBe('invalid_password');
+    expect(error.field).toBe('confirmation');
+  });
+
+  it('keeps an unknown function error without a reason', () => {
+    expect(toAppError(postgrestError('P0001', 'report_not_found')).reason).toBe(undefined);
+  });
+
   it('maps an unknown PostgREST code to unknown', () => {
     expect(toAppError(postgrestError('XX000')).code).toBe('unknown');
   });
@@ -34,16 +98,42 @@ describe('toAppError', () => {
     ['user_already_exists', 'user_already_exists'],
     ['email_exists', 'user_already_exists'],
     ['weak_password', 'weak_password'],
+    ['same_password', 'same_password'],
+    ['captcha_failed', 'captcha_failed'],
     ['over_request_rate_limit', 'rate_limited'],
+    ['over_email_send_rate_limit', 'rate_limited'],
+    ['otp_expired', 'link_expired'],
+    ['flow_state_expired', 'link_expired'],
+    ['flow_state_not_found', 'link_expired'],
+    ['current_password_invalid', 'current_password_invalid'],
+    ['current_password_required', 'current_password_required'],
+    ['reauthentication_needed', 'reauthentication_needed'],
   ])('maps the auth code %s to the reason %s', (code, reason) => {
     expect(toAppError(new AuthApiError('auth failed', 400, code)).reason).toBe(reason);
+  });
+
+  it.each([
+    ['over_request_rate_limit', 'unknown'],
+    ['over_email_send_rate_limit', 'unknown'],
+    ['captcha_failed', 'validation'],
+    ['otp_expired', 'validation'],
+    ['flow_state_expired', 'validation'],
+    ['flow_state_not_found', 'validation'],
+  ])('gives the auth code %s the %s code', (code, expected) => {
+    const error = toAppError(new AuthApiError('auth failed', 400, code));
+
+    expect(error.code).toBe(expected);
+    expect(error.field).toBe(undefined);
   });
 
   it.each([
     ['user_already_exists', 'email'],
     ['email_exists', 'email'],
     ['weak_password', 'password'],
-  ])('ties the sign-up auth code %s to the %s field', (code, field) => {
+    ['same_password', 'password'],
+    ['current_password_invalid', 'currentPassword'],
+    ['current_password_required', 'currentPassword'],
+  ])('ties the auth code %s to the %s field', (code, field) => {
     expect(toAppError(new AuthApiError('auth failed', 422, code)).field).toBe(field);
   });
 

@@ -70,12 +70,12 @@ function PreviewBody({ stepKey }: PreviewBodyProps) {
               <TagIcon className="size-6.5" />
               {t('steps.preview.sale')}
             </span>
-            <span className="flex flex-col items-center gap-2 rounded-icon border-[1.5px] border-border px-2.5 py-5.5 text-body font-extrabold text-muted-foreground">
+            <span className="flex flex-col items-center gap-2 rounded-icon border-(length:--border-width-control) border-border px-2.5 py-5.5 text-body font-extrabold text-muted-foreground">
               <KeyRoundIcon className="size-6.5" />
               {t('steps.preview.rent')}
             </span>
           </span>
-          <span className="flex items-center justify-between rounded-md border-[1.5px] border-border px-3.5 py-3">
+          <span className="flex items-center justify-between rounded-md border-(length:--border-width-control) border-border px-3.5 py-3">
             <span className="text-small text-muted-foreground">
               {t('steps.preview.totalPrice')}
             </span>
@@ -186,7 +186,7 @@ function PreviewField({ label, isFocused = false, isMuted = false, children }: P
       <span className="text-meta leading-[1.4] text-muted-foreground">{label}</span>
       <span
         className={cn(
-          'rounded-md border-[1.5px] px-3.5 py-3',
+          'rounded-md border-(length:--border-width-control) px-3.5 py-3',
           isFocused ? 'border-primary' : 'border-border',
           isMuted
             ? 'text-small leading-normal text-muted-foreground'
@@ -206,7 +206,7 @@ type PreviewFactProps = {
 
 function PreviewFact({ label, children }: PreviewFactProps) {
   return (
-    <span className="flex flex-col gap-0.5 rounded-md border-[1.5px] border-border px-3 py-2.5">
+    <span className="flex flex-col gap-0.5 rounded-md border-(length:--border-width-control) border-border px-3 py-2.5">
       <span className="text-meta leading-[1.4] text-muted-foreground">{label}</span>
       <strong className="text-body font-bold text-foreground tabular-nums">{children}</strong>
     </span>

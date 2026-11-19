@@ -5,7 +5,7 @@ export function safeRedirectPath(value: string | undefined, fallback = '/account
   const origin = window.location.origin;
   try {
     const url = new URL(value, origin);
-    if (url.origin !== origin) {
+    if (url.origin !== origin || url.pathname.startsWith('//')) {
       return fallback;
     }
     return `${url.pathname}${url.search}${url.hash}`;
@@ -14,15 +14,16 @@ export function safeRedirectPath(value: string | undefined, fallback = '/account
   }
 }
 
-const SHARE_TOKEN_PARAM = /((?:^|[?&#]|%3F|%26)share(?:=|%3D))[^&#\s"'%]+/gi;
+const SENSITIVE_PARAM =
+  /((?:^|[?&#]|%3F|%26)(?:share|token_hash|code|access_token|refresh_token)(?:=|%3D))[^&#\s"'%]+/gi;
 
 const REDACTED = '[redacted]';
 
-export function redactShareToken(text: string): string {
-  return text.replace(SHARE_TOKEN_PARAM, `$1${REDACTED}`);
+export function redactSensitiveParams(text: string): string {
+  return text.replace(SENSITIVE_PARAM, `$1${REDACTED}`);
 }
 
-export function redactShareTokensIn<T extends object>(target: T): T {
+export function redactSensitiveParamsIn<T extends object>(target: T): T {
   const visited = new WeakSet<object>();
   const visit = (node: object) => {
     if (visited.has(node)) {
@@ -32,7 +33,7 @@ export function redactShareTokensIn<T extends object>(target: T): T {
     const entries: [string, unknown][] = Object.entries(node);
     for (const [key, value] of entries) {
       if (typeof value === 'string') {
-        Reflect.set(node, key, redactShareToken(value));
+        Reflect.set(node, key, redactSensitiveParams(value));
       } else if (typeof value === 'object' && value !== null) {
         visit(value);
       }

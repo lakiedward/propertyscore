@@ -11,6 +11,7 @@ coverage/
 supabase/.temp/
 supabase/.branches/
 supabase/functions/.env
+supabase/seed.local*.sql
 
 .netlify/
 

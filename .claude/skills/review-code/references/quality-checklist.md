@@ -76,13 +76,14 @@ Search the whole repository, not just the diff (`git grep`, the component catalo
 
 - **Reimplemented helpers**: formatting, date maths, price display, slug or path building, error mapping, class merging, number parsing, debounce: when `@/i18n/format`, `@/lib/utils`, `toAppError`, `applyServerErrors`, `useValidationMessage`, or another feature's util already does it.
 - **Rebuilt components**: markup that matches an existing shared component (`components/brand`, `feedback`, `layout`, `map`, `media`, `property`, `report`, `trust`) or a shadcn primitive; a second empty state, skeleton, page header, price tag or badge style.
-- **Copy-paste across features**: the same JSX block, query, schema field set or class list in two or more places. Two copies: flag and suggest extracting when they must change together. Three or more: extract (a component in the feature, or in `src/components/<group>/` when more than one feature uses it).
+- **Hand-built shared patterns** (`react.md` §Reuse and shared components): a confirmation built from `Dialog` or `AlertDialog` instead of `ConfirmDialog`, a toast with inline classes or styles, a coloured `div` instead of an `Alert` tone, a one-off empty or error state, a generic pattern (form dialog, settings section, toolbar) built inside a feature instead of `src/components/<group>/`. Flag from the first occurrence.
+- **Copy-paste across features**: the same JSX block, query, schema field set or class list in two or more places. A component one feature already has and a second feature now copies: move it to `src/components/<group>/` and make the differences props. Otherwise two copies: flag and suggest extracting when they must change together. Three or more: extract.
 - **Repeated class strings**: the same long `className` set on three or more elements is a component (styling rule), not a copy.
 - **Duplicated types**: hand-written types that mirror a DB row, a Zod schema or a function's return type instead of deriving them.
 - **Duplicated query keys or column lists**: a key or `select` string written in more than one place instead of the query factory or `<ENTITY>_COLUMNS`.
 - **Duplicated translations**: the same text under several feature keys when it is a shared word (`common:actions.*`), or the same key meaning two different things.
 - **Duplicated validation**: Zod rules that restate a database constraint differently; both must agree, and one shared schema should serve create and edit forms.
-- **Misplaced code**: something in `src/components/` used by only one feature (move into the feature), or something inside a feature imported by another (move to `src/components/` or `src/lib/`).
+- **Misplaced code**: something in `src/components/` used by only one feature that is neither a catalogue component nor a generic interaction pattern (move into the feature), or something inside a feature imported by another (move to `src/components/` or `src/lib/`).
 
 ## 5. Simplification and maintainability
 

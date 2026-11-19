@@ -42,7 +42,7 @@ const triggerVariants = cva('font-bold text-foreground hover:no-underline', {
     density: {
       compact: 'min-h-16.75 items-center py-0 text-label data-[state=open]:text-brand',
       comfortable:
-        'min-h-0 rounded-none border-0 py-5 text-lg leading-[1.3] hover:text-brand aria-expanded:text-foreground **:data-[slot=accordion-trigger-icon]:size-5.5',
+        'min-h-0 rounded-none border-0 py-5 text-lg leading-snug-title hover:text-brand aria-expanded:text-foreground **:data-[slot=accordion-trigger-icon]:size-5.5',
     },
   },
 });

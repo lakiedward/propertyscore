@@ -2,7 +2,7 @@ import type { Locale } from '@/i18n/i18n';
 import { supabase } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';
 
-const PROFILE_COLUMNS = 'id, locale' as const;
+const PROFILE_COLUMNS = 'id, locale, full_name' as const;
 
 export async function getProfile(userId: string) {
   const { data, error } = await supabase

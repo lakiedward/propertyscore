@@ -1,9 +1,8 @@
-import type { Session } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { logger } from '@/lib/logger';
-import { getSession, subscribeToAuthChanges } from './api/auth.api';
-import { AuthContext } from './auth-context';
+import { subscribeToAuthChanges } from './api/auth.api';
+import { AuthContext, createAuthState, type AuthState } from './auth-context';
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -11,38 +10,27 @@ type AuthProviderProps = {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const queryClient = useQueryClient();
-  const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [auth, setAuth] = useState<AuthState>();
 
-  useEffect(() => {
-    let isActive = true;
-    getSession()
-      .then((initialSession) => {
-        if (isActive) setSession((current) => (current === undefined ? initialSession : current));
-      })
-      .catch((error: unknown) => {
-        logger.error(error);
-        if (isActive) setSession(null);
-      });
-    const unsubscribe = subscribeToAuthChanges((event, nextSession) => {
-      if (event === 'SIGNED_OUT') {
-        queryClient.clear();
-      }
-      setSession(nextSession);
-    });
-    return () => {
-      isActive = false;
-      unsubscribe();
-    };
-  }, [queryClient]);
+  useEffect(
+    () =>
+      subscribeToAuthChanges((event, session) => {
+        if (event === 'SIGNED_OUT') {
+          queryClient.clear();
+        }
+        setAuth(createAuthState(session));
+      }),
+    [queryClient],
+  );
 
-  const userId = session?.user.id ?? null;
+  const userId = auth?.user?.id ?? null;
   useEffect(() => {
     logger.setUser(userId);
   }, [userId]);
 
-  if (session === undefined) {
+  if (!auth) {
     return null;
   }
 
-  return <AuthContext value={{ session, user: session?.user ?? null }}>{children}</AuthContext>;
+  return <AuthContext value={auth}>{children}</AuthContext>;
 }

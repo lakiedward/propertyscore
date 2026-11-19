@@ -7,7 +7,12 @@
       We received a request to reset the password for your Property Score account. Follow the link
       below to choose a new one.
     </p>
-    <p><a href="{{ .ConfirmationURL }}">Choose a new password</a></p>
+    <p>
+      <a
+        href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next={{ .RedirectTo }}"
+        >Choose a new password</a
+      >
+    </p>
     <p>If you didn't ask to reset your password, you can ignore this email.</p>
   </body>
 </html>
@@ -19,7 +24,12 @@
       Am primit o cerere de resetare a parolei pentru contul tău Property Score. Folosește linkul de
       mai jos ca să alegi o parolă nouă.
     </p>
-    <p><a href="{{ .ConfirmationURL }}">Alege o parolă nouă</a></p>
+    <p>
+      <a
+        href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next={{ .RedirectTo }}"
+        >Alege o parolă nouă</a
+      >
+    </p>
     <p>Dacă nu ai cerut tu resetarea parolei, poți ignora acest email.</p>
   </body>
 </html>

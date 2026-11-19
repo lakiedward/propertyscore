@@ -6,7 +6,29 @@ export type AppErrorReason =
   | 'email_not_confirmed'
   | 'user_already_exists'
   | 'weak_password'
-  | 'rate_limited';
+  | 'same_password'
+  | 'captcha_failed'
+  | 'rate_limited'
+  | 'current_password_invalid'
+  | 'current_password_required'
+  | 'reauthentication_needed'
+  | 'link_expired'
+  | 'invalid_password'
+  | 'email_mismatch'
+  | 'last_admin'
+  | 'listing_not_found'
+  | 'listing_already_pending'
+  | 'listing_blocked'
+  | 'listing_invalid_transition'
+  | 'listing_incomplete'
+  | 'listing_not_pending'
+  | 'listing_photo_limit'
+  | 'listing_photos_changed'
+  | 'decision_reason_invalid'
+  | 'decision_message_required'
+  | 'decision_message_too_long'
+  | 'listing_floor_above_building'
+  | 'value_out_of_range';
 
 type AppErrorOptions = {
   cause?: unknown;

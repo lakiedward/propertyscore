@@ -11,7 +11,15 @@ export function authErrorResponse(code: string, status = 400) {
   );
 }
 
+export function authSettingsResponse(external: Record<string, boolean> = {}) {
+  return HttpResponse.json(
+    { external: { email: true, google: false, ...external } },
+    { headers: API_VERSION_HEADERS },
+  );
+}
+
 export const authHandlers = [
+  http.get(supabaseUrl('/auth/v1/settings'), () => authSettingsResponse()),
   http.post(supabaseUrl('/auth/v1/token'), () => {
     const session = buildSession();
     return HttpResponse.json(session, { headers: API_VERSION_HEADERS });
@@ -21,4 +29,8 @@ export const authHandlers = [
     return HttpResponse.json(session, { headers: API_VERSION_HEADERS });
   }),
   http.post(supabaseUrl('/auth/v1/logout'), () => new HttpResponse(null, { status: 204 })),
+  http.post(supabaseUrl('/auth/v1/recover'), () =>
+    HttpResponse.json({}, { headers: API_VERSION_HEADERS }),
+  ),
+  http.post(supabaseUrl('/rest/v1/rpc/account_has_password'), () => HttpResponse.json(true)),
 ];

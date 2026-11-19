@@ -1,6 +1,8 @@
 import { messageKey } from '@/i18n/validation';
 import {
+  changePasswordFormSchema,
   credentialsSchema,
+  deleteAccountFormSchema,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   signUpSchema,
@@ -11,6 +13,7 @@ import {
 const validSignUp: SignUpValues = {
   fullName: 'Ana Pop',
   email: 'nou@example.test',
+  phone: '0722 123 456',
   password: 'Parola-Lunga-1',
   acceptsTerms: true,
 };
@@ -35,12 +38,24 @@ describe('auth schemas', () => {
   it('keeps the password between the minimum and the maximum length', () => {
     expect(PASSWORD_MIN_LENGTH).toBe(8);
     expect(PASSWORD_MAX_LENGTH).toBe(72);
-    expect(signUpMessages({ password: 'a'.repeat(7) }).password).toBe(
+    expect(signUpMessages({ password: 'abc1234' }).password).toBe(
       messageKey('auth:fields.password.tooShort', { count: 8 }),
     );
-    expect(signUpMessages({ password: 'a'.repeat(8) }).password).toBeUndefined();
-    expect(signUpMessages({ password: 'a'.repeat(72) }).password).toBeUndefined();
-    expect(signUpMessages({ password: 'a'.repeat(73) }).password).toMatch(/^validation\.maxLength/);
+    expect(signUpMessages({ password: 'abcd1234' }).password).toBeUndefined();
+    expect(signUpMessages({ password: `${'a'.repeat(71)}1` }).password).toBeUndefined();
+    expect(signUpMessages({ password: `${'a'.repeat(72)}1` }).password).toMatch(
+      /^validation\.maxLength/,
+    );
+  });
+
+  it('asks for at least one letter and one digit', () => {
+    expect(signUpMessages({ password: 'parolafaracifre' }).password).toBe(
+      messageKey('auth:fields.password.needsLetterAndDigit'),
+    );
+    expect(signUpMessages({ password: '1234567890' }).password).toBe(
+      messageKey('auth:fields.password.needsLetterAndDigit'),
+    );
+    expect(signUpMessages({ password: 'Șosea123' }).password).toBeUndefined();
   });
 
   it('rejects a name made only of spaces and a name longer than 120 characters', () => {
@@ -67,13 +82,60 @@ describe('auth schemas', () => {
     ]);
   });
 
+  it('asks for the current password only when the account has one', () => {
+    const values = {
+      currentPassword: '',
+      password: 'Parola-Noua-1',
+      confirmPassword: 'Parola-Noua-1',
+    };
+
+    expect(changePasswordFormSchema(true).safeParse(values).error?.issues[0]?.message).toBe(
+      messageKey('auth:settings.password.currentRequired'),
+    );
+    expect(changePasswordFormSchema(false).safeParse(values).success).toBe(true);
+  });
+
+  it('asks for the new password twice when changing it', () => {
+    const result = changePasswordFormSchema(true).safeParse({
+      currentPassword: 'Parola-Veche-1',
+      password: 'Parola-Noua-1',
+      confirmPassword: 'Parola-Alta-1',
+    });
+
+    expect(result.error?.issues).toEqual([
+      expect.objectContaining({
+        path: ['confirmPassword'],
+        message: messageKey('auth:newPassword.mismatch'),
+      }),
+    ]);
+  });
+
+  it('asks for the password or the email to confirm deleting the account', () => {
+    expect(
+      deleteAccountFormSchema(true).safeParse({ confirmation: '' }).error?.issues[0]?.message,
+    ).toBe(messageKey('auth:settings.delete.passwordRequired'));
+    expect(
+      deleteAccountFormSchema(false).safeParse({ confirmation: '  ' }).error?.issues[0]?.message,
+    ).toBe(messageKey('auth:settings.delete.emailRequired'));
+    expect(deleteAccountFormSchema(false).parse({ confirmation: ' ana@example.test ' })).toEqual({
+      confirmation: 'ana@example.test',
+    });
+  });
+
   it('builds the sign-up payload with the language and the redirect', () => {
     expect(toSignUpPayload(validSignUp, 'en', '/publish')).toEqual({
       email: 'nou@example.test',
       password: 'Parola-Lunga-1',
       fullName: 'Ana Pop',
+      phone: '+40722123456',
       locale: 'en',
       redirect: '/publish',
     });
+  });
+
+  it('asks for a valid phone number', () => {
+    expect(signUpMessages({ phone: '  ' }).phone).toBe(messageKey('auth:fields.phone.required'));
+    expect(signUpMessages({ phone: '0722 12' }).phone).toBe(messageKey('auth:fields.phone.error'));
+    expect(signUpMessages({ phone: '+40 722 123 456' }).phone).toBeUndefined();
   });
 });

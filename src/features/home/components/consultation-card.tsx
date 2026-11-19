@@ -26,7 +26,7 @@ export function ConsultationCard() {
   return (
     <div className="mt-7 grid grid-cols-1 items-center gap-10 rounded-xl bg-surface-aqua p-6 w860:p-10 w1080:grid-cols-[0.91fr_1fr]">
       <div className="flex flex-col items-start gap-2.5">
-        <p className="flex items-center gap-1.5 text-meta font-extrabold tracking-[0.08em] text-aqua-ink uppercase">
+        <p className="flex items-center gap-1.5 text-meta font-extrabold tracking-label text-aqua-ink uppercase">
           <MessageSquareIcon aria-hidden className="size-4" />
           {t('pricing.consultation.eyebrow')}
         </p>
@@ -60,7 +60,7 @@ export function ConsultationCard() {
         </Link>
       </div>
       <div className="rounded-xl bg-card px-6 py-2 shadow-aqua">
-        <p className="pt-4 pb-1.5 text-meta font-extrabold tracking-[0.08em] text-muted-foreground uppercase">
+        <p className="pt-4 pb-1.5 text-meta font-extrabold tracking-label text-muted-foreground uppercase">
           {t('pricing.consultation.topicsTitle')}
         </p>
         <ul>

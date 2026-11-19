@@ -73,7 +73,7 @@ export function StepsExplorer({ activeKey, onStepChange }: StepsExplorerProps) {
           </div>
         </div>
         <Tabs value={activeKey} onValueChange={handleValueChange} className="gap-5">
-          <div className="[scrollbar-width:none] overflow-x-auto p-0.5 pb-2 w1059:overflow-visible w1059:pb-0.5">
+          <div className="scrollbar-none overflow-x-auto p-0.5 pb-2 w1059:overflow-visible w1059:pb-0.5">
             <TabsList
               variant="line"
               aria-label={t('steps.listLabel')}
@@ -156,7 +156,7 @@ export function StepsExplorer({ activeKey, onStepChange }: StepsExplorerProps) {
                 >
                   {t('steps.stepOf', { number: index + 1, total: PUBLISH_STEPS.length })}
                 </p>
-                <h3 className="text-title-sm leading-[1.15] font-extrabold tracking-[-0.03em] text-foreground">
+                <h3 className="text-title-sm leading-[1.15] font-extrabold tracking-figure text-foreground">
                   {t(`steps.items.${step.key}.title`)}
                 </h3>
                 <p className="text-body text-muted-foreground">
@@ -188,7 +188,7 @@ export function StepsExplorer({ activeKey, onStepChange }: StepsExplorerProps) {
                     onClick={() => {
                       goTo(index - 1);
                     }}
-                    className="border-[1.5px] font-bold"
+                    className="border-(length:--border-width-control) font-bold"
                   >
                     <ArrowLeftIcon aria-hidden />
                     {t('steps.previous')}
@@ -200,7 +200,7 @@ export function StepsExplorer({ activeKey, onStepChange }: StepsExplorerProps) {
                     onClick={() => {
                       goTo(index + 1);
                     }}
-                    className="border-[1.5px] font-bold"
+                    className="border-(length:--border-width-control) font-bold"
                   >
                     {t('steps.next')}
                     <ArrowRightIcon aria-hidden />
