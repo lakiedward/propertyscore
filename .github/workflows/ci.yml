@@ -50,10 +50,10 @@ jobs:
       - run: pnpm db:lint
       - run: pnpm db:test
       - name: Restore the apt packages of the worker tests
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: ~/apt-debs
-          key: apt-debs-${{ runner.os }}-${{ hashFiles('.github/workflows/ci.yml') }}
+          key: apt-debs-${{ runner.os }}-osmium-tool-unzip-gdal-bin-catdoc-poppler-utils
       - name: Install osmium and GDAL for the worker tests
         timeout-minutes: 5
         run: |
@@ -66,6 +66,12 @@ jobs:
             sudo apt-get install --yes $apt_options $packages
           }
           cp -n /var/cache/apt/archives/*.deb ~/apt-debs/ 2>/dev/null || true
+      - name: Save the apt packages of the worker tests
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/apt-debs
+          key: apt-debs-${{ runner.os }}-osmium-tool-unzip-gdal-bin-catdoc-poppler-utils
       - name: Transit routing helpers
         run: python3 -m unittest discover --start-directory worker/transit
       - name: Worker tests against the local database
