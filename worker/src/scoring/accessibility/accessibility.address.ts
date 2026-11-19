@@ -7,6 +7,7 @@ import { errorCode } from '../../lib/errors.ts';
 import type { Logger } from '../../lib/logger.ts';
 import { readRoutingBundle } from './accessibility.db.ts';
 import type { AccessibilityParams } from './accessibility.params.ts';
+import { exportNeighbourhoodPlaces, type NeighbourhoodPlace } from './osm-transit.ts';
 import {
   routingSettings,
   runTransitRouting,
@@ -28,19 +29,34 @@ export type AddressTripsInput = {
   runner?: RoutingRunner;
 };
 
-export async function planTripsFromAddress(
+export type AddressNetwork = {
+  trips: Map<string, Itinerary>;
+  places: NeighbourhoodPlace[];
+};
+
+async function readPlaces(input: AddressTripsInput, osmPbf: string, workDir: string) {
+  try {
+    return await exportNeighbourhoodPlaces(osmPbf, workDir);
+  } catch (error) {
+    input.logger.warn('neighbourhood places unavailable', {
+      snapshot_id: input.snapshotId,
+      code: errorCode(error),
+    });
+    return [];
+  }
+}
+
+async function planTrips(
   input: AddressTripsInput,
+  bundle: { referenceDate: string; gtfsArchives: Buffer[] },
+  osmPbf: string,
+  workDir: string,
 ): Promise<Map<string, Itinerary>> {
   if (input.destinations.length === 0) return new Map();
-  const bundle = await readRoutingBundle(input.sql, input.snapshotId, input.cityId);
-  if (!bundle) return new Map();
-  const workDir = await mkdtemp(join(tmpdir(), 'address-trips-'));
   try {
-    const osmPbf = join(workDir, 'network.osm.pbf');
-    await writeFile(osmPbf, bundle.osmPbf);
     const gtfs = await Promise.all(
       bundle.gtfsArchives.map(async (archive, index) => {
-        const path = join(workDir, `feed-${index}.zip`);
+        const path = join(workDir, `feed-${String(index)}.zip`);
         await writeFile(path, archive);
         return path;
       }),
@@ -67,6 +83,25 @@ export async function planTripsFromAddress(
       code: errorCode(error),
     });
     return new Map();
+  }
+}
+
+export async function routeFromAddress(input: AddressTripsInput): Promise<AddressNetwork> {
+  const bundle = await readRoutingBundle(input.sql, input.snapshotId, input.cityId);
+  if (!bundle) return { trips: new Map(), places: [] };
+  const workDir = await mkdtemp(join(tmpdir(), 'address-trips-'));
+  try {
+    const osmPbf = join(workDir, 'network.osm.pbf');
+    await writeFile(osmPbf, bundle.osmPbf);
+    const places = await readPlaces(input, osmPbf, workDir);
+    const trips = await planTrips(input, bundle, osmPbf, workDir);
+    return { trips, places };
+  } catch (error) {
+    input.logger.warn('address network unavailable', {
+      snapshot_id: input.snapshotId,
+      code: errorCode(error),
+    });
+    return { trips: new Map(), places: [] };
   } finally {
     await rm(workDir, { recursive: true, force: true });
   }

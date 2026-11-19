@@ -11,7 +11,6 @@ import {
 import { esc, formatDate, formatDistance, formatNumber, plural } from '../format.ts';
 import { DESTINATION_KINDS, TRANSIT_MODES } from '../labels.ts';
 import {
-  addressDot,
   addressMarker,
   collection,
   mapHtml,
@@ -32,25 +31,18 @@ const MAP_REACH_M = 4500;
 const WALK_METRES_PER_MINUTE = 80;
 const DEFAULT_LINE = '#55607A';
 const LIGHT_LINE_FROM = 150;
-const REACH_SHADES = ['#7E5F00', '#C9A227', '#EBCF6E'];
-const REACH_OPACITY = [0.85, 0.6, 0.4];
-const REACH_OUTLINE = '#2A2100';
-
-function northernmost(geometry: unknown): [number, number] | null {
-  const points: [number, number][] = [];
-  const collect = (value: unknown): void => {
-    if (!Array.isArray(value)) return;
-    const items: unknown[] = value;
-    const [first, second] = items;
-    if (typeof first === 'number' && typeof second === 'number') points.push([first, second]);
-    else items.forEach(collect);
-  };
-  collect((geometry as { coordinates?: unknown }).coordinates);
-  return points.reduce<[number, number] | null>(
-    (top, point) => (top === null || point[1] > top[1] ? point : top),
-    null,
-  );
-}
+const REACH_BANDS = [
+  { minutes: 15, color: '#7E5F00' },
+  { minutes: 30, color: '#C9A227' },
+  { minutes: 45, color: '#EBCF6E' },
+];
+const REACH_FALLBACK = '#F6E7B4';
+const REACH_FILL_OPACITY = 0.55;
+const REACH_LINE_OPACITY = 0.9;
+const REACH_LABEL_SPACING = 0.17;
+const REACH_FRAME_MARGIN = 0.15;
+const REACH_PLACE_ORDER = ['suburb', 'quarter', 'neighbourhood'];
+const METRES_PER_DEGREE = 111_195;
 
 function kindOf(destination: Destination) {
   return DESTINATION_KINDS[destination.kind] ?? { icon: 'pin' as const, color: '#2F5164' };
@@ -103,64 +95,132 @@ function tripRow(destination: Destination): string {
   return `<div class="acr" style="--c:${kind.color}">${iconTile(kind.icon, kind.color, `color-mix(in srgb,${kind.color} 13%,#fff)`)}<span class="acr-t"><b>${esc(destination.label.ro)}</b><small>${tripDetail(destination)}</small></span><span class="acr-b">${tripLegs(destination)}</span><span class="acr-m"><b>${String(Math.round(destination.minutes ?? 0))}</b> min</span></div>`;
 }
 
+function reachColour(minutes: number): string {
+  return REACH_BANDS.find((band) => minutes <= band.minutes)?.color ?? REACH_FALLBACK;
+}
+
+function reachPhrase(sharePct: number): string {
+  if (sharePct >= 75) return 'aproape tot orașul';
+  if (sharePct >= 66) return 'peste două treimi din oraș';
+  if (sharePct >= 45) return 'aproape jumătate din oraș';
+  if (sharePct >= 30) return 'peste o treime din oraș';
+  return 'centru și cartierele vecine';
+}
+
+function ringPositions(geometry: unknown): [number, number][] {
+  const found: [number, number][] = [];
+  const collect = (value: unknown): void => {
+    if (!Array.isArray(value)) return;
+    const items: unknown[] = value;
+    const [first, second] = items;
+    if (typeof first === 'number' && typeof second === 'number') found.push([first, second]);
+    else items.forEach(collect);
+  };
+  collect((geometry as { coordinates?: unknown }).coordinates);
+  return found;
+}
+
+function boundsOf(positions: readonly [number, number][]) {
+  const longitudes = positions.map((position) => position[0]);
+  const latitudes = positions.map((position) => position[1]);
+  return {
+    west: Math.min(...longitudes),
+    east: Math.max(...longitudes),
+    south: Math.min(...latitudes),
+    north: Math.max(...latitudes),
+  };
+}
+
+function widened(frame: [number, number][]): [number, number][] {
+  if (frame.length === 0) return [];
+  const box = boundsOf(frame);
+  const east = ((box.east - box.west) * REACH_FRAME_MARGIN) / 2;
+  const north = ((box.north - box.south) * REACH_FRAME_MARGIN) / 2;
+  return [
+    [box.west - east, box.south - north],
+    [box.east + east, box.north + north],
+  ];
+}
+
+function labelledPlaces(
+  reach: Reach,
+  frame: [number, number][],
+  center: [number, number],
+): Reach['neighbourhoods'] {
+  if (frame.length === 0) return [];
+  const box = boundsOf(frame);
+  const latitude = ((box.north + box.south) / 2) * (Math.PI / 180);
+  const toMetres = (position: [number, number]): [number, number] => [
+    position[0] * METRES_PER_DEGREE * Math.cos(latitude),
+    position[1] * METRES_PER_DEGREE,
+  ];
+  const [west, south] = toMetres([box.west, box.south]);
+  const [east, north] = toMetres([box.east, box.north]);
+  const spacing = Math.max(east - west, north - south) * REACH_LABEL_SPACING;
+  const taken: [number, number][] = [toMetres(center)];
+  const chosen: Reach['neighbourhoods'] = [];
+  const rank = (place: Reach['neighbourhoods'][number]) => {
+    const order = REACH_PLACE_ORDER.indexOf(place.place ?? '');
+    return order < 0 ? REACH_PLACE_ORDER.length : order;
+  };
+  [...reach.neighbourhoods]
+    .filter((place) => place.minutes !== null)
+    .sort((left, right) => rank(left) - rank(right) || (left.minutes ?? 0) - (right.minutes ?? 0))
+    .forEach((place) => {
+      const at = toMetres(place.location);
+      const inside = at[0] >= west && at[0] <= east && at[1] >= south && at[1] <= north;
+      const crowded = taken.some(
+        (other) => Math.hypot(other[0] - at[0], other[1] - at[1]) < spacing,
+      );
+      if (!inside || crowded) return;
+      taken.push(at);
+      chosen.push(place);
+    });
+  return chosen;
+}
+
 function reachCard(reach: Reach, center: [number, number]): { html: string; map: MapSpec } {
-  const bands = [...reach.isochrones].sort((left, right) => right.minutes - left.minutes);
+  const shown = reach.isochrones
+    .filter((band) => band.minutes <= reach.minutes)
+    .sort((left, right) => right.minutes - left.minutes);
+  const headline = shown[0];
+  const frame = headline ? ringPositions(headline.geometry) : [];
+  const view = widened(frame);
+  const places = labelledPlaces(reach, view, center);
   const map: MapSpec = {
     id: 'map-reach',
     center,
-    fit: reach.neighbourhoods.map((place) => place.location),
-    padding: 48,
-    layers: bands.flatMap((band, index) => {
+    fit: [...view, ...places.map((place) => place.location), center],
+    padding: 24,
+    labels: false,
+    layers: shown.flatMap((band) => {
       const data = collection([band.geometry]);
-      const step = bands.length - 1 - index;
+      const color = reachColour(band.minutes);
       return [
-        {
-          kind: 'fill' as const,
-          data,
-          color: REACH_SHADES[step] ?? REACH_SHADES[0] ?? DEFAULT_LINE,
-          opacity: REACH_OPACITY[step] ?? 0.5,
-        },
-        {
-          kind: 'line' as const,
-          data,
-          color: REACH_OUTLINE,
-          width: step === 0 ? 3 : 1.8,
-          dotted: step === bands.length - 1 && bands.length > 1,
-        },
+        { kind: 'fill' as const, data, color, opacity: REACH_FILL_OPACITY },
+        { kind: 'line' as const, data, color, opacity: REACH_LINE_OPACITY, width: 1.5 },
       ];
     }),
     markers: [
-      ...bands.flatMap((band): MapMarker[] => {
-        const top = northernmost(band.geometry);
-        return top
-          ? [
-              {
-                position: top,
-                html: `<span class="reach-b">${String(band.minutes)} min</span>`,
-              },
-            ]
-          : [];
-      }),
-      ...reach.neighbourhoods.map((place): MapMarker => {
+      ...places.map((place): MapMarker => {
         const inside = place.minutes !== null && place.minutes <= reach.minutes;
         return {
           position: place.location,
-          html: `<span class="reach-pl${inside ? '' : ' out'}"><i></i><b>${esc(place.name)}</b>${place.minutes === null ? '' : `<small>${String(Math.round(place.minutes))} min</small>`}</span>`,
-          anchor: 'top',
+          html: `<span class="acn-lb${inside ? ' on' : ''}"><b>${esc(place.name)}</b><i></i><small>${String(Math.round(place.minutes ?? 0))} min</small></span>`,
         };
       }),
-      addressDot(center),
+      { position: center, html: '<span class="acn-me"><i></i></span>' },
     ],
   };
-  const key = bands
-    .slice()
-    .reverse()
-    .map((band, index, all) => {
-      const from = index === 0 ? 'sub ' : `${String(all[index - 1]?.minutes ?? 0)}–`;
-      return `<span><i style="background:${REACH_SHADES[index] ?? DEFAULT_LINE};border:1.5px solid ${REACH_OUTLINE}"></i>${from}${String(band.minutes)} min</span>`;
-    })
-    .join('');
-  const html = `<section class="card ac acn acnA"><div class="ac-h"><div><div class="eyebrow">Cât de departe ajungi</div><h3>Orașul, în minute de la ușa ta</h3></div><div class="seg acnseg"><span class="on">${String(reach.minutes)} min</span></div></div><div class="acnA-g"><div class="acnA-t"><div class="acn-big"><b>${formatNumber(reach.share_pct)}%</b><span>din oraș</span></div><p class="acn-s">În <b>${String(reach.minutes)} de minute</b>, cu transportul public și pe jos, ajungi în ${formatNumber(reach.share_pct)}% din oraș.</p><p class="acn-n"><b>${String(reach.neighbourhoods_reached)} din ${String(reach.neighbourhoods_total)}</b> cartiere, plecând la 8 dimineața.</p><div class="acn-key">${key}</div></div><div class="acnA-m">${mapHtml(map)}</div></div></section>`;
+  const key = REACH_BANDS.map(
+    (band, index) =>
+      `<span><i style="background:${band.color}"></i>${index === 0 ? `sub ${String(band.minutes)} min` : `${String(REACH_BANDS[index - 1]?.minutes ?? 0)}–${String(band.minutes)} min`}</span>`,
+  ).join('');
+  const segment = REACH_BANDS.map(
+    (band) =>
+      `<span${band.minutes === reach.minutes ? ' class="on"' : ''}>${String(band.minutes)} min</span>`,
+  ).join('');
+  const html = `<section class="card ac acn acnA"><div class="ac-h"><div><div class="eyebrow">Cât de departe ajungi</div><h3>Orașul, în minute de la ușa ta</h3></div><div class="seg acnseg">${segment}</div></div><div class="acnA-g"><div class="acnA-t"><div class="acn-big"><b>${formatNumber(reach.share_pct)}%</b><span>din oraș</span></div><p class="acn-s">În <b>${String(reach.minutes)} de minute</b>, cu transportul public și pe jos, ajungi în ${reachPhrase(reach.share_pct)}.</p><p class="acn-n"><b>${String(reach.neighbourhoods_reached)} din ${String(reach.neighbourhoods_total)}</b> cartiere, plecând la 8 dimineața.</p><div class="acn-key">${key}</div></div><div class="acnA-m">${mapHtml(map)}</div></div></section>`;
   return { html, map };
 }
 

@@ -79,6 +79,37 @@ export async function exportTransitOpl(clippedPath: string, workDir: string, nam
   return opl;
 }
 
+const NEIGHBOURHOOD_PLACES = ['suburb', 'quarter', 'neighbourhood'] as const;
+
+export type NeighbourhoodPlace = LngLat & { name: string; place: string };
+
+export async function exportNeighbourhoodPlaces(
+  clippedPath: string,
+  workDir: string,
+): Promise<NeighbourhoodPlace[]> {
+  const filtered = join(workDir, 'places.osm.pbf');
+  const opl = join(workDir, 'places.opl');
+  await osmium([
+    'tags-filter',
+    '--overwrite',
+    '--output',
+    filtered,
+    clippedPath,
+    `n/place=${NEIGHBOURHOOD_PLACES.join(',')}`,
+  ]);
+  await osmium(['cat', '--overwrite', '--output-format', 'opl', '--output', opl, filtered]);
+  return neighbourhoodPlaces(await readOpl(opl));
+}
+
+function neighbourhoodPlaces(data: OplData): NeighbourhoodPlace[] {
+  const kinds: readonly string[] = NEIGHBOURHOOD_PLACES;
+  return [...data.nodes.values()].flatMap((node) => {
+    const name = node.tags.name?.trim();
+    const place = node.tags.place ?? '';
+    return name && kinds.includes(place) ? [{ name, place, lng: node.lng, lat: node.lat }] : [];
+  });
+}
+
 export function unescapeOpl(value: string): string {
   return value.replace(/%([0-9a-fA-F]+)%/g, (_, hex: string) =>
     String.fromCodePoint(Number.parseInt(hex, 16)),

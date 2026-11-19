@@ -3,12 +3,17 @@ import { z } from 'zod';
 import type { JsonObject, Sql } from '../../db/sql.ts';
 import { readCellCategory, sectionParams } from '../../report/cell-category.ts';
 import type { ReportSection } from '../../report/report-section.ts';
-import { planTripsFromAddress } from './accessibility.address.ts';
+import { routeFromAddress } from './accessibility.address.ts';
+import { listCityCells, readTravelRow } from './accessibility.db.ts';
 import { parseAccessibilityParams } from './accessibility.params.ts';
+import { buildReach, decodeTravelRow } from './accessibility.reach.ts';
+import type { NeighbourhoodPlace } from './osm-transit.ts';
 import type { Itinerary } from './routing.ts';
 import { routeKeyResolver } from './transit-network.ts';
 
 const LISTED_ROUTES = 12;
+
+const gridParamsSchema = z.object({ cell_size_m: z.number().positive() });
 
 const inputsSchema = z.object({
   s_access: z.number().nullable(),
@@ -168,6 +173,35 @@ async function readRoutesByKeys(
   return z.array(routeSchema).parse(rows);
 }
 
+async function readReach(
+  sql: Sql,
+  options: {
+    snapshotId: string;
+    cityId: string;
+    cellId: string;
+    cellSizeM: number;
+    origin: { lng: number; lat: number };
+    places: readonly NeighbourhoodPlace[];
+  },
+): Promise<JsonObject | null> {
+  const [row, cells] = await Promise.all([
+    readTravelRow(sql, options.snapshotId, options.cellId),
+    listCityCells(sql, options.snapshotId, options.cityId),
+  ]);
+  const minutes = row ? decodeTravelRow(row, cells.length) : null;
+  if (!minutes) return null;
+  return buildReach({
+    origin: options.origin,
+    cells: cells.map((cell, index) => ({
+      lng: cell.lng,
+      lat: cell.lat,
+      minutes: minutes[index] ?? null,
+    })),
+    cellSizeM: options.cellSizeM,
+    places: options.places,
+  });
+}
+
 async function readDestinations(sql: Sql, ids: readonly string[]): Promise<DestinationRow[]> {
   if (ids.length === 0) return [];
   const rows = await sql`
@@ -197,6 +231,7 @@ export function accessibilitySection(input: {
   addressTrips?: ReadonlyMap<string, Itinerary>;
   tripRoutes?: readonly RouteRow[];
   routeKeyOf?: (routeId: string | null) => string | null;
+  reach?: JsonObject | null;
 }): JsonObject {
   const { inputs, transit } = input;
   const addressTrips = input.addressTrips ?? new Map<string, Itinerary>();
@@ -285,6 +320,7 @@ export function accessibilitySection(input: {
         },
       ];
     }),
+    reach: input.reach ?? null,
   };
 }
 
@@ -308,7 +344,7 @@ export const accessibilityReportSection: ReportSection = {
       ),
     ]);
     const accessibilityParams = parseAccessibilityParams(sectionParams(params, 'accessibility'));
-    const addressTrips = await planTripsFromAddress({
+    const { trips: addressTrips, places } = await routeFromAddress({
       sql,
       logger,
       snapshotId,
@@ -335,6 +371,17 @@ export const accessibilityReportSection: ReportSection = {
       .map((routeId) => routeKeyOf(routeId))
       .filter((key): key is string => key !== null);
     const tripRoutes = await readRoutesByKeys(sql, snapshotId, cell.cityId, tripRouteKeys);
+    const grid = gridParamsSchema.safeParse(params);
+    const reach = grid.success
+      ? await readReach(sql, {
+          snapshotId,
+          cityId: cell.cityId,
+          cellId,
+          cellSizeM: grid.data.cell_size_m,
+          origin: { lng: longitude, lat: latitude },
+          places,
+        })
+      : null;
     return accessibilitySection({
       inputs: inputs.data,
       transit: transit.data,
@@ -344,6 +391,7 @@ export const accessibilityReportSection: ReportSection = {
       addressTrips,
       tripRoutes,
       routeKeyOf,
+      reach,
     });
   },
 };

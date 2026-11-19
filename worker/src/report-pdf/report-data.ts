@@ -119,7 +119,12 @@ const accessibilitySchema = z.object({
       neighbourhoods_total: z.number(),
       isochrones: z.array(z.object({ minutes: z.number(), geometry })),
       neighbourhoods: z.array(
-        z.object({ name: z.string(), location: position, minutes: z.number().nullable() }),
+        z.object({
+          name: z.string(),
+          place: z.string().optional(),
+          location: position,
+          minutes: z.number().nullable(),
+        }),
       ),
     })
     .nullable()
