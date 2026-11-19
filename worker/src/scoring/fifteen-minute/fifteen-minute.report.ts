@@ -29,7 +29,14 @@ export const fifteenMinuteReportSchema = z.object({
   total: z.number().int().min(0),
   walk_speed_kmh: z.number().positive(),
   distance_method: z.enum(['pedestrian_routing', 'straight_line']),
-  groups: z.array(z.object({ key: z.string(), categories: z.array(z.string()), ...countsSchema })),
+  groups: z.array(
+    z.object({
+      key: z.string(),
+      categories: z.array(z.string()),
+      ...countsSchema,
+      typical_n15: z.number().int().min(0).nullable(),
+    }),
+  ),
   categories: z.array(
     z.object({
       key: z.string(),
@@ -101,6 +108,8 @@ export type ReportCell = {
 
 type RoutedCandidate = ReportCandidate & { leg: Leg | null };
 
+export type TypicalCellCount = { group: string; n15: number; isCensored: boolean };
+
 type Assembled = Omit<FifteenMinuteReport, 'isochrones' | 'routes'>;
 
 const reportCandidateSchema = z.object({
@@ -119,11 +128,32 @@ function minutesOf(leg: Leg): number {
   return Math.round(leg.seconds / 60);
 }
 
+function exactMedian(cells: readonly TypicalCellCount[]): number | null {
+  if (cells.length === 0) return null;
+  const sorted = cells.map((cell) => cell.n15).sort((a, b) => a - b);
+  const half = Math.ceil(sorted.length / 2);
+  const median = sorted[half - 1];
+  if (median === undefined) return null;
+  const isCertain = cells.filter((cell) => !cell.isCensored && cell.n15 <= median).length >= half;
+  return isCertain ? median : null;
+}
+
+export function typicalGroupCounts(cells: readonly TypicalCellCount[]): Map<string, number | null> {
+  const byGroup = new Map<string, TypicalCellCount[]>();
+  for (const cell of cells) {
+    const list = byGroup.get(cell.group) ?? [];
+    list.push(cell);
+    byGroup.set(cell.group, list);
+  }
+  return new Map([...byGroup].map(([group, list]) => [group, exactMedian(list)]));
+}
+
 export function assembleFifteenMinuteReport(input: {
   params: FifteenMinuteParams;
   candidates: readonly RoutedCandidate[];
   coveredKeys: ReadonlySet<string>;
   cell: ReportCell;
+  typical: ReadonlyMap<string, number | null>;
   distanceMethod: DistanceMethod;
 }): Assembled {
   const { params, coveredKeys } = input;
@@ -166,6 +196,7 @@ export function assembleFifteenMinuteReport(input: {
       n5: members.reduce((sum, category) => sum + category.n5, 0),
       n10: members.reduce((sum, category) => sum + category.n10, 0),
       n15: members.reduce((sum, category) => sum + category.n15, 0),
+      typical_n15: members.length === 0 ? null : (input.typical.get(group) ?? null),
     };
   });
 
@@ -298,6 +329,43 @@ async function readCoveredKeys(
   );
 }
 
+async function readTypicalCells(
+  sql: Sql,
+  snapshotId: string,
+  cityId: string,
+  params: FifteenMinuteParams,
+  coveredKeys: ReadonlySet<string>,
+): Promise<TypicalCellCount[]> {
+  const targets = params.categories
+    .filter((category) => coveredKeys.has(category.key))
+    .map((category) => ({
+      category: poiCategoryOf(category.key),
+      group_key: category.group,
+      cap: Math.max(params.max_candidates, category.enough),
+    }));
+  if (targets.length === 0) return [];
+  const rows = await sql<{ group_key: string; n15: number; is_censored: boolean }[]>`
+    select
+      t.group_key,
+      coalesce(sum(wa.n15), 0)::integer as n15,
+      coalesce(bool_or(wa.n15 = wa.candidates and wa.candidates >= t.cap), false) as is_censored
+    from private.cell_scores cs
+    join private.grid_cells g on g.id = cs.cell_id
+    cross join jsonb_to_recordset(${sql.json(targets)}::jsonb) as t (
+      category text,
+      group_key text,
+      cap integer
+    )
+    left join private.cell_walk_access wa
+      on wa.snapshot_id = cs.snapshot_id and wa.cell_id = cs.cell_id and wa.category = t.category
+    where cs.snapshot_id = ${snapshotId}
+      and g.city_id = ${cityId}
+      and cs.is_residential is not false
+    group by t.group_key, cs.cell_id
+  `;
+  return rows.map((row) => ({ group: row.group_key, n15: row.n15, isCensored: row.is_censored }));
+}
+
 async function readCandidates(
   sql: Sql,
   snapshotId: string,
@@ -334,18 +402,16 @@ async function buildFifteenMinuteReport(options: {
     readCoveredKeys(sql, snapshotId, cell.cityId, params),
     readCandidates(sql, snapshotId, origin, params),
   ]);
-  const legs = await legsFromOrigin(
-    router,
-    origin,
-    candidates,
-    params.walk_speed_kmh,
-    params.walk_detour_factor,
-  );
+  const [typicalCells, legs] = await Promise.all([
+    readTypicalCells(sql, snapshotId, cell.cityId, params, coveredKeys),
+    legsFromOrigin(router, origin, candidates, params.walk_speed_kmh, params.walk_detour_factor),
+  ]);
   const assembled = assembleFifteenMinuteReport({
     params,
     candidates: candidates.map((candidate, index) => ({ ...candidate, leg: legs[index] ?? null })),
     coveredKeys,
     cell,
+    typical: typicalGroupCounts(typicalCells),
     distanceMethod: router ? 'pedestrian_routing' : 'straight_line',
   });
 

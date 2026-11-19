@@ -7,6 +7,7 @@ import {
   fifteenMinuteReportSchema,
   type ReportCandidate,
   routeTargets,
+  typicalGroupCounts,
 } from './fifteen-minute.report.ts';
 
 const params = testParams({
@@ -94,6 +95,11 @@ const assembled = assembleFifteenMinuteReport({
   ],
   coveredKeys: new Set(['supermarket', 'convenience', 'pharmacy', 'swimming_pool']),
   cell: { score: 88, cityAvg: 64, cityPercentile: 81 },
+  typical: new Map([
+    ['shops', 2],
+    ['pharmacies', null],
+    ['services', 5],
+  ]),
   distanceMethod: 'pedestrian_routing',
 });
 
@@ -112,7 +118,14 @@ describe('assembleFifteenMinuteReport', () => {
       n5: 2,
       n10: 3,
       n15: 4,
+      typical_n15: 2,
     });
+  });
+
+  it('gives each group the typical count of the city and none when it is unknown or unscored', () => {
+    expect(
+      Object.fromEntries(assembled.groups.map((group) => [group.key, group.typical_n15])),
+    ).toEqual({ shops: 2, pharmacies: null, sport: null, services: null });
   });
 
   it('lists missing categories with the nearest one beyond 15 minutes and separates the ones without data', () => {
@@ -159,5 +172,32 @@ describe('routeTargets', () => {
       'osm:node/4',
       'osm:node/5',
     ]);
+  });
+});
+
+describe('typicalGroupCounts', () => {
+  function cells(group: string, values: readonly number[], censored: readonly number[] = []) {
+    return values.map((n15, index) => ({ group, n15, isCensored: censored.includes(index) }));
+  }
+
+  it('takes the median of the cells of each group, the lower middle for an even count', () => {
+    const typical = typicalGroupCounts([
+      ...cells('shops', [4, 1, 9, 2, 6]),
+      ...cells('parks', [3, 1, 7, 5]),
+    ]);
+    expect(typical.get('shops')).toBe(4);
+    expect(typical.get('parks')).toBe(3);
+  });
+
+  it('keeps the median when only cells above it hit the candidate limit', () => {
+    expect(
+      typicalGroupCounts(cells('food_drink', [2, 3, 5, 20, 20], [3, 4])).get('food_drink'),
+    ).toBe(5);
+  });
+
+  it('gives no typical count when cells at the candidate limit could move the median', () => {
+    expect(
+      typicalGroupCounts(cells('food_drink', [2, 10, 10, 10, 20], [1, 2, 3, 4])).get('food_drink'),
+    ).toBeNull();
   });
 });
