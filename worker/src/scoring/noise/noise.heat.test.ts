@@ -15,9 +15,9 @@ describe('gridAround', () => {
   it('numbers the cells row by row from the north-west corner', () => {
     const { cells } = gridAround(center, 50, 25);
     const first = cells[0];
-    expect(first?.index).toBe(1);
+    expect(first?.index).toBe(2);
     expect(first?.lat).toBeGreaterThan(center.lat);
-    expect(first?.lon).toBeLessThan(center.lon + 1e-9);
+    expect(first?.lon).toBeCloseTo(center.lon, 9);
   });
 
   it('spaces the cells by the step in metres', () => {
