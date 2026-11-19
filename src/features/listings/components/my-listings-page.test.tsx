@@ -49,7 +49,10 @@ describe('MyListingsPage', { timeout: 20_000 }, () => {
     const waiting = cardOf(pendingCopy.title);
     expect(await within(waiting).findByText(ro.list.revision.pending_approval)).toBeInTheDocument();
     expect(within(waiting).queryByRole('button', { name: ro.list.edit })).not.toBeInTheDocument();
-    expect(within(waiting).getByRole('button', { name: ro.list.view })).toBeInTheDocument();
+    expect(within(waiting).getByRole('link', { name: ro.list.view })).toHaveAttribute(
+      'href',
+      `/listings/${pendingCopy.id}`,
+    );
     expect(screen.getAllByRole('article')).toHaveLength(2);
 
     await user.click(within(cardOf(published.title)).getByRole('button', { name: ro.list.edit }));
