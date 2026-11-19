@@ -19,6 +19,7 @@ describe('buildReportDocument', () => {
     expect(document.html).toContain(report.addressText);
     expect(document.html).toContain('risc moderat, nu ridicat');
     expect(document.html).toContain('preț cerut');
+    expect(document.html).toContain('mai puțin sigur');
     expect(document.html).toContain('class="inv-ex">exemplu');
     expect(document.layoutWidthPx).toBe(1120);
     expect(document.allowedHosts).toEqual(['tiles.openfreemap.org']);
@@ -39,5 +40,31 @@ describe('buildReportDocument', () => {
     await expect(buildReportDocument(report)).resolves.toMatchObject({
       allowedHosts: ['tiles.openfreemap.org'],
     });
+  });
+
+  it('prints the viewing questions of the report and skips unknown codes', async () => {
+    const input = reportInputSchema.parse(await exampleInput());
+    const report = toReportData({
+      ...input,
+      result: {
+        ...input.result,
+        questions: { codes: ['bedroom_facade_side', 'unknown_code', 'construction_year'] },
+      },
+    });
+    const { html } = await buildReportDocument(report);
+
+    expect(html).toContain('De întrebat la vizionare');
+    expect(html).toContain('2 întrebări pentru proprietar');
+    expect(html).toContain('Spre ce dau dormitoarele');
+    expect(html).not.toContain('unknown_code');
+  });
+
+  it('leaves out the viewing questions block when the report has none', async () => {
+    const input = reportInputSchema.parse(await exampleInput());
+    const { html } = await buildReportDocument(
+      toReportData({ ...input, result: { ...input.result, questions: null } }),
+    );
+
+    expect(html).not.toContain('De întrebat la vizionare');
   });
 });

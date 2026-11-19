@@ -11,7 +11,9 @@ import {
 import { esc, formatNumber } from '../format.ts';
 import { NOISE_CLASSES, NOISE_KINDS, NOISE_REFERENCES } from '../labels.ts';
 import { addressDot, around, mapHtml, type FeatureCollection, type MapSpec } from '../maps.ts';
-import { CATEGORY_THEME } from '../theme.ts';
+import { heatRaster } from '../heat-grid.ts';
+import type { ReportData } from '../report-data.ts';
+import { CATEGORY_THEME, NOISE_HEAT_OPACITY, NOISE_HEAT_RAMP } from '../theme.ts';
 
 const BAND_DB = 5;
 const MAP_RADIUS_M = 500;
@@ -29,17 +31,8 @@ const BAND_COLORS: readonly (readonly [number, string])[] = [
 ];
 const LOUD_ROADS = ['motorway', 'trunk', 'primary'];
 const BUSY_ROADS = ['secondary'];
-const HEAT_STOPS: readonly (readonly [number, string])[] = [
-  [50, '#FFF3CC'],
-  [55, '#FBE3A0'],
-  [60, '#F4C06F'],
-  [65, '#E78A55'],
-  [70, '#C8472F'],
-  [75, '#8E2A1E'],
-];
-const HEAT_FADE_FROM_DB = 51;
-const HEAT_FADE_TO_DB = 56;
-const HEAT_OPACITY = 0.78;
+const HEAT_FIRST_DB = 54;
+const HEAT_STEP_M = 25;
 const MAP_KEY = [
   { label: 'sub 55 dB', swatch: 'background:#E9F1EF;border:1px solid #D5E2DF' },
   { label: '55–60', swatch: 'background:#FBE3A0' },
@@ -106,6 +99,37 @@ function coloured(lines: FeatureCollection): FeatureCollection {
   };
 }
 
+function heatLayers(
+  heat: NonNullable<NonNullable<ReportData['sections']['noise']>['map']['heat']>,
+  center: [number, number],
+): MapSpec['layers'] {
+  const width = 2 * heat.half + 1;
+  const latStep = heat.step_m / 111_320;
+  const lonStep = heat.step_m / (111_320 * Math.cos((heat.center[1] * Math.PI) / 180));
+  const cells = heat.levels.flatMap((level, index): [number, number, number][] => {
+    if (level === null || level < HEAT_FIRST_DB) return [];
+    const row = Math.floor(index / width) - heat.half;
+    const column = (index % width) - heat.half;
+    return [[heat.center[0] + column * lonStep, heat.center[1] - row * latStep, level]];
+  });
+  if (cells.length === 0) return [];
+  const radius = heat.half * heat.step_m;
+  return [
+    {
+      kind: 'image',
+      ...heatRaster(cells, {
+        center,
+        halfWidthM: radius,
+        halfHeightM: radius,
+        stepM: HEAT_STEP_M,
+        cellSizeM: heat.step_m,
+        ramp: NOISE_HEAT_RAMP,
+        opacity: NOISE_HEAT_OPACITY,
+      }),
+    },
+  ];
+}
+
 export const noiseChapter: ChapterBuilder = (report) => {
   const summary = report.categories.noise;
   const section = report.sections.noise;
@@ -149,16 +173,7 @@ export const noiseChapter: ChapterBuilder = (report) => {
     fit: around(center, heat || bands ? BANDS_RADIUS_M : MAP_RADIUS_M),
     padding: 0,
     layers: heat
-      ? [
-          {
-            kind: 'heat',
-            grid: heat,
-            stops: HEAT_STOPS,
-            fadeFromDb: HEAT_FADE_FROM_DB,
-            fadeToDb: HEAT_FADE_TO_DB,
-            opacity: HEAT_OPACITY,
-          },
-        ]
+      ? heatLayers(heat, center)
       : bands
         ? [{ kind: 'fill', data: bands, color: QUIET, colorProperty: 'color', opacity: 0.55 }]
         : lines

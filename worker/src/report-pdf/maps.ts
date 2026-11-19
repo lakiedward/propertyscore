@@ -8,7 +8,15 @@ type Feature = { type: 'Feature'; properties: Record<string, unknown> | null; ge
 
 export type FeatureCollection = { type: 'FeatureCollection'; features: Feature[] };
 
-type MapLayer = {
+type ImageLayer = {
+  kind: 'image';
+  coordinates: [Position, Position, Position, Position];
+  width: number;
+  height: number;
+  rgba: number[];
+};
+
+type VectorLayer = {
   kind: 'fill' | 'line' | 'circle';
   data: FeatureCollection;
   color: string;
@@ -20,14 +28,7 @@ type MapLayer = {
   colorProperty?: string;
 };
 
-type HeatLayer = {
-  kind: 'heat';
-  grid: { center: Position; step_m: number; half: number; levels: (number | null)[] };
-  stops: readonly (readonly [number, string])[];
-  fadeFromDb: number;
-  fadeToDb: number;
-  opacity: number;
-};
+type MapLayer = VectorLayer | ImageLayer;
 
 export type MapMarker = {
   position: Position;
@@ -43,7 +44,7 @@ export type MapSpec = {
   fit?: Position[];
   padding?: number;
   maxZoom?: number;
-  layers: (MapLayer | HeatLayer)[];
+  layers: MapLayer[];
   markers: MapMarker[];
 };
 

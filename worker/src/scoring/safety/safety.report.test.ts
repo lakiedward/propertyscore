@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { PointSafety } from './safety.formula.ts';
-import { smoothedAddressScore, walkedLandmarks } from './safety.report.ts';
+import { heatJson, smoothedAddressScore, walkedLandmarks } from './safety.report.ts';
 import { v1Params } from './safety.test-params.ts';
 
 const params = v1Params();
@@ -98,5 +98,18 @@ describe('smoothedAddressScore', () => {
     expect(smoothedAddressScore(point, [{ reason: 'no_data' }], params)).toBe(
       Math.round((weights.day * 80 + weights.night * 60) / (weights.day + weights.night)),
     );
+  });
+});
+
+describe('heatJson', () => {
+  it('rounds each cell to its day and night score with the cell size', () => {
+    expect(
+      heatJson(175, [{ longitude: 21.2, latitude: 45.75, day: 61.6, night: 48.2 }]),
+    ).toMatchObject({ cell_size_m: 175, cells: [[21.2, 45.75, 62, 48]] });
+  });
+
+  it('writes nothing without cells', () => {
+    expect(heatJson(175, [])).toBeNull();
+    expect(heatJson(null, [])).toBeNull();
   });
 });

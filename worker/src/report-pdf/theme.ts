@@ -1,4 +1,5 @@
 import type { CategoryKey } from '../scoring/categories.ts';
+import type { HeatStop } from './heat-grid.ts';
 import type { IconName } from './icons.ts';
 
 export type CategoryTheme = {
@@ -89,3 +90,24 @@ export const CONTEXT_THEME = {
   seismic: { color: '#7B5B3A', tint: '#EFE3D4' },
   investment: { color: '#103F32', tint: '#DDED69' },
 } as const;
+
+export const SAFETY_HEAT_RAMP = [
+  [30, [189, 99, 78]],
+  [42, [218, 146, 88]],
+  [55, [225, 204, 153]],
+  [68, [202, 231, 188]],
+  [82, [214, 246, 224]],
+] as const satisfies readonly HeatStop[];
+
+export const SAFETY_HEAT_OPACITY = 0.8;
+
+export const NOISE_HEAT_RAMP = [
+  [54, [255, 243, 204]],
+  [57, [251, 227, 160]],
+  [62, [244, 192, 111]],
+  [67, [231, 138, 85]],
+  [72, [200, 71, 47]],
+  [76, [142, 42, 30]],
+] as const satisfies readonly HeatStop[];
+
+export const NOISE_HEAT_OPACITY = 0.8;

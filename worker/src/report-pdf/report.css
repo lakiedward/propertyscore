@@ -1407,6 +1407,67 @@ svg.i {
 .bB-meth {
   padding: 4px 2px;
 }
+.bB-ask {
+  padding: 28px;
+  border-radius: var(--r-hero);
+  background: var(--slate50);
+  border: 1px solid var(--slate100);
+}
+.bB-ask h2 {
+  margin: 4px 0 0;
+}
+.bB-qs {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 12px;
+}
+.bB-q {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: inset 0 3px 0 var(--cc);
+  min-width: 0;
+}
+.bB-q > b {
+  font-size: 15.5px;
+  line-height: 1.35;
+}
+.bB-q small {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.ck {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--forest);
+  color: var(--lime);
+  font-weight: 800;
+  font-size: 14px;
+}
+.chap {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--cb);
+  color: var(--cc);
+  font-weight: 800;
+  font-size: 12.5px;
+}
 .bB-st {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1500,6 +1561,35 @@ svg.i {
 .sfci .i {
   width: 13px;
   height: 13px;
+}
+.sframp {
+  display: inline-block;
+  width: 92px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--ramp);
+  flex: none;
+}
+.sframp.sm {
+  width: 22px;
+  height: 8px;
+}
+.sfleg-t {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.sfleg-t b {
+  color: var(--ink);
+  font-size: 12.5px;
+  margin-right: 2px;
+}
+.sfc-h {
+  padding-left: 10px;
 }
 .sfseg {
   margin: 0;
@@ -3413,6 +3503,15 @@ body {
 .chapter .ch {
   display: block;
 }
+.chapter.closing {
+  break-before: page;
+  margin-top: 0;
+}
+.chapter.closing .below {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
 .chapter .ch > * + * {
   margin-top: 18px;
 }
@@ -3424,6 +3523,9 @@ body {
 .how,
 .sfhon,
 .bB-s,
+.bB-ask,
+.bB-next,
+.bB-meth,
 .pcard,
 .bigc,
 .fqx-tile,
@@ -3532,6 +3634,32 @@ li {
 .se-q.b {
   background: rgba(123, 91, 58, 0.75);
   border-color: #7b5b3a;
+}
+.se-q.b {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  min-height: 20px;
+}
+.se-qn {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.se-n {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid #7b5b3a;
+  color: #7b5b3a;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex: none;
+  font-variant-numeric: tabular-nums;
 }
 .fqx-n.onmap {
   border: 2px solid #fff;
