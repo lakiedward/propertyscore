@@ -190,7 +190,6 @@ const noiseSchema = z.object({
   ),
   map: z.object({
     lines: featureCollection.optional(),
-    bands: featureCollection.optional(),
     heat: z
       .object({
         center: z.tuple([z.number(), z.number()]),

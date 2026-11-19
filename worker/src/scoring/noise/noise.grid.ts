@@ -145,7 +145,34 @@ export function buildingsCrossed(index: BuildingIndex, from: Metres, to: Metres)
   return count;
 }
 
-type ClassGroup = { kind: NoiseKind; sourceClass: string; segments: [Metres, Metres][] };
+const SEGMENT_BUCKET_M = 250;
+
+type Segment = [Metres, Metres];
+
+type ClassGroup = {
+  kind: NoiseKind;
+  sourceClass: string;
+  buckets: Map<string, Segment[]>;
+};
+
+function segmentBucketKey(column: number, row: number): string {
+  return `${String(column)}:${String(row)}`;
+}
+
+function addSegment(group: ClassGroup, from: Metres, to: Metres): void {
+  const first = Math.floor(Math.min(from[0], to[0]) / SEGMENT_BUCKET_M);
+  const last = Math.floor(Math.max(from[0], to[0]) / SEGMENT_BUCKET_M);
+  const top = Math.floor(Math.min(from[1], to[1]) / SEGMENT_BUCKET_M);
+  const bottom = Math.floor(Math.max(from[1], to[1]) / SEGMENT_BUCKET_M);
+  for (let column = first; column <= last; column += 1) {
+    for (let row = top; row <= bottom; row += 1) {
+      const key = segmentBucketKey(column, row);
+      const bucket = group.buckets.get(key);
+      if (bucket) bucket.push([from, to]);
+      else group.buckets.set(key, [[from, to]]);
+    }
+  }
+}
 
 export function groupLines(lines: readonly GridLine[]): ClassGroup[] {
   const groups = new Map<string, ClassGroup>();
@@ -154,16 +181,42 @@ export function groupLines(lines: readonly GridLine[]): ClassGroup[] {
     const group = groups.get(key) ?? {
       kind: line.kind,
       sourceClass: line.sourceClass,
-      segments: [],
+      buckets: new Map(),
     };
     for (let index = 1; index < line.points.length; index += 1) {
       const from = line.points[index - 1];
       const to = line.points[index];
-      if (from && to) group.segments.push([from, to]);
+      if (from && to) addSegment(group, from, to);
     }
     groups.set(key, group);
   }
   return [...groups.values()];
+}
+
+function nearestInGroup(
+  point: Metres,
+  group: ClassGroup,
+  radiusM: number,
+): { distance: number; at: Metres } | null {
+  const column = Math.floor(point[0] / SEGMENT_BUCKET_M);
+  const row = Math.floor(point[1] / SEGMENT_BUCKET_M);
+  const rings = Math.ceil(radiusM / SEGMENT_BUCKET_M);
+  let best: { distance: number; at: Metres } | null = null;
+  for (let ring = 0; ring <= rings; ring += 1) {
+    if (best !== null && best.distance <= (ring - 1) * SEGMENT_BUCKET_M) break;
+    for (let dx = -ring; dx <= ring; dx += 1) {
+      for (let dy = -ring; dy <= ring; dy += 1) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== ring) continue;
+        const bucket = group.buckets.get(segmentBucketKey(column + dx, row + dy));
+        if (!bucket) continue;
+        for (const [from, to] of bucket) {
+          const candidate = nearestOnSegment(point, from, to);
+          if (best === null || candidate.distance < best.distance) best = candidate;
+        }
+      }
+    }
+  }
+  return best !== null && best.distance <= radiusM ? best : null;
 }
 
 export function samplesAt(
@@ -174,12 +227,8 @@ export function samplesAt(
 ): NoiseSample[] {
   const samples: NoiseSample[] = [];
   for (const group of groups) {
-    let best: { distance: number; at: Metres } | null = null;
-    for (const [from, to] of group.segments) {
-      const candidate = nearestOnSegment(point, from, to);
-      if (best === null || candidate.distance < best.distance) best = candidate;
-    }
-    if (best === null || best.distance > radiusM) continue;
+    const best = nearestInGroup(point, group, radiusM);
+    if (best === null) continue;
     samples.push({
       measure: 'proxy',
       kind: group.kind,

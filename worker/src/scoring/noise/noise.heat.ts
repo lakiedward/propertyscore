@@ -9,7 +9,7 @@ type Location = { lon: number; lat: number };
 const GRID_STEP_M = 20;
 const HALF_WIDTH_M = 1160;
 const HALF_HEIGHT_M = 1000;
-const FIRST_DRAWN_DB = 55;
+const FIRST_DRAWN_DB = 0;
 const BUILDING_REACH_M = 600;
 const METRES_PER_DEGREE = 111_320;
 
