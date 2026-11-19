@@ -119,7 +119,97 @@ describe('parseCommand for reports', () => {
       longitude: 21.2257,
       addressText: 'Piața Victoriei 1, Timișoara',
       locale: 'ro',
+      declared: {
+        areaM2: null,
+        rooms: null,
+        floor: null,
+        buildingFloors: null,
+        hasElevator: null,
+        constructionYear: null,
+      },
     });
+  });
+
+  it('reads the declared apartment details of a report request', () => {
+    expect(
+      parseCommand(
+        [
+          'create-report',
+          '--email',
+          'buyer@example.test',
+          '--lat',
+          '45.7537',
+          '--lon',
+          '21.2257',
+          '--address',
+          'Piața Victoriei 1, Timișoara',
+          '--area',
+          '58.5',
+          '--rooms',
+          '3',
+          '--floor',
+          '4',
+          '--building-floors',
+          '10',
+          '--elevator',
+          'no',
+          '--year',
+          '1978',
+        ],
+        NOW,
+      ),
+    ).toMatchObject({
+      declared: {
+        areaM2: 58.5,
+        rooms: 3,
+        floor: 4,
+        buildingFloors: 10,
+        hasElevator: false,
+        constructionYear: 1978,
+      },
+    });
+  });
+
+  it('refuses an empty number option instead of reading it as zero', () => {
+    expect(() =>
+      parseCommand(
+        [
+          'create-report',
+          '--email',
+          'a@b.ro',
+          '--lat',
+          '45',
+          '--lon',
+          '21',
+          '--address',
+          'Strada 1',
+          '--floor',
+          '',
+        ],
+        NOW,
+      ),
+    ).toThrow(expect.objectContaining({ code: 'invalid_report_request' }));
+  });
+
+  it('refuses an elevator answer other than yes or no', () => {
+    expect(() =>
+      parseCommand(
+        [
+          'create-report',
+          '--email',
+          'a@b.ro',
+          '--lat',
+          '45',
+          '--lon',
+          '21',
+          '--address',
+          'Strada 1',
+          '--elevator',
+          'maybe',
+        ],
+        NOW,
+      ),
+    ).toThrow(expect.objectContaining({ code: 'invalid_report_request' }));
   });
 
   it('names the invalid fields of a report request', () => {
