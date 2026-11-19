@@ -18,7 +18,7 @@ export function GreenBreakdown({ section }: GreenBreakdownProps) {
   return (
     <section
       aria-labelledby="green-breakdown-title"
-      className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 sm:p-6"
+      className="flex flex-col gap-4 rounded-xl border border-card bg-card p-5 shadow-card-soft sm:p-6"
     >
       <div className="flex flex-col gap-1">
         <h3 id="green-breakdown-title" className="text-h4">

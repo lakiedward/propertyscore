@@ -245,7 +245,7 @@ export function ListingEditorForm({
               value={section}
               id={sectionId(section)}
               data-invalid={status?.tone === 'error' ? true : undefined}
-              className="scroll-mt-24 rounded-lg border border-border bg-card data-invalid:border-destructive"
+              className="scroll-mt-24 rounded-lg border border-card bg-card shadow-card-soft data-invalid:border-destructive"
             >
               <AccordionTrigger className="px-5 py-4 text-h4 text-foreground sm:px-6">
                 <EditorSectionTitle

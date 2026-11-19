@@ -94,7 +94,8 @@
         "area": "Floor area"
       },
       "more": "Show more homes",
-      "shownOf": "Showing {{shown}} of {{total}}"
+      "shownOf": "Showing {{shown}} of {{total}}",
+      "showOnMap": "Show on map"
     },
     "empty": {
       "outside": {
@@ -115,7 +116,6 @@
     },
     "showMap": "Map",
     "showList": "List",
-    "card": "Show on map: {{title}}, {{address}}, {{price}}",
     "address": "{{street}}, {{city}}",
     "popup": {
       "label": "Selected home",
@@ -123,5 +123,35 @@
     },
     "perMonthSuffix": "/ month",
     "mapNote": "Home positions are approximate and have no cadastral value. Map © OpenFreeMap, © OpenMapTiles, © OpenStreetMap contributors; outlines from Natural Earth."
+  },
+  "detail": {
+    "back": {
+      "sale": "All homes for sale",
+      "rent": "All homes for rent"
+    },
+    "factsLabel": "At a glance",
+    "priceLabel": "Price",
+    "priceEyebrow": {
+      "sale": "Asking price",
+      "rent": "Monthly rent"
+    },
+    "publishedAt": "Published on {{date}}",
+    "share": {
+      "action": "Share listing",
+      "copied": "The listing link was copied.",
+      "copyFailed": "The link could not be copied. Copy it from the address bar."
+    },
+    "description": "Description",
+    "location": {
+      "title": "Location",
+      "mapLabel": "Map with the approximate position of the home",
+      "mapError": "The map could not be loaded.",
+      "note": "The position on the map is approximate. Ask the owner for the exact address."
+    },
+    "unavailable": {
+      "title": "This listing is no longer available",
+      "description": "The listing was withdrawn or does not exist. See the other homes on the map.",
+      "action": "See all homes"
+    }
   }
 }

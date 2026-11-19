@@ -33,7 +33,7 @@ export function ServiceComparison() {
   );
 
   return (
-    <div className="mt-3.75 flex flex-col rounded-xl border border-border bg-card p-7">
+    <div className="mt-3.75 flex flex-col rounded-xl border border-card bg-card p-7 shadow-card-soft">
       <h3 className="text-h3 font-extrabold tracking-[-0.025em] text-brand">
         {t('pricing.comparison.title')}
       </h3>

@@ -20,7 +20,7 @@ export function CategoryBars({ categories, onOpenChapter }: CategoryBarsProps) {
   const { t } = useTranslation('onlineReports');
 
   return (
-    <div className="flex flex-col gap-3.5 rounded-xl border border-border bg-card p-5 sm:p-6">
+    <div className="flex flex-col gap-3.5 rounded-xl border border-card bg-card p-5 shadow-card-soft sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <h3 className="text-h4 font-extrabold">{t('summary.allScores')}</h3>
         <span aria-hidden className="flex gap-3.5 text-meta text-muted-foreground">

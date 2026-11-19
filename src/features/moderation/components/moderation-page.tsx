@@ -72,7 +72,7 @@ export function ModerationPage() {
             {isQueueHidden ? null : (
               <nav
                 aria-label={t('queue.label')}
-                className="overflow-hidden rounded-lg border border-border bg-card lg:sticky lg:top-[calc(var(--header-height)+16px)]"
+                className="overflow-hidden rounded-lg border border-card bg-card shadow-card-soft lg:sticky lg:top-[calc(var(--header-height)+16px)]"
               >
                 <div className="flex items-center justify-between gap-2 border-b border-border-subtle py-2 pr-2 pl-4">
                   <p className="text-small font-bold text-foreground">

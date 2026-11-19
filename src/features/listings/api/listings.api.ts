@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';
+import { LISTING_DETAIL_SELECT } from '@/config/listing-details';
 import { EXPLORER_PRICE_CAP_CURRENCY, type ExplorerSort } from '@/config/listings-explorer';
 import type { ExplorerListingFilters, ListingFilters, ListingTransaction } from '../listing.types';
 
@@ -8,6 +9,9 @@ const LISTING_COLUMNS =
 
 const MAP_CARD_COLUMNS =
   'id, title, price, currency, latitude, longitude, street_label, city, photo_path' as const;
+
+const PUBLIC_LISTING_COLUMNS =
+  `id, transaction, title, street_label, city, rooms, area_m2, price, currency, latitude, longitude, floor, building_floors, year_built, description, published_at, photo_path, ${LISTING_DETAIL_SELECT}, photos:listing_photos(id, path, position)` as const;
 
 export const EXPLORER_PAGE_SIZE = 12;
 
@@ -45,6 +49,18 @@ export async function getListingMapCard(id: string) {
     .select(MAP_CARD_COLUMNS)
     .eq('id', id)
     .eq('status', 'approved')
+    .single();
+  if (error) throw toAppError(error);
+  return data;
+}
+
+export async function getPublicListing(id: string) {
+  const { data, error } = await supabase
+    .from('listings')
+    .select(PUBLIC_LISTING_COLUMNS)
+    .eq('id', id)
+    .eq('status', 'approved')
+    .order('position', { referencedTable: 'listing_photos', ascending: true })
     .single();
   if (error) throw toAppError(error);
   return data;

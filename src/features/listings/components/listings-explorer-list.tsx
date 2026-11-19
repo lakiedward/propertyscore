@@ -1,4 +1,6 @@
 import type { InfiniteData } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
+import { ArrowRightIcon, MapPinIcon } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
@@ -151,7 +153,10 @@ export function ListingsExplorerList({
       ) : isLoading ? (
         <ul aria-busy="true" aria-label={t('explore.list.searching')} className={GRID_CLASS}>
           {Array.from({ length: SKELETON_COUNT }, (_, index) => (
-            <li key={index} className="overflow-hidden rounded-xl border border-border bg-card">
+            <li
+              key={index}
+              className="overflow-hidden rounded-xl border border-card bg-card shadow-card-soft"
+            >
               <Skeleton className="aspect-4/3 rounded-none" />
               <div className="flex flex-col gap-2 px-4 pt-3.5 pb-4">
                 <Skeleton className="h-3 w-2/5" />
@@ -202,11 +207,6 @@ export function ListingsExplorerList({
                       listing.photo_path ? getListingMediumUrl(listing.photo_path) : undefined
                     }
                     title={listing.title}
-                    accessibleName={t('explore.card', {
-                      title: listing.title,
-                      address,
-                      price: isRent ? t('common:price.perMonth', { price }) : price,
-                    })}
                     price={
                       <span className="mb-1 text-card-title font-extrabold tracking-figure text-foreground tabular-nums">
                         {price}
@@ -219,9 +219,29 @@ export function ListingsExplorerList({
                     }
                     meta={address}
                     isSelected={listing.id === activeId}
-                    onSelect={() => {
-                      onSelect(listing);
-                    }}
+                    actions={
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          aria-pressed={listing.id === activeId}
+                          className="touch-target flex-1"
+                          onClick={() => {
+                            onSelect(listing);
+                          }}
+                        >
+                          <MapPinIcon aria-hidden />
+                          {t('explore.list.showOnMap')}
+                        </Button>
+                        <Button asChild size="sm" className="touch-target flex-1">
+                          <Link to="/listings/$listingId" params={{ listingId: listing.id }}>
+                            {t('explore.popup.viewListing')}
+                            <ArrowRightIcon aria-hidden />
+                          </Link>
+                        </Button>
+                      </>
+                    }
                     onHoverChange={(isHovered) => {
                       onHoverChange(isHovered ? listing.id : undefined);
                     }}

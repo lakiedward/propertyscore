@@ -54,7 +54,7 @@ export function GreenShare({ section, radiusM, onRadiusChange }: GreenShareProps
   return (
     <section
       aria-labelledby="green-share-title"
-      className="flex flex-col gap-5 rounded-xl border border-border bg-card p-5 sm:p-6"
+      className="flex flex-col gap-5 rounded-xl border border-card bg-card p-5 shadow-card-soft sm:p-6"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">

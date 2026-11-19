@@ -50,7 +50,10 @@ export function CategoryChapter({
             {t('categoryChapter.alsoInChapter')}
           </h3>
           {others.map((key) => (
-            <div key={key} className="rounded-xl border border-border bg-card p-5 sm:p-6">
+            <div
+              key={key}
+              className="rounded-xl border border-card bg-card p-5 shadow-card-soft sm:p-6"
+            >
               <CategoryDetail
                 categoryKey={key}
                 summary={categories[key]}
@@ -130,7 +133,7 @@ function CategoryDetail({
             />
           </dl>
           {histogram.length > 0 ? (
-            <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 sm:p-6">
+            <div className="flex flex-col gap-3 rounded-xl border border-card bg-card p-5 shadow-card-soft sm:p-6">
               <p className="text-body-sm font-bold">{t('categoryChapter.distribution')}</p>
               <CityDistribution
                 name={name}

@@ -32,7 +32,7 @@ export function ReviewChecklist({ listing, checks, onCheckedChange }: ReviewChec
   return (
     <section
       aria-labelledby={headingId}
-      className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4.5"
+      className="flex flex-col gap-3 rounded-lg border border-card bg-card p-4.5 shadow-card-soft"
     >
       <div className="flex items-center justify-between gap-3">
         <h2 id={headingId} className="text-body font-bold text-foreground">
