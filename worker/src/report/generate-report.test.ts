@@ -117,6 +117,47 @@ describe.skipIf(!databaseUrl)('generateReport against the local database', () =>
     });
   });
 
+  it('stores the declared apartment details on the report row', async () => {
+    const reportId = await insertReport(sql, {
+      ownerEmail: OWNER_EMAIL,
+      ...PIATA_MARE,
+      addressText: 'Piața Mare 2, Sibiu',
+      locale: 'ro',
+      declared: {
+        areaM2: 58.5,
+        rooms: 3,
+        floor: 4,
+        buildingFloors: 10,
+        hasElevator: false,
+        constructionYear: 1978,
+      },
+    });
+
+    const [row] = await sql<
+      {
+        area: string;
+        rooms: number;
+        floor: number;
+        building_floors: number;
+        has_elevator: boolean;
+        year: number;
+      }[]
+    >`
+      select declared_area_m2 as area, declared_rooms as rooms, declared_floor as floor,
+        declared_building_floors as building_floors, declared_has_elevator as has_elevator,
+        declared_construction_year as year
+      from public.online_reports where id = ${reportId}
+    `;
+    expect(row).toEqual({
+      area: '58.50',
+      rooms: 3,
+      floor: 4,
+      building_floors: 10,
+      has_elevator: false,
+      year: 1978,
+    });
+  });
+
   it('runs every registered section on cells without engine data', async () => {
     const reportId = await insertReport(sql, {
       ownerEmail: OWNER_EMAIL,

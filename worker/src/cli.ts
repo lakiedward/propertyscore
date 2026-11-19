@@ -3,6 +3,7 @@ import { parseArgs } from 'node:util';
 import { z } from 'zod';
 
 import { WorkerError } from './lib/errors.ts';
+import type { DeclaredDetails } from './report/declared.ts';
 import { CATEGORY_KEYS, type CategoryKey } from './scoring/categories.ts';
 import {
   MARKET_STATISTICS_SOURCES,
@@ -29,6 +30,7 @@ export type CreateReportCommand = {
   longitude: number;
   addressText: string;
   locale: 'ro' | 'en';
+  declared: DeclaredDetails;
 };
 
 export type ImportHealthSourcesCommand = {
@@ -90,6 +92,12 @@ const createReportSchema = z.object({
   lon: z.coerce.number().min(-180).max(180),
   address: z.string().trim().min(3).max(300),
   locale: z.enum(['ro', 'en']).default('ro'),
+  area: z.coerce.number().positive().max(99999).optional(),
+  rooms: z.coerce.number().int().min(1).max(20).optional(),
+  floor: z.coerce.number().int().min(-2).max(60).optional(),
+  'building-floors': z.coerce.number().int().min(1).max(60).optional(),
+  elevator: z.enum(['yes', 'no']).optional(),
+  year: z.coerce.number().int().min(1800).max(2100).optional(),
 });
 
 const CITY_SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -200,6 +208,12 @@ function parseCreateReport(argv: readonly string[]): CreateReportCommand {
       lon: { type: 'string' },
       address: { type: 'string' },
       locale: { type: 'string' },
+      area: { type: 'string' },
+      rooms: { type: 'string' },
+      floor: { type: 'string' },
+      'building-floors': { type: 'string' },
+      elevator: { type: 'string' },
+      year: { type: 'string' },
     },
   });
   const parsed = createReportSchema.safeParse(values);
@@ -214,6 +228,14 @@ function parseCreateReport(argv: readonly string[]): CreateReportCommand {
     longitude: parsed.data.lon,
     addressText: parsed.data.address,
     locale: parsed.data.locale,
+    declared: {
+      areaM2: parsed.data.area ?? null,
+      rooms: parsed.data.rooms ?? null,
+      floor: parsed.data.floor ?? null,
+      buildingFloors: parsed.data['building-floors'] ?? null,
+      hasElevator: parsed.data.elevator === undefined ? null : parsed.data.elevator === 'yes',
+      constructionYear: parsed.data.year ?? null,
+    },
   };
 }
 
