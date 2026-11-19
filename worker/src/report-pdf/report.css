@@ -3879,3 +3879,12 @@ li {
   height: 690px;
   margin-bottom: -690px;
 }
+.nowrap {
+  white-space: nowrap;
+}
+.sfwfc {
+  break-inside: avoid;
+}
+.sfwfc + .sfwfc {
+  break-before: page;
+}

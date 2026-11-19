@@ -13,6 +13,10 @@ export function esc(value: string | number): string {
   return String(value).replace(/[&<>"']/g, (character) => HTML_ESCAPES[character] ?? character);
 }
 
+export function escKeepingRangesTogether(value: string): string {
+  return esc(value).replace(/\d+[-–]\d+/g, (range) => `<span class="nowrap">${range}</span>`);
+}
+
 export function formatNumber(value: number, fractionDigits = 0): string {
   return new Intl.NumberFormat(LOCALE, {
     minimumFractionDigits: fractionDigits,
