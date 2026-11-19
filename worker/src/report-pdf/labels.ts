@@ -1,5 +1,6 @@
 import type { CategoryKey } from '../scoring/categories.ts';
 import type { IconName } from './icons.ts';
+import { CATEGORY_THEME, CONTEXT_THEME } from './theme.ts';
 
 export const CATEGORY_GROUPS: readonly { title: string; keys: readonly CategoryKey[] }[] = [
   { title: 'Contează cel mai mult', keys: ['accessibility', 'fifteen_minute', 'safety'] },
@@ -272,4 +273,46 @@ export const NOISE_CLASSES: Record<string, string> = {
   residential: 'stradă liniștită',
   tram: 'tramvai',
   rail: 'cale ferată',
+};
+
+export type ViewingQuestion = {
+  question: string;
+  why: string;
+  topic: string;
+  color: string;
+  tint: string;
+};
+
+const APARTMENT_TOPIC = { topic: 'Apartament', color: '#2F5164', tint: '#DCE6EC' };
+
+export const VIEWING_QUESTIONS: Record<string, ViewingQuestion> = {
+  bedroom_facade_side: {
+    question: 'Spre ce dau dormitoarele: spre stradă sau spre curte?',
+    why: 'Zgomotul diferă mult între fața și spatele blocului. Scorul descrie zona, nu fațada.',
+    topic: CATEGORY_THEME.noise.name,
+    color: CATEGORY_THEME.noise.color,
+    tint: CATEGORY_THEME.noise.tint,
+  },
+  construction_year: {
+    question: 'În ce an a fost construit blocul și are expertiză tehnică?',
+    why: 'Anul arată după ce normativ a fost proiectat. Fără el, nu putem judeca riscul clădirii.',
+    topic: 'Risc seismic',
+    color: CONTEXT_THEME.seismic.color,
+    tint: CONTEXT_THEME.seismic.tint,
+  },
+  stairs_without_elevator: {
+    question: 'Blocul nu are lift: cum e urcatul pe scări cu cumpărături sau cu un copil?',
+    why: 'La etajele de sus, fiecare drum zilnic și orice mutare se simt din plin.',
+    ...APARTMENT_TOPIC,
+  },
+  ground_floor_damp_and_security: {
+    question: 'Apartamentul e la parter: apare umezeală și cum sunt asigurate geamurile și ușa?',
+    why: 'Parterul e mai expus la umezeală, la zgomotul străzii și la intrări neautorizate.',
+    ...APARTMENT_TOPIC,
+  },
+  top_floor_roof_and_insulation: {
+    question: 'Apartamentul e la ultimul etaj: când s-a refăcut acoperișul și cum e izolat?',
+    why: 'Infiltrațiile și căldura din timpul verii vin de la acoperiș și de la terasă.',
+    ...APARTMENT_TOPIC,
+  },
 };

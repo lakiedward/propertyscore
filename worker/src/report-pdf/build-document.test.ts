@@ -40,4 +40,30 @@ describe('buildReportDocument', () => {
       allowedHosts: ['tiles.openfreemap.org'],
     });
   });
+
+  it('prints the viewing questions of the report and skips unknown codes', async () => {
+    const input = reportInputSchema.parse(await exampleInput());
+    const report = toReportData({
+      ...input,
+      result: {
+        ...input.result,
+        questions: { codes: ['bedroom_facade_side', 'unknown_code', 'construction_year'] },
+      },
+    });
+    const { html } = await buildReportDocument(report);
+
+    expect(html).toContain('De întrebat la vizionare');
+    expect(html).toContain('2 întrebări pentru proprietar');
+    expect(html).toContain('Spre ce dau dormitoarele');
+    expect(html).not.toContain('unknown_code');
+  });
+
+  it('leaves out the viewing questions block when the report has none', async () => {
+    const input = reportInputSchema.parse(await exampleInput());
+    const { html } = await buildReportDocument(
+      toReportData({ ...input, result: { ...input.result, questions: null } }),
+    );
+
+    expect(html).not.toContain('De întrebat la vizionare');
+  });
 });
