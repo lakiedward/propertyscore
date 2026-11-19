@@ -69,14 +69,14 @@ export function ListingPage({ listingId }: ListingPageProps) {
         <header className="flex flex-col gap-4 rounded-lg border border-card bg-card p-5 shadow-card-soft sm:p-6 lg:col-start-1">
           <p className="text-eyebrow text-muted-foreground uppercase">{summary.eyebrow}</p>
           <h1 className="text-h2 text-foreground">{listing.title}</h1>
-          <p className="flex items-start gap-1.5 text-body text-muted-foreground">
-            <MapPinIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
+          <p className="flex items-start gap-2 text-lead-sm font-semibold text-foreground">
+            <MapPinIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-brand" />
             {address}
           </p>
           <ul className="flex flex-wrap gap-2" aria-label={t('detail.factsLabel')}>
             {summary.facts.map((fact) => (
               <li key={fact.key}>
-                <FactChip icon={fact.icon} label={fact.label} />
+                <FactChip icon={fact.icon} label={fact.label} size="lg" />
               </li>
             ))}
           </ul>
