@@ -104,7 +104,8 @@
         "area": "Suprafață"
       },
       "more": "Arată mai multe locuințe",
-      "shownOf": "Vezi {{shown}} din {{total}}"
+      "shownOf": "Vezi {{shown}} din {{total}}",
+      "showOnMap": "Arată pe hartă"
     },
     "empty": {
       "outside": {
@@ -125,7 +126,6 @@
     },
     "showMap": "Hartă",
     "showList": "Listă",
-    "card": "Arată pe hartă: {{title}}, {{address}}, {{price}}",
     "address": "{{street}}, {{city}}",
     "popup": {
       "label": "Locuința selectată",
@@ -133,5 +133,35 @@
     },
     "perMonthSuffix": "/ lună",
     "mapNote": "Pozițiile locuințelor sunt orientative, fără rol cadastral. Hartă © OpenFreeMap, © OpenMapTiles, © colaboratorii OpenStreetMap; contururi Natural Earth."
+  },
+  "detail": {
+    "back": {
+      "sale": "Toate locuințele de vânzare",
+      "rent": "Toate locuințele de închiriat"
+    },
+    "factsLabel": "Pe scurt",
+    "priceLabel": "Preț",
+    "priceEyebrow": {
+      "sale": "Preț de vânzare",
+      "rent": "Chirie lunară"
+    },
+    "publishedAt": "Publicat pe {{date}}",
+    "share": {
+      "action": "Distribuie anunțul",
+      "copied": "Linkul anunțului a fost copiat.",
+      "copyFailed": "Linkul nu a putut fi copiat. Copiază-l din bara de adrese."
+    },
+    "description": "Descriere",
+    "location": {
+      "title": "Localizare",
+      "mapLabel": "Harta cu poziția aproximativă a locuinței",
+      "mapError": "Harta nu a putut fi încărcată.",
+      "note": "Poziția pe hartă este orientativă. Adresa exactă o afli de la proprietar."
+    },
+    "unavailable": {
+      "title": "Anunțul nu mai este disponibil",
+      "description": "Anunțul a fost retras sau nu există. Vezi celelalte locuințe de pe hartă.",
+      "action": "Vezi toate locuințele"
+    }
   }
 }

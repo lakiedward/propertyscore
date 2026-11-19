@@ -69,15 +69,13 @@ describe('ListingsExplorerPage', { timeout: 20_000 }, () => {
     const map = await screen.findByRole('region', { name: explore.mapLabel });
     await user.click(await within(map).findByRole('button', { name: /125/ }));
 
-    expect(
-      await within(map).findByRole('button', { name: explore.popup.viewListing }),
-    ).toBeVisible();
+    expect(await within(map).findByRole('link', { name: explore.popup.viewListing })).toBeVisible();
     expect(within(map).getByText('Apartament cu 3 camere')).toBeInTheDocument();
 
     await user.click(within(map).getByRole('button', { name: roCommon.actions.close }));
 
     expect(
-      within(map).queryByRole('button', { name: explore.popup.viewListing }),
+      within(map).queryByRole('link', { name: explore.popup.viewListing }),
     ).not.toBeInTheDocument();
   });
 

@@ -14,7 +14,7 @@ export function DecidedCard({ decision }: DecidedCardProps) {
   const meta = STATUS_META[status];
 
   return (
-    <section className="flex flex-col gap-2.5 rounded-lg border border-border bg-card p-4.5">
+    <section className="flex flex-col gap-2.5 rounded-lg border border-card bg-card p-4.5 shadow-card-soft">
       <div className="flex flex-wrap items-center gap-2">
         <StatusPill shape="tag" tone={meta.tone} icon={meta.icon} label={t(`status.${status}`)} />
         <span className="text-meta text-muted-foreground">

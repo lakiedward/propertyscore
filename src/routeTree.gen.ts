@@ -17,7 +17,6 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
-import { Route as SiteListingsRouteImport } from './routes/_site/listings'
 import { Route as SitePublishRouteImport } from './routes/_site/publish'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account/index'
 import { Route as AuthenticatedAccountAppointmentsRouteImport } from './routes/_authenticated/account/appointments'
@@ -44,6 +43,8 @@ import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth/ca
 import { Route as PublicAuthConfirmRouteImport } from './routes/_public/auth/confirm'
 import { Route as PublicPasswordResetIndexRouteImport } from './routes/_public/password-reset/index'
 import { Route as PublicPasswordResetNewRouteImport } from './routes/_public/password-reset/new'
+import { Route as SiteListingsIndexRouteImport } from './routes/_site/listings/index'
+import { Route as SiteListingsListingIdRouteImport } from './routes/_site/listings/$listingId'
 import { Route as AuthenticatedAccountListingsIndexRouteImport } from './routes/_authenticated/account/listings/index'
 import { Route as AuthenticatedAccountListingsListingIdRouteImport } from './routes/_authenticated/account/listings/$listingId'
 import { Route as AuthenticatedAccountListingsNewRouteImport } from './routes/_authenticated/account/listings/new'
@@ -84,11 +85,6 @@ const PublicSignUpRoute = PublicSignUpRouteImport.update({
 const SiteIndexRoute = SiteIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => SiteRouteRoute,
-} as any)
-const SiteListingsRoute = SiteListingsRouteImport.update({
-  id: '/listings',
-  path: '/listings',
   getParentRoute: () => SiteRouteRoute,
 } as any)
 const SitePublishRoute = SitePublishRouteImport.update({
@@ -241,6 +237,16 @@ const PublicPasswordResetNewRoute = PublicPasswordResetNewRouteImport.update({
   path: '/password-reset/new',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const SiteListingsIndexRoute = SiteListingsIndexRouteImport.update({
+  id: '/listings/',
+  path: '/listings/',
+  getParentRoute: () => SiteRouteRoute,
+} as any)
+const SiteListingsListingIdRoute = SiteListingsListingIdRouteImport.update({
+  id: '/listings/$listingId',
+  path: '/listings/$listingId',
+  getParentRoute: () => SiteRouteRoute,
+} as any)
 const AuthenticatedAccountListingsIndexRoute =
   AuthenticatedAccountListingsIndexRouteImport.update({
     id: '/listings/',
@@ -266,7 +272,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
-  '/listings': typeof SiteListingsRoute
   '/publish': typeof SitePublishRoute
   '/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/account/favorites': typeof AuthenticatedAccountFavoritesRoute
@@ -290,9 +295,11 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
+  '/listings/$listingId': typeof SiteListingsListingIdRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/listings/': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
   '/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
@@ -301,7 +308,6 @@ export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
-  '/listings': typeof SiteListingsRoute
   '/publish': typeof SitePublishRoute
   '/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/account/favorites': typeof AuthenticatedAccountFavoritesRoute
@@ -325,9 +331,11 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
+  '/listings/$listingId': typeof SiteListingsListingIdRoute
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/password-reset': typeof PublicPasswordResetIndexRoute
+  '/listings': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
   '/account/listings': typeof AuthenticatedAccountListingsIndexRoute
@@ -341,7 +349,6 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_public/login': typeof PublicLoginRoute
   '/_public/sign-up': typeof PublicSignUpRoute
-  '/_site/listings': typeof SiteListingsRoute
   '/_site/publish': typeof SitePublishRoute
   '/_site/': typeof SiteIndexRoute
   '/_authenticated/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
@@ -366,9 +373,11 @@ export interface FileRoutesById {
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
   '/_public/auth/confirm': typeof PublicAuthConfirmRoute
   '/_public/password-reset/new': typeof PublicPasswordResetNewRoute
+  '/_site/listings/$listingId': typeof SiteListingsListingIdRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_public/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/_site/listings/': typeof SiteListingsIndexRoute
   '/_authenticated/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/_authenticated/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
   '/_authenticated/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
@@ -381,7 +390,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/sign-up'
-    | '/listings'
     | '/publish'
     | '/account/appointments'
     | '/account/favorites'
@@ -405,9 +413,11 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/auth/confirm'
     | '/password-reset/new'
+    | '/listings/$listingId'
     | '/account/'
     | '/admin/'
     | '/password-reset/'
+    | '/listings/'
     | '/account/listings/$listingId'
     | '/account/listings/new'
     | '/account/listings/'
@@ -416,7 +426,6 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/sign-up'
-    | '/listings'
     | '/publish'
     | '/account/appointments'
     | '/account/favorites'
@@ -440,9 +449,11 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/auth/confirm'
     | '/password-reset/new'
+    | '/listings/$listingId'
     | '/account'
     | '/admin'
     | '/password-reset'
+    | '/listings'
     | '/account/listings/$listingId'
     | '/account/listings/new'
     | '/account/listings'
@@ -455,7 +466,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_public/login'
     | '/_public/sign-up'
-    | '/_site/listings'
     | '/_site/publish'
     | '/_site/'
     | '/_authenticated/account/appointments'
@@ -480,9 +490,11 @@ export interface FileRouteTypes {
     | '/_public/auth/callback'
     | '/_public/auth/confirm'
     | '/_public/password-reset/new'
+    | '/_site/listings/$listingId'
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
     | '/_public/password-reset/'
+    | '/_site/listings/'
     | '/_authenticated/account/listings/$listingId'
     | '/_authenticated/account/listings/new'
     | '/_authenticated/account/listings/'
@@ -550,13 +562,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof SiteIndexRouteImport
-      parentRoute: typeof SiteRouteRoute
-    }
-    '/_site/listings': {
-      id: '/_site/listings'
-      path: '/listings'
-      fullPath: '/listings'
-      preLoaderRoute: typeof SiteListingsRouteImport
       parentRoute: typeof SiteRouteRoute
     }
     '/_site/publish': {
@@ -741,6 +746,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicPasswordResetNewRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_site/listings/': {
+      id: '/_site/listings/'
+      path: '/listings'
+      fullPath: '/listings/'
+      preLoaderRoute: typeof SiteListingsIndexRouteImport
+      parentRoute: typeof SiteRouteRoute
+    }
+    '/_site/listings/$listingId': {
+      id: '/_site/listings/$listingId'
+      path: '/listings/$listingId'
+      fullPath: '/listings/$listingId'
+      preLoaderRoute: typeof SiteListingsListingIdRouteImport
+      parentRoute: typeof SiteRouteRoute
+    }
     '/_authenticated/account/listings/': {
       id: '/_authenticated/account/listings/'
       path: '/listings'
@@ -876,15 +895,17 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
 )
 
 interface SiteRouteRouteChildren {
-  SiteListingsRoute: typeof SiteListingsRoute
   SitePublishRoute: typeof SitePublishRoute
   SiteIndexRoute: typeof SiteIndexRoute
+  SiteListingsListingIdRoute: typeof SiteListingsListingIdRoute
+  SiteListingsIndexRoute: typeof SiteListingsIndexRoute
 }
 
 const SiteRouteRouteChildren: SiteRouteRouteChildren = {
-  SiteListingsRoute: SiteListingsRoute,
   SitePublishRoute: SitePublishRoute,
   SiteIndexRoute: SiteIndexRoute,
+  SiteListingsListingIdRoute: SiteListingsListingIdRoute,
+  SiteListingsIndexRoute: SiteListingsIndexRoute,
 }
 
 const SiteRouteRouteWithChildren = SiteRouteRoute._addFileChildren(

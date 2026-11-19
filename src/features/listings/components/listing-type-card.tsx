@@ -15,7 +15,7 @@ export function ListingTypeCard({ control }: ListingTypeCardProps) {
   const transactionHeadingId = useId();
 
   return (
-    <section className="flex flex-col gap-5 rounded-lg border border-border bg-card p-5 sm:p-6">
+    <section className="flex flex-col gap-5 rounded-lg border border-card bg-card p-5 shadow-card-soft sm:p-6">
       <div className="flex flex-col gap-3.5">
         <h2 id={propertyTypeHeadingId} className="text-h4 text-foreground">
           {t('sections.propertyType')}

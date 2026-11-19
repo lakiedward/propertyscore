@@ -45,7 +45,7 @@ const FLOW_ITEMS: readonly {
 ];
 
 const CARD_CLASS =
-  'flex flex-col gap-3.5 rounded-xl border border-border-hairline bg-card p-4.5 shadow-card-soft w767:p-6';
+  'flex flex-col gap-3.5 rounded-xl border border-card bg-card p-4.5 shadow-card-soft w767:p-6';
 
 export function ChecklistSection() {
   const { t } = useTranslation('publish');

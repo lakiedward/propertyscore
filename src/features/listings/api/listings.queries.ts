@@ -4,6 +4,7 @@ import {
   EXPLORER_PAGE_SIZE,
   getListingMapCard,
   getListingMapSummary,
+  getPublicListing,
   listExplorerListings,
   listListings,
 } from './listings.api';
@@ -32,6 +33,11 @@ export const listingQueries = {
       queryKey: [...listingQueries.all(), 'map-card', id],
       queryFn: () => getListingMapCard(id),
       staleTime: MAP_STALE_MS,
+    }),
+  detail: (id: string) =>
+    queryOptions({
+      queryKey: [...listingQueries.all(), 'detail', id],
+      queryFn: () => getPublicListing(id),
     }),
   explorer: (filters: ExplorerListingFilters) =>
     infiniteQueryOptions({

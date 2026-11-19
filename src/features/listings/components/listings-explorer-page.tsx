@@ -54,6 +54,7 @@ const SHOW_ON_MAP_ZOOM = 16;
 const PRICE_STEP = { sale: 1000, rent: 1 } as const satisfies Record<ListingTransaction, number>;
 
 type MapPopupContent = {
+  id: string;
   photoUrl: string | undefined;
   title: string;
   address: string;
@@ -139,6 +140,7 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
   const fullPrice = (price: number, currency: string) => formatPrice(price, toCurrency(currency));
   const addressOf = (street: string, town: string) => t('explore.address', { street, city: town });
   const popupContentOf = (listing: {
+    id: string;
     photo_path: string | null;
     title: string;
     street_label: string;
@@ -146,6 +148,7 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
     price: number;
     currency: string;
   }): MapPopupContent => ({
+    id: listing.id,
     photoUrl: listing.photo_path ? getListingMediumUrl(listing.photo_path) : undefined,
     title: listing.title,
     address: addressOf(listing.street_label, listing.city),

@@ -86,7 +86,7 @@ export function MyListingCard({ listing }: MyListingCardProps) {
   return (
     <article
       aria-labelledby={titleId}
-      className="grid overflow-hidden rounded-xl border border-border-hairline bg-card shadow-card-soft sm:grid-cols-[minmax(0,340px)_minmax(0,1fr)]"
+      className="grid overflow-hidden rounded-xl border border-card bg-card shadow-card-soft sm:grid-cols-[minmax(0,340px)_minmax(0,1fr)]"
     >
       <CoverPhoto path={listing.photo_path} missingLabel={t('list.photoMissing')} />
       <div className="flex min-w-0 flex-col gap-3.5 px-5 py-5 sm:px-7 sm:py-6">
@@ -179,9 +179,11 @@ export function MyListingCard({ listing }: MyListingCardProps) {
               </Button>
             ) : null}
             {isApproved ? (
-              <Button type="button" variant="ghost" size="sm">
-                <ExternalLinkIcon aria-hidden />
-                {t('list.view')}
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/listings/$listingId" params={{ listingId: listing.id }}>
+                  <ExternalLinkIcon aria-hidden />
+                  {t('list.view')}
+                </Link>
               </Button>
             ) : null}
           </div>

@@ -118,3 +118,16 @@ export function toMapRegions({
     selectedId,
   };
 }
+
+type GalleryListing = {
+  id: string;
+  photo_path: string | null;
+  photos: readonly { id: string; path: string }[];
+};
+
+export function listingPhotos({ id, photo_path, photos }: GalleryListing) {
+  if (photos.length > 0 || photo_path === null) {
+    return photos;
+  }
+  return [{ id, path: photo_path }];
+}

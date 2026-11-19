@@ -13,12 +13,12 @@ const emptyStateIconVariants = cva('size-8', {
 });
 
 const emptyStateVariants = cva(
-  'flex flex-col items-center rounded-xl border border-border px-6 py-10 text-center',
+  'flex flex-col items-center rounded-xl border px-6 py-10 text-center',
   {
     variants: {
       variant: {
-        default: 'gap-3 border-dashed bg-surface-subtle',
-        card: 'gap-2.5 bg-card',
+        default: 'gap-3 border-dashed border-border bg-surface-subtle',
+        card: 'gap-2.5 border-card bg-card shadow-card-soft',
       },
     },
   },

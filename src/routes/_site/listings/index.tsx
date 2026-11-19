@@ -32,7 +32,7 @@ const listingsSearchSchema = z
       : undefined,
   }));
 
-export const Route = createFileRoute('/_site/listings')({
+export const Route = createFileRoute('/_site/listings/')({
   validateSearch: listingsSearchSchema,
   loaderDeps: ({ search }) => ({
     transaction: search.transaction ?? DEFAULT_TRANSACTION,

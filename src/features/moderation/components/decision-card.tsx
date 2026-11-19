@@ -57,7 +57,7 @@ export function DecisionCard({
   return (
     <section
       aria-labelledby={headingId}
-      className="flex flex-col gap-2.5 rounded-lg border border-border bg-card p-4.5"
+      className="flex flex-col gap-2.5 rounded-lg border border-card bg-card p-4.5 shadow-card-soft"
     >
       <h2 id={headingId} className="text-body font-bold text-foreground">
         {isPublished ? t('decision.withdrawTitle') : t('decision.title')}

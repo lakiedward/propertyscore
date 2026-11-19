@@ -27,7 +27,7 @@ export function ListingReviewCard({ listing }: ListingReviewCardProps) {
   const position: [number, number] = [listing.longitude, listing.latitude];
 
   return (
-    <article className="overflow-hidden rounded-lg border border-border bg-card pb-5.5">
+    <article className="overflow-hidden rounded-lg border border-card bg-card pb-5.5 shadow-card-soft">
       {changes ? (
         <Alert tone="info" className="rounded-none border-x-0 border-t-0">
           <AlertTitle>{t('revision.title')}</AlertTitle>

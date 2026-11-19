@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { cva } from 'class-variance-authority';
 import { XIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 type ListingMapPopupContent = {
+  id: string;
   photoUrl: string | undefined;
   title: string;
   address: string;
@@ -82,12 +84,10 @@ export function ListingMapPopup({ variant, listing, isRent, onClose }: ListingMa
                   </small>
                 ) : null}
               </strong>
-              <Button
-                type="button"
-                size="sm"
-                className="h-9 rounded-md px-3 text-meta font-control"
-              >
-                {t('listings:explore.popup.viewListing')}
+              <Button asChild size="sm" className="h-9 rounded-md px-3 text-meta font-control">
+                <Link to="/listings/$listingId" params={{ listingId: listing.id }}>
+                  {t('listings:explore.popup.viewListing')}
+                </Link>
               </Button>
             </div>
           </div>
