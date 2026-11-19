@@ -16,6 +16,7 @@ import { importCityAverages } from './scoring/investment/city-averages-import.ts
 import { readActiveInvestmentParams } from './scoring/investment/investment.db.ts';
 import { importMarketListings } from './scoring/investment/market-import.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
+import { createEarthquakeCatalog } from './scoring/seismic/earthquake-catalog.ts';
 import { buildSnapshot } from './snapshot/build-snapshot.ts';
 import type { SourceMirror } from './sources/mirror.ts';
 import type { OsmExtractSource } from './sources/osm.ts';
@@ -67,6 +68,7 @@ async function runCommand(
         reportId: command.reportId,
         sections: REPORT_SECTIONS,
         router: reportRouter(env),
+        earthquakes: createEarthquakeCatalog(),
         logger,
       });
       return;
@@ -86,6 +88,7 @@ async function runCommand(
         reportId,
         sections: REPORT_SECTIONS,
         router: reportRouter(env),
+        earthquakes: createEarthquakeCatalog(),
         logger,
       });
       return;
