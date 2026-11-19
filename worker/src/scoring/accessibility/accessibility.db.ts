@@ -440,3 +440,16 @@ export async function readRoutingBundle(
     gtfsArchives: row.gtfs_archives,
   };
 }
+
+export async function readTravelRow(
+  sql: Sql,
+  snapshotId: string,
+  originCellId: string,
+): Promise<Buffer | null> {
+  const [row] = await sql<{ minutes: Buffer }[]>`
+    select minutes
+    from private.cell_travel_matrix
+    where snapshot_id = ${snapshotId} and origin_cell_id = ${originCellId}
+  `;
+  return row?.minutes ?? null;
+}

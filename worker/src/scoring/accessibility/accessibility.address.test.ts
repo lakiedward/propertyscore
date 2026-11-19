@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { Sql } from '../../db/sql.ts';
 import { createLogger } from '../../lib/logger.ts';
-import { planTripsFromAddress } from './accessibility.address.ts';
+import { routeFromAddress } from './accessibility.address.ts';
 import { TEST_PARAMS } from './test-params.ts';
 
 vi.mock('./accessibility.db.ts', () => ({
@@ -36,9 +36,9 @@ function input(snapshotId: string) {
   };
 }
 
-describe('planTripsFromAddress', () => {
+describe('routeFromAddress', () => {
   it('routes from the address on the network the snapshot saved', async () => {
-    const trips = await planTripsFromAddress({
+    const { trips } = await routeFromAddress({
       ...input('with-bundle'),
       runner: async (_command, args) => {
         const job = JSON.parse(await readFile(args[1] ?? '', 'utf8')) as Record<string, unknown>;
@@ -68,12 +68,14 @@ describe('planTripsFromAddress', () => {
 
   it('returns no trips when the snapshot saved no network', async () => {
     const runner = vi.fn();
-    expect((await planTripsFromAddress({ ...input('without-bundle'), runner })).size).toBe(0);
+    const network = await routeFromAddress({ ...input('without-bundle'), runner });
+    expect(network.trips.size).toBe(0);
+    expect(network.places).toEqual([]);
     expect(runner).not.toHaveBeenCalled();
   });
 
   it('keeps the report going when routing fails', async () => {
-    const trips = await planTripsFromAddress({
+    const { trips } = await routeFromAddress({
       ...input('with-bundle'),
       runner: () => Promise.reject(new Error('java missing')),
     });

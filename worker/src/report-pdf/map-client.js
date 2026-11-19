@@ -18,6 +18,12 @@ function recolour(map) {
   }
 }
 
+function hideLabels(map) {
+  for (const layer of map.getStyle().layers) {
+    if (layer.type === 'symbol') map.setLayoutProperty(layer.id, 'visibility', 'none');
+  }
+}
+
 function paint(layer) {
   const colour = layer.colorProperty
     ? ['coalesce', ['get', layer.colorProperty], layer.color]
@@ -99,6 +105,7 @@ function draw(spec) {
     });
     map.once('load', () => {
       recolour(map);
+      if (spec.labels === false) hideLabels(map);
       if (spec.fit && spec.fit.length > 0) {
         const bounds = spec.fit.reduce(
           (box, position) => box.extend(position),

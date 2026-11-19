@@ -44,6 +44,7 @@ export type MapSpec = {
   fit?: Position[];
   padding?: number;
   maxZoom?: number;
+  labels?: false;
   layers: MapLayer[];
   markers: MapMarker[];
 };

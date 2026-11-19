@@ -42,6 +42,35 @@ describe('buildReportDocument', () => {
     });
   });
 
+  it('draws the city reach card and leaves out the neighbourhoods line when the city has none', async () => {
+    const input = reportInputSchema.parse(await exampleInput());
+    const withPlaces = toReportData(input);
+    expect((await buildReportDocument(withPlaces)).html).toContain('din 23</b> cartiere');
+
+    const reach = withPlaces.sections.accessibility?.reach;
+    if (!reach) throw new Error('The example report has no reach block');
+    const accessibility = input.result.accessibility as Record<string, unknown>;
+    const withoutPlaces = toReportData({
+      ...input,
+      result: {
+        ...input.result,
+        accessibility: {
+          ...accessibility,
+          reach: {
+            ...reach,
+            neighbourhoods_reached: 0,
+            neighbourhoods_total: 0,
+            neighbourhoods: [],
+          },
+        },
+      },
+    });
+    const { html } = await buildReportDocument(withoutPlaces);
+
+    expect(html).toContain('Orașul, în minute de la ușa ta');
+    expect(html).not.toContain('cartiere, plecând la 8 dimineața');
+  });
+
   it('prints the viewing questions of the report and skips unknown codes', async () => {
     const input = reportInputSchema.parse(await exampleInput());
     const report = toReportData({
