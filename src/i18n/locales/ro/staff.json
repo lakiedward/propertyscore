@@ -74,5 +74,70 @@
     },
     "unnamed": "Fără nume",
     "csvFileName": "utilizatori.csv"
+  },
+  "availability": {
+    "weekly": {
+      "title": "Program săptămânal",
+      "subtitle": "Se repetă în fiecare săptămână",
+      "selfDescription": "Orele în care poți primi programări noi.",
+      "adminDescription": "Orele în care inspectorul poate primi programări noi.",
+      "range": "{{from}}–{{to}}",
+      "off": "Liber",
+      "editShort": "Modifică",
+      "edit": "Modifică programul de {{day}}",
+      "dialog": {
+        "title": "Programul de {{day}}",
+        "description": "Până la 4 intervale pe zi. Fără niciun interval, ziua rămâne liberă.",
+        "from": "De la (interval {{index}})",
+        "to": "Până la (interval {{index}})",
+        "remove": "Șterge intervalul {{index}}",
+        "add": "Adaugă interval",
+        "dayOff": "Ziua rămâne liberă.",
+        "save": "Salvează programul",
+        "saving": "Se salvează…"
+      }
+    },
+    "exceptions": {
+      "title": "Excepții",
+      "subtitle": "Concedii, zile libere, ore blocate",
+      "add": "Adaugă excepție",
+      "empty": "Nicio excepție programată.",
+      "remove": "Șterge excepția",
+      "range": "{{from}} – {{to}}",
+      "hours": "{{day}} · {{from}}–{{to}}",
+      "kind": {
+        "day_off": "Zi liberă",
+        "leave": "Concediu",
+        "training": "Training intern",
+        "other": "Altă indisponibilitate"
+      },
+      "dialog": {
+        "title": "Adaugă excepție",
+        "description": "În acest interval nu primești programări noi.",
+        "kind": "Tip",
+        "from": "De la data",
+        "to": "Până la data",
+        "allDay": "Toată ziua",
+        "startTime": "De la ora",
+        "endTime": "Până la ora",
+        "note": "Notă (opțional)",
+        "save": "Adaugă excepția",
+        "saving": "Se adaugă…"
+      }
+    },
+    "preview": {
+      "eyebrow": "Cum ajunge în programare",
+      "title": "Clientul vede doar orele în care ești liber",
+      "titleNamed": "Clientul vede doar orele în care {{name}} e liber",
+      "steps": {
+        "weekly": "Programul săptămânal",
+        "exceptions": "minus excepțiile",
+        "visits": "minus inspecțiile deja alocate (2 h + 30 min drum)"
+      },
+      "day": "Alege ziua",
+      "time": "Alege ora",
+      "empty": "Nu mai sunt ore libere în această zi. Alege altă zi.",
+      "note": "Previzualizare a pasului „Data” din programare, pentru {{city}}."
+    }
   }
 }

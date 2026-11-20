@@ -100,7 +100,9 @@
     "maxLength_one": "Enter at most {{count}} character.",
     "maxLength_other": "Enter at most {{count}} characters.",
     "min": "The minimum value is {{min}}.",
-    "max": "The maximum value is {{max}}."
+    "max": "The maximum value is {{max}}.",
+    "endAfterStart": "The end must be after the start.",
+    "rangesOverlap": "The ranges overlap."
   },
   "site": {
     "skipToContent": "Skip to content",

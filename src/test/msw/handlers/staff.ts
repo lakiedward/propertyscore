@@ -26,3 +26,31 @@ export const staffHandlers = [
     () => new HttpResponse(null, { status: 204 }),
   ),
 ];
+
+export function weeklyHoursResponse(
+  rows: readonly { id: string; weekday: number; starts_at: string; ends_at: string }[],
+) {
+  return http.get(supabaseUrl('/rest/v1/inspector_weekly_hours'), () => HttpResponse.json(rows));
+}
+
+export const availabilityHandlers = [
+  weeklyHoursResponse([]),
+  http.get(supabaseUrl('/rest/v1/inspector_exceptions'), () => HttpResponse.json([])),
+  http.post(
+    supabaseUrl('/rest/v1/inspector_exceptions'),
+    () => new HttpResponse(null, { status: 201 }),
+  ),
+  http.get(supabaseUrl('/rest/v1/inspector_profiles'), () =>
+    HttpResponse.json({
+      user_id: 'a0000000-0000-4000-8000-000000000001',
+      city_id: 'c4000000-0000-4000-8000-000000000001',
+      is_active: true,
+      city: { name: 'Timișoara' },
+    }),
+  ),
+  http.post(supabaseUrl('/rest/v1/rpc/inspector_free_starts'), () => HttpResponse.json([])),
+  http.post(
+    supabaseUrl('/rest/v1/rpc/set_inspector_weekly_hours'),
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+];

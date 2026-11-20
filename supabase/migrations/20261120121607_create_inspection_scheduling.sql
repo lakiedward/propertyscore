@@ -939,6 +939,38 @@ begin
 end;
 $$;
 
+create function public.inspector_free_starts(p_inspector_id uuid, p_from date, p_to date)
+returns table (starts_at timestamptz)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+begin
+  if not (
+    ((select auth.uid()) = p_inspector_id and private.has_role('inspector'))
+    or private.has_role('admin')
+  ) then
+    raise exception using errcode = '42501', message = 'forbidden';
+  end if;
+  return query
+  select candidate.starts_at
+  from (
+    select ((day::date + start_time) at time zone 'Europe/Bucharest') as starts_at
+    from generate_series(
+      greatest(p_from, (now() at time zone 'Europe/Bucharest')::date + 1),
+      least(p_to, p_from + 31),
+      interval '1 day'
+    ) as day
+    cross join unnest(private.inspection_start_times()) as start_time
+  ) as candidate
+  where private.inspector_is_free(
+    p_inspector_id, candidate.starts_at, candidate.starts_at + interval '2 hours', null
+  )
+  order by candidate.starts_at;
+end;
+$$;
+
 create function public.my_inspections()
 returns table (
   id uuid,
@@ -1377,6 +1409,7 @@ revoke execute on function
   public.assign_inspector(uuid, uuid),
   public.unassign_inspector(uuid),
   public.set_inspector_weekly_hours(uuid, smallint, jsonb),
+  public.inspector_free_starts(uuid, date, date),
   public.my_inspections(),
   public.inspector_agenda(timestamptz, timestamptz),
   public.admin_inspections(timestamptz, timestamptz, uuid, boolean),
@@ -1400,6 +1433,7 @@ grant execute on function
   public.assign_inspector(uuid, uuid),
   public.unassign_inspector(uuid),
   public.set_inspector_weekly_hours(uuid, smallint, jsonb),
+  public.inspector_free_starts(uuid, date, date),
   public.my_inspections(),
   public.inspector_agenda(timestamptz, timestamptz),
   public.admin_inspections(timestamptz, timestamptz, uuid, boolean),

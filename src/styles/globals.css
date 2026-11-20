@@ -155,6 +155,7 @@
   --color-answer-na: var(--answer-na);
   --color-disabled: var(--disabled);
   --color-disabled-border: var(--disabled-border);
+  --color-control-off: var(--control-off);
   --color-disabled-foreground: var(--disabled-foreground);
   --color-scrim: var(--scrim);
   --color-focus-inverse: var(--focus-inverse);
@@ -721,6 +722,7 @@
   --answer-na: var(--ps-green-500);
   --disabled: var(--ps-grey-100);
   --disabled-border: var(--ps-grey-300);
+  --control-off: var(--ps-grey-300);
   --disabled-foreground: var(--ps-grey-500);
   --scrim: var(--ps-scrim);
   --focus-inverse: var(--ps-lime-300);

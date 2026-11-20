@@ -457,6 +457,11 @@ isOneToOne: false
               "access_name": string,"access_notes": string,"access_phone": string,"access_tags": (string)[],"address_text": string,"area_m2": number,"building_floors": number,"city_name": string,"ends_at": string,"floor": number,"id": string,"latitude": number,"longitude": number,"number": number,"property_type": Database["public"]['Enums']["listing_property_type"],"starts_at": string,"status": Database["public"]['Enums']["inspection_status"],"year_built": number
             }[]
                            },
+"inspector_free_starts":
+{ Args: { "p_from": string,"p_inspector_id": string,"p_to": string }; Returns: {
+              "starts_at": string
+            }[]
+                           },
 "list_my_favorite_listings":
 { Args: { "p_before_listing_id"?: string,"p_before_saved_at"?: string,"p_limit": number }; Returns: {
               "area_m2": number,"city": string,"currency": string,"is_available": boolean,"listing_id": string,"photo_path": string,"price": number,"rooms": number,"saved_at": string,"title": string,"total_count": number,"transaction": Database["public"]['Enums']["listing_transaction"]

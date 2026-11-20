@@ -1,1 +1,47 @@
-{}
+{
+  "propertyType": {
+    "apartment": "Apartament",
+    "house": "Casă"
+  },
+  "accessTag": {
+    "intercom": "Interfon",
+    "parking": "Parcare disponibilă",
+    "pet": "Animal de companie în casă",
+    "key_at_doorman": "Cheia la administrator"
+  },
+  "agenda": {
+    "next": {
+      "eyebrow": "Urmează · {{when}}",
+      "eyebrowEmpty": "Urmează",
+      "emptyTitle": "Nicio inspecție alocată",
+      "emptyText": "Când îți este alocată o inspecție, o vezi aici.",
+      "start": "Începe inspecția"
+    },
+    "days": {
+      "today": "Azi",
+      "tomorrow": "Mâine",
+      "week": "Săptămâna"
+    },
+    "dayLabel": "Ziua",
+    "statUnit": "inspecții",
+    "weekRange": "{{from}} – {{to}}",
+    "area": "{{area}} m²",
+    "floor": "et. {{floor}}/{{floors}}",
+    "number": "#{{number}}",
+    "start": "Începe",
+    "startSoon": "Chestionarul de inspecție va fi disponibil în curând.",
+    "navigate": "Navighează",
+    "status": {
+      "scheduled": "Programată",
+      "inspector_assigned": "De început",
+      "completed": "Trimisă",
+      "book_ready": "Book gata",
+      "cancelled": "Anulată"
+    },
+    "empty": {
+      "day": "Nu ai inspecții în această zi",
+      "week": "Nu ai inspecții în această săptămână",
+      "next": "Următoarea: {{when}}, {{address}}."
+    }
+  }
+}

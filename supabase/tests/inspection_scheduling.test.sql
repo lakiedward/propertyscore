@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(55);
+select plan(57);
 
 delete from public.inspection_events;
 delete from public.inspections;
@@ -355,6 +355,17 @@ select is(
    where starts_at = (select monday_8 from fixture) + interval '7 days'),
   0,
   'A day off removes the inspector''s hours'
+);
+
+select ok(
+  (select count(*) from public.inspector_free_starts('33333333-3333-3333-3333-333333333333', (select monday_8 from fixture)::date, (select monday_8 from fixture)::date)) > 0,
+  'An inspector reads their own free start times'
+);
+
+select throws_ok(
+  $$ select * from public.inspector_free_starts('44444444-4444-4444-4444-444444444444', current_date, current_date + 7) $$,
+  '42501', 'forbidden',
+  'An inspector cannot read someone else''s free times'
 );
 
 select throws_ok(

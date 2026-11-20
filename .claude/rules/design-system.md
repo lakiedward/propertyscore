@@ -100,6 +100,7 @@ PropertyScore additions:
 | `data-declared`, `data-missing` | amber 700, green 500 | "declarat", "fără date" |
 | `answer-good`, `answer-ok`, `answer-problem`, `answer-na` | teal 600, amber 700, red 600, green 500 | inspection tiers Bine / Acceptabil / Problemă / N/A |
 | `disabled`, `disabled-border`, `disabled-foreground` | grey 100, grey 300, grey 500 | disabled controls |
+| `control-off` | grey 300 | the track of a `Switch` that is off |
 | `scrim` | scrim | dialog and drawer overlay |
 | `focus-inverse` | lime 300 | focus ring on forest surfaces |
 | `brand-highlight` | `#E4F0D2` | the boxed "Score" in the PropertyScore wordmark |
@@ -245,9 +246,9 @@ A row's notes, including the variants marked built, describe the component as sp
 | Menu look | `components/ui/menu-classes.ts`, used by `select.tsx` and `dropdown-menu.tsx` | one look for every dropdown (Select lists, `UserMenu`, `LanguageSwitcher` menu): white `popover` panel, 1px `border`, `rounded-lg`, padding 6, `shadow-md`, layer 400; items 44px, padding 0 12, `rounded-md`, 15px (`text-body-sm`) with 18px icons and 10px gap, `accent` highlight; the chosen option of a Select or radio menu is bold `text-brand` with an 18px brand check on the right; labels 12/600 `muted-foreground`, separators `border-subtle`; change the look only in `menu-classes.ts` |
 | Checkbox | `components/ui/checkbox.tsx` (shadcn, added with the auth design) | 22px box, 5px radius, 1.5px `border-strong` border, forest when checked, optional description |
 | RadioGroup | shadcn `radio-group` | `list` and `cards` (cards: 11px radius, checked = forest border + green 50 fill) |
-| Switch | shadcn `switch` | 46×28 track, forest when on, optional state text |
+| Switch | `components/ui/switch.tsx` (shadcn, restyled) | built: 46×28 track (`control-off` off, `primary` on), 22px white thumb with `shadow-sm` moving 18px, 3px `ring` focus with 2px offset, the hit area widened by `after:`; label it with a `label` or `FieldLabel` `htmlFor`; the state text is not built |
 | AddressAutocomplete | `components/forms/address-autocomplete.tsx` on shadcn `command` + `popover` | large 60px field, highlighted match in suggestions, footnote about pasting a listing link, out-of-coverage state |
-| SlotPicker | `components/forms/slot-picker.tsx` | day tiles (dow / day / month) and time tiles, selected = forest fill, unavailable = dashed + line-through, empty-day text |
+| SlotPicker | `components/forms/slot-picker.tsx` | built: two radio groups (role `radiogroup`, buttons with `aria-checked`) labelled by the caller's `dayLabel` and `timeLabel` (15/600); day tiles in `repeat(auto-fill, minmax(76px,1fr))` with weekday 12/700 uppercase 0.05em at 80% opacity, day 20/800 and month 12px, time tiles in `minmax(92px,1fr)` at 16/700; tiles 1.5px `border`, `rounded-md`, padding 10/8, `min-h-touch`, hover `border-strong`, selected forest fill with white text, unavailable `surface-sunken`, dashed and struck through; `emptyText` (13px muted) replaces the times when none is free; the caller passes the days, the times, the selection and `onDayChange` / `onTimeChange`; used by the availability preview and the booking date step |
 | **inspection** (feature `field-inspection`) | | |
 | ConsentSection | `features/field-inspection/components/consent-section.tsx` | numbered, collapsible, version tag, required checkbox, checked state |
 | InspectionProgress | `features/field-inspection/components/inspection-progress.tsx` | sticky; answered/total, photos, videos, tour x/10, missing media |
@@ -290,7 +291,7 @@ A row's notes, including the variants marked built, describe the component as sp
 | ProximityList | `components/report/proximity-list.tsx` | place, walking minutes, distance, icon per category |
 | StatCard | `components/report/stat-card.tsx` | label, value, icon, delta (`up`, `down`, `flat`), hint |
 | DataTable | `components/report/data-table.tsx` on shadcn `table` (+ `@tanstack/react-table` when sorting/selection is needed) | sortable, selectable, row click, empty text, compact density |
-| DashboardPanel | `components/report/dashboard-panel.tsx` | title, subtitle, actions, flush body |
+| DashboardPanel | `components/report/dashboard-panel.tsx` | built: a `section` named by its `h2` title (17/700), white card (rule 6) `rounded-lg`, head padding 16 / `--card-padding` with a `border-subtle` line, `subtitle` (12px muted), `actions` on the right, body padded by `--card-padding` unless `isFlush`; used by the availability editor |
 | **trust** | | |
 | TrustBadge | `components/trust/trust-badge.tsx` | built kinds (`TrustKind`): `physical` (forest pill, Physical mark), `online` (filled blue pill, inverse SmartCheck mark, translucent score bubble), `none` (white, dashed `trust-none-border`); sizes `sm` 24px (mark 16, default) · `md` 32px (mark 20); accessible label from `useTrustLabel` (`@/hooks/use-trust-label`), which says „scor indisponibil” instead of a zero when an online score is missing; `pending` and `expired` not built yet |
 | ScoreValue | `components/trust/score-value.tsx` | `variant` `disc` (default: conic ring with an inner disc; sizes `sm` 48 · `md` 80 · `xl` 144/176px; `surface` `light` · `dark`) and `stroke` (SVG stroke ring with the number centred; sizes `sm` (category tiles) · `lg` (overall score on blue)); one `hue` map (`online`, `onInverse`, and the seven `category-*` keys) sets the progress colour and the soft track; value clamped to 0…`max` (default 100); `role="img"` with the label; `physical` (max 10, one decimal) and the empty state not built yet |

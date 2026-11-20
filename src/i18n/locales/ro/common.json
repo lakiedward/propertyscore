@@ -102,7 +102,9 @@
     "maxLength_few": "Introdu cel mult {{count}} caractere.",
     "maxLength_other": "Introdu cel mult {{count}} de caractere.",
     "min": "Valoarea minimă este {{min}}.",
-    "max": "Valoarea maximă este {{max}}."
+    "max": "Valoarea maximă este {{max}}.",
+    "endAfterStart": "Ora de sfârșit trebuie să fie după ora de început.",
+    "rangesOverlap": "Intervalele se suprapun."
   },
   "site": {
     "skipToContent": "Sari la conținut",

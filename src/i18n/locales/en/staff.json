@@ -73,5 +73,70 @@
     },
     "unnamed": "No name",
     "csvFileName": "users.csv"
+  },
+  "availability": {
+    "weekly": {
+      "title": "Weekly schedule",
+      "subtitle": "Repeats every week",
+      "selfDescription": "The hours when you can take new bookings.",
+      "adminDescription": "The hours when the inspector can take new bookings.",
+      "range": "{{from}}–{{to}}",
+      "off": "Off",
+      "editShort": "Edit",
+      "edit": "Edit the {{day}} schedule",
+      "dialog": {
+        "title": "{{day}} schedule",
+        "description": "Up to 4 ranges a day. With no range, the day stays off.",
+        "from": "From (range {{index}})",
+        "to": "To (range {{index}})",
+        "remove": "Remove range {{index}}",
+        "add": "Add a range",
+        "dayOff": "The day stays off.",
+        "save": "Save the schedule",
+        "saving": "Saving…"
+      }
+    },
+    "exceptions": {
+      "title": "Exceptions",
+      "subtitle": "Leave, days off, blocked hours",
+      "add": "Add an exception",
+      "empty": "No exceptions scheduled.",
+      "remove": "Remove the exception",
+      "range": "{{from}} – {{to}}",
+      "hours": "{{day}} · {{from}}–{{to}}",
+      "kind": {
+        "day_off": "Day off",
+        "leave": "Leave",
+        "training": "Internal training",
+        "other": "Other unavailability"
+      },
+      "dialog": {
+        "title": "Add an exception",
+        "description": "No new bookings reach you during this time.",
+        "kind": "Type",
+        "from": "From date",
+        "to": "To date",
+        "allDay": "All day",
+        "startTime": "From",
+        "endTime": "To",
+        "note": "Note (optional)",
+        "save": "Add the exception",
+        "saving": "Adding…"
+      }
+    },
+    "preview": {
+      "eyebrow": "How it reaches booking",
+      "title": "Clients only see the hours when you are free",
+      "titleNamed": "Clients only see the hours when {{name}} is free",
+      "steps": {
+        "weekly": "The weekly schedule",
+        "exceptions": "minus the exceptions",
+        "visits": "minus the inspections already assigned (2 h + 30 min travel)"
+      },
+      "day": "Choose the day",
+      "time": "Choose the time",
+      "empty": "No free times left on this day. Choose another day.",
+      "note": "Preview of the “Date” step of booking, for {{city}}."
+    }
   }
 }

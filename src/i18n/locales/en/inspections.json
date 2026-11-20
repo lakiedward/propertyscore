@@ -1,1 +1,47 @@
-{}
+{
+  "propertyType": {
+    "apartment": "Apartment",
+    "house": "House"
+  },
+  "accessTag": {
+    "intercom": "Intercom",
+    "parking": "Parking available",
+    "pet": "Pet in the home",
+    "key_at_doorman": "Key with the building manager"
+  },
+  "agenda": {
+    "next": {
+      "eyebrow": "Next · {{when}}",
+      "eyebrowEmpty": "Next",
+      "emptyTitle": "No inspection assigned",
+      "emptyText": "When an inspection is assigned to you, it shows up here.",
+      "start": "Start the inspection"
+    },
+    "days": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "week": "This week"
+    },
+    "dayLabel": "Day",
+    "statUnit": "inspections",
+    "weekRange": "{{from}} – {{to}}",
+    "area": "{{area}} m²",
+    "floor": "floor {{floor}}/{{floors}}",
+    "number": "#{{number}}",
+    "start": "Start",
+    "startSoon": "The inspection questionnaire will be available soon.",
+    "navigate": "Directions",
+    "status": {
+      "scheduled": "Booked",
+      "inspector_assigned": "Not started",
+      "completed": "Submitted",
+      "book_ready": "Book ready",
+      "cancelled": "Cancelled"
+    },
+    "empty": {
+      "day": "You have no inspections on this day",
+      "week": "You have no inspections this week",
+      "next": "Next: {{when}}, {{address}}."
+    }
+  }
+}
