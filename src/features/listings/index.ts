@@ -13,3 +13,6 @@ export { isEditableStatus, LISTING_STATUS_META } from './listing-status';
 export type { ListingStatus } from './listing-status';
 export { ListingPage } from './components/listing-page';
 export { ListingUnavailable } from './components/listing-unavailable';
+export { favoriteQueries, warmFavoriteIds } from './api/favorites.queries';
+export { FavoritesPage } from './components/favorites-page';
+export type { FavoriteListing } from './api/favorites.api';

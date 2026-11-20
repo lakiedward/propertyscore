@@ -61,6 +61,7 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   decision_reason_invalid: 'decision_reason_invalid',
   decision_message_required: 'decision_message_required',
   decision_message_too_long: 'decision_message_too_long',
+  favorite_limit_reached: 'favorite_limit_reached',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {

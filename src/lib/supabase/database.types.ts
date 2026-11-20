@@ -37,6 +37,26 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"favorite_listings": {
+                  Row: {
+                    "created_at": string,"id": string,"listing_id": string,"owner_id": string,"saved_photo_path": string | null,"saved_title": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"listing_id": string,"owner_id"?: string,"saved_photo_path"?: string | null,"saved_title"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"listing_id"?: string,"owner_id"?: string,"saved_photo_path"?: string | null,"saved_title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "favorite_listings_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"listing_decisions": {
                   Row: {
                     "created_at": string,"decided_by": string | null,"decision": Database["public"]['Enums']["listing_decision"],"id": string,"listing_id": string,"message": string | null,"reasons": (Database["public"]['Enums']["listing_decision_reason"])[]
@@ -253,6 +273,11 @@ isOneToOne: false
                            },
 "discard_listing_revision":
 { Args: { "p_revision_id": string }; Returns: undefined
+                           },
+"list_my_favorite_listings":
+{ Args: { "p_before_listing_id"?: string,"p_before_saved_at"?: string,"p_limit": number }; Returns: {
+              "area_m2": number,"city": string,"currency": string,"is_available": boolean,"listing_id": string,"photo_path": string,"price": number,"rooms": number,"saved_at": string,"title": string,"total_count": number,"transaction": Database["public"]['Enums']["listing_transaction"]
+            }[]
                            },
 "listing_map_summary":
 { Args: { "p_max_price_eur"?: number,"p_transaction": Database["public"]['Enums']["listing_transaction"] }; Returns: {

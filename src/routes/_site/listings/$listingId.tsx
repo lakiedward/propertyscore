@@ -1,7 +1,12 @@
 import { createFileRoute, notFound } from '@tanstack/react-router';
 import { PendingPage } from '@/components/layout/pending-page';
 import { preloadMapCanvas } from '@/components/map/load-map-canvas';
-import { ListingPage, ListingUnavailable, listingQueries } from '@/features/listings';
+import {
+  ListingPage,
+  ListingUnavailable,
+  listingQueries,
+  warmFavoriteIds,
+} from '@/features/listings';
 import { i18n, loadFeatureNamespaces } from '@/i18n/i18n';
 import { pageTitle } from '@/i18n/page-title';
 import { isAppError } from '@/lib/errors';
@@ -10,6 +15,7 @@ export const Route = createFileRoute('/_site/listings/$listingId')({
   beforeLoad: () => loadFeatureNamespaces(['listings']),
   loader: async ({ context, params }) => {
     preloadMapCanvas();
+    warmFavoriteIds(context.queryClient, context.auth);
     try {
       const listing = await context.queryClient.query({
         ...listingQueries.detail(params.listingId),

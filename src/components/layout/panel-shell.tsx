@@ -160,9 +160,9 @@ export function PanelShell({
               {areaLabel}
             </span>
             {currentItem ? (
-              <span className="hidden min-w-0 truncate text-title-xs leading-tight font-extrabold tracking-title text-foreground md:block">
+              <h1 className="min-w-0 truncate text-title-xs leading-tight font-extrabold tracking-title text-foreground max-md:sr-only">
                 {currentItem.label}
-              </span>
+              </h1>
             ) : null}
             <div className="ml-auto flex items-center gap-1">{userMenu}</div>
           </div>

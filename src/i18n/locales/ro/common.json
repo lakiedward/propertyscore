@@ -86,7 +86,8 @@
       "decision_message_required": "Scrie un mesaj pentru proprietar.",
       "decision_message_too_long": "Mesajul poate avea cel mult 2.000 de caractere.",
       "listing_floor_above_building": "Etajul nu poate fi mai mare decât numărul de etaje ale clădirii.",
-      "value_out_of_range": "Valoarea este în afara limitelor permise."
+      "value_out_of_range": "Valoarea este în afara limitelor permise.",
+      "favorite_limit_reached": "Ai salvat deja 500 de locuințe. Scoate câteva din favorite ca să adaugi altele."
     }
   },
   "validation": {

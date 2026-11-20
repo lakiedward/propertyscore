@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { ListingPriceLabel } from './listing-price-label';
 
 type ListingMapPopupContent = {
   id: string;
@@ -76,14 +77,7 @@ export function ListingMapPopup({ variant, listing, isRent, onClose }: ListingMa
             <strong className="mt-1 text-body leading-tight">{listing.title}</strong>
             <span className="text-meta text-muted-foreground">{listing.address}</span>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-              <strong className="text-[18px] font-extrabold tracking-[-0.025em] text-brand tabular-nums">
-                {listing.price}
-                {isRent ? (
-                  <small className="ml-1 text-caption font-semibold tracking-normal">
-                    {t('listings:explore.perMonthSuffix')}
-                  </small>
-                ) : null}
-              </strong>
+              <ListingPriceLabel price={listing.price} isRent={isRent} look="popup" />
               <Button asChild size="sm" className="h-9 rounded-md px-3 text-meta font-control">
                 <Link to="/listings/$listingId" params={{ listingId: listing.id }}>
                   {t('listings:explore.popup.viewListing')}

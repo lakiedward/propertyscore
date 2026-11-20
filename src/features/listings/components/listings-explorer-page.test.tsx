@@ -43,7 +43,7 @@ describe('ListingsExplorerPage', { timeout: 20_000 }, () => {
       await screen.findByRole('heading', { level: 1, name: explore.title.sale }),
     ).toBeInTheDocument();
     const cards = await findCards();
-    expect(within(cards).getAllByRole('button')).toHaveLength(2);
+    expect(within(cards).getAllByRole('button', { name: explore.list.showOnMap })).toHaveLength(2);
     expect(
       screen.getByRole('heading', { level: 2, name: withCount(explore.list.inView_few, 2) }),
     ).toBeInTheDocument();
@@ -109,7 +109,9 @@ describe('ListingsExplorerPage', { timeout: 20_000 }, () => {
     expect(await screen.findByText(withCount(explore.shown_one, 1))).toBeInTheDocument();
     const cards = await findCards();
     await waitFor(() => {
-      expect(within(cards).getAllByRole('button')).toHaveLength(1);
+      expect(within(cards).getAllByRole('button', { name: explore.list.showOnMap })).toHaveLength(
+        1,
+      );
     });
     expect(screen.getByRole('button', { name: explore.filters.reset })).toBeInTheDocument();
   });
@@ -142,6 +144,6 @@ describe('ListingsExplorerPage', { timeout: 20_000 }, () => {
 
     expect(await screen.findByText(explore.mapError)).toBeInTheDocument();
     const cards = await findCards();
-    expect(within(cards).getAllByRole('button')).toHaveLength(2);
+    expect(within(cards).getAllByRole('button', { name: explore.list.showOnMap })).toHaveLength(2);
   });
 });

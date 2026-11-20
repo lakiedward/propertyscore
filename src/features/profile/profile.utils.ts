@@ -4,3 +4,7 @@ export function initialsOf(name: string): string {
   const last = words.length > 1 ? (words.at(-1)?.[0] ?? '') : '';
   return `${first}${last}`.toLocaleUpperCase('ro-RO');
 }
+
+export function firstNameOf(name: string): string {
+  return name.trim().split(/\s+/u)[0] ?? '';
+}

@@ -31,8 +31,8 @@ describe('AccountShell', { timeout: 20_000 }, () => {
       'aria-current',
     );
     expect(within(sidebar).getAllByRole('link')).toHaveLength(9);
-    expect(screen.getByText(NAV.nav.reports, { selector: 'header span' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: NAV.nav.reports })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(
       await screen.findAllByRole('button', { name: buildProfile().full_name ?? '' }),
     ).toHaveLength(1);

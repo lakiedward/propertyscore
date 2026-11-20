@@ -1,6 +1,5 @@
 {
   "list": {
-    "title": "Anunțurile mele",
     "add": "Adaugă anunț",
     "label": "Anunțurile tale",
     "edit": "Editează",
@@ -9,7 +8,6 @@
       "title": "Nu ai încă niciun anunț",
       "description": "Adaugă primul anunț; îl salvăm ca ciornă până îl trimiți spre verificare."
     },
-    "eyebrow": "Vânzare și închiriere",
     "addressCity": "{{street}} · {{city}}",
     "floorShort": "et. {{floor}}/{{total}}",
     "floorOnlyShort": "et. {{floor}}",

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InlineToast } from '@/components/feedback/inline-toast';
 import { EmptyState } from '@/components/layout/empty-state';
+import { LoadMoreButton } from '@/components/layout/load-more-button';
 import { PanelPageHeader } from '@/components/layout/panel-page-header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -55,8 +56,6 @@ export function ModerationPage() {
       className="gap-5"
     >
       <PanelPageHeader
-        eyebrow={t('head.eyebrow')}
-        title={t('head.title')}
         description={t('head.description')}
         actions={<StatusTabs counts={counts} />}
       />
@@ -103,17 +102,14 @@ export function ModerationPage() {
                   ))}
                   {queue.hasNextPage ? (
                     <li className="p-2">
-                      <Button
-                        type="button"
+                      <LoadMoreButton
+                        label={t('queue.more')}
+                        isLoading={queue.isFetchingNextPage}
+                        onLoadMore={() => void queue.fetchNextPage()}
                         variant="ghost"
                         size="sm"
                         className="w-full"
-                        disabled={queue.isFetchingNextPage}
-                        aria-busy={queue.isFetchingNextPage}
-                        onClick={() => void queue.fetchNextPage()}
-                      >
-                        {t('queue.more')}
-                      </Button>
+                      />
                     </li>
                   ) : null}
                 </ul>
@@ -143,6 +139,7 @@ export function ModerationPage() {
           <div className="flex flex-col gap-4">
             {toastMessage ? <InlineToast tone="success" message={toastMessage} /> : null}
             <EmptyState
+              variant="card"
               kind="empty"
               title={t(`queue.empty.${emptyKey}.title`)}
               description={t(`queue.empty.${emptyKey}.description`)}

@@ -163,5 +163,24 @@
       "description": "Anunțul a fost retras sau nu există. Vezi celelalte locuințe de pe hartă.",
       "action": "Vezi toate locuințele"
     }
+  },
+  "favorites": {
+    "count_one": "{{count}} locuință salvată",
+    "count_few": "{{count}} locuințe salvate",
+    "count_other": "{{count}} de locuințe salvate",
+    "added": "Am salvat locuința la favorite.",
+    "removed": "Am scos locuința din favorite.",
+    "signIn": {
+      "label": "Salvează la favorite",
+      "message": "Intră în cont ca să salvezi locuința la favorite."
+    },
+    "unavailable": "Nu mai este disponibil",
+    "empty": {
+      "title": "Nicio locuință salvată",
+      "description": "Apasă inima de pe un anunț ca să îl găsești aici.",
+      "action": "Vezi locuințele"
+    },
+    "save": "Salvează la favorite: {{title}}",
+    "unavailableTitle": "Anunț indisponibil"
   }
 }

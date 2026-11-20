@@ -1,6 +1,5 @@
 {
   "list": {
-    "title": "My listings",
     "add": "Add listing",
     "label": "Your listings",
     "edit": "Edit",
@@ -9,7 +8,6 @@
       "title": "You have no listings yet",
       "description": "Add your first listing; we keep it as a draft until you send it for review."
     },
-    "eyebrow": "Sale and rent",
     "addressCity": "{{street}} · {{city}}",
     "floorShort": "fl. {{floor}}/{{total}}",
     "floorOnlyShort": "fl. {{floor}}",

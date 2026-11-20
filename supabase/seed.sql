@@ -133,3 +133,71 @@ from (
     ('b0000000-0000-4000-8000-000000000009'::uuid, 'Casă cu 3 camere și parcare', 'duplex', 260, 1, 2)
 ) as seed (id, title, house_type, land_area_m2, building_floors, bathrooms)
 where listings.id = seed.id;
+
+insert into public.listings (
+  id,
+  owner_id,
+  status,
+  transaction,
+  title,
+  street_label,
+  city,
+  rooms,
+  area_m2,
+  price,
+  currency,
+  latitude,
+  longitude,
+  photo_path,
+  submitted_at,
+  decided_at
+)
+values (
+  'b0000000-0000-4000-8000-000000000013',
+  'a0000000-0000-4000-8000-000000000001',
+  'rejected',
+  'sale',
+  'Apartament cu 2 camere, Fabric',
+  'Str. Ștefan cel Mare, 14',
+  'Timișoara',
+  2,
+  52,
+  92000,
+  'EUR',
+  45.7593,
+  21.2412,
+  'a0000000-0000-4000-8000-000000000001/b0000000-0000-4000-8000-000000000013/cover.webp',
+  now() - interval '3 days',
+  now() - interval '1 day'
+);
+
+insert into public.listing_decisions (listing_id, decision, reasons, message, decided_by, created_at)
+values (
+  'b0000000-0000-4000-8000-000000000013',
+  'rejected',
+  array['photos', 'description']::public.listing_decision_reason[],
+  'Adaugă fotografii cu baia și bucătăria și completează descrierea.',
+  'a0000000-0000-4000-8000-000000000004',
+  now() - interval '1 day'
+);
+
+insert into public.favorite_listings (owner_id, listing_id, created_at)
+select
+  'a0000000-0000-4000-8000-000000000003'::uuid,
+  seed.listing_id,
+  now() - make_interval(hours => seed.position)
+from (
+  values
+    ('b0000000-0000-4000-8000-000000000003'::uuid, 1),
+    ('b0000000-0000-4000-8000-000000000007'::uuid, 2),
+    ('b0000000-0000-4000-8000-000000000004'::uuid, 3),
+    ('b0000000-0000-4000-8000-000000000013'::uuid, 4),
+    ('b0000000-0000-4000-8000-000000000010'::uuid, 5),
+    ('b0000000-0000-4000-8000-000000000001'::uuid, 6)
+) as seed (listing_id, position);
+
+update public.favorite_listings
+set
+  saved_title = 'Apartament cu 2 camere, Fabric',
+  saved_photo_path = 'a0000000-0000-4000-8000-000000000001/b0000000-0000-4000-8000-000000000013/cover.webp'
+where listing_id = 'b0000000-0000-4000-8000-000000000013';

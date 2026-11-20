@@ -4,6 +4,7 @@ import { ArrowRightIcon, MapPinIcon } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
+import { LoadMoreButton } from '@/components/layout/load-more-button';
 import { ListingCard } from '@/components/property/listing-card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -20,6 +21,8 @@ import { formatPrice, toCurrency } from '@/i18n/format';
 import { oneOf } from '@/lib/utils';
 import type { listExplorerListings } from '../api/listings.api';
 import { getListingMediumUrl } from '../api/listings.storage';
+import { FavoriteButton } from './favorite-button';
+import { ListingPriceLabel } from './listing-price-label';
 import type { ListingTransaction } from '../listing.types';
 
 type ExplorerPage = Awaited<ReturnType<typeof listExplorerListings>>;
@@ -207,17 +210,11 @@ export function ListingsExplorerList({
                       listing.photo_path ? getListingMediumUrl(listing.photo_path) : undefined
                     }
                     title={listing.title}
-                    price={
-                      <span className="mb-1 text-card-title font-extrabold tracking-figure text-foreground tabular-nums">
-                        {price}
-                        {isRent ? (
-                          <small className="ml-1 text-small font-semibold tracking-normal text-muted-foreground">
-                            {t('explore.perMonthSuffix')}
-                          </small>
-                        ) : null}
-                      </span>
-                    }
+                    price={<ListingPriceLabel price={price} isRent={isRent} look="card" />}
                     meta={address}
+                    favorite={
+                      <FavoriteButton listingId={listing.id} title={listing.title} look="overlay" />
+                    }
                     isSelected={listing.id === activeId}
                     actions={
                       <>
@@ -252,15 +249,13 @@ export function ListingsExplorerList({
           </ul>
           {hasNextPage || isFetchingNextPage ? (
             <div className="mt-2 flex flex-col items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isFetchingNextPage}
-                onClick={onLoadMore}
+              <LoadMoreButton
+                label={t('explore.list.more')}
+                isLoading={isFetchingNextPage}
+                onLoadMore={onLoadMore}
+                size="default"
                 className="h-12.5 border-border-control bg-transparent px-5.5 text-small font-control hover:bg-surface-alt"
-              >
-                {t('explore.list.more')}
-              </Button>
+              />
               {total === undefined ? null : (
                 <span className="text-caption text-muted-foreground">
                   {t('explore.list.shownOf', { shown: listings.length, total })}

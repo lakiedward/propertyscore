@@ -150,7 +150,7 @@ function EditorLayout({ title, subtitle, status, children }: EditorLayoutProps) 
           {t('editor.back')}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-h2 leading-heading text-foreground">{title}</h1>
+          <h2 className="text-h2 leading-heading text-foreground">{title}</h2>
           {status && meta ? (
             <StatusPill
               shape="tag"

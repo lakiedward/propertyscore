@@ -3,6 +3,7 @@ import { getRouteApi, Link } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
+import { LoadMoreButton } from '@/components/layout/load-more-button';
 import { PanelPageHeader } from '@/components/layout/panel-page-header';
 import { Button } from '@/components/ui/button';
 import { myListingQueries } from '../api/my-listings.queries';
@@ -26,11 +27,7 @@ export function MyListingsPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PanelPageHeader
-        eyebrow={t('list.eyebrow')}
-        title={t('list.title')}
-        actions={items.length > 0 ? addListing : null}
-      />
+      <PanelPageHeader actions={items.length > 0 ? addListing : null} />
       {items.length > 0 ? (
         <>
           <ul aria-label={t('list.label')} className="flex flex-col gap-3.5">
@@ -41,21 +38,17 @@ export function MyListingsPage() {
             ))}
           </ul>
           {listings.hasNextPage ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="md"
+            <LoadMoreButton
+              label={t('list.more')}
+              isLoading={listings.isFetchingNextPage}
+              onLoadMore={() => void listings.fetchNextPage()}
               className="self-center"
-              disabled={listings.isFetchingNextPage}
-              aria-busy={listings.isFetchingNextPage}
-              onClick={() => void listings.fetchNextPage()}
-            >
-              {t('list.more')}
-            </Button>
+            />
           ) : null}
         </>
       ) : (
         <EmptyState
+          variant="card"
           kind="empty"
           title={t('list.empty.title')}
           description={t('list.empty.description')}

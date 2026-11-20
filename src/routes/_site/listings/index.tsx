@@ -12,6 +12,7 @@ import {
   ListingsExplorerPage,
   listingQueries,
   listingTileUrl,
+  warmFavoriteIds,
   warmFirstListingTiles,
 } from '@/features/listings';
 import { i18n, loadFeatureNamespaces } from '@/i18n/i18n';
@@ -52,6 +53,7 @@ export const Route = createFileRoute('/_site/listings/')({
       .query(listingQueries.mapSummary({ transaction: deps.transaction, maxPrice: deps.maxPrice }))
       .catch(() => undefined);
     void context.queryClient.query(listingQueries.romaniaRegions()).catch(() => undefined);
+    warmFavoriteIds(context.queryClient, context.auth);
   },
   head: () => ({ meta: [{ title: pageTitle(i18n.t('listings:explore.pageTitle')) }] }),
   component: ListingsRoute,

@@ -7,8 +7,7 @@ type NavItemId<TNavigation extends readonly { items: readonly { id: string }[] }
 
 type AdminPageKey = `panel.admin.nav.${NavItemId<typeof ADMIN_NAVIGATION>}`;
 
-export type PanelPageKey =
-  `panel.account.nav.${NavItemId<typeof ACCOUNT_NAVIGATION>}` | AdminPageKey;
+type PanelPageKey = `panel.account.nav.${NavItemId<typeof ACCOUNT_NAVIGATION>}` | AdminPageKey;
 
 function isAdminPageKey(key: PanelPageKey): key is AdminPageKey {
   return key.startsWith('panel.admin.');

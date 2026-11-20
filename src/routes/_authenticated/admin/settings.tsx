@@ -16,12 +16,5 @@ function AdminSettingsRoute() {
   const { user } = Route.useRouteContext();
   const { redirect } = Route.useSearch();
 
-  return (
-    <AccountSettingsPage
-      area="admin"
-      userId={user.id}
-      email={user.email ?? ''}
-      redirect={redirect}
-    />
-  );
+  return <AccountSettingsPage userId={user.id} email={user.email ?? ''} redirect={redirect} />;
 }

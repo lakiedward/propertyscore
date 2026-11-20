@@ -153,5 +153,23 @@
       "description": "The listing was withdrawn or does not exist. See the other homes on the map.",
       "action": "See all homes"
     }
+  },
+  "favorites": {
+    "count_one": "{{count}} saved home",
+    "count_other": "{{count}} saved homes",
+    "added": "Saved to your favourites.",
+    "removed": "Removed from your favourites.",
+    "signIn": {
+      "label": "Save to favourites",
+      "message": "Sign in to save this home to your favourites."
+    },
+    "unavailable": "No longer available",
+    "empty": {
+      "title": "No saved homes yet",
+      "description": "Tap the heart on a listing to find it here.",
+      "action": "Browse homes"
+    },
+    "save": "Save to favourites: {{title}}",
+    "unavailableTitle": "Listing unavailable"
   }
 }

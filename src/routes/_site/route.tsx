@@ -29,7 +29,9 @@ function SiteLayout() {
           user
             ? {
                 path: panelPath,
-                menu: <UserMenu user={user} tone="light" panelPath={panelPath} isNameHidden />,
+                menu: (
+                  <UserMenu user={user} tone="light" panelPath={panelPath} nameDisplay="first" />
+                ),
                 menuSection: <SiteMenuAccount user={user} panelPath={panelPath} />,
               }
             : undefined

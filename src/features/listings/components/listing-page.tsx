@@ -12,6 +12,7 @@ import { formatDate } from '@/i18n/format';
 import { listingQueries } from '../api/listings.queries';
 import { useListingPhotoSummary } from '../hooks/use-listing-photo-summary';
 import { listingPhotos } from '../listing.utils';
+import { FavoriteButton } from './favorite-button';
 
 const LISTING_MAP_ZOOM = 15;
 const LISTING_MARKER_ID = 'listing';
@@ -68,7 +69,15 @@ export function ListingPage({ listingId }: ListingPageProps) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
         <header className="flex flex-col gap-4 rounded-lg border border-card bg-card p-5 shadow-card-soft sm:p-6 lg:col-start-1">
           <p className="text-eyebrow text-muted-foreground uppercase">{summary.eyebrow}</p>
-          <h1 className="text-h2 text-foreground">{listing.title}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="min-w-0 text-h2 text-foreground">{listing.title}</h1>
+            <FavoriteButton
+              listingId={listing.id}
+              title={listing.title}
+              look="ghost"
+              className="-mt-1 -mr-2 shrink-0"
+            />
+          </div>
           <p className="flex items-start gap-2 text-lead-sm font-semibold text-foreground">
             <MapPinIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-brand" />
             {address}

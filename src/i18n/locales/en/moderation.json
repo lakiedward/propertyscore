@@ -1,7 +1,5 @@
 {
   "head": {
-    "eyebrow": "Portal",
-    "title": "Listing moderation",
     "description": "Review the listing, then approve it, reject it for changes or block it."
   },
   "tabs": {
