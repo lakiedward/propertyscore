@@ -57,6 +57,112 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"inspection_events": {
+                  Row: {
+                    "actor_id": string | null,"created_at": string,"details": NonNullable<Json>,"id": string,"inspection_id": string,"kind": Database["public"]['Enums']["inspection_event_kind"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actor_id"?: string | null,"created_at"?: string,"details"?: NonNullable<Json>,"id"?: string,"inspection_id": string,"kind": Database["public"]['Enums']["inspection_event_kind"]
+                  }
+                  Update: {
+                    "actor_id"?: string | null,"created_at"?: string,"details"?: NonNullable<Json>,"id"?: string,"inspection_id"?: string,"kind"?: Database["public"]['Enums']["inspection_event_kind"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inspection_events_inspection_id_fkey"
+      columns: ["inspection_id"]
+isOneToOne: false
+      referencedRelation: "inspections"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"inspections": {
+                  Row: {
+                    "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes": string | null,"access_phone": string,"access_tags": (string)[],"assigned_at": string | null,"cancel_reason": string | null,"cancelled_at": string | null,"cancelled_by": string | null,"created_at": string,"currency": string,"ends_at": string,"id": string,"inspector_id": string | null,"number": number,"partner_code": string | null,"payment_method": Database["public"]['Enums']["inspection_payment_method"],"payment_status": Database["public"]['Enums']["inspection_payment_status"],"price": number,"property_id": string,"requested_by": string,"starts_at": string,"status": Database["public"]['Enums']["inspection_status"],"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes"?: string | null,"access_phone": string,"access_tags"?: (string)[],"assigned_at"?: string | null,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"cancelled_by"?: string | null,"created_at"?: string,"currency"?: string,"ends_at": string,"id"?: string,"inspector_id"?: string | null,"number"?: number,"partner_code"?: string | null,"payment_method": Database["public"]['Enums']["inspection_payment_method"],"payment_status"?: Database["public"]['Enums']["inspection_payment_status"],"price"?: number,"property_id": string,"requested_by": string,"starts_at": string,"status"?: Database["public"]['Enums']["inspection_status"],"updated_at"?: string
+                  }
+                  Update: {
+                    "access_mode"?: Database["public"]['Enums']["inspection_access_mode"],"access_name"?: string,"access_notes"?: string | null,"access_phone"?: string,"access_tags"?: (string)[],"assigned_at"?: string | null,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"cancelled_by"?: string | null,"created_at"?: string,"currency"?: string,"ends_at"?: string,"id"?: string,"inspector_id"?: string | null,"number"?: number,"partner_code"?: string | null,"payment_method"?: Database["public"]['Enums']["inspection_payment_method"],"payment_status"?: Database["public"]['Enums']["inspection_payment_status"],"price"?: number,"property_id"?: string,"requested_by"?: string,"starts_at"?: string,"status"?: Database["public"]['Enums']["inspection_status"],"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inspections_inspector_id_fkey"
+      columns: ["inspector_id"]
+isOneToOne: false
+      referencedRelation: "inspector_profiles"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "inspections_property_id_fkey"
+      columns: ["property_id"]
+isOneToOne: false
+      referencedRelation: "properties"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"inspector_exceptions": {
+                  Row: {
+                    "created_at": string,"ends_at": string,"id": string,"inspector_id": string,"kind": Database["public"]['Enums']["inspector_exception_kind"],"note": string | null,"starts_at": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"ends_at": string,"id"?: string,"inspector_id": string,"kind": Database["public"]['Enums']["inspector_exception_kind"],"note"?: string | null,"starts_at": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"ends_at"?: string,"id"?: string,"inspector_id"?: string,"kind"?: Database["public"]['Enums']["inspector_exception_kind"],"note"?: string | null,"starts_at"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inspector_exceptions_inspector_id_fkey"
+      columns: ["inspector_id"]
+isOneToOne: false
+      referencedRelation: "inspector_profiles"
+      referencedColumns: ["user_id"]
+    }
+                  ]
+                },"inspector_profiles": {
+                  Row: {
+                    "city_id": string,"created_at": string,"is_active": boolean,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "city_id": string,"created_at"?: string,"is_active"?: boolean,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "city_id"?: string,"created_at"?: string,"is_active"?: boolean,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inspector_profiles_city_id_fkey"
+      columns: ["city_id"]
+isOneToOne: false
+      referencedRelation: "cities"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"inspector_weekly_hours": {
+                  Row: {
+                    "created_at": string,"ends_at": string,"id": string,"inspector_id": string,"starts_at": string,"updated_at": string,"weekday": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"ends_at": string,"id"?: string,"inspector_id": string,"starts_at": string,"updated_at"?: string,"weekday": number
+                  }
+                  Update: {
+                    "created_at"?: string,"ends_at"?: string,"id"?: string,"inspector_id"?: string,"starts_at"?: string,"updated_at"?: string,"weekday"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inspector_weekly_hours_inspector_id_fkey"
+      columns: ["inspector_id"]
+isOneToOne: false
+      referencedRelation: "inspector_profiles"
+      referencedColumns: ["user_id"]
+    }
+                  ]
                 },"listing_decisions": {
                   Row: {
                     "created_at": string,"decided_by": string | null,"decision": Database["public"]['Enums']["listing_decision"],"id": string,"listing_id": string,"message": string | null,"reasons": (Database["public"]['Enums']["listing_decision_reason"])[]
@@ -169,6 +275,32 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"properties": {
+                  Row: {
+                    "address_text": string,"area_m2": number,"building_floors": number | null,"city_id": string,"created_at": string,"floor": number | null,"id": string,"latitude": number,"listing_id": string | null,"longitude": number,"owner_id": string,"property_type": Database["public"]['Enums']["listing_property_type"],"updated_at": string,"year_built": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address_text": string,"area_m2": number,"building_floors"?: number | null,"city_id": string,"created_at"?: string,"floor"?: number | null,"id"?: string,"latitude": number,"listing_id"?: string | null,"longitude": number,"owner_id"?: string,"property_type": Database["public"]['Enums']["listing_property_type"],"updated_at"?: string,"year_built"?: number | null
+                  }
+                  Update: {
+                    "address_text"?: string,"area_m2"?: number,"building_floors"?: number | null,"city_id"?: string,"created_at"?: string,"floor"?: number | null,"id"?: string,"latitude"?: number,"listing_id"?: string | null,"longitude"?: number,"owner_id"?: string,"property_type"?: Database["public"]['Enums']["listing_property_type"],"updated_at"?: string,"year_built"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "properties_city_id_fkey"
+      columns: ["city_id"]
+isOneToOne: false
+      referencedRelation: "cities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "properties_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"report_share_links": {
                   Row: {
                     "created_at": string,"expires_at": string | null,"id": string,"online_report_id": string,"owner_id": string,"revoked_at": string | null,"token_hash": string,"updated_at": string
@@ -246,6 +378,37 @@ isOneToOne: false
             "account_has_password":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"admin_inspections":
+{ Args: { "p_city_id": string,"p_from": string,"p_to": string,"p_unassigned_only": boolean }; Returns: {
+              "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes": string,"access_phone": string,"address_text": string,"area_m2": number,"building_floors": number,"city_id": string,"city_name": string,"client_name": string,"client_phone": string,"created_at": string,"currency": string,"ends_at": string,"floor": number,"id": string,"inspector_id": string,"inspector_name": string,"number": number,"payment_status": Database["public"]['Enums']["inspection_payment_status"],"price": number,"property_type": Database["public"]['Enums']["listing_property_type"],"starts_at": string,"status": Database["public"]['Enums']["inspection_status"]
+            }[]
+                           },
+"admin_inspectors":
+{ Args: { "p_city_id": string }; Returns: {
+              "city_id": string,"city_name": string,"full_name": string,"is_active": boolean,"phone": string,"user_id": string
+            }[]
+                           },
+"admin_list_users":
+{ Args: { "p_limit": number,"p_offset": number,"p_role": Database["public"]['Enums']["app_role"],"p_search": string }; Returns: {
+              "created_at": string,"email": string,"full_name": string,"inspector_city_id": string,"inspector_city_name": string,"is_blocked": boolean,"phone": string,"roles": (Database["public"]['Enums']["app_role"])[],"total_count": number,"user_id": string
+            }[]
+                           },
+"admin_user_role_counts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "amount": number,"role": Database["public"]['Enums']["app_role"],"total": number
+            }[]
+                           },
+"assign_inspector":
+{ Args: { "p_inspection_id": string,"p_inspector_id": string }; Returns: undefined
+                           },
+"book_inspection":
+{ Args: { "p_access_mode": Database["public"]['Enums']["inspection_access_mode"],"p_access_name": string,"p_access_notes": string,"p_access_phone": string,"p_access_tags": (string)[],"p_address_text": string,"p_area_m2": number,"p_building_floors": number,"p_city_id": string,"p_floor": number,"p_latitude": number,"p_listing_id": string,"p_longitude": number,"p_payment_method": Database["public"]['Enums']["inspection_payment_method"],"p_property_id": string,"p_property_type": Database["public"]['Enums']["listing_property_type"],"p_starts_at": string,"p_year_built": number }; Returns: {
+              "id": string,"number": number
+            }[]
+                           },
+"cancel_inspection":
+{ Args: { "p_inspection_id": string,"p_reason": string }; Returns: undefined
+                           },
 "create_report_share_link":
 { Args: { "p_expires_in_days"?: number,"p_report_id": string }; Returns: string
                            },
@@ -274,6 +437,26 @@ isOneToOne: false
 "discard_listing_revision":
 { Args: { "p_revision_id": string }; Returns: undefined
                            },
+"inspection_cities":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "has_inspectors": boolean,"id": string,"latitude": number,"longitude": number,"name": string,"slug": string
+            }[]
+                           },
+"inspection_history":
+{ Args: { "p_inspection_id": string }; Returns: {
+              "actor_name": string,"created_at": string,"details": Json,"kind": Database["public"]['Enums']["inspection_event_kind"]
+            }[]
+                           },
+"inspection_slots":
+{ Args: { "p_city_id": string,"p_from": string,"p_to": string }; Returns: {
+              "free": number,"starts_at": string,"working": number
+            }[]
+                           },
+"inspector_agenda":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "access_name": string,"access_notes": string,"access_phone": string,"access_tags": (string)[],"address_text": string,"area_m2": number,"building_floors": number,"city_name": string,"ends_at": string,"floor": number,"id": string,"latitude": number,"longitude": number,"number": number,"property_type": Database["public"]['Enums']["listing_property_type"],"starts_at": string,"status": Database["public"]['Enums']["inspection_status"],"year_built": number
+            }[]
+                           },
 "list_my_favorite_listings":
 { Args: { "p_before_listing_id"?: string,"p_before_saved_at"?: string,"p_limit": number }; Returns: {
               "area_m2": number,"city": string,"currency": string,"is_available": boolean,"listing_id": string,"photo_path": string,"price": number,"rooms": number,"saved_at": string,"title": string,"total_count": number,"transaction": Database["public"]['Enums']["listing_transaction"]
@@ -292,8 +475,24 @@ isOneToOne: false
               "status": Database["public"]['Enums']["listing_status"],"total": number
             }[]
                            },
+"my_bookable_properties":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "address_text": string,"area_m2": number,"building_floors": number,"city_id": string,"city_name": string,"floor": number,"last_inspection_at": string,"latitude": number,"listing_currency": string,"listing_id": string,"listing_price": number,"listing_status": Database["public"]['Enums']["listing_status"],"listing_transaction": Database["public"]['Enums']["listing_transaction"],"longitude": number,"photo_path": string,"property_id": string,"property_type": Database["public"]['Enums']["listing_property_type"],"rooms": number,"year_built": number
+            }[]
+                           },
+"my_inspections":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes": string,"access_phone": string,"access_tags": (string)[],"address_text": string,"area_m2": number,"assigned_at": string,"building_floors": number,"cancelled_at": string,"city_name": string,"created_at": string,"currency": string,"ends_at": string,"floor": number,"id": string,"inspector_name": string,"number": number,"payment_status": Database["public"]['Enums']["inspection_payment_status"],"price": number,"property_type": Database["public"]['Enums']["listing_property_type"],"starts_at": string,"status": Database["public"]['Enums']["inspection_status"]
+            }[]
+                           },
+"remove_inspector":
+{ Args: { "p_user_id": string }; Returns: undefined
+                           },
 "reorder_listing_photos":
 { Args: { "p_listing_id": string,"p_photo_ids": (string)[] }; Returns: undefined
+                           },
+"reschedule_inspection":
+{ Args: { "p_inspection_id": string,"p_starts_at": string }; Returns: undefined
                            },
 "resolve_report_share_link":
 { Args: { "p_report_id": string,"p_token": string }; Returns: {
@@ -302,6 +501,12 @@ isOneToOne: false
                            },
 "revoke_report_share_link":
 { Args: { "p_report_id": string }; Returns: undefined
+                           },
+"set_inspector":
+{ Args: { "p_city_id": string,"p_user_id": string }; Returns: undefined
+                           },
+"set_inspector_weekly_hours":
+{ Args: { "p_inspector_id": string,"p_ranges": Json,"p_weekday": number }; Returns: undefined
                            },
 "start_listing_revision":
 { Args: { "p_listing_id": string }; Returns: string
@@ -367,10 +572,13 @@ isOneToOne: false
         to: "listings"
         isOneToOne: true
         isSetofReturn: false
-      } }
+      } },
+"unassign_inspector":
+{ Args: { "p_inspection_id": string }; Returns: undefined
+                           }
           }
           Enums: {
-            "app_role": "user"|"admin","listing_building_service": "administration"|"cleaning"|"security"|"video_surveillance","listing_building_type": "apartment_block"|"house_villa","listing_comfort": "first"|"second"|"third"|"luxury","listing_cooling": "air_conditioning"|"fan_heaters"|"fan_coils","listing_decision": "approved"|"rejected"|"blocked","listing_decision_reason": "photos"|"personal_data"|"price_area"|"description"|"contact_details"|"duplicate"|"unavailable"|"rules","listing_furnishing": "furnished"|"unfurnished"|"partly_furnished","listing_heating": "building_boiler"|"own_boiler"|"convector"|"infrared_panels"|"district_heating"|"heat_pump"|"solar_panels","listing_house_type": "detached"|"duplex"|"triplex"|"terraced"|"other","listing_interior_condition": "renovated"|"good"|"needs_renovation","listing_partitioning": "detached"|"semi_detached"|"non_detached"|"circular","listing_pets": "allowed"|"not_allowed","listing_pool": "own"|"shared","listing_property_type": "apartment"|"house","listing_status": "draft"|"pending_approval"|"approved"|"rejected"|"blocked","listing_transaction": "sale"|"rent","listing_utility": "water"|"sewerage"|"gas"|"electricity"|"cable_tv"|"internet","listing_verification": "physical"|"smartcheck"|"none","listing_yard": "yard"|"shared_yard"|"garden","online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
+            "app_role": "user"|"admin"|"inspector","inspection_access_mode": "self"|"other","inspection_event_kind": "booked"|"rescheduled"|"assigned"|"unassigned"|"cancelled","inspection_payment_method": "card"|"apple_pay"|"google_pay","inspection_payment_status": "unpaid"|"paid"|"refunded","inspection_status": "scheduled"|"inspector_assigned"|"completed"|"book_ready"|"cancelled","inspector_exception_kind": "day_off"|"leave"|"training"|"other","listing_building_service": "administration"|"cleaning"|"security"|"video_surveillance","listing_building_type": "apartment_block"|"house_villa","listing_comfort": "first"|"second"|"third"|"luxury","listing_cooling": "air_conditioning"|"fan_heaters"|"fan_coils","listing_decision": "approved"|"rejected"|"blocked","listing_decision_reason": "photos"|"personal_data"|"price_area"|"description"|"contact_details"|"duplicate"|"unavailable"|"rules","listing_furnishing": "furnished"|"unfurnished"|"partly_furnished","listing_heating": "building_boiler"|"own_boiler"|"convector"|"infrared_panels"|"district_heating"|"heat_pump"|"solar_panels","listing_house_type": "detached"|"duplex"|"triplex"|"terraced"|"other","listing_interior_condition": "renovated"|"good"|"needs_renovation","listing_partitioning": "detached"|"semi_detached"|"non_detached"|"circular","listing_pets": "allowed"|"not_allowed","listing_pool": "own"|"shared","listing_property_type": "apartment"|"house","listing_status": "draft"|"pending_approval"|"approved"|"rejected"|"blocked","listing_transaction": "sale"|"rent","listing_utility": "water"|"sewerage"|"gas"|"electricity"|"cable_tv"|"internet","listing_verification": "physical"|"smartcheck"|"none","listing_yard": "yard"|"shared_yard"|"garden","online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -490,7 +698,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "app_role": ["user", "admin"],"listing_building_service": ["administration", "cleaning", "security", "video_surveillance"],"listing_building_type": ["apartment_block", "house_villa"],"listing_comfort": ["first", "second", "third", "luxury"],"listing_cooling": ["air_conditioning", "fan_heaters", "fan_coils"],"listing_decision": ["approved", "rejected", "blocked"],"listing_decision_reason": ["photos", "personal_data", "price_area", "description", "contact_details", "duplicate", "unavailable", "rules"],"listing_furnishing": ["furnished", "unfurnished", "partly_furnished"],"listing_heating": ["building_boiler", "own_boiler", "convector", "infrared_panels", "district_heating", "heat_pump", "solar_panels"],"listing_house_type": ["detached", "duplex", "triplex", "terraced", "other"],"listing_interior_condition": ["renovated", "good", "needs_renovation"],"listing_partitioning": ["detached", "semi_detached", "non_detached", "circular"],"listing_pets": ["allowed", "not_allowed"],"listing_pool": ["own", "shared"],"listing_property_type": ["apartment", "house"],"listing_status": ["draft", "pending_approval", "approved", "rejected", "blocked"],"listing_transaction": ["sale", "rent"],"listing_utility": ["water", "sewerage", "gas", "electricity", "cable_tv", "internet"],"listing_verification": ["physical", "smartcheck", "none"],"listing_yard": ["yard", "shared_yard", "garden"],"online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
+            "app_role": ["user", "admin", "inspector"],"inspection_access_mode": ["self", "other"],"inspection_event_kind": ["booked", "rescheduled", "assigned", "unassigned", "cancelled"],"inspection_payment_method": ["card", "apple_pay", "google_pay"],"inspection_payment_status": ["unpaid", "paid", "refunded"],"inspection_status": ["scheduled", "inspector_assigned", "completed", "book_ready", "cancelled"],"inspector_exception_kind": ["day_off", "leave", "training", "other"],"listing_building_service": ["administration", "cleaning", "security", "video_surveillance"],"listing_building_type": ["apartment_block", "house_villa"],"listing_comfort": ["first", "second", "third", "luxury"],"listing_cooling": ["air_conditioning", "fan_heaters", "fan_coils"],"listing_decision": ["approved", "rejected", "blocked"],"listing_decision_reason": ["photos", "personal_data", "price_area", "description", "contact_details", "duplicate", "unavailable", "rules"],"listing_furnishing": ["furnished", "unfurnished", "partly_furnished"],"listing_heating": ["building_boiler", "own_boiler", "convector", "infrared_panels", "district_heating", "heat_pump", "solar_panels"],"listing_house_type": ["detached", "duplex", "triplex", "terraced", "other"],"listing_interior_condition": ["renovated", "good", "needs_renovation"],"listing_partitioning": ["detached", "semi_detached", "non_detached", "circular"],"listing_pets": ["allowed", "not_allowed"],"listing_pool": ["own", "shared"],"listing_property_type": ["apartment", "house"],"listing_status": ["draft", "pending_approval", "approved", "rejected", "blocked"],"listing_transaction": ["sale", "rent"],"listing_utility": ["water", "sewerage", "gas", "electricity", "cable_tv", "internet"],"listing_verification": ["physical", "smartcheck", "none"],"listing_yard": ["yard", "shared_yard", "garden"],"online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
           }
         }
 } as const
