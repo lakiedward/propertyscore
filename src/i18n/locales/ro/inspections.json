@@ -43,5 +43,277 @@
       "week": "Nu ai inspecții în această săptămână",
       "next": "Următoarea: {{when}}, {{address}}."
     }
+  },
+  "booking": {
+    "pageTitle": "Programează inspecția Property Fizic",
+    "stepOf": "Pasul {{step}} din {{total}}",
+    "hero": {
+      "eyebrow": "Vizită la fața locului · pentru proprietari",
+      "title": "Programează inspecția",
+      "text": "Un inspector PropertyScore vine la locuință, se uită cu atenție la fiecare cameră și îți lasă un book clar, cu poze. Tu alegi doar ziua.",
+      "includesLabel": "Ce include inspecția",
+      "includes": {
+        "checks": "Book cu 44 de verificări",
+        "report": "Raport online complet",
+        "photos": "Fotografii de prezentare",
+        "tour": "360° în fiecare cameră",
+        "plan": "Plan Polycam",
+        "listing": "Anunț profesional gratuit"
+      },
+      "priceNote": "totul inclus · TVA inclus",
+      "duration": "1–2 ore la tine acasă",
+      "reschedule": "Reprogramezi gratuit cu 24 h înainte",
+      "bookBadge": "Book gata în 3 zile",
+      "imageAlt": "Inspector PropertyScore verificând o fereastră",
+      "inspectorInitials": "AM",
+      "inspectorName": "Ana M. · inspector",
+      "inspectorQuote": "„Îți explic totul pe loc.”"
+    },
+    "steps": {
+      "label": "Pași",
+      "requester": "Cine comandă",
+      "home": "Locuința",
+      "date": "Data",
+      "access": "Acces",
+      "payment": "Plată"
+    },
+    "titles": {
+      "requester": "Cine comandă inspecția?",
+      "home": "Unde e locuința?",
+      "date": "Alege data și ora",
+      "access": "Cine deschide ușa?",
+      "payment": "Verifică și programează"
+    },
+    "help": {
+      "requester": "Ne ajută să știm cui trimitem confirmările și book-ul.",
+      "home": "Adresa, pinul pe hartă și câteva date despre locuință.",
+      "date": "Vizita durează 1–2 ore. Poți reprograma gratuit cu 24 de ore înainte.",
+      "access": "Spune-ne cine îl primește pe inspector.",
+      "payment": "Programarea apare în contul tău imediat după ce o trimiți."
+    },
+    "requester": {
+      "owner": {
+        "title": "Sunt proprietar",
+        "text": "Programez inspecția pentru casa mea. Primesc book-ul complet și un anunț profesional, gratuit."
+      },
+      "buyer": {
+        "title": "Sunt cumpărător",
+        "text": "Vreau să știu în ce stare e casa înainte s-o cumpăr. Proprietarul alege ziua, eu plătesc după."
+      },
+      "soon": "În curând",
+      "signIn": {
+        "title": "Intră în cont ca să continui",
+        "text": "Programarea și book-ul ajung în contul tău. După ce intri, te aducem înapoi aici.",
+        "login": "Intră în cont",
+        "signUp": "Creează cont"
+      }
+    },
+    "home": {
+      "title": "Pentru ce locuință?",
+      "text": "Locuințele din contul tău. Alege una sau adaugă alta.",
+      "signedInAs": "Conectat ca {{name}}",
+      "groupLabel": "Alege locuința",
+      "error": "Nu am putut încărca locuințele tale.",
+      "rooms_one": "{{count}} cameră",
+      "rooms_few": "{{count}} camere",
+      "rooms_other": "{{count}} de camere",
+      "tag": {
+        "inspected": "Verificat fizic · {{date}}",
+        "none": "Fără raport PropertyScore"
+      },
+      "status": {
+        "sale": "Anunț activ · de vânzare",
+        "rent": "Anunț activ · de închiriat",
+        "unpublished": "Anunț nepublicat",
+        "none": "Fără anunț"
+      },
+      "note": {
+        "reinspect": "Reinspecția actualizează book-ul și badge-ul.",
+        "badge": "După inspecție, anunțul primește badge-ul „Verificat fizic”.",
+        "listing": "Primești și un anunț profesional gratuit, dacă vrei."
+      },
+      "new": {
+        "title": "Adaugă o locuință nouă",
+        "text": "Completezi adresa și detaliile la pasul următor."
+      },
+      "picked": {
+        "new": "Locuință nouă. Completezi adresa la pasul următor.",
+        "existing": "Ai ales {{address}}. Am completat deja adresa și detaliile; le verifici la pasul următor."
+      }
+    },
+    "address": {
+      "title": "Adresa",
+      "text": "Strada, numărul și orașul.",
+      "street": "Strada și numărul",
+      "streetPlaceholder": "De ex. Str. Școlii 12, ap. 7",
+      "city": "Orașul",
+      "cityPlaceholder": "Alege orașul",
+      "covered": "Avem inspectori în {{city}}. Poți continua.",
+      "noCoverage": {
+        "title": "Încă nu avem inspectori în {{city}}",
+        "text": "Nu îți cerem nicio plată. Revino curând: extindem echipa de inspectori în fiecare lună."
+      }
+    },
+    "pin": {
+      "title": "Pinul pe hartă",
+      "text": "Inspectorul vine exact la acest punct.",
+      "mapLabel": "Harta pentru pinul locuinței",
+      "mapError": "Harta nu s-a putut încărca. Reîncarcă pagina.",
+      "placed": "Pinul e pus",
+      "empty": "Atinge harta ca să pui pinul",
+      "coordinates": "{{lat}}, {{lng}}"
+    },
+    "details": {
+      "title": "Despre locuință",
+      "text": "Ne ajută să estimăm durata vizitei.",
+      "type": "Tipul locuinței",
+      "area": "Suprafață utilă",
+      "areaSuffix": "m²",
+      "areaHint": "Din acte sau anunț",
+      "year": "Anul construcției (opțional)",
+      "yearHint": "Aproximativ e în regulă",
+      "floor": "Etaj",
+      "floorHint": "Etajul și câte are blocul",
+      "floorLabel": "Etajul apartamentului",
+      "buildingFloors": "Etaje în bloc",
+      "of": "din"
+    },
+    "date": {
+      "dayTitle": "Alege ziua",
+      "timeTitle": "Alege ora",
+      "calendarLabel": "Calendar",
+      "error": "Nu am putut încărca orele libere.",
+      "firstFree": "Prima oră liberă: {{when}}",
+      "freeShort_one": "{{count}} liberă",
+      "freeShort_few": "{{count}} libere",
+      "freeShort_other": "{{count}} libere",
+      "full": "plin",
+      "closed": "închis",
+      "dayFree_one": "{{day}}, {{count}} oră liberă",
+      "dayFree_few": "{{day}}, {{count}} ore libere",
+      "dayFree_other": "{{day}}, {{count}} de ore libere",
+      "dayOff": "{{day}}, indisponibil",
+      "dayPast": "{{day}}, nu se poate programa",
+      "timeHelp_one": "{{day}} · {{count}} oră liberă",
+      "timeHelp_few": "{{day}} · {{count}} ore libere",
+      "timeHelp_other": "{{day}} · {{count}} de ore libere",
+      "timeHelpEmpty": "Alege întâi o zi din calendar.",
+      "parts": {
+        "morning": "Dimineața",
+        "midday": "La prânz",
+        "afternoon": "După-amiaza"
+      },
+      "until": "până la {{time}}",
+      "busy": "ocupat",
+      "picked": "{{day}} · {{from}}–{{to}}",
+      "pickedNote": "Vizita durează 1–2 ore · reprogramare gratuită până cu 24 de ore înainte",
+      "taken": {
+        "title": "Ora aleasă tocmai a fost rezervată, alege alta",
+        "text": "Am păstrat ziua. Orele încă libere sunt mai jos."
+      },
+      "noSlots": {
+        "title": "Nu mai avem ore libere",
+        "text": "Inspectorii din {{city}} sunt ocupați în următoarele 90 de zile. Revino în câteva zile."
+      }
+    },
+    "access": {
+      "openerLabel": "Cine deschide ușa",
+      "opener": {
+        "self": {
+          "title": "Deschid eu",
+          "text": "Folosim numele și telefonul din cont."
+        },
+        "other": {
+          "title": "Altcineva",
+          "text": "Un membru al familiei, un vecin sau agentul."
+        }
+      },
+      "fromAccount": "{{phone}} · din contul tău",
+      "name": "Numele persoanei",
+      "phone": "Telefonul ei",
+      "phonePlaceholder": "0722 123 456",
+      "notesTitle": "Note pentru inspector",
+      "notesText": "Opțional. Apasă ca să adaugi rapid.",
+      "tagsLabel": "Note rapide",
+      "notesPlaceholder": "De ex. interfon 4, câinele stă pe balcon",
+      "notesCount": "{{count}}/{{max}}",
+      "callNote": "Inspectorul sună cu 30 de minute înainte. Dacă nu răspunde nimeni, așteaptă 15 minute."
+    },
+    "review": {
+      "title": "Verifică detaliile",
+      "hint": "Poți modifica orice pas",
+      "edit": "Modifică",
+      "editLabel": "Modifică: {{item}}",
+      "rows": {
+        "address": "Adresă",
+        "home": "Locuință",
+        "date": "Data",
+        "opener": "Deschide"
+      },
+      "addressInCity": "{{address}}, {{city}}",
+      "dateValue": "{{day}} · {{from}}–{{to}}"
+    },
+    "payment": {
+      "legend": "Cum plătești",
+      "methods": {
+        "card": {
+          "label": "Card bancar",
+          "text": "Visa, Mastercard"
+        },
+        "apple_pay": {
+          "label": "Apple Pay"
+        },
+        "google_pay": {
+          "label": "Google Pay"
+        }
+      },
+      "terms": "Sunt de acord cu Termenii și Politica de confidențialitate.",
+      "termsNote": "Anularea e gratuită cu cel puțin 24 de ore înainte.",
+      "notActive": "Plata online nu este încă activă: programarea se salvează acum, fără plată.",
+      "submit": "Programează inspecția",
+      "booking": "Se programează…",
+      "secure": "Plată securizată. Nu păstrăm datele cardului."
+    },
+    "summary": {
+      "label": "Sumarul comenzii",
+      "listLabel": "Rezumat",
+      "next": "Următorul: {{step}}",
+      "continue": "Continuă la {{step}}",
+      "back": "Înapoi",
+      "pending": "Alegi la pasul {{step}}",
+      "blocked": {
+        "requester": "Alege o opțiune ca să continui",
+        "date": "Alege o zi și o oră ca să continui"
+      }
+    },
+    "confirmation": {
+      "pageTitle": "Inspecția e programată",
+      "eyebrow": "Comanda PS-I-{{number}}",
+      "title": "Inspecția e programată",
+      "text": "Programarea e salvată în contul tău. Te anunțăm acolo când îți alocăm inspectorul.",
+      "view": "Vezi programarea",
+      "calendar": "Adaugă în calendar",
+      "mapLabel": "Harta locuinței",
+      "nextTitle": "Ce urmează",
+      "prepTitle": "Cum te pregătești",
+      "icsTitle": "Inspecție Property Fizic",
+      "icsFileName": "inspectie-PS-I-{{number}}.ics",
+      "stages": {
+        "assigned": "Inspector alocat",
+        "assignedMeta": "în cel mult o zi lucrătoare",
+        "next": "Urmează",
+        "visit": "Inspecția",
+        "visitMeta": "{{date}} · 1–2 ore",
+        "book": "Book gata",
+        "bookMeta": "în 3 zile lucrătoare"
+      },
+      "prep": {
+        "rooms": "Asigură acces la toate camerele, balcon și boxă",
+        "meters": "Lasă tabloul electric și contoarele la vedere",
+        "papers": "Pregătește actele: extras CF și releveu, dacă le ai",
+        "heating": "Pornește căldura și apa caldă cu o oră înainte",
+        "worries": "Notează ce te îngrijorează, ca inspectorul să verifice"
+      }
+    }
   }
 }

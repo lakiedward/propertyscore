@@ -87,7 +87,18 @@
       "decision_message_too_long": "The message can have at most 2,000 characters.",
       "listing_floor_above_building": "The floor cannot be higher than the number of floors in the building.",
       "value_out_of_range": "The value is outside the allowed range.",
-      "favorite_limit_reached": "You have already saved 500 homes. Remove a few from your favourites to add more."
+      "favorite_limit_reached": "You have already saved 500 homes. Remove a few from your favourites to add more.",
+      "outside_coverage": "We have no inspectors at this address yet.",
+      "slot_taken": "The chosen time was just booked. Choose another one.",
+      "invalid_access": "Check the name and phone of the person opening the door.",
+      "property_invalid": "Check the home details.",
+      "inspection_locked": "The booking can no longer be changed.",
+      "inspection_not_found": "The booking no longer exists.",
+      "wrong_city": "The inspector works in another city.",
+      "inspector_unavailable": "The inspector does not work at this time.",
+      "inspector_busy": "The inspector already has an inspection at this time.",
+      "availability_invalid": "Check the ranges: at most 4 a day, without overlaps.",
+      "inspector_not_found": "The inspector no longer exists."
     }
   },
   "validation": {
@@ -102,7 +113,12 @@
     "min": "The minimum value is {{min}}.",
     "max": "The maximum value is {{max}}.",
     "endAfterStart": "The end must be after the start.",
-    "rangesOverlap": "The ranges overlap."
+    "rangesOverlap": "The ranges overlap.",
+    "pinRequired": "Place the pin on the map.",
+    "range": "Enter a value between {{min}} and {{max}}.",
+    "floorAboveBuilding": "The floor cannot be higher than the number of floors in the building.",
+    "phone": "Enter a valid phone number.",
+    "termsRequired": "Tick the agreement to continue."
   },
   "site": {
     "skipToContent": "Skip to content",
@@ -455,5 +471,18 @@
       "out": "Zoom out",
       "reset": "Zoom {{value}}, back to the original size"
     }
+  },
+  "stageTimeline": {
+    "state": {
+      "done": "Done",
+      "current": "Now",
+      "upcoming": "Next",
+      "cancelled": "Cancelled"
+    }
+  },
+  "calendar": {
+    "today": "Today",
+    "previous": "Previous month",
+    "next": "Next month"
   }
 }

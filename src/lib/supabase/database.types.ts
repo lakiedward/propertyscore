@@ -402,7 +402,7 @@ isOneToOne: false
 { Args: { "p_inspection_id": string,"p_inspector_id": string }; Returns: undefined
                            },
 "book_inspection":
-{ Args: { "p_access_mode": Database["public"]['Enums']["inspection_access_mode"],"p_access_name": string,"p_access_notes": string,"p_access_phone": string,"p_access_tags": (string)[],"p_address_text": string,"p_area_m2": number,"p_building_floors": number,"p_city_id": string,"p_floor": number,"p_latitude": number,"p_listing_id": string,"p_longitude": number,"p_payment_method": Database["public"]['Enums']["inspection_payment_method"],"p_property_id": string,"p_property_type": Database["public"]['Enums']["listing_property_type"],"p_starts_at": string,"p_year_built": number }; Returns: {
+{ Args: { "p_access_mode": Database["public"]['Enums']["inspection_access_mode"],"p_access_name"?: string,"p_access_notes"?: string,"p_access_phone"?: string,"p_access_tags": (string)[],"p_address_text": string,"p_area_m2": number,"p_building_floors"?: number,"p_city_id": string,"p_floor"?: number,"p_latitude": number,"p_listing_id"?: string,"p_longitude": number,"p_payment_method": Database["public"]['Enums']["inspection_payment_method"],"p_property_id"?: string,"p_property_type": Database["public"]['Enums']["listing_property_type"],"p_starts_at": string,"p_year_built"?: number }; Returns: {
               "id": string,"number": number
             }[]
                            },

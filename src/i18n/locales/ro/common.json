@@ -87,7 +87,18 @@
       "decision_message_too_long": "Mesajul poate avea cel mult 2.000 de caractere.",
       "listing_floor_above_building": "Etajul nu poate fi mai mare decât numărul de etaje ale clădirii.",
       "value_out_of_range": "Valoarea este în afara limitelor permise.",
-      "favorite_limit_reached": "Ai salvat deja 500 de locuințe. Scoate câteva din favorite ca să adaugi altele."
+      "favorite_limit_reached": "Ai salvat deja 500 de locuințe. Scoate câteva din favorite ca să adaugi altele.",
+      "outside_coverage": "Încă nu avem inspectori la această adresă.",
+      "slot_taken": "Ora aleasă tocmai a fost rezervată. Alege alta.",
+      "invalid_access": "Verifică numele și telefonul persoanei care deschide.",
+      "property_invalid": "Verifică datele locuinței.",
+      "inspection_locked": "Programarea nu mai poate fi schimbată.",
+      "inspection_not_found": "Programarea nu mai există.",
+      "wrong_city": "Inspectorul lucrează în alt oraș.",
+      "inspector_unavailable": "Inspectorul nu lucrează la această oră.",
+      "inspector_busy": "Inspectorul are deja o inspecție la această oră.",
+      "availability_invalid": "Verifică intervalele: cel mult 4 pe zi, fără suprapuneri.",
+      "inspector_not_found": "Inspectorul nu mai există."
     }
   },
   "validation": {
@@ -104,7 +115,12 @@
     "min": "Valoarea minimă este {{min}}.",
     "max": "Valoarea maximă este {{max}}.",
     "endAfterStart": "Ora de sfârșit trebuie să fie după ora de început.",
-    "rangesOverlap": "Intervalele se suprapun."
+    "rangesOverlap": "Intervalele se suprapun.",
+    "pinRequired": "Pune pinul pe hartă.",
+    "range": "Introdu o valoare între {{min}} și {{max}}.",
+    "floorAboveBuilding": "Etajul nu poate fi mai mare decât numărul de etaje al blocului.",
+    "phone": "Introdu un număr de telefon valid.",
+    "termsRequired": "Bifează acordul ca să continui."
   },
   "site": {
     "skipToContent": "Sari la conținut",
@@ -462,5 +478,18 @@
       "out": "Micșorează fotografia",
       "reset": "Mărire {{value}}, revino la dimensiunea inițială"
     }
+  },
+  "stageTimeline": {
+    "state": {
+      "done": "Finalizat",
+      "current": "Acum",
+      "upcoming": "Urmează",
+      "cancelled": "Anulat"
+    }
+  },
+  "calendar": {
+    "today": "Azi",
+    "previous": "Luna anterioară",
+    "next": "Luna următoare"
   }
 }

@@ -104,57 +104,43 @@ select is(
 );
 
 select throws_ok(
-  $$ select * from public.book_inspection(null, null, 'Str. Unirii 1, București', (select bucuresti from fixture),
-       44.4270, 26.1020, 'apartment', 60, null, 2::smallint, 4::smallint, (select monday_8 from fixture),
-       'self', null, null, '{}', null, 'card') $$,
+  $$ select * from public.book_inspection('Str. Unirii 1, București', (select bucuresti from fixture), 44.4270, 26.1020, 'apartment', 60, (select monday_8 from fixture), 'self', '{}', 'card', null, null, null, 2::smallint, 4::smallint, null, null, null) $$,
   'P0001', 'outside_coverage',
   'A city without inspectors cannot be booked'
 );
 
 select throws_ok(
-  $$ select * from public.book_inspection(null, null, 'Str. Școlii 1, Timișoara', (select timisoara from fixture),
-       44.4270, 26.1020, 'apartment', 60, null, 2::smallint, 4::smallint, (select monday_8 from fixture),
-       'self', null, null, '{}', null, 'card') $$,
+  $$ select * from public.book_inspection('Str. Școlii 1, Timișoara', (select timisoara from fixture), 44.4270, 26.1020, 'apartment', 60, (select monday_8 from fixture), 'self', '{}', 'card', null, null, null, 2::smallint, 4::smallint, null, null, null) $$,
   'P0001', 'outside_coverage',
   'A pin outside the city cannot be booked'
 );
 
 select throws_ok(
-  $$ select * from public.book_inspection(null, null, 'Str. Școlii 1, Timișoara', (select timisoara from fixture),
-       45.7580, 21.2246, 'apartment', 60, null, 2::smallint, 4::smallint, (select monday_off_grid from fixture),
-       'self', null, null, '{}', null, 'card') $$,
+  $$ select * from public.book_inspection('Str. Școlii 1, Timișoara', (select timisoara from fixture), 45.7580, 21.2246, 'apartment', 60, (select monday_off_grid from fixture), 'self', '{}', 'card', null, null, null, 2::smallint, 4::smallint, null, null, null) $$,
   'P0001', 'slot_taken',
   'Only the offered start times can be booked'
 );
 
 select throws_ok(
-  $$ select * from public.book_inspection(null, null, 'Str. Școlii 1, Timișoara', (select timisoara from fixture),
-       45.7580, 21.2246, 'apartment', 60, null, 2::smallint, 4::smallint, (select monday_8 from fixture),
-       'other', 'Vecin', '12', '{}', null, 'card') $$,
+  $$ select * from public.book_inspection('Str. Școlii 1, Timișoara', (select timisoara from fixture), 45.7580, 21.2246, 'apartment', 60, (select monday_8 from fixture), 'other', '{}', 'card', null, null, null, 2::smallint, 4::smallint, 'Vecin', '12', null) $$,
   'P0001', 'invalid_access',
   'Another opener needs a valid phone'
 );
 
 select throws_ok(
-  $$ select * from public.book_inspection(null, null, 'Str. Școlii 1, Timișoara', (select timisoara from fixture),
-       45.7580, 21.2246, 'apartment', 60, null, 2::smallint, 4::smallint, (select monday_8 from fixture),
-       'self', null, null, array['sauna'], null, 'card') $$,
+  $$ select * from public.book_inspection('Str. Școlii 1, Timișoara', (select timisoara from fixture), 45.7580, 21.2246, 'apartment', 60, (select monday_8 from fixture), 'self', array['sauna'], 'card', null, null, null, 2::smallint, 4::smallint, null, null, null) $$,
   'P0001', 'invalid_access',
   'Only the known access tags are accepted'
 );
 
 select throws_ok(
-  $$ select * from public.book_inspection(null, null, 'Str. Școlii 1, Timișoara', (select timisoara from fixture),
-       45.7580, 21.2246, 'house', 60, null, 2::smallint, 4::smallint, (select monday_8 from fixture),
-       'self', null, null, '{}', null, 'card') $$,
+  $$ select * from public.book_inspection('Str. Școlii 1, Timișoara', (select timisoara from fixture), 45.7580, 21.2246, 'house', 60, (select monday_8 from fixture), 'self', '{}', 'card', null, null, null, 2::smallint, 4::smallint, null, null, null) $$,
   'P0001', 'property_invalid',
   'A house has no floor'
 );
 
 select lives_ok(
-  $$ select * from public.book_inspection(null, null, 'Str. Școlii 1, Timișoara', (select timisoara from fixture),
-       45.7580, 21.2246, 'apartment', 60, 1980::smallint, 2::smallint, 4::smallint, (select monday_8 from fixture),
-       'self', null, null, array['intercom'], 'Interfon 4', 'card') $$,
+  $$ select * from public.book_inspection('Str. Școlii 1, Timișoara', (select timisoara from fixture), 45.7580, 21.2246, 'apartment', 60, (select monday_8 from fixture), 'self', array['intercom'], 'card', null, null, 1980::smallint, 2::smallint, 4::smallint, null, null, 'Interfon 4') $$,
   'A client can book a free hour'
 );
 
@@ -186,9 +172,7 @@ select is(
 );
 
 select throws_ok(
-  $$ select * from public.book_inspection(null, null, 'Str. Școlii 2, Timișoara', (select timisoara from fixture),
-       45.7580, 21.2246, 'apartment', 60, null, 2::smallint, 4::smallint, (select monday_8 from fixture),
-       'self', null, null, '{}', null, 'card') $$,
+  $$ select * from public.book_inspection('Str. Școlii 2, Timișoara', (select timisoara from fixture), 45.7580, 21.2246, 'apartment', 60, (select monday_8 from fixture), 'self', '{}', 'card', null, null, null, 2::smallint, 4::smallint, null, null, null) $$,
   'P0001', 'slot_taken',
   'A taken hour cannot be booked again'
 );

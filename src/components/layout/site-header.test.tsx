@@ -56,7 +56,7 @@ describe('SiteHeader', () => {
     const menu = await screen.findByRole('dialog', { name: roCommon.site.menu.label });
     expect(within(menu).getByRole('link', { name: roCommon.site.header.physical })).toHaveAttribute(
       'href',
-      '/#physical',
+      '/inspection',
     );
     expect(
       within(menu).getByRole('link', { name: roCommon.site.header.smartCheck }),

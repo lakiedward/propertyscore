@@ -48,11 +48,13 @@ import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth/ca
 import { Route as PublicAuthConfirmRouteImport } from './routes/_public/auth/confirm'
 import { Route as PublicPasswordResetIndexRouteImport } from './routes/_public/password-reset/index'
 import { Route as PublicPasswordResetNewRouteImport } from './routes/_public/password-reset/new'
+import { Route as SiteInspectionIndexRouteImport } from './routes/_site/inspection/index'
 import { Route as SiteListingsIndexRouteImport } from './routes/_site/listings/index'
 import { Route as SiteListingsListingIdRouteImport } from './routes/_site/listings/$listingId'
 import { Route as AuthenticatedAccountListingsIndexRouteImport } from './routes/_authenticated/account/listings/index'
 import { Route as AuthenticatedAccountListingsListingIdRouteImport } from './routes/_authenticated/account/listings/$listingId'
 import { Route as AuthenticatedAccountListingsNewRouteImport } from './routes/_authenticated/account/listings/new'
+import { Route as SiteInspectionConfirmationInspectionIdRouteImport } from './routes/_site/inspection/confirmation/$inspectionId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -270,6 +272,11 @@ const PublicPasswordResetNewRoute = PublicPasswordResetNewRouteImport.update({
   path: '/password-reset/new',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const SiteInspectionIndexRoute = SiteInspectionIndexRouteImport.update({
+  id: '/inspection/',
+  path: '/inspection/',
+  getParentRoute: () => SiteRouteRoute,
+} as any)
 const SiteListingsIndexRoute = SiteListingsIndexRouteImport.update({
   id: '/listings/',
   path: '/listings/',
@@ -297,6 +304,12 @@ const AuthenticatedAccountListingsNewRoute =
     id: '/listings/new',
     path: '/listings/new',
     getParentRoute: () => AuthenticatedAccountRouteRoute,
+  } as any)
+const SiteInspectionConfirmationInspectionIdRoute =
+  SiteInspectionConfirmationInspectionIdRouteImport.update({
+    id: '/inspection/confirmation/$inspectionId',
+    path: '/inspection/confirmation/$inspectionId',
+    getParentRoute: () => SiteRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -337,9 +350,11 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/field/': typeof AuthenticatedFieldIndexRoute
   '/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/inspection/': typeof SiteInspectionIndexRoute
   '/listings/': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/inspection/confirmation/$inspectionId': typeof SiteInspectionConfirmationInspectionIdRoute
   '/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -377,9 +392,11 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/field': typeof AuthenticatedFieldIndexRoute
   '/password-reset': typeof PublicPasswordResetIndexRoute
+  '/inspection': typeof SiteInspectionIndexRoute
   '/listings': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/inspection/confirmation/$inspectionId': typeof SiteInspectionConfirmationInspectionIdRoute
   '/account/listings': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRoutesById {
@@ -424,9 +441,11 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/field/': typeof AuthenticatedFieldIndexRoute
   '/_public/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/_site/inspection/': typeof SiteInspectionIndexRoute
   '/_site/listings/': typeof SiteListingsIndexRoute
   '/_authenticated/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/_authenticated/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/_site/inspection/confirmation/$inspectionId': typeof SiteInspectionConfirmationInspectionIdRoute
   '/_authenticated/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -469,9 +488,11 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/field/'
     | '/password-reset/'
+    | '/inspection/'
     | '/listings/'
     | '/account/listings/$listingId'
     | '/account/listings/new'
+    | '/inspection/confirmation/$inspectionId'
     | '/account/listings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -509,9 +530,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/field'
     | '/password-reset'
+    | '/inspection'
     | '/listings'
     | '/account/listings/$listingId'
     | '/account/listings/new'
+    | '/inspection/confirmation/$inspectionId'
     | '/account/listings'
   id:
     | '__root__'
@@ -555,9 +578,11 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/field/'
     | '/_public/password-reset/'
+    | '/_site/inspection/'
     | '/_site/listings/'
     | '/_authenticated/account/listings/$listingId'
     | '/_authenticated/account/listings/new'
+    | '/_site/inspection/confirmation/$inspectionId'
     | '/_authenticated/account/listings/'
   fileRoutesById: FileRoutesById
 }
@@ -842,6 +867,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicPasswordResetNewRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_site/inspection/': {
+      id: '/_site/inspection/'
+      path: '/inspection'
+      fullPath: '/inspection/'
+      preLoaderRoute: typeof SiteInspectionIndexRouteImport
+      parentRoute: typeof SiteRouteRoute
+    }
     '/_site/listings/': {
       id: '/_site/listings/'
       path: '/listings'
@@ -876,6 +908,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/account/listings/new'
       preLoaderRoute: typeof AuthenticatedAccountListingsNewRouteImport
       parentRoute: typeof AuthenticatedAccountRouteRoute
+    }
+    '/_site/inspection/confirmation/$inspectionId': {
+      id: '/_site/inspection/confirmation/$inspectionId'
+      path: '/inspection/confirmation/$inspectionId'
+      fullPath: '/inspection/confirmation/$inspectionId'
+      preLoaderRoute: typeof SiteInspectionConfirmationInspectionIdRouteImport
+      parentRoute: typeof SiteRouteRoute
     }
   }
 }
@@ -1016,14 +1055,19 @@ interface SiteRouteRouteChildren {
   SitePublishRoute: typeof SitePublishRoute
   SiteIndexRoute: typeof SiteIndexRoute
   SiteListingsListingIdRoute: typeof SiteListingsListingIdRoute
+  SiteInspectionIndexRoute: typeof SiteInspectionIndexRoute
   SiteListingsIndexRoute: typeof SiteListingsIndexRoute
+  SiteInspectionConfirmationInspectionIdRoute: typeof SiteInspectionConfirmationInspectionIdRoute
 }
 
 const SiteRouteRouteChildren: SiteRouteRouteChildren = {
   SitePublishRoute: SitePublishRoute,
   SiteIndexRoute: SiteIndexRoute,
   SiteListingsListingIdRoute: SiteListingsListingIdRoute,
+  SiteInspectionIndexRoute: SiteInspectionIndexRoute,
   SiteListingsIndexRoute: SiteListingsIndexRoute,
+  SiteInspectionConfirmationInspectionIdRoute:
+    SiteInspectionConfirmationInspectionIdRoute,
 }
 
 const SiteRouteRouteWithChildren = SiteRouteRoute._addFileChildren(

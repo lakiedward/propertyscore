@@ -4,6 +4,7 @@ import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
 import type { HomeSectionId } from '@/components/layout/site-navigation';
 import { PillLink } from '@/components/navigation/pill-link';
+import { BOOKING_TARGET } from '../home.constants';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
 
@@ -47,7 +48,7 @@ type ProductPriceBoxProps = {
   currency: Currency;
   footer: ReactNode;
   ctaLabel: string;
-  ctaHash: HomeSectionId;
+  ctaHash: HomeSectionId | typeof BOOKING_TARGET;
 };
 
 export function ProductPriceBox({
@@ -77,9 +78,15 @@ export function ProductPriceBox({
       </div>
       <div className={footerVariants({ product })}>
         <span className={footerTextVariants({ product })}>{footer}</span>
-        <PillLink to="/" hash={ctaHash} tone={CTA_TONE[product]} size="sm">
-          {ctaLabel}
-        </PillLink>
+        {ctaHash === BOOKING_TARGET ? (
+          <PillLink to="/inspection" tone={CTA_TONE[product]} size="sm">
+            {ctaLabel}
+          </PillLink>
+        ) : (
+          <PillLink to="/" hash={ctaHash} tone={CTA_TONE[product]} size="sm">
+            {ctaLabel}
+          </PillLink>
+        )}
       </div>
     </div>
   );

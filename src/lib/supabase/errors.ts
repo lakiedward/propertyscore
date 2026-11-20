@@ -62,6 +62,17 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   decision_message_required: 'decision_message_required',
   decision_message_too_long: 'decision_message_too_long',
   favorite_limit_reached: 'favorite_limit_reached',
+  outside_coverage: 'outside_coverage',
+  slot_taken: 'slot_taken',
+  invalid_access: 'invalid_access',
+  property_invalid: 'property_invalid',
+  inspection_locked: 'inspection_locked',
+  inspection_not_found: 'inspection_not_found',
+  wrong_city: 'wrong_city',
+  inspector_unavailable: 'inspector_unavailable',
+  inspector_busy: 'inspector_busy',
+  availability_invalid: 'availability_invalid',
+  inspector_not_found: 'inspector_not_found',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {

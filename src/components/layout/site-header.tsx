@@ -108,7 +108,7 @@ export function SiteHeader({ account, menuLanguageSwitcher }: SiteHeaderProps) {
               size="nav"
               className="border-primary hover:bg-primary-pressed"
             >
-              <Link to="/" hash={HOME_SECTION.physical} aria-label={t('site.header.physical')}>
+              <Link to="/inspection" aria-label={t('site.header.physical')}>
                 <BrandMark product="physical" size={18} />
                 <Logo product="physical" tone="inverse" size="2xs" hasMark={false} isDecorative />
               </Link>

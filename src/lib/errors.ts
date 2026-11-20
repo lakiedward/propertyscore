@@ -29,7 +29,18 @@ export type AppErrorReason =
   | 'decision_message_too_long'
   | 'listing_floor_above_building'
   | 'value_out_of_range'
-  | 'favorite_limit_reached';
+  | 'favorite_limit_reached'
+  | 'outside_coverage'
+  | 'slot_taken'
+  | 'invalid_access'
+  | 'property_invalid'
+  | 'inspection_locked'
+  | 'inspection_not_found'
+  | 'wrong_city'
+  | 'inspector_unavailable'
+  | 'inspector_busy'
+  | 'availability_invalid'
+  | 'inspector_not_found';
 
 type AppErrorOptions = {
   cause?: unknown;

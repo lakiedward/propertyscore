@@ -154,8 +154,7 @@ export function SiteMenu({
           <div className="grid grid-cols-2 gap-2 w820:hidden">
             <Button asChild variant="cta" size="nav">
               <Link
-                to="/"
-                hash={HOME_SECTION.physical}
+                to="/inspection"
                 onClick={handleNavigate}
                 aria-label={t('site.header.physical')}
               >

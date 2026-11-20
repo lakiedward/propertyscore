@@ -38,3 +38,59 @@ export const INSPECTION_START_TIMES = [
   '15:30',
   '17:00',
 ] as const;
+
+type Functions = Database['public']['Functions'];
+
+type Widened<Row, Column extends keyof Row> = Omit<Row, Column> & {
+  [Key in Column]: Row[Key] | null;
+};
+
+export type BookableProperty = Widened<
+  Functions['my_bookable_properties']['Returns'][number],
+  | 'property_id'
+  | 'listing_id'
+  | 'area_m2'
+  | 'building_floors'
+  | 'floor'
+  | 'last_inspection_at'
+  | 'latitude'
+  | 'longitude'
+  | 'listing_currency'
+  | 'listing_price'
+  | 'listing_status'
+  | 'listing_transaction'
+  | 'photo_path'
+  | 'rooms'
+  | 'year_built'
+>;
+
+export type InspectionCity = Functions['inspection_cities']['Returns'][number];
+
+export type SlotCount = Functions['inspection_slots']['Returns'][number];
+
+export type PropertyType = Enums<'listing_property_type'>;
+
+export type AccessMode = Enums<'inspection_access_mode'>;
+
+export type PaymentMethod = Enums<'inspection_payment_method'>;
+
+export type BookingRequest = {
+  propertyId: string | null;
+  listingId: string | null;
+  addressText: string;
+  cityId: string;
+  latitude: number;
+  longitude: number;
+  propertyType: PropertyType;
+  areaM2: number;
+  yearBuilt: number | null;
+  floor: number | null;
+  buildingFloors: number | null;
+  startsAt: string;
+  accessMode: AccessMode;
+  accessName: string | null;
+  accessPhone: string | null;
+  accessTags: readonly AccessTag[];
+  accessNotes: string | null;
+  paymentMethod: PaymentMethod;
+};

@@ -1,4 +1,5 @@
 import { Trans, useTranslation } from 'react-i18next';
+import { BOOKING_TARGET } from '../home.constants';
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
 import { HOME_SECTION } from '@/components/layout/site-navigation';
@@ -75,7 +76,7 @@ export function PricingSection() {
             }
             features={t('pricing.physical.features', { returnObjects: true })}
             cta={t('pricing.physical.cta')}
-            ctaHash={HOME_SECTION.physical}
+            ctaHash={BOOKING_TARGET}
             secondary={t('pricing.physical.secondary')}
             secondaryHash={HOME_SECTION.deliverables}
           />
