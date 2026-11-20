@@ -14,6 +14,7 @@ import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as SiteRouteRouteImport } from './routes/_site/route'
 import { Route as AuthenticatedAccountRouteRouteImport } from './routes/_authenticated/account/route'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedFieldRouteRouteImport } from './routes/_authenticated/field/route'
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
@@ -39,6 +40,10 @@ import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminScoringRouteImport } from './routes/_authenticated/admin/scoring'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
+import { Route as AuthenticatedFieldIndexRouteImport } from './routes/_authenticated/field/index'
+import { Route as AuthenticatedFieldAvailabilityRouteImport } from './routes/_authenticated/field/availability'
+import { Route as AuthenticatedFieldCurrentRouteImport } from './routes/_authenticated/field/current'
+import { Route as AuthenticatedFieldHistoryRouteImport } from './routes/_authenticated/field/history'
 import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth/callback'
 import { Route as PublicAuthConfirmRouteImport } from './routes/_public/auth/confirm'
 import { Route as PublicPasswordResetIndexRouteImport } from './routes/_public/password-reset/index'
@@ -70,6 +75,11 @@ const AuthenticatedAccountRouteRoute =
 const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFieldRouteRoute = AuthenticatedFieldRouteRouteImport.update({
+  id: '/field',
+  path: '/field',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const PublicLoginRoute = PublicLoginRouteImport.update({
@@ -216,6 +226,29 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedFieldIndexRoute = AuthenticatedFieldIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedFieldRouteRoute,
+} as any)
+const AuthenticatedFieldAvailabilityRoute =
+  AuthenticatedFieldAvailabilityRouteImport.update({
+    id: '/availability',
+    path: '/availability',
+    getParentRoute: () => AuthenticatedFieldRouteRoute,
+  } as any)
+const AuthenticatedFieldCurrentRoute =
+  AuthenticatedFieldCurrentRouteImport.update({
+    id: '/current',
+    path: '/current',
+    getParentRoute: () => AuthenticatedFieldRouteRoute,
+  } as any)
+const AuthenticatedFieldHistoryRoute =
+  AuthenticatedFieldHistoryRouteImport.update({
+    id: '/history',
+    path: '/history',
+    getParentRoute: () => AuthenticatedFieldRouteRoute,
+  } as any)
 const PublicAuthCallbackRoute = PublicAuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
@@ -270,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
   '/account': typeof AuthenticatedAccountRouteRouteWithChildren
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/field': typeof AuthenticatedFieldRouteRouteWithChildren
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
   '/publish': typeof SitePublishRoute
@@ -292,12 +326,16 @@ export interface FileRoutesByFullPath {
   '/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/field/availability': typeof AuthenticatedFieldAvailabilityRoute
+  '/field/current': typeof AuthenticatedFieldCurrentRoute
+  '/field/history': typeof AuthenticatedFieldHistoryRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
   '/listings/$listingId': typeof SiteListingsListingIdRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/field/': typeof AuthenticatedFieldIndexRoute
   '/password-reset/': typeof PublicPasswordResetIndexRoute
   '/listings/': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
@@ -328,12 +366,16 @@ export interface FileRoutesByTo {
   '/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/field/availability': typeof AuthenticatedFieldAvailabilityRoute
+  '/field/current': typeof AuthenticatedFieldCurrentRoute
+  '/field/history': typeof AuthenticatedFieldHistoryRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
   '/listings/$listingId': typeof SiteListingsListingIdRoute
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/field': typeof AuthenticatedFieldIndexRoute
   '/password-reset': typeof PublicPasswordResetIndexRoute
   '/listings': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
@@ -347,6 +389,7 @@ export interface FileRoutesById {
   '/_site': typeof SiteRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRouteRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/_authenticated/field': typeof AuthenticatedFieldRouteRouteWithChildren
   '/_public/login': typeof PublicLoginRoute
   '/_public/sign-up': typeof PublicSignUpRoute
   '/_site/publish': typeof SitePublishRoute
@@ -370,12 +413,16 @@ export interface FileRoutesById {
   '/_authenticated/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/field/availability': typeof AuthenticatedFieldAvailabilityRoute
+  '/_authenticated/field/current': typeof AuthenticatedFieldCurrentRoute
+  '/_authenticated/field/history': typeof AuthenticatedFieldHistoryRoute
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
   '/_public/auth/confirm': typeof PublicAuthConfirmRoute
   '/_public/password-reset/new': typeof PublicPasswordResetNewRoute
   '/_site/listings/$listingId': typeof SiteListingsListingIdRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/field/': typeof AuthenticatedFieldIndexRoute
   '/_public/password-reset/': typeof PublicPasswordResetIndexRoute
   '/_site/listings/': typeof SiteListingsIndexRoute
   '/_authenticated/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
@@ -388,6 +435,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/admin'
+    | '/field'
     | '/login'
     | '/sign-up'
     | '/publish'
@@ -410,12 +458,16 @@ export interface FileRouteTypes {
     | '/admin/scoring'
     | '/admin/settings'
     | '/admin/users'
+    | '/field/availability'
+    | '/field/current'
+    | '/field/history'
     | '/auth/callback'
     | '/auth/confirm'
     | '/password-reset/new'
     | '/listings/$listingId'
     | '/account/'
     | '/admin/'
+    | '/field/'
     | '/password-reset/'
     | '/listings/'
     | '/account/listings/$listingId'
@@ -446,12 +498,16 @@ export interface FileRouteTypes {
     | '/admin/scoring'
     | '/admin/settings'
     | '/admin/users'
+    | '/field/availability'
+    | '/field/current'
+    | '/field/history'
     | '/auth/callback'
     | '/auth/confirm'
     | '/password-reset/new'
     | '/listings/$listingId'
     | '/account'
     | '/admin'
+    | '/field'
     | '/password-reset'
     | '/listings'
     | '/account/listings/$listingId'
@@ -464,6 +520,7 @@ export interface FileRouteTypes {
     | '/_site'
     | '/_authenticated/account'
     | '/_authenticated/admin'
+    | '/_authenticated/field'
     | '/_public/login'
     | '/_public/sign-up'
     | '/_site/publish'
@@ -487,12 +544,16 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/scoring'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/users'
+    | '/_authenticated/field/availability'
+    | '/_authenticated/field/current'
+    | '/_authenticated/field/history'
     | '/_public/auth/callback'
     | '/_public/auth/confirm'
     | '/_public/password-reset/new'
     | '/_site/listings/$listingId'
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
+    | '/_authenticated/field/'
     | '/_public/password-reset/'
     | '/_site/listings/'
     | '/_authenticated/account/listings/$listingId'
@@ -541,6 +602,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/field': {
+      id: '/_authenticated/field'
+      path: '/field'
+      fullPath: '/field'
+      preLoaderRoute: typeof AuthenticatedFieldRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_public/login': {
@@ -718,6 +786,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/field/': {
+      id: '/_authenticated/field/'
+      path: '/'
+      fullPath: '/field/'
+      preLoaderRoute: typeof AuthenticatedFieldIndexRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
+    '/_authenticated/field/availability': {
+      id: '/_authenticated/field/availability'
+      path: '/availability'
+      fullPath: '/field/availability'
+      preLoaderRoute: typeof AuthenticatedFieldAvailabilityRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
+    '/_authenticated/field/current': {
+      id: '/_authenticated/field/current'
+      path: '/current'
+      fullPath: '/field/current'
+      preLoaderRoute: typeof AuthenticatedFieldCurrentRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
+    '/_authenticated/field/history': {
+      id: '/_authenticated/field/history'
+      path: '/history'
+      fullPath: '/field/history'
+      preLoaderRoute: typeof AuthenticatedFieldHistoryRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
     '/_public/auth/callback': {
       id: '/_public/auth/callback'
       path: '/auth/callback'
@@ -859,14 +955,36 @@ const AuthenticatedAdminRouteRouteWithChildren =
     AuthenticatedAdminRouteRouteChildren,
   )
 
+interface AuthenticatedFieldRouteRouteChildren {
+  AuthenticatedFieldAvailabilityRoute: typeof AuthenticatedFieldAvailabilityRoute
+  AuthenticatedFieldCurrentRoute: typeof AuthenticatedFieldCurrentRoute
+  AuthenticatedFieldHistoryRoute: typeof AuthenticatedFieldHistoryRoute
+  AuthenticatedFieldIndexRoute: typeof AuthenticatedFieldIndexRoute
+}
+
+const AuthenticatedFieldRouteRouteChildren: AuthenticatedFieldRouteRouteChildren =
+  {
+    AuthenticatedFieldAvailabilityRoute: AuthenticatedFieldAvailabilityRoute,
+    AuthenticatedFieldCurrentRoute: AuthenticatedFieldCurrentRoute,
+    AuthenticatedFieldHistoryRoute: AuthenticatedFieldHistoryRoute,
+    AuthenticatedFieldIndexRoute: AuthenticatedFieldIndexRoute,
+  }
+
+const AuthenticatedFieldRouteRouteWithChildren =
+  AuthenticatedFieldRouteRoute._addFileChildren(
+    AuthenticatedFieldRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRouteRoute: typeof AuthenticatedAccountRouteRouteWithChildren
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
+  AuthenticatedFieldRouteRoute: typeof AuthenticatedFieldRouteRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRouteRoute: AuthenticatedAccountRouteRouteWithChildren,
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
+  AuthenticatedFieldRouteRoute: AuthenticatedFieldRouteRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =

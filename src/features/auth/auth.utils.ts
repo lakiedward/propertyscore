@@ -69,7 +69,10 @@ export function isRecentLinkSignIn(
 }
 
 export function homePathFor(roles: readonly AppRole[]): PanelPath {
-  return roles.includes('admin') ? PANEL_PATHS.admin : PANEL_PATHS.account;
+  if (roles.includes('admin')) {
+    return PANEL_PATHS.admin;
+  }
+  return roles.includes('inspector') ? PANEL_PATHS.field : PANEL_PATHS.account;
 }
 
 export function settingsPathFor(roles: readonly AppRole[]): SettingsPath {

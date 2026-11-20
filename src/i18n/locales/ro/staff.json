@@ -1,0 +1,78 @@
+{
+  "users": {
+    "eyebrow": "Administrare",
+    "export": "Exportă CSV",
+    "card": {
+      "title": "Toți utilizatorii",
+      "shown_one": "{{count}} din {{total}} cont",
+      "shown_few": "{{count}} din {{total}} conturi",
+      "shown_other": "{{count}} din {{total}} de conturi"
+    },
+    "search": {
+      "label": "Caută utilizatori",
+      "placeholder": "Caută după nume, email sau telefon"
+    },
+    "status": {
+      "label": "Status",
+      "all": "Toate statusurile",
+      "active": "Active",
+      "blocked": "Blocate"
+    },
+    "roles": {
+      "label": "Filtrează după rol",
+      "all": "Toate",
+      "user": "Utilizator",
+      "admin": "Admin",
+      "inspector": "Inspector"
+    },
+    "columns": {
+      "name": "Nume",
+      "email": "Email",
+      "phone": "Telefon",
+      "roles": "Roluri",
+      "created": "Creat",
+      "status": "Status",
+      "actions": "Acțiuni"
+    },
+    "role": {
+      "user": "utilizator",
+      "admin": "admin",
+      "inspector": "inspector"
+    },
+    "inspectorCity": "inspector · {{city}}",
+    "state": {
+      "active": "Activ",
+      "blocked": "Blocat"
+    },
+    "noPhone": "—",
+    "actions": {
+      "menu": "Acțiuni pentru {{name}}",
+      "makeInspector": "Fă-l inspector…",
+      "changeCity": "Schimbă orașul…",
+      "removeInspector": "Scoate rolul de inspector"
+    },
+    "more": "Arată mai mulți utilizatori",
+    "empty": {
+      "title": "Niciun utilizator găsit",
+      "description": "Schimbă căutarea sau filtrele."
+    },
+    "inspectorDialog": {
+      "title": "Inspector în ce oraș?",
+      "description": "{{name}} va vedea agenda și inspecțiile alocate în acest oraș.",
+      "city": "Oraș",
+      "cityPlaceholder": "Alege orașul",
+      "save": "Salvează",
+      "saving": "Se salvează…",
+      "saved": "{{name}} e inspector în {{city}}."
+    },
+    "removeDialog": {
+      "title": "Scoți rolul de inspector?",
+      "description": "{{name}} nu mai poate primi inspecții. Inspecțiile viitoare alocate lui revin în coada de alocat.",
+      "confirm": "Scoate rolul",
+      "pending": "Se scoate…",
+      "done": "{{name}} nu mai e inspector."
+    },
+    "unnamed": "Fără nume",
+    "csvFileName": "utilizatori.csv"
+  }
+}

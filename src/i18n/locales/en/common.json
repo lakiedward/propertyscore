@@ -267,15 +267,31 @@
     "brandHome": "{{brand}}, public site",
     "link": {
       "account": "My account",
-      "admin": "Admin panel"
+      "admin": "Admin panel",
+      "field": "Inspector agenda"
     },
     "userMenu": {
       "role": {
         "user": "User",
-        "admin": "Admin"
+        "admin": "Admin",
+        "inspector": "Inspector"
       }
     },
-    "backToSite": "Back to site"
+    "backToSite": "Back to site",
+    "field": {
+      "label": "Inspector",
+      "navLabel": "Inspector navigation",
+      "groups": {
+        "workday": "Working day",
+        "archive": "Archive"
+      },
+      "nav": {
+        "agenda": "Agenda",
+        "current": "Current inspection",
+        "availability": "Availability",
+        "history": "History"
+      }
+    }
   },
   "listingSummary": {
     "dealCity": "{{deal}} · {{city}}",

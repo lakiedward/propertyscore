@@ -389,7 +389,7 @@ isOneToOne: false
             }[]
                            },
 "admin_list_users":
-{ Args: { "p_limit": number,"p_offset": number,"p_role": Database["public"]['Enums']["app_role"],"p_search": string }; Returns: {
+{ Args: { "p_blocked"?: boolean,"p_limit"?: number,"p_offset"?: number,"p_role"?: Database["public"]['Enums']["app_role"],"p_search": string }; Returns: {
               "created_at": string,"email": string,"full_name": string,"inspector_city_id": string,"inspector_city_name": string,"is_blocked": boolean,"phone": string,"roles": (Database["public"]['Enums']["app_role"])[],"total_count": number,"user_id": string
             }[]
                            },

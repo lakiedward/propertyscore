@@ -270,15 +270,31 @@
     "brandHome": "{{brand}}, site-ul public",
     "link": {
       "account": "Contul meu",
-      "admin": "Panou admin"
+      "admin": "Panou admin",
+      "field": "Agenda inspectorului"
     },
     "userMenu": {
       "role": {
         "user": "Utilizator",
-        "admin": "Admin"
+        "admin": "Admin",
+        "inspector": "Inspector"
       }
     },
-    "backToSite": "Înapoi la site"
+    "backToSite": "Înapoi la site",
+    "field": {
+      "label": "Inspector",
+      "navLabel": "Navigare inspector",
+      "groups": {
+        "workday": "Ziua de lucru",
+        "archive": "Arhivă"
+      },
+      "nav": {
+        "agenda": "Agenda",
+        "current": "Inspecția curentă",
+        "availability": "Disponibilitate",
+        "history": "Istoric"
+      }
+    }
   },
   "listingSummary": {
     "dealCity": "{{deal}} · {{city}}",

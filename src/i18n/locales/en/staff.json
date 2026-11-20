@@ -1,0 +1,77 @@
+{
+  "users": {
+    "eyebrow": "Administration",
+    "export": "Export CSV",
+    "card": {
+      "title": "All users",
+      "shown_one": "{{count}} of {{total}} account",
+      "shown_other": "{{count}} of {{total}} accounts"
+    },
+    "search": {
+      "label": "Search users",
+      "placeholder": "Search by name, email or phone"
+    },
+    "status": {
+      "label": "Status",
+      "all": "All statuses",
+      "active": "Active",
+      "blocked": "Blocked"
+    },
+    "roles": {
+      "label": "Filter by role",
+      "all": "All",
+      "user": "User",
+      "admin": "Admin",
+      "inspector": "Inspector"
+    },
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "roles": "Roles",
+      "created": "Created",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "role": {
+      "user": "user",
+      "admin": "admin",
+      "inspector": "inspector"
+    },
+    "inspectorCity": "inspector · {{city}}",
+    "state": {
+      "active": "Active",
+      "blocked": "Blocked"
+    },
+    "noPhone": "—",
+    "actions": {
+      "menu": "Actions for {{name}}",
+      "makeInspector": "Make inspector…",
+      "changeCity": "Change city…",
+      "removeInspector": "Remove the inspector role"
+    },
+    "more": "Show more users",
+    "empty": {
+      "title": "No users found",
+      "description": "Change the search or the filters."
+    },
+    "inspectorDialog": {
+      "title": "Inspector in which city?",
+      "description": "{{name}} will see the agenda and the inspections assigned in this city.",
+      "city": "City",
+      "cityPlaceholder": "Choose the city",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "{{name}} is an inspector in {{city}}."
+    },
+    "removeDialog": {
+      "title": "Remove the inspector role?",
+      "description": "{{name}} can no longer receive inspections. Their future assigned inspections go back to the queue.",
+      "confirm": "Remove the role",
+      "pending": "Removing…",
+      "done": "{{name}} is no longer an inspector."
+    },
+    "unnamed": "No name",
+    "csvFileName": "users.csv"
+  }
+}

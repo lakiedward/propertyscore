@@ -12,6 +12,7 @@ import { MainContent } from './main-content';
 import {
   ACCOUNT_NAVIGATION,
   ADMIN_NAVIGATION,
+  FIELD_NAVIGATION,
   findCurrentNavItem,
   type ResolvedNavGroup,
   type ResolvedNavItem,
@@ -54,6 +55,13 @@ function usePanelGroups(area: PanelArea): ResolvedNavGroup[] {
       id: group.id,
       title: t(`panel.account.groups.${group.id}`),
       items: group.items.map((item) => ({ ...item, label: t(`panel.account.nav.${item.id}`) })),
+    }));
+  }
+  if (area === 'field') {
+    return FIELD_NAVIGATION.map((group) => ({
+      id: group.id,
+      title: t(`panel.field.groups.${group.id}`),
+      items: group.items.map((item) => ({ ...item, label: t(`panel.field.nav.${item.id}`) })),
     }));
   }
   return ADMIN_NAVIGATION.map((group) => ({

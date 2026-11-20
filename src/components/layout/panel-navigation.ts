@@ -1,13 +1,16 @@
 import {
+  CalendarClockIcon,
   CalendarDaysIcon,
   ChartLineIcon,
   ClipboardCheckIcon,
+  ClipboardListIcon,
   CreditCardIcon,
   DownloadIcon,
   FilePenLineIcon,
   FileTextIcon,
   HandshakeIcon,
   HeartIcon,
+  HistoryIcon,
   InboxIcon,
   LayoutDashboardIcon,
   MegaphoneIcon,
@@ -91,6 +94,21 @@ export const ADMIN_NAVIGATION = [
   {
     id: 'account',
     items: [{ id: 'settings', to: '/admin/settings', icon: SettingsIcon }],
+  },
+] as const satisfies readonly PanelNavGroup<string, string>[];
+
+export const FIELD_NAVIGATION = [
+  {
+    id: 'workday',
+    items: [
+      { id: 'agenda', to: '/field', icon: CalendarDaysIcon, isExact: true },
+      { id: 'current', to: '/field/current', icon: ClipboardListIcon },
+      { id: 'availability', to: '/field/availability', icon: CalendarClockIcon },
+    ],
+  },
+  {
+    id: 'archive',
+    items: [{ id: 'history', to: '/field/history', icon: HistoryIcon }],
   },
 ] as const satisfies readonly PanelNavGroup<string, string>[];
 

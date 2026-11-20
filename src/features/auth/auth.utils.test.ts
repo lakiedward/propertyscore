@@ -23,9 +23,9 @@ describe('auth.utils', () => {
     });
 
     it('drops roles the app does not know', () => {
-      expect(rolesFromAccessToken(buildAccessToken({ user_roles: ['inspector', 'user'] }))).toEqual(
-        ['user'],
-      );
+      expect(rolesFromAccessToken(buildAccessToken({ user_roles: ['partner', 'user'] }))).toEqual([
+        'user',
+      ]);
     });
 
     it('returns no roles for a garbage token', () => {
@@ -83,6 +83,11 @@ describe('auth.utils', () => {
 
     it('sends everyone else to the user panel', () => {
       expect(homePathFor([])).toBe('/account');
+    });
+
+    it('sends inspectors to their agenda, unless they are also admins', () => {
+      expect(homePathFor(['user', 'inspector'])).toBe('/field');
+      expect(homePathFor(['admin', 'inspector'])).toBe('/admin');
     });
   });
 

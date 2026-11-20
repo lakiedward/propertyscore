@@ -1208,9 +1208,10 @@ $$;
 
 create function public.admin_list_users(
   p_search text,
-  p_role public.app_role,
-  p_limit integer,
-  p_offset integer
+  p_role public.app_role default null,
+  p_blocked boolean default null,
+  p_limit integer default 50,
+  p_offset integer default 0
 )
 returns table (
   user_id uuid,
@@ -1272,6 +1273,7 @@ begin
     count(*) over ()
   from people
   where (p_role is null or p_role = any (people.roles))
+    and (p_blocked is null or people.is_blocked = p_blocked)
     and (
       coalesce(btrim(p_search), '') = ''
       or lower(extensions.unaccent(coalesce(people.full_name, ''))) like pattern
@@ -1380,7 +1382,7 @@ revoke execute on function
   public.admin_inspections(timestamptz, timestamptz, uuid, boolean),
   public.admin_inspectors(uuid),
   public.inspection_history(uuid),
-  public.admin_list_users(text, public.app_role, integer, integer),
+  public.admin_list_users(text, public.app_role, boolean, integer, integer),
   public.admin_user_role_counts(),
   public.set_inspector(uuid, uuid),
   public.remove_inspector(uuid)
@@ -1403,7 +1405,7 @@ grant execute on function
   public.admin_inspections(timestamptz, timestamptz, uuid, boolean),
   public.admin_inspectors(uuid),
   public.inspection_history(uuid),
-  public.admin_list_users(text, public.app_role, integer, integer),
+  public.admin_list_users(text, public.app_role, boolean, integer, integer),
   public.admin_user_role_counts(),
   public.set_inspector(uuid, uuid),
   public.remove_inspector(uuid)

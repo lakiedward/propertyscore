@@ -30,6 +30,8 @@ export const FEATURE_NAMESPACES = [
   'publish',
   'moderation',
   'myListings',
+  'staff',
+  'inspections',
 ] as const;
 export type FeatureNamespace = (typeof FEATURE_NAMESPACES)[number];
 

@@ -1,13 +1,16 @@
 import { i18n } from '@/i18n/i18n';
 import { pageTitle } from '@/i18n/page-title';
-import type { ACCOUNT_NAVIGATION, ADMIN_NAVIGATION } from './panel-navigation';
+import type { ACCOUNT_NAVIGATION, ADMIN_NAVIGATION, FIELD_NAVIGATION } from './panel-navigation';
 
 type NavItemId<TNavigation extends readonly { items: readonly { id: string }[] }[]> =
   TNavigation[number]['items'][number]['id'];
 
 type AdminPageKey = `panel.admin.nav.${NavItemId<typeof ADMIN_NAVIGATION>}`;
 
-type PanelPageKey = `panel.account.nav.${NavItemId<typeof ACCOUNT_NAVIGATION>}` | AdminPageKey;
+type PanelPageKey =
+  | `panel.account.nav.${NavItemId<typeof ACCOUNT_NAVIGATION>}`
+  | `panel.field.nav.${NavItemId<typeof FIELD_NAVIGATION>}`
+  | AdminPageKey;
 
 function isAdminPageKey(key: PanelPageKey): key is AdminPageKey {
   return key.startsWith('panel.admin.');
