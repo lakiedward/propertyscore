@@ -184,7 +184,7 @@ function StackedListingCard({
   return (
     <article
       aria-labelledby={titleId}
-      className="group/card relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card text-foreground transition-[box-shadow,border-color] duration-(--duration-base) ease-standard hover:border-border-strong hover:shadow-md has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring"
+      className="group/card relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-card bg-card text-foreground shadow-card-soft transition-[box-shadow,border-color] duration-(--duration-base) ease-standard hover:border-border-control hover:shadow-card-hover has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring"
     >
       <div className="relative aspect-4/3 bg-muted">
         {photoUrl ? (

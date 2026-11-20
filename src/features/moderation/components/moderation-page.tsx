@@ -141,6 +141,7 @@ export function ModerationPage() {
           <div className="flex flex-col gap-4">
             {toastMessage ? <InlineToast tone="success" message={toastMessage} /> : null}
             <EmptyState
+              variant="card"
               kind="empty"
               title={t(`queue.empty.${emptyKey}.title`)}
               description={t(`queue.empty.${emptyKey}.description`)}
