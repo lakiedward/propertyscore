@@ -50,7 +50,9 @@ describe('UserMenu', { timeout: 20_000 }, () => {
 
   it('opens the panel for the role from the public site', async () => {
     const { user } = await renderWithProviders(
-      auth.user ? <UserMenu user={auth.user} tone="light" panelPath="/admin" isNameHidden /> : null,
+      auth.user ? (
+        <UserMenu user={auth.user} tone="light" panelPath="/admin" nameDisplay="first" />
+      ) : null,
       { auth },
     );
 

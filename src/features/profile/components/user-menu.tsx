@@ -24,7 +24,7 @@ import { useLocale } from '@/i18n/use-locale';
 import { cn } from '@/lib/utils';
 import { useAccountIdentity } from '../hooks/use-account-identity';
 import { useChangeLocale } from '../hooks/use-change-locale';
-import { initialsOf } from '../profile.utils';
+import { firstNameOf, initialsOf } from '../profile.utils';
 
 const triggerVariants = cva(
   'inline-flex min-h-11 items-center gap-2 rounded-full pr-2 pl-1 text-body-sm font-bold focus-visible:ring-3 focus-visible:outline-none',
@@ -58,10 +58,10 @@ type UserMenuProps = {
   tone: NonNullable<VariantProps<typeof triggerVariants>['tone']>;
   appRole?: AppRole;
   panelPath?: PanelPath;
-  isNameHidden?: boolean;
+  nameDisplay?: 'full' | 'first';
 };
 
-export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false }: UserMenuProps) {
+export function UserMenu({ user, tone, appRole, panelPath, nameDisplay = 'full' }: UserMenuProps) {
   const { t } = useTranslation();
   const { roles } = useAuth();
   const { name, email } = useAccountIdentity(user);
@@ -78,10 +78,15 @@ export function UserMenu({ user, tone, appRole, panelPath, isNameHidden = false 
             <span aria-hidden="true" className={avatarVariants({ tone })}>
               {initialsOf(name)}
             </span>
+            {nameDisplay === 'first' ? (
+              <span aria-hidden="true" className="hidden max-w-32 truncate w820:block">
+                {firstNameOf(name)}
+              </span>
+            ) : null}
             <span
               className={cn(
                 'flex flex-col items-start leading-tight',
-                isNameHidden ? 'sr-only' : 'max-md:sr-only',
+                nameDisplay === 'first' ? 'sr-only' : 'max-md:sr-only',
               )}
             >
               <span>{name}</span>
