@@ -31,7 +31,12 @@ describe('AccountShell', { timeout: 20_000 }, () => {
       'aria-current',
     );
     expect(within(sidebar).getAllByRole('link')).toHaveLength(9);
-    expect(screen.getByText(NAV.nav.reports, { selector: 'header span' })).toBeInTheDocument();
+    const breadcrumbs = screen.getByRole('navigation', { name: roCommon.breadcrumbs.label });
+    expect(within(breadcrumbs).getByRole('link', { name: NAV.label })).toHaveAttribute(
+      'href',
+      '/account',
+    );
+    expect(within(breadcrumbs).getByText(NAV.nav.reports)).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('heading', { level: 1, name: NAV.nav.reports })).toBeInTheDocument();
     expect(
       await screen.findAllByRole('button', { name: buildProfile().full_name ?? '' }),

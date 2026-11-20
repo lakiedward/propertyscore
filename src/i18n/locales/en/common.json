@@ -437,5 +437,8 @@
       "out": "Zoom out",
       "reset": "Zoom {{value}}, back to the original size"
     }
+  },
+  "breadcrumbs": {
+    "label": "You are here"
   }
 }

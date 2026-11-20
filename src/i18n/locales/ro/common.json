@@ -444,5 +444,8 @@
       "out": "Micșorează fotografia",
       "reset": "Mărire {{value}}, revino la dimensiunea inițială"
     }
+  },
+  "breadcrumbs": {
+    "label": "Unde te afli"
   }
 }
