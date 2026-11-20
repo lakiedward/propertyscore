@@ -16,6 +16,40 @@ type BookingHeroProps = {
 
 export function BookingHero({ step }: BookingHeroProps) {
   const { t } = useTranslation('inspections');
+  const price = formatPrice(SERVICE_PRICES.physical.amount, SERVICE_PRICES.physical.currency);
+  const stepper = (
+    <Stepper
+      label={t('booking.steps.label')}
+      steps={BOOKING_STEP_KEYS.map((key) => t(`booking.steps.${key}`))}
+      current={step - 1}
+    />
+  );
+
+  if (step > 1) {
+    return (
+      <section className="bg-step-leaf-soft">
+        <div className="mx-auto max-w-wide px-4 py-4 sm:px-8 sm:py-6">
+          <div className="flex flex-col gap-4 rounded-photo bg-card px-5 py-4 shadow-booking-steps">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <Logo product="physical" size="sm" />
+              <h1 className="order-3 min-w-0 basis-full text-[20px] leading-tight font-extrabold tracking-[-0.025em] sm:order-2 sm:flex-1 sm:basis-auto sm:text-[24px]">
+                {t('booking.hero.title')}
+              </h1>
+              <span className="order-2 ml-auto flex items-baseline gap-2 sm:order-3">
+                <strong className="text-[22px] font-extrabold tracking-[-0.03em] text-brand tabular-nums">
+                  {price}
+                </strong>
+                <span className="text-caption text-muted-foreground max-sm:sr-only">
+                  {t('booking.hero.priceNote')}
+                </span>
+              </span>
+            </div>
+            {stepper}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-step-leaf-soft">
@@ -47,7 +81,7 @@ export function BookingHero({ step }: BookingHeroProps) {
           <div className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-3 self-start rounded-2xl bg-card px-4.5 py-3.5 shadow-booking-price">
             <span className="flex flex-col leading-[1.1]">
               <strong className="text-[30px] font-extrabold tracking-[-0.035em] text-brand tabular-nums">
-                {formatPrice(SERVICE_PRICES.physical.amount, SERVICE_PRICES.physical.currency)}
+                {price}
               </strong>
               <span className="text-caption text-muted-foreground">
                 {t('booking.hero.priceNote')}
@@ -98,11 +132,7 @@ export function BookingHero({ step }: BookingHeroProps) {
       </div>
       <div className="mx-auto max-w-wide px-4 pb-6 sm:px-8 sm:pb-8">
         <div className="flex flex-col gap-3 rounded-photo bg-card px-5 py-4 shadow-booking-steps">
-          <Stepper
-            label={t('booking.steps.label')}
-            steps={BOOKING_STEP_KEYS.map((key) => t(`booking.steps.${key}`))}
-            current={step - 1}
-          />
+          {stepper}
         </div>
       </div>
     </section>
