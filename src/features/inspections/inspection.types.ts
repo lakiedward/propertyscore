@@ -94,3 +94,25 @@ export type BookingRequest = {
   accessNotes: string | null;
   paymentMethod: PaymentMethod;
 };
+
+export type MyInspection = Widened<
+  Functions['my_inspections']['Returns'][number],
+  | 'access_name'
+  | 'access_phone'
+  | 'access_notes'
+  | 'area_m2'
+  | 'floor'
+  | 'building_floors'
+  | 'inspector_name'
+  | 'assigned_at'
+  | 'cancelled_at'
+>;
+
+export type InspectionEvent = Widened<
+  Functions['inspection_history']['Returns'][number],
+  'actor_name'
+>;
+
+export const APPOINTMENT_MODES = ['details', 'reschedule'] as const;
+
+export type AppointmentMode = (typeof APPOINTMENT_MODES)[number];

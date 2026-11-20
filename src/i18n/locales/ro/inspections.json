@@ -315,5 +315,82 @@
         "worries": "Notează ce te îngrijorează, ca inspectorul să verifice"
       }
     }
+  },
+  "appointments": {
+    "description": "Inspecțiile tale.",
+    "new": "Inspecție nouă",
+    "rowEyebrow": "Inspecție fizică · {{time}}",
+    "inspector": "Inspector: {{name}}",
+    "inspectorPending": "Inspectorul se alocă în 24 de ore",
+    "cancelledOn": "Anulată pe {{date}}",
+    "number": "PS-I-{{number}}",
+    "empty": {
+      "title": "Încă nu ai programări",
+      "text": "Programează o inspecție sau începe cu raportul online al zonei.",
+      "book": "Programează inspecția",
+      "check": "Verifică proprietatea"
+    },
+    "status": {
+      "scheduled": "Programată",
+      "inspector_assigned": "Inspector alocat",
+      "completed": "Efectuată",
+      "book_ready": "Book gata",
+      "cancelled": "Anulată"
+    },
+    "drawer": {
+      "title": "Inspecție · {{date}}",
+      "description": "Detaliile programării, etapele și ce poți schimba."
+    },
+    "rows": {
+      "date": "Data",
+      "address": "Adresă",
+      "inspector": "Inspector",
+      "opener": "Deschide",
+      "phone": "Telefon",
+      "notes": "Note"
+    },
+    "stages": {
+      "title": "Etape",
+      "label": "Etapele inspecției",
+      "booked": "Programare făcută",
+      "assigned": "Inspector alocat",
+      "inProgress": "în curs",
+      "visit": "Inspecția",
+      "review": "Verificare internă",
+      "reviewMeta": "1–2 zile",
+      "book": "Book gata",
+      "cancelled": "Programare anulată"
+    },
+    "history": {
+      "title": "Istoric",
+      "meta": "{{date}} · {{name}}",
+      "kind": {
+        "booked": "Programare făcută",
+        "rescheduled": "Reprogramată",
+        "assigned": "Inspector alocat",
+        "unassigned": "Inspector retras",
+        "cancelled": "Anulată"
+      }
+    },
+    "locked": "Inspecția a avut loc. Nu mai poate fi reprogramată sau anulată.",
+    "reschedule": {
+      "open": "Reprogramează",
+      "title": "Alege noua dată",
+      "text": "Orele libere din oraș, cu un inspector disponibil.",
+      "textAssigned": "Dacă {{name}} e liber la noua oră, rămâne inspectorul tău; altfel alocăm altul.",
+      "back": "Înapoi la detalii",
+      "confirm": "Confirmă noua oră",
+      "pending": "Se reprogramează…",
+      "done": "Programarea a fost mutată."
+    },
+    "cancel": {
+      "open": "Anulează",
+      "title": "Anulezi inspecția din {{date}}?",
+      "text": "Nu ai plătit nimic, deci nu e nimic de rambursat. Ora se eliberează pentru alți clienți.",
+      "confirm": "Anulează inspecția",
+      "pending": "Se anulează…",
+      "keep": "Păstrează programarea",
+      "done": "Inspecția a fost anulată."
+    }
   }
 }

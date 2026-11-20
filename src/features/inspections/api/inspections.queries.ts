@@ -1,6 +1,12 @@
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AgendaRange } from '../inspection.types';
 import {
+  cancelInspection,
+  listInspectionHistory,
+  listMyInspections,
+  rescheduleInspection,
+} from './appointments.api';
+import {
   bookInspection,
   getBookedInspection,
   listInspectionCities,
@@ -35,6 +41,16 @@ export const inspectionQueries = {
       queryKey: [...inspectionQueries.slotsAll(), cityId, from, to],
       queryFn: () => listInspectionSlots(cityId, from, to),
     }),
+  mine: (userId: string) =>
+    queryOptions({
+      queryKey: [...inspectionQueries.all(), 'mine', userId],
+      queryFn: listMyInspections,
+    }),
+  history: (inspectionId: string) =>
+    queryOptions({
+      queryKey: [...inspectionQueries.all(), 'history', inspectionId],
+      queryFn: () => listInspectionHistory(inspectionId),
+    }),
   booked: (id: string) =>
     queryOptions({
       queryKey: [...inspectionQueries.all(), 'booked', id],
@@ -48,5 +64,22 @@ export function useBookInspection() {
     mutationFn: bookInspection,
     meta: { silent: true },
     onSettled: () => queryClient.invalidateQueries({ queryKey: inspectionQueries.all() }),
+  });
+}
+
+export function useRescheduleInspection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: rescheduleInspection,
+    meta: { silent: true },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: inspectionQueries.all() }),
+  });
+}
+
+export function useCancelInspection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: cancelInspection,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: inspectionQueries.all() }),
   });
 }

@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import type { AgendaInspection } from '@/features/inspections';
+import type { AgendaInspection, MyInspection } from '@/features/inspections';
 import { supabaseUrl } from '../supabase-url';
 
 export const TIMISOARA_ID = 'c4000000-0000-4000-8000-000000000001';
@@ -22,7 +22,30 @@ export function slotsResponse(
   return http.post(supabaseUrl('/rest/v1/rpc/inspection_slots'), () => HttpResponse.json(rows));
 }
 
+export function myInspectionsResponse(rows: readonly MyInspection[]) {
+  return http.post(supabaseUrl('/rest/v1/rpc/my_inspections'), () => HttpResponse.json(rows));
+}
+
 export const inspectionHandlers = [
+  myInspectionsResponse([]),
+  http.post(supabaseUrl('/rest/v1/rpc/inspection_history'), () =>
+    HttpResponse.json([
+      {
+        kind: 'booked',
+        actor_name: 'Ion Țurcanu',
+        details: {},
+        created_at: '2026-11-18T09:00:00.000Z',
+      },
+    ]),
+  ),
+  http.post(
+    supabaseUrl('/rest/v1/rpc/reschedule_inspection'),
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.post(
+    supabaseUrl('/rest/v1/rpc/cancel_inspection'),
+    () => new HttpResponse(null, { status: 204 }),
+  ),
   agendaResponse([]),
   bookablePropertiesResponse([]),
   slotsResponse([]),

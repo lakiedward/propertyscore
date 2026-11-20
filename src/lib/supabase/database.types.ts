@@ -407,7 +407,7 @@ isOneToOne: false
             }[]
                            },
 "cancel_inspection":
-{ Args: { "p_inspection_id": string,"p_reason": string }; Returns: undefined
+{ Args: { "p_inspection_id": string,"p_reason"?: string }; Returns: undefined
                            },
 "create_report_share_link":
 { Args: { "p_expires_in_days"?: number,"p_report_id": string }; Returns: string
@@ -487,7 +487,7 @@ isOneToOne: false
                            },
 "my_inspections":
 { Args: Record<PropertyKey, never>; Returns: {
-              "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes": string,"access_phone": string,"access_tags": (string)[],"address_text": string,"area_m2": number,"assigned_at": string,"building_floors": number,"cancelled_at": string,"city_name": string,"created_at": string,"currency": string,"ends_at": string,"floor": number,"id": string,"inspector_name": string,"number": number,"payment_status": Database["public"]['Enums']["inspection_payment_status"],"price": number,"property_type": Database["public"]['Enums']["listing_property_type"],"starts_at": string,"status": Database["public"]['Enums']["inspection_status"]
+              "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes": string,"access_phone": string,"access_tags": (string)[],"address_text": string,"area_m2": number,"assigned_at": string,"building_floors": number,"cancelled_at": string,"city_id": string,"city_name": string,"created_at": string,"currency": string,"ends_at": string,"floor": number,"id": string,"inspector_name": string,"number": number,"payment_status": Database["public"]['Enums']["inspection_payment_status"],"price": number,"property_type": Database["public"]['Enums']["listing_property_type"],"starts_at": string,"status": Database["public"]['Enums']["inspection_status"]
             }[]
                            },
 "remove_inspector":

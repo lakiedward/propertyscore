@@ -311,5 +311,82 @@
         "worries": "Write down what worries you, so the inspector checks it"
       }
     }
+  },
+  "appointments": {
+    "description": "Your inspections.",
+    "new": "New inspection",
+    "rowEyebrow": "Physical inspection · {{time}}",
+    "inspector": "Inspector: {{name}}",
+    "inspectorPending": "The inspector is assigned within 24 hours",
+    "cancelledOn": "Cancelled on {{date}}",
+    "number": "PS-I-{{number}}",
+    "empty": {
+      "title": "No bookings yet",
+      "text": "Book an inspection or start with the online report of the area.",
+      "book": "Book the inspection",
+      "check": "Check the property"
+    },
+    "status": {
+      "scheduled": "Booked",
+      "inspector_assigned": "Inspector assigned",
+      "completed": "Done",
+      "book_ready": "Book ready",
+      "cancelled": "Cancelled"
+    },
+    "drawer": {
+      "title": "Inspection · {{date}}",
+      "description": "The booking details, its stages and what you can change."
+    },
+    "rows": {
+      "date": "Date",
+      "address": "Address",
+      "inspector": "Inspector",
+      "opener": "Opens the door",
+      "phone": "Phone",
+      "notes": "Notes"
+    },
+    "stages": {
+      "title": "Stages",
+      "label": "Inspection stages",
+      "booked": "Booking made",
+      "assigned": "Inspector assigned",
+      "inProgress": "in progress",
+      "visit": "The inspection",
+      "review": "Internal review",
+      "reviewMeta": "1–2 days",
+      "book": "Book ready",
+      "cancelled": "Booking cancelled"
+    },
+    "history": {
+      "title": "History",
+      "meta": "{{date}} · {{name}}",
+      "kind": {
+        "booked": "Booking made",
+        "rescheduled": "Rescheduled",
+        "assigned": "Inspector assigned",
+        "unassigned": "Inspector removed",
+        "cancelled": "Cancelled"
+      }
+    },
+    "locked": "The inspection has taken place. It can no longer be rescheduled or cancelled.",
+    "reschedule": {
+      "open": "Reschedule",
+      "title": "Choose the new date",
+      "text": "Free times in the city with an inspector available.",
+      "textAssigned": "If {{name}} is free at the new time, they stay your inspector; otherwise we assign another.",
+      "back": "Back to the details",
+      "confirm": "Confirm the new time",
+      "pending": "Rescheduling…",
+      "done": "The booking was moved."
+    },
+    "cancel": {
+      "open": "Cancel",
+      "title": "Cancel the inspection on {{date}}?",
+      "text": "You have not paid anything, so there is nothing to refund. The time is freed for other clients.",
+      "confirm": "Cancel the inspection",
+      "pending": "Cancelling…",
+      "keep": "Keep the booking",
+      "done": "The inspection was cancelled."
+    }
   }
 }

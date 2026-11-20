@@ -1,6 +1,8 @@
 import { buildAgendaInspection } from '@/test/factories/agenda-inspection';
 import {
   agendaDayBounds,
+  canChangeAppointment,
+  sortAppointments,
   agendaRange,
   directionsUrl,
   inspectionsOn,
@@ -67,5 +69,27 @@ describe('inspection.utils', () => {
   it('builds a phone link and keeps only the known access tags', () => {
     expect(phoneHref('+40 722 000 001')).toBe('tel:+40722000001');
     expect(knownAccessTags(['pet', 'unknown', 'intercom'])).toEqual(['intercom', 'pet']);
+  });
+});
+
+describe('appointment helpers', () => {
+  const now = new Date(2026, 10, 20, 12, 0);
+  const row = (status: string, day: number) => ({
+    status,
+    starts_at: new Date(2026, 10, day, 9, 30).toISOString(),
+  });
+
+  it('puts upcoming bookings first, soonest first, then the rest newest first', () => {
+    const sorted = sortAppointments(
+      [row('completed', 10), row('scheduled', 25), row('cancelled', 28), row('scheduled', 22)],
+      now,
+    );
+    expect(sorted.map((item) => new Date(item.starts_at).getDate())).toEqual([22, 25, 28, 10]);
+  });
+
+  it('allows changes only to future bookings that are not done or cancelled', () => {
+    expect(canChangeAppointment(row('inspector_assigned', 22), now)).toBe(true);
+    expect(canChangeAppointment(row('scheduled', 19), now)).toBe(false);
+    expect(canChangeAppointment(row('cancelled', 22), now)).toBe(false);
   });
 });

@@ -110,3 +110,25 @@ export function homePrefillOf(property: BookableProperty): HomeFormValues {
     buildingFloors: optionalNumber(property.building_floors),
   };
 }
+
+export function sortAppointments<Row extends { starts_at: string; status: string }>(
+  rows: readonly Row[],
+  now: Date,
+): Row[] {
+  const isUpcoming = (row: Row) =>
+    row.status !== 'cancelled' && new Date(row.starts_at).getTime() >= now.getTime();
+  const upcoming = rows
+    .filter(isUpcoming)
+    .sort((first, second) => first.starts_at.localeCompare(second.starts_at));
+  const past = rows
+    .filter((row) => !isUpcoming(row))
+    .sort((first, second) => second.starts_at.localeCompare(first.starts_at));
+  return [...upcoming, ...past];
+}
+
+export function canChangeAppointment(row: { status: string; starts_at: string }, now: Date) {
+  return (
+    (row.status === 'scheduled' || row.status === 'inspector_assigned') &&
+    new Date(row.starts_at).getTime() > now.getTime()
+  );
+}

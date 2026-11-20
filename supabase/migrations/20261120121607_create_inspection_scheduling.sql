@@ -746,7 +746,7 @@ begin
 end;
 $$;
 
-create function public.cancel_inspection(p_inspection_id uuid, p_reason text)
+create function public.cancel_inspection(p_inspection_id uuid, p_reason text default null)
 returns void
 language plpgsql
 security definer
@@ -980,6 +980,7 @@ returns table (
   ends_at timestamptz,
   address_text text,
   city_name text,
+  city_id uuid,
   property_type public.listing_property_type,
   area_m2 numeric,
   floor smallint,
@@ -1010,6 +1011,7 @@ as $$
     inspections.ends_at,
     properties.address_text,
     cities.name,
+    properties.city_id,
     properties.property_type,
     properties.area_m2,
     properties.floor,
