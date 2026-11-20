@@ -300,6 +300,7 @@
   --shadow-pin-tag-active: 0 0 0 3px var(--ps-lime-300), 0 6px 16px rgba(16, 63, 50, 0.38);
   --shadow-pin-tag-selected: 0 0 0 6px rgba(16, 63, 50, 0.16), 0 8px 18px rgba(16, 63, 50, 0.3);
   --shadow-card-hover: 0 14px 30px rgba(16, 63, 50, 0.08);
+  --shadow-fav: 0 4px 12px rgba(16, 63, 50, 0.15);
 
   --font-weight-nav: 670;
   --font-weight-action: 750;

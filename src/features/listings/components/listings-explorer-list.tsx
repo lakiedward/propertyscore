@@ -20,6 +20,7 @@ import { formatPrice, toCurrency } from '@/i18n/format';
 import { oneOf } from '@/lib/utils';
 import type { listExplorerListings } from '../api/listings.api';
 import { getListingMediumUrl } from '../api/listings.storage';
+import { FavoriteButton } from './favorite-button';
 import type { ListingTransaction } from '../listing.types';
 
 type ExplorerPage = Awaited<ReturnType<typeof listExplorerListings>>;
@@ -218,6 +219,9 @@ export function ListingsExplorerList({
                       </span>
                     }
                     meta={address}
+                    favorite={
+                      <FavoriteButton listingId={listing.id} title={listing.title} look="overlay" />
+                    }
                     isSelected={listing.id === activeId}
                     actions={
                       <>
