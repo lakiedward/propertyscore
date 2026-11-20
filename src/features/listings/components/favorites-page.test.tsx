@@ -36,9 +36,9 @@ describe('FavoritesPage', { timeout: 20_000 }, () => {
     await renderAppRoute('/account/favorites', { auth: signedInAs() });
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: ro.favorites.title }),
-    ).toBeVisible();
-    expect(screen.getByText(ro.favorites.eyebrow)).toBeInTheDocument();
+      await screen.findByRole('heading', { level: 1, name: roCommon.panel.account.nav.favorites }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByText('3 locuințe salvate')).toBeInTheDocument();
 
     const sale = cardOf(SALE.title);

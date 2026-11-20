@@ -36,7 +36,7 @@ function captureDecisions() {
 
 async function openModeration() {
   const view = await renderAppRoute('/admin/listings', { auth: signedInAs('admin') });
-  await screen.findByRole('heading', { level: 1, name: ro.head.title });
+  await screen.findByRole('heading', { level: 1, name: roCommon.panel.admin.nav.listings });
   return view;
 }
 

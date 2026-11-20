@@ -26,11 +26,7 @@ export function MyListingsPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PanelPageHeader
-        eyebrow={t('list.eyebrow')}
-        title={t('list.title')}
-        actions={items.length > 0 ? addListing : null}
-      />
+      <PanelPageHeader actions={items.length > 0 ? addListing : null} />
       {items.length > 0 ? (
         <>
           <ul aria-label={t('list.label')} className="flex flex-col gap-3.5">

@@ -165,7 +165,6 @@
     }
   },
   "favorites": {
-    "eyebrow": "Salvate",
     "title": "Favorite",
     "count_one": "{{count}} locuință salvată",
     "count_few": "{{count}} locuințe salvate",

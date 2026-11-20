@@ -19,8 +19,6 @@ export function FavoritesPage() {
   return (
     <div className="flex flex-col gap-5">
       <PanelPageHeader
-        eyebrow={t('favorites.eyebrow')}
-        title={t('favorites.title')}
         description={total > 0 ? t('favorites.count', { count: total }) : undefined}
       />
       {items.length > 0 ? (

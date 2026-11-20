@@ -55,8 +55,6 @@ export function ModerationPage() {
       className="gap-5"
     >
       <PanelPageHeader
-        eyebrow={t('head.eyebrow')}
-        title={t('head.title')}
         description={t('head.description')}
         actions={<StatusTabs counts={counts} />}
       />

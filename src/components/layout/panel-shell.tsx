@@ -7,7 +7,6 @@ import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
 import { useStoredFlag } from '@/hooks/use-stored-flag';
 import { formatNumber } from '@/i18n/format';
-import { Breadcrumbs } from '@/components/navigation/breadcrumbs';
 import { cn } from '@/lib/utils';
 import { MainContent } from './main-content';
 import {
@@ -80,7 +79,6 @@ export function PanelShell({
   const brandHomeLabel = t('panel.brandHome', { brand: t('brand.core') });
   const areaLabel = t(`panel.${area}.label`);
   const currentItem = findCurrentNavItem(groups, pathname);
-  const rootItem = items.find((item) => item.isExact);
 
   return (
     <div data-density="compact" data-panel-area={area} className="flex min-h-svh bg-card">
@@ -162,13 +160,9 @@ export function PanelShell({
               {areaLabel}
             </span>
             {currentItem ? (
-              <Breadcrumbs
-                className="hidden md:block"
-                items={[
-                  { id: area, label: areaLabel, to: rootItem?.to },
-                  { id: currentItem.id, label: currentItem.label },
-                ]}
-              />
+              <h1 className="sr-only min-w-0 truncate text-title-xs leading-tight font-extrabold tracking-title text-foreground md:not-sr-only">
+                {currentItem.label}
+              </h1>
             ) : null}
             <div className="ml-auto flex items-center gap-1">{userMenu}</div>
           </div>

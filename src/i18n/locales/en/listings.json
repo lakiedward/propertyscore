@@ -155,7 +155,6 @@
     }
   },
   "favorites": {
-    "eyebrow": "Saved",
     "title": "Favourites",
     "count_one": "{{count}} saved home",
     "count_other": "{{count}} saved homes",
