@@ -166,8 +166,18 @@ values (
   'EUR',
   45.7593,
   21.2412,
-  'a0000000-0000-4000-8000-000000000001/b0000000-0000-4000-8000-000000000002/cover.webp',
+  'a0000000-0000-4000-8000-000000000001/b0000000-0000-4000-8000-000000000013/cover.webp',
   now() - interval '3 days',
+  now() - interval '1 day'
+);
+
+insert into public.listing_decisions (listing_id, decision, reasons, message, decided_by, created_at)
+values (
+  'b0000000-0000-4000-8000-000000000013',
+  'rejected',
+  array['photos', 'description']::public.listing_decision_reason[],
+  'Adaugă fotografii cu baia și bucătăria și completează descrierea.',
+  'a0000000-0000-4000-8000-000000000004',
   now() - interval '1 day'
 );
 
@@ -185,3 +195,9 @@ from (
     ('b0000000-0000-4000-8000-000000000010'::uuid, 5),
     ('b0000000-0000-4000-8000-000000000001'::uuid, 6)
 ) as seed (listing_id, position);
+
+update public.favorite_listings
+set
+  saved_title = 'Apartament cu 2 camere, Fabric',
+  saved_photo_path = 'a0000000-0000-4000-8000-000000000001/b0000000-0000-4000-8000-000000000013/cover.webp'
+where listing_id = 'b0000000-0000-4000-8000-000000000013';
