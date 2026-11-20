@@ -7,6 +7,7 @@ import { buildProfile } from '@/test/factories/profile';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderWithProviders } from '@/test/render';
+import { firstNameOf } from '../profile.utils';
 import { UserMenu } from './user-menu';
 
 const auth = signedInAs();
@@ -56,7 +57,9 @@ describe('UserMenu', { timeout: 20_000 }, () => {
       { auth },
     );
 
-    await user.click(await screen.findByRole('button', { name: profileName }));
+    const trigger = await screen.findByRole('button', { name: profileName });
+    expect(within(trigger).getByText(firstNameOf(profileName))).toBeInTheDocument();
+    await user.click(trigger);
 
     expect(screen.getByRole('menuitem', { name: roCommon.panel.link.admin })).toHaveAttribute(
       'href',

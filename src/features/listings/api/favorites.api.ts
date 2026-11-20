@@ -6,7 +6,7 @@ type FavoriteRpcRow =
   Database['public']['Functions']['list_my_favorite_listings']['Returns'][number];
 
 type NullableFavoriteColumn =
-  'photo_path' | 'transaction' | 'price' | 'currency' | 'rooms' | 'area_m2' | 'city';
+  'title' | 'photo_path' | 'transaction' | 'price' | 'currency' | 'rooms' | 'area_m2' | 'city';
 
 type FavoriteRow = Omit<FavoriteRpcRow, NullableFavoriteColumn> & {
   [Column in NullableFavoriteColumn]: FavoriteRpcRow[Column] | null;
@@ -14,28 +14,43 @@ type FavoriteRow = Omit<FavoriteRpcRow, NullableFavoriteColumn> & {
 
 export type FavoriteListing = Omit<FavoriteRow, 'total_count'>;
 
+export type FavoriteCursor = {
+  savedAt: string;
+  listingId: string;
+};
+
 export const FAVORITES_PAGE_SIZE = 24;
+
+export const FAVORITE_LIMIT = 500;
+
+const FAVORITE_ID_COLUMNS = 'listing_id' as const;
 
 const UNIQUE_VIOLATION = '23505';
 
 export async function listFavoriteListingIds() {
-  const { data, error } = await supabase.from('favorite_listings').select('listing_id');
+  const { data, error } = await supabase
+    .from('favorite_listings')
+    .select(FAVORITE_ID_COLUMNS)
+    .range(0, FAVORITE_LIMIT - 1);
   if (error) throw toAppError(error);
   return data.map((row) => row.listing_id);
 }
 
-export async function listMyFavoriteListings(page = 0) {
+export async function listMyFavoriteListings(cursor: FavoriteCursor | null) {
   const { data, error } = await supabase.rpc('list_my_favorite_listings', {
     p_limit: FAVORITES_PAGE_SIZE,
-    p_offset: page * FAVORITES_PAGE_SIZE,
+    ...(cursor ? { p_before_saved_at: cursor.savedAt, p_before_listing_id: cursor.listingId } : {}),
   });
   if (error) throw toAppError(error);
   const rows: readonly FavoriteRow[] = data;
-  const total = rows[0]?.total_count ?? 0;
+  const last = rows.at(-1);
   return {
     items: rows,
-    total,
-    hasMore: (page + 1) * FAVORITES_PAGE_SIZE < total,
+    total: rows[0]?.total_count ?? 0,
+    nextCursor:
+      last && rows.length === FAVORITES_PAGE_SIZE
+        ? { savedAt: last.saved_at, listingId: last.listing_id }
+        : null,
   };
 }
 

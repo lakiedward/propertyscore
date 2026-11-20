@@ -160,7 +160,7 @@ export function PanelShell({
               {areaLabel}
             </span>
             {currentItem ? (
-              <h1 className="sr-only min-w-0 truncate text-title-xs leading-tight font-extrabold tracking-title text-foreground md:not-sr-only">
+              <h1 className="min-w-0 truncate text-title-xs leading-tight font-extrabold tracking-title text-foreground max-md:sr-only">
                 {currentItem.label}
               </h1>
             ) : null}

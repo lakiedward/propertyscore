@@ -17,16 +17,14 @@ export function AccountSettingsPage({ userId, email, redirect }: AccountSettings
   const { data: phone } = useSuspenseQuery(authQueries.accountPhone(userId));
 
   return (
-    <>
-      <div className="flex w-full flex-col gap-6">
-        <PhoneSection key={phone ?? 'missing'} userId={userId} phone={phone} redirect={redirect} />
-        <ChangePasswordSection key={String(hasPassword)} hasPassword={hasPassword} />
-        <DeleteAccountSection
-          key={`delete-${String(hasPassword)}`}
-          email={email}
-          hasPassword={hasPassword}
-        />
-      </div>
-    </>
+    <div className="flex w-full flex-col gap-6">
+      <PhoneSection key={phone ?? 'missing'} userId={userId} phone={phone} redirect={redirect} />
+      <ChangePasswordSection key={String(hasPassword)} hasPassword={hasPassword} />
+      <DeleteAccountSection
+        key={`delete-${String(hasPassword)}`}
+        email={email}
+        hasPassword={hasPassword}
+      />
+    </div>
   );
 }

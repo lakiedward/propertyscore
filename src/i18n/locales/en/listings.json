@@ -155,27 +155,21 @@
     }
   },
   "favorites": {
-    "title": "Favourites",
     "count_one": "{{count}} saved home",
     "count_other": "{{count}} saved homes",
-    "add": "Save to favourites: {{title}}",
-    "remove": "Remove from favourites: {{title}}",
     "added": "Saved to your favourites.",
     "removed": "Removed from your favourites.",
     "signIn": {
       "label": "Save to favourites",
-      "message": "Sign in to save this home to your favourites.",
-      "action": "Sign in"
+      "message": "Sign in to save this home to your favourites."
     },
-    "facts_one": "{{count}} room · {{area}} m²",
-    "facts_other": "{{count}} rooms · {{area}} m²",
     "unavailable": "No longer available",
     "empty": {
       "title": "No saved homes yet",
       "description": "Tap the heart on a listing to find it here.",
       "action": "Browse homes"
     },
-    "loadMore": "Show more homes",
-    "error": "Your saved homes could not be loaded."
+    "save": "Save to favourites: {{title}}",
+    "unavailableTitle": "Listing unavailable"
   }
 }

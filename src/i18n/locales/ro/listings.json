@@ -165,29 +165,22 @@
     }
   },
   "favorites": {
-    "title": "Favorite",
     "count_one": "{{count}} locuință salvată",
     "count_few": "{{count}} locuințe salvate",
     "count_other": "{{count}} de locuințe salvate",
-    "add": "Salvează la favorite: {{title}}",
-    "remove": "Scoate din favorite: {{title}}",
     "added": "Am salvat locuința la favorite.",
     "removed": "Am scos locuința din favorite.",
     "signIn": {
       "label": "Salvează la favorite",
-      "message": "Intră în cont ca să salvezi locuința la favorite.",
-      "action": "Intră în cont"
+      "message": "Intră în cont ca să salvezi locuința la favorite."
     },
-    "facts_one": "{{count}} cameră · {{area}} m²",
-    "facts_few": "{{count}} camere · {{area}} m²",
-    "facts_other": "{{count}} de camere · {{area}} m²",
     "unavailable": "Nu mai este disponibil",
     "empty": {
       "title": "Nicio locuință salvată",
       "description": "Apasă inima de pe un anunț ca să îl găsești aici.",
       "action": "Vezi locuințele"
     },
-    "loadMore": "Arată mai multe locuințe",
-    "error": "Locuințele salvate nu au putut fi încărcate."
+    "save": "Salvează la favorite: {{title}}",
+    "unavailableTitle": "Anunț indisponibil"
   }
 }

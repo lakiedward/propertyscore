@@ -2,7 +2,6 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ArrowLeftIcon, MapPinIcon, Share2Icon } from 'lucide-react';
 import { useId, type ReactNode } from 'react';
-import { FavoriteButton } from './favorite-button';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { LazyMapCanvas } from '@/components/map/lazy-map-canvas';
@@ -13,6 +12,7 @@ import { formatDate } from '@/i18n/format';
 import { listingQueries } from '../api/listings.queries';
 import { useListingPhotoSummary } from '../hooks/use-listing-photo-summary';
 import { listingPhotos } from '../listing.utils';
+import { FavoriteButton } from './favorite-button';
 
 const LISTING_MAP_ZOOM = 15;
 const LISTING_MARKER_ID = 'listing';

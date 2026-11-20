@@ -3,6 +3,7 @@ import { getRouteApi, Link } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
+import { LoadMoreButton } from '@/components/layout/load-more-button';
 import { PanelPageHeader } from '@/components/layout/panel-page-header';
 import { Button } from '@/components/ui/button';
 import { myListingQueries } from '../api/my-listings.queries';
@@ -37,17 +38,12 @@ export function MyListingsPage() {
             ))}
           </ul>
           {listings.hasNextPage ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="md"
+            <LoadMoreButton
+              label={t('list.more')}
+              isLoading={listings.isFetchingNextPage}
+              onLoadMore={() => void listings.fetchNextPage()}
               className="self-center"
-              disabled={listings.isFetchingNextPage}
-              aria-busy={listings.isFetchingNextPage}
-              onClick={() => void listings.fetchNextPage()}
-            >
-              {t('list.more')}
-            </Button>
+            />
           ) : null}
         </>
       ) : (
