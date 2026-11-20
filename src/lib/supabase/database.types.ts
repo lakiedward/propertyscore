@@ -379,12 +379,12 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "admin_inspections":
-{ Args: { "p_city_id": string,"p_from": string,"p_to": string,"p_unassigned_only": boolean }; Returns: {
-              "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes": string,"access_phone": string,"address_text": string,"area_m2": number,"building_floors": number,"city_id": string,"city_name": string,"client_name": string,"client_phone": string,"created_at": string,"currency": string,"ends_at": string,"floor": number,"id": string,"inspector_id": string,"inspector_name": string,"number": number,"payment_status": Database["public"]['Enums']["inspection_payment_status"],"price": number,"property_type": Database["public"]['Enums']["listing_property_type"],"starts_at": string,"status": Database["public"]['Enums']["inspection_status"]
+{ Args: { "p_city_id"?: string,"p_from": string,"p_to": string,"p_unassigned_only"?: boolean }; Returns: {
+              "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes": string,"access_phone": string,"access_tags": (string)[],"address_text": string,"area_m2": number,"building_floors": number,"city_id": string,"city_name": string,"client_name": string,"client_phone": string,"created_at": string,"currency": string,"ends_at": string,"floor": number,"id": string,"inspector_id": string,"inspector_name": string,"number": number,"payment_status": Database["public"]['Enums']["inspection_payment_status"],"price": number,"property_type": Database["public"]['Enums']["listing_property_type"],"starts_at": string,"status": Database["public"]['Enums']["inspection_status"]
             }[]
                            },
 "admin_inspectors":
-{ Args: { "p_city_id": string }; Returns: {
+{ Args: { "p_city_id"?: string }; Returns: {
               "city_id": string,"city_name": string,"full_name": string,"is_active": boolean,"phone": string,"user_id": string
             }[]
                            },

@@ -281,7 +281,10 @@
       "pageTitle": "{{page}} · Admin",
       "pendingListings_one": "{{count}} anunț de verificat",
       "pendingListings_few": "{{count}} anunțuri de verificat",
-      "pendingListings_other": "{{count}} de anunțuri de verificat"
+      "pendingListings_other": "{{count}} de anunțuri de verificat",
+      "unassignedInspections_one": "{{count}} inspecție de alocat",
+      "unassignedInspections_few": "{{count}} inspecții de alocat",
+      "unassignedInspections_other": "{{count}} de inspecții de alocat"
     },
     "expandMenu": "Extinde meniul",
     "collapseMenu": "Restrânge meniul",

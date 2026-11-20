@@ -29,16 +29,6 @@ export type AgendaInspection = Omit<AgendaRow, NullableAgendaColumn> & {
   [Column in NullableAgendaColumn]: AgendaRow[Column] | null;
 };
 
-export const INSPECTION_START_TIMES = [
-  '08:00',
-  '09:30',
-  '11:00',
-  '12:30',
-  '14:00',
-  '15:30',
-  '17:00',
-] as const;
-
 type Functions = Database['public']['Functions'];
 
 type Widened<Row, Column extends keyof Row> = Omit<Row, Column> & {
@@ -116,3 +106,41 @@ export type InspectionEvent = Widened<
 export const APPOINTMENT_MODES = ['details', 'reschedule'] as const;
 
 export type AppointmentMode = (typeof APPOINTMENT_MODES)[number];
+
+export type AdminInspection = Widened<
+  Functions['admin_inspections']['Returns'][number],
+  | 'access_name'
+  | 'access_phone'
+  | 'access_notes'
+  | 'area_m2'
+  | 'floor'
+  | 'building_floors'
+  | 'inspector_id'
+  | 'inspector_name'
+  | 'client_name'
+  | 'client_phone'
+>;
+
+export type AdminInspector = Widened<
+  Functions['admin_inspectors']['Returns'][number],
+  'full_name' | 'phone'
+>;
+
+export const SCHEDULE_TABS = ['calendar', 'availability'] as const;
+
+export const SCHEDULE_VIEWS = ['day', 'week'] as const;
+
+export type ScheduleView = (typeof SCHEDULE_VIEWS)[number];
+
+export type WorkingRange = {
+  inspector_id: string;
+  weekday: number;
+  starts_at: string;
+  ends_at: string;
+};
+
+export type InspectorBlock = {
+  inspector_id: string;
+  starts_at: string;
+  ends_at: string;
+};

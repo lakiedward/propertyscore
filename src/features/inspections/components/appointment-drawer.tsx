@@ -1,11 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
 import { CalendarClockIcon, CalendarXIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { StageTimeline, type Stage } from '@/components/feedback/stage-timeline';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -14,20 +12,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useErrorMessage } from '@/i18n/error-message';
-import { formatDate, formatDateTime } from '@/i18n/format';
-import { AppError } from '@/lib/errors';
-import {
-  inspectionQueries,
-  useCancelInspection,
-  useRescheduleInspection,
-} from '../api/inspections.queries';
+import { formatDate } from '@/i18n/format';
+import { useCancelInspection } from '../api/inspections.queries';
 import { useBookingText } from '../hooks/use-booking-text';
 import type { AppointmentMode, MyInspection } from '../inspection.types';
 import { canChangeAppointment, knownAccessTags } from '../inspection.utils';
-import { InspectionDatePicker } from './inspection-date-picker';
+import { InspectionHistory } from './inspection-history';
 import { InspectionStatusPill } from './inspection-status-pill';
+import { RescheduleSection } from './reschedule-section';
 
 type AppointmentDrawerProps = {
   appointment: MyInspection;
@@ -70,8 +62,11 @@ export function AppointmentDrawer({
         </SheetHeader>
         <div className="flex flex-col gap-4.5 p-5">
           {isRescheduling ? (
-            <Reschedule
-              appointment={appointment}
+            <RescheduleSection
+              inspectionId={appointment.id}
+              cityId={appointment.city_id}
+              cityName={appointment.city_name}
+              inspectorName={appointment.inspector_name}
               onDone={() => {
                 onModeChange('details');
               }}
@@ -198,7 +193,7 @@ function Details({ appointment, canChange, onReschedule, onCancelled }: DetailsP
           orientation="vertical"
         />
       </div>
-      <History inspectionId={appointment.id} />
+      <InspectionHistory inspectionId={appointment.id} />
       {canChange ? (
         <div className="flex flex-wrap gap-2.5 border-t border-border-subtle pt-4">
           <Button type="button" variant="secondary" onClick={onReschedule}>
@@ -236,113 +231,6 @@ function Details({ appointment, canChange, onReschedule, onCancelled }: DetailsP
       ) : isDone ? (
         <span className="text-small text-muted-foreground">{t('appointments.locked')}</span>
       ) : null}
-    </>
-  );
-}
-
-function History({ inspectionId }: { inspectionId: string }) {
-  const { t } = useTranslation('inspections');
-  const history = useQuery(inspectionQueries.history(inspectionId));
-
-  return (
-    <div className="flex flex-col gap-2">
-      <strong className="text-h4">{t('appointments.history.title')}</strong>
-      {history.isPending ? (
-        <Skeleton className="h-16" />
-      ) : (
-        <ol className="flex flex-col gap-1.5">
-          {(history.data ?? []).map((event) => (
-            <li key={`${event.kind}-${event.created_at}`} className="flex flex-col text-small">
-              <strong>{t(`appointments.history.kind.${event.kind}`)}</strong>
-              <span className="text-muted-foreground">
-                {event.actor_name
-                  ? t('appointments.history.meta', {
-                      date: formatDateTime(event.created_at),
-                      name: event.actor_name,
-                    })
-                  : formatDateTime(event.created_at)}
-              </span>
-            </li>
-          ))}
-        </ol>
-      )}
-    </div>
-  );
-}
-
-type RescheduleProps = {
-  appointment: MyInspection;
-  onDone: () => void;
-};
-
-function Reschedule({ appointment, onDone }: RescheduleProps) {
-  const { t } = useTranslation('inspections');
-  const errorMessage = useErrorMessage();
-  const reschedule = useRescheduleInspection();
-  const [startsAt, setStartsAt] = useState<string | null>(null);
-  const [isTaken, setIsTaken] = useState(false);
-  const isTakenError =
-    reschedule.error instanceof AppError && reschedule.error.reason === 'slot_taken';
-
-  return (
-    <>
-      <div className="flex flex-col gap-1">
-        <strong className="text-h4">{t('appointments.reschedule.title')}</strong>
-        <span className="text-small text-muted-foreground">
-          {appointment.inspector_name
-            ? t('appointments.reschedule.textAssigned', { name: appointment.inspector_name })
-            : t('appointments.reschedule.text')}
-        </span>
-      </div>
-      <InspectionDatePicker
-        cityId={appointment.city_id}
-        cityName={appointment.city_name}
-        startsAt={startsAt}
-        isStartTaken={isTaken}
-        onPick={(value) => {
-          setStartsAt(value);
-          setIsTaken(false);
-        }}
-      />
-      {reschedule.isError && !isTakenError ? (
-        <Alert tone="error">
-          <AlertDescription>{errorMessage(reschedule.error)}</AlertDescription>
-        </Alert>
-      ) : null}
-      <div className="flex flex-wrap justify-end gap-2.5">
-        <Button type="button" variant="ghost" onClick={onDone}>
-          {t('appointments.reschedule.back')}
-        </Button>
-        <Button
-          type="button"
-          disabled={!startsAt || reschedule.isPending}
-          aria-busy={reschedule.isPending}
-          onClick={() => {
-            if (!startsAt) {
-              return;
-            }
-            reschedule.mutate(
-              { inspectionId: appointment.id, startsAt },
-              {
-                onSuccess: () => {
-                  toast.success(t('appointments.reschedule.done'));
-                  onDone();
-                },
-                onError: (error) => {
-                  if (error instanceof AppError && error.reason === 'slot_taken') {
-                    setStartsAt(null);
-                    setIsTaken(true);
-                  }
-                },
-              },
-            );
-          }}
-        >
-          {reschedule.isPending
-            ? t('appointments.reschedule.pending')
-            : t('appointments.reschedule.confirm')}
-        </Button>
-      </div>
     </>
   );
 }

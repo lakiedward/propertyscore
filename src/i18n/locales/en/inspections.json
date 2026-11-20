@@ -388,5 +388,102 @@
       "keep": "Keep the booking",
       "done": "The inspection was cancelled."
     }
+  },
+  "schedule": {
+    "description": "Physical inspections: assign inspectors and follow the calendar.",
+    "tabs": {
+      "label": "Sections",
+      "calendar": "Calendar",
+      "availability": "Availability"
+    },
+    "toolbar": {
+      "view": "View",
+      "views": {
+        "day": "Day",
+        "week": "Week"
+      },
+      "previous": "Previous",
+      "next": "Next",
+      "today": "Today",
+      "inspector": "Inspector",
+      "allInspectors": "All inspectors",
+      "city": "City",
+      "allCities": "All cities"
+    },
+    "range": "{{from}}–{{to}}",
+    "week": {
+      "range": "{{from}} – {{to}}",
+      "allCities": "All cities",
+      "closed": "Closed"
+    },
+    "queue": {
+      "title_one": "Unassigned · {{count}}",
+      "title_other": "Unassigned · {{count}}",
+      "dragHint": "Drag onto an inspector's column",
+      "clickHint": "Open one to assign an inspector",
+      "empty": "No inspections to assign.",
+      "meta": "{{city}} · 2 hours",
+      "roleDescription": "inspection to assign"
+    },
+    "day": {
+      "subtitle_one": "{{count}} inspector · {{visits}} assigned",
+      "subtitle_other": "{{count}} inspectors · {{visits}} assigned",
+      "load_one": "{{city}} · {{count}} inspection",
+      "load_other": "{{city}} · {{count}} inspections",
+      "noInspectors": "No inspector matches the filters.",
+      "unavailable": "Unavailable",
+      "column": "{{name}}'s column"
+    },
+    "ghost": {
+      "free": "Free · drop here",
+      "busy": "Already has an inspection at this time",
+      "unavailable": "Does not work at this time",
+      "otherDay": "The inspection is on another day"
+    },
+    "assigned": "PS-I-{{number}} assigned to {{name}}.",
+    "undo": "Undo",
+    "conflict": {
+      "title": "{{name}} cannot take the inspection"
+    },
+    "dnd": {
+      "instructions": "Press space to pick up the inspection, the arrow keys to move it onto an inspector's column and space to drop it. Escape cancels."
+    },
+    "drawer": {
+      "description": "The booking details, the inspector, rescheduling and cancelling.",
+      "inspector": "Inspector",
+      "choose": "Choose the inspector",
+      "option": "{{name}} · {{city}}",
+      "assign": "Assign",
+      "change": "Change",
+      "unassign": "Remove the inspector",
+      "assignedToast": "The inspector was assigned.",
+      "rows": {
+        "date": "Date",
+        "address": "Address",
+        "client": "Client",
+        "opener": "Opens the door",
+        "notes": "Notes",
+        "payment": "Payment"
+      }
+    },
+    "payment": {
+      "unpaid": "Unpaid · {{price}}",
+      "paid": "Paid · {{price}}",
+      "refunded": "Refunded · {{price}}"
+    },
+    "cancel": {
+      "title": "Cancel inspection PS-I-{{number}}",
+      "text": "Online payment is not active, so there is nothing to refund. The client sees the reason in their account.",
+      "reason": "Reason (the client sees it)",
+      "back": "Back"
+    },
+    "availability": {
+      "description": "The hours when the inspector can take new bookings.",
+      "inspector": "Inspector",
+      "empty": {
+        "title": "No inspectors yet",
+        "text": "Make a user an inspector on the Users page."
+      }
+    }
   }
 }

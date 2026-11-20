@@ -1095,8 +1095,8 @@ $$;
 create function public.admin_inspections(
   p_from timestamptz,
   p_to timestamptz,
-  p_city_id uuid,
-  p_unassigned_only boolean
+  p_city_id uuid default null,
+  p_unassigned_only boolean default false
 )
 returns table (
   id uuid,
@@ -1116,6 +1116,7 @@ returns table (
   access_mode public.inspection_access_mode,
   access_name text,
   access_phone text,
+  access_tags text[],
   access_notes text,
   inspector_id uuid,
   inspector_name text,
@@ -1152,6 +1153,7 @@ begin
     inspections.access_mode,
     inspections.access_name,
     inspections.access_phone,
+    inspections.access_tags,
     inspections.access_notes,
     inspections.inspector_id,
     inspector.full_name,
@@ -1178,7 +1180,7 @@ begin
 end;
 $$;
 
-create function public.admin_inspectors(p_city_id uuid)
+create function public.admin_inspectors(p_city_id uuid default null)
 returns table (
   user_id uuid,
   full_name text,

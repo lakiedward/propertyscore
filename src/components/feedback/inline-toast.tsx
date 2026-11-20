@@ -14,10 +14,11 @@ const inlineToastIconVariants = cva('size-5 shrink-0', {
 type InlineToastProps = {
   tone: 'success' | 'error';
   message: string;
+  action?: { label: string; onAction: () => void };
   className?: string;
 };
 
-export function InlineToast({ tone, message, className }: InlineToastProps) {
+export function InlineToast({ tone, message, action, className }: InlineToastProps) {
   const Icon = tone === 'error' ? CircleXIcon : CircleCheckIcon;
 
   return (
@@ -29,7 +30,16 @@ export function InlineToast({ tone, message, className }: InlineToastProps) {
       )}
     >
       <Icon aria-hidden className={inlineToastIconVariants({ tone })} />
-      <span>{message}</span>
+      <span className="flex-1">{message}</span>
+      {action ? (
+        <button
+          type="button"
+          onClick={action.onAction}
+          className="touch-target shrink-0 rounded-md px-2 py-1 font-bold text-cta underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-focus-inverse"
+        >
+          {action.label}
+        </button>
+      ) : null}
     </div>
   );
 }

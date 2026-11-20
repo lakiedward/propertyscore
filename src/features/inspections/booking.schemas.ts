@@ -206,3 +206,15 @@ export const paymentFormSchema = z.object({
 });
 
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>;
+
+export const CANCEL_REASON_MAX = 500;
+
+export const cancelReasonSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(1, validationMessage('required'))
+    .max(CANCEL_REASON_MAX, validationMessage('maxLength', { count: CANCEL_REASON_MAX })),
+});
+
+export type CancelReasonValues = z.infer<typeof cancelReasonSchema>;

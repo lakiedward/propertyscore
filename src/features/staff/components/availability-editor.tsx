@@ -16,7 +16,7 @@ import { DashboardPanel } from '@/components/report/dashboard-panel';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import { INSPECTION_START_TIMES } from '@/features/inspections';
+import { INSPECTION_START_TIMES } from '@/config/inspections';
 import { formatDate } from '@/i18n/format';
 import { staffQueries, useRemoveException, useSetWeeklyHours } from '../api/staff.queries';
 import { WEEKDAYS, type InspectorExceptionKind, type TimeRange } from '../staff.types';

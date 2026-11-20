@@ -14,4 +14,15 @@ describe('InlineToast', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent('Nu am putut salva decizia.');
   });
+
+  it('runs its action', async () => {
+    const onAction = vi.fn();
+    const { user } = await renderWithProviders(
+      <InlineToast tone="success" message="Alocat." action={{ label: 'Anulează', onAction }} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Anulează' }));
+
+    expect(onAction).toHaveBeenCalled();
+  });
 });

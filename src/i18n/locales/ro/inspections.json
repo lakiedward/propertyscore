@@ -392,5 +392,105 @@
       "keep": "Păstrează programarea",
       "done": "Inspecția a fost anulată."
     }
+  },
+  "schedule": {
+    "description": "Inspecțiile fizice: alocă inspectorii și urmărește calendarul.",
+    "tabs": {
+      "label": "Secțiuni",
+      "calendar": "Calendar",
+      "availability": "Disponibilitate"
+    },
+    "toolbar": {
+      "view": "Vizualizare",
+      "views": {
+        "day": "Zi",
+        "week": "Săptămână"
+      },
+      "previous": "Înapoi",
+      "next": "Înainte",
+      "today": "Azi",
+      "inspector": "Inspector",
+      "allInspectors": "Toți inspectorii",
+      "city": "Oraș",
+      "allCities": "Toate orașele"
+    },
+    "range": "{{from}}–{{to}}",
+    "week": {
+      "range": "{{from}} – {{to}}",
+      "allCities": "Toate orașele",
+      "closed": "Închis"
+    },
+    "queue": {
+      "title_one": "Neasignate · {{count}}",
+      "title_few": "Neasignate · {{count}}",
+      "title_other": "Neasignate · {{count}}",
+      "dragHint": "Trage pe coloana unui inspector",
+      "clickHint": "Deschide una ca să aloci un inspector",
+      "empty": "Nicio inspecție de alocat.",
+      "meta": "{{city}} · 2 ore",
+      "roleDescription": "inspecție de alocat"
+    },
+    "day": {
+      "subtitle_one": "{{count}} inspector · {{visits}} alocate",
+      "subtitle_few": "{{count}} inspectori · {{visits}} alocate",
+      "subtitle_other": "{{count}} de inspectori · {{visits}} alocate",
+      "load_one": "{{city}} · {{count}} inspecție",
+      "load_few": "{{city}} · {{count}} inspecții",
+      "load_other": "{{city}} · {{count}} de inspecții",
+      "noInspectors": "Niciun inspector pentru filtrele alese.",
+      "unavailable": "Indisponibil",
+      "column": "Coloana lui {{name}}"
+    },
+    "ghost": {
+      "free": "Liber · lasă aici",
+      "busy": "Are deja o inspecție la această oră",
+      "unavailable": "Nu lucrează la această oră",
+      "otherDay": "Inspecția e în altă zi"
+    },
+    "assigned": "PS-I-{{number}} alocat lui {{name}}.",
+    "undo": "Anulează",
+    "conflict": {
+      "title": "{{name}} nu poate prelua inspecția"
+    },
+    "dnd": {
+      "instructions": "Apasă spațiu ca să ridici inspecția, săgețile ca s-o muți pe coloana unui inspector și spațiu ca s-o lași. Escape anulează."
+    },
+    "drawer": {
+      "description": "Detaliile programării, alocarea inspectorului, reprogramarea și anularea.",
+      "inspector": "Inspector",
+      "choose": "Alege inspectorul",
+      "option": "{{name}} · {{city}}",
+      "assign": "Alocă",
+      "change": "Schimbă",
+      "unassign": "Retrage inspectorul",
+      "assignedToast": "Inspectorul a fost alocat.",
+      "rows": {
+        "date": "Data",
+        "address": "Adresă",
+        "client": "Client",
+        "opener": "Deschide",
+        "notes": "Note",
+        "payment": "Plată"
+      }
+    },
+    "payment": {
+      "unpaid": "Neplătită · {{price}}",
+      "paid": "Plătită · {{price}}",
+      "refunded": "Rambursată · {{price}}"
+    },
+    "cancel": {
+      "title": "Anulezi inspecția PS-I-{{number}}",
+      "text": "Plata online nu e activă, deci nu e nimic de rambursat. Clientul vede motivul în contul lui.",
+      "reason": "Motiv (îl vede clientul)",
+      "back": "Renunță"
+    },
+    "availability": {
+      "description": "Orele în care inspectorul poate primi programări noi.",
+      "inspector": "Inspector",
+      "empty": {
+        "title": "Încă nu ai inspectori",
+        "text": "Fă un utilizator inspector din pagina Utilizatori."
+      }
+    }
   }
 }

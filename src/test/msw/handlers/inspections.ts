@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import type { AgendaInspection, MyInspection } from '@/features/inspections';
+import type { AdminInspection, AgendaInspection, MyInspection } from '@/features/inspections';
 import { supabaseUrl } from '../supabase-url';
 
 export const TIMISOARA_ID = 'c4000000-0000-4000-8000-000000000001';
@@ -26,7 +26,40 @@ export function myInspectionsResponse(rows: readonly MyInspection[]) {
   return http.post(supabaseUrl('/rest/v1/rpc/my_inspections'), () => HttpResponse.json(rows));
 }
 
+export const MIHAI_ID = 'a0000000-0000-4000-8000-000000000005';
+
+export function adminInspectionsResponse(rows: readonly AdminInspection[]) {
+  return http.post(supabaseUrl('/rest/v1/rpc/admin_inspections'), async ({ request }) => {
+    const body = (await request.json()) as { p_unassigned_only?: boolean };
+    return HttpResponse.json(
+      body.p_unassigned_only ? rows.filter((row) => row.inspector_id === null) : rows,
+    );
+  });
+}
+
 export const inspectionHandlers = [
+  adminInspectionsResponse([]),
+  http.post(supabaseUrl('/rest/v1/rpc/admin_inspectors'), () =>
+    HttpResponse.json([
+      {
+        user_id: MIHAI_ID,
+        full_name: 'Mihai Dobre',
+        phone: '+40722000005',
+        city_id: TIMISOARA_ID,
+        city_name: 'Timișoara',
+        is_active: true,
+      },
+    ]),
+  ),
+  http.get(supabaseUrl('/rest/v1/inspector_exceptions'), () => HttpResponse.json([])),
+  http.post(
+    supabaseUrl('/rest/v1/rpc/assign_inspector'),
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.post(
+    supabaseUrl('/rest/v1/rpc/unassign_inspector'),
+    () => new HttpResponse(null, { status: 204 }),
+  ),
   myInspectionsResponse([]),
   http.post(supabaseUrl('/rest/v1/rpc/inspection_history'), () =>
     HttpResponse.json([

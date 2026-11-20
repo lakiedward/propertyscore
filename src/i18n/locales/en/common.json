@@ -278,7 +278,9 @@
       },
       "pageTitle": "{{page}} · Admin",
       "pendingListings_one": "{{count}} listing to review",
-      "pendingListings_other": "{{count}} listings to review"
+      "pendingListings_other": "{{count}} listings to review",
+      "unassignedInspections_one": "{{count}} inspection to assign",
+      "unassignedInspections_other": "{{count}} inspections to assign"
     },
     "expandMenu": "Expand the menu",
     "collapseMenu": "Collapse the menu",
