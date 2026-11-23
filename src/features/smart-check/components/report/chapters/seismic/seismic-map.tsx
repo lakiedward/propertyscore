@@ -52,7 +52,7 @@ function QuakeDot({
         'pointer-events-none grid place-items-center rounded-full border',
         isTop
           ? 'border-[1.5px] border-(--seismic-dark) bg-(--seismic)/55'
-          : 'border-(--seismic)/55 bg-[#C99A74]/32',
+          : 'border-(--seismic)/55 bg-(--seismic)/32',
       )}
     >
       {label ? (
@@ -134,6 +134,7 @@ export function SeismicMap({ report, earthquakes }: SeismicMapProps) {
       bounds={bounds}
       boundsPadding={36}
       hasNavigationControl
+      hasLabels
       markers={markers}
       overlays={overlays}
     />

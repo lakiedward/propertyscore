@@ -15,6 +15,23 @@ const DATE_FORMAT = { day: 'numeric', month: 'short', year: 'numeric' } as const
 const MONTH_SHORT_FORMAT = { month: 'short', year: 'numeric' } as const;
 const MONTH_FORMAT = { month: 'long', year: 'numeric' } as const;
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+const ISO_MONTH_RANGE = /^(\d{4})-(\d{2})\/(\d{4})-(\d{2})$/;
+
+function withoutDots(text: string): string {
+  return text.replaceAll('.', '');
+}
+
+function formatSourceDate(value: string): string {
+  if (ISO_DAY.test(value)) return withoutDots(formatDate(value, DATE_FORMAT));
+  const range = ISO_MONTH_RANGE.exec(value);
+  if (!range) return value;
+  const [, fromYear, fromMonth, toYear, toMonth] = range;
+  const from = withoutDots(
+    formatDate(`${String(fromYear)}-${String(fromMonth)}-01`, MONTH_SHORT_FORMAT),
+  );
+  const to = withoutDots(formatDate(`${String(toYear)}-${String(toMonth)}-01`, MONTH_SHORT_FORMAT));
+  return `${from} – ${to}`;
+}
 
 type SourceKey =
   | 'osm'
@@ -59,7 +76,7 @@ export function ClosingMethod({ report }: ClosingMethodProps) {
   const formatted = (source: SourceKey) => {
     const value = dates[source];
     if (value === undefined) return [];
-    return [{ source, date: ISO_DAY.test(value) ? formatDate(value, DATE_FORMAT) : value }];
+    return [{ source, date: formatSourceDate(value) }];
   };
   const seismic = report.result.sections.seismic;
   const codeYear = seismic ? /\d{4}$/.exec(seismic.code)?.[0] : undefined;
@@ -73,7 +90,7 @@ export function ClosingMethod({ report }: ClosingMethodProps) {
         {
           source: 'earthquakes',
           date: earthquakes.retrieved_on
-            ? `${String(earthquakes.since_year)} – ${formatDate(earthquakes.retrieved_on, MONTH_SHORT_FORMAT)}`
+            ? `${String(earthquakes.since_year)} – ${withoutDots(formatDate(earthquakes.retrieved_on, MONTH_SHORT_FORMAT))}`
             : String(earthquakes.since_year),
         },
       ]

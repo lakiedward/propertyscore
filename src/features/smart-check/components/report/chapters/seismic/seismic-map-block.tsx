@@ -40,7 +40,7 @@ export function SeismicMapBlock({ report, seismic, earthquakes }: SeismicMapBloc
             <span className="flex items-center gap-1.75">
               <i
                 aria-hidden="true"
-                className="block size-3.5 rounded-full border-[1.5px] border-[#B48D69] bg-[#E9D7C4]"
+                className="block size-3.5 rounded-full border-[1.5px] border-(--ps-amber-800)/70 bg-(--ps-amber-200)/50"
               />
               {t('report.chapters.seismic.map.keyQuake')}
             </span>
@@ -60,7 +60,7 @@ export function SeismicMapBlock({ report, seismic, earthquakes }: SeismicMapBloc
             since={earthquakes.since_year}
             radiusKm={earthquakes.radius_km}
           />
-          <SeismicConclusion seismic={seismic} />
+          <SeismicConclusion report={report} seismic={seismic} earthquakes={earthquakes} />
         </aside>
       </section>
       <p className="mt-2.5 flex gap-2 text-[12.5px] leading-[1.45] text-muted-foreground">

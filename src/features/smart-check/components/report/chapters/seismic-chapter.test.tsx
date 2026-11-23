@@ -15,7 +15,7 @@ describe('SeismicChapter', { timeout: 20_000 }, () => {
     expect(
       await screen.findByRole('heading', {
         level: 2,
-        name: /Cel mai puternic cutremur din jur: 5,6/,
+        name: ro.report.chapters.seismic.headline.nearModerate,
       }),
     ).toBeInTheDocument();
     const list = screen.getByRole('list', { name: ro.report.chapters.seismic.list.label });

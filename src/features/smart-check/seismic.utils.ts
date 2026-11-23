@@ -5,14 +5,14 @@ type Seismic = NonNullable<ReportResult['sections']['seismic']>;
 export type SeismicEarthquakes = NonNullable<Seismic['earthquakes']>;
 export type SeismicEarthquake = SeismicEarthquakes['events'][number];
 
-export const SEISMIC_COLOR = '#7B5B3A';
-export const SEISMIC_COLOR_DARK = '#5A3F25';
-export const SEISMIC_TINT = '#EFE3D4';
+export const SEISMIC_COLOR = 'var(--ps-amber-800)';
+export const SEISMIC_COLOR_DARK = 'color-mix(in oklab, var(--ps-amber-800) 70%, black)';
+export const SEISMIC_TINT = 'color-mix(in oklab, var(--ps-amber-200) 35%, var(--card))';
 export const SEISMIC_LEVEL_FILLS: Readonly<Record<string, string>> = {
-  low: '#DCEBD3',
-  moderate: '#EFE3D4',
-  high: '#E2C9A8',
-  very_high: '#C99A74',
+  low: 'var(--ps-green-100)',
+  moderate: 'color-mix(in oklab, var(--ps-amber-200) 35%, var(--card))',
+  high: 'color-mix(in oklab, var(--ps-amber-200) 80%, var(--ps-amber-800))',
+  very_high: 'color-mix(in oklab, var(--ps-amber-200) 40%, var(--ps-amber-800))',
 };
 export const SEISMIC_SCALE_BANDS = [
   { from: 0, to: 16.67, level: 'low' },
@@ -47,17 +47,17 @@ function kilometresApart(left: SeismicEarthquake, right: SeismicEarthquake): num
 export function markerLabels(
   top: readonly SeismicEarthquake[],
 ): Map<SeismicEarthquake, string | null> {
-  const ranks = new Map<SeismicEarthquake, number[]>();
-  top.forEach((event, index) => {
-    const anchor = [...ranks.keys()].find(
-      (kept) => kilometresApart(kept, event) <= SHARED_LABEL_KM,
-    );
-    const existing = anchor ? ranks.get(anchor) : undefined;
-    if (existing) existing.push(index + 1);
-    else ranks.set(event, [index + 1]);
-  });
-  const labels = new Map<SeismicEarthquake, string | null>(top.map((event) => [event, null]));
-  for (const [event, numbers] of ranks) labels.set(event, numbers.join('·'));
+  const anchors: SeismicEarthquake[] = [];
+  const labels = new Map<SeismicEarthquake, string | null>();
+  for (const event of top) {
+    const isShared = anchors.some((kept) => kilometresApart(kept, event) <= SHARED_LABEL_KM);
+    if (isShared) {
+      labels.set(event, null);
+    } else {
+      anchors.push(event);
+      labels.set(event, event.date.slice(0, 4));
+    }
+  }
   return labels;
 }
 
@@ -116,4 +116,30 @@ export function ringLabelPosition(center: LngLat, distanceKm: number): LngLat {
   const [longitude, latitude] = center;
   const kmPerLongitude = KM_PER_DEGREE * Math.cos((latitude * Math.PI) / 180);
   return [longitude + offsetKm / kmPerLongitude, latitude - offsetKm / KM_PER_DEGREE];
+}
+
+const VRANCEA_CENTER: LngLat = [26.6, 45.7];
+const VRANCEA_DISTANCE_STEP_KM = 10;
+
+export function vranceaDistanceKm(center: LngLat): number {
+  const toRadians = Math.PI / 180;
+  const dLat = (VRANCEA_CENTER[1] - center[1]) * toRadians;
+  const dLon = (VRANCEA_CENTER[0] - center[0]) * toRadians;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(center[1] * toRadians) *
+      Math.cos(VRANCEA_CENTER[1] * toRadians) *
+      Math.sin(dLon / 2) ** 2;
+  const km = 2 * 6371 * Math.asin(Math.sqrt(a));
+  return Math.round(km / VRANCEA_DISTANCE_STEP_KM) * VRANCEA_DISTANCE_STEP_KM;
+}
+
+export function earthquakeSpread(earthquakes: SeismicEarthquakes) {
+  const distances = earthquakes.events.map((event) => event.distance_km);
+  const magnitudes = earthquakes.events.map((event) => event.magnitude);
+  return {
+    minKm: Math.round(Math.min(...distances) / 5) * 5,
+    maxKm: Math.round(earthquakes.radius_km),
+    maxMagnitude: Math.max(...magnitudes),
+  };
 }

@@ -897,13 +897,15 @@
         },
         "headline": {
           "withQuakes": "Cel mai puternic cutremur din jur: {{magnitude}}, în {{year}}",
-          "withoutQuakes": "Accelerația de proiectare e {{value}} g: nivel {{level}}"
+          "withoutQuakes": "Accelerația de proiectare e {{value}} g: nivel {{level}}",
+          "nearModerate": "Cutremurele din zonă sunt aproape, dar moderate"
         },
         "lead": {
           "withQuakes_one": "Din {{since}} încoace, {{count}} cutremur de cel puțin {{min}} la mai puțin de {{radius}} km de {{city}}.",
           "withQuakes_few": "Din {{since}} încoace, {{count}} cutremure de cel puțin {{min}} la mai puțin de {{radius}} km de {{city}}.",
           "withQuakes_other": "Din {{since}} încoace, {{count}} de cutremure de cel puțin {{min}} la mai puțin de {{radius}} km de {{city}}.",
-          "withoutQuakes": "Valoarea vine din codul seismic {{code}} și arată pentru ce cutremur se proiectează clădirile din {{city}}."
+          "withoutQuakes": "Valoarea vine din codul seismic {{code}} și arată pentru ce cutremur se proiectează clădirile din {{city}}.",
+          "nearModerate": "{{city}} are cutremurele ei, la {{min}}–{{max}} km, rar peste {{floor}}. Cel mai puternic: {{magnitude}}, în {{year}}."
         },
         "noData": "Nu avem valoarea din codul seismic pentru această adresă.",
         "levels": {
@@ -923,7 +925,7 @@
           "title": "Cele mai puternice cutremure la mai puțin de {{radius}} km",
           "label": "Cele mai puternice cutremure",
           "near": "lângă {{place}}",
-          "distance": "{{km}} km",
+          "distance": "{{km}} <unit>km</unit>",
           "rank": "{{rank}}"
         },
         "conclusion": {
@@ -933,7 +935,8 @@
           },
           "moderate": {
             "title": "Pe scurt: risc moderat, nu ridicat",
-            "body": "Zona e la mijlocul scalei din codul seismic. Cutremurele mari ale țării vin din Vrancea și ajung aici slăbite. Ce contează mai departe e cât de bine e construit și întreținut blocul."
+            "body": "Zona e la mijlocul scalei din codul seismic. Cutremurele mari ale țării vin din Vrancea și ajung aici slăbite. Ce contează mai departe e cât de bine e construit și întreținut blocul.",
+            "bodyQuakes": "Din {{since}} încoace, niciun cutremur din jur n-a trecut de {{max}}. Cutremurele mari ale țării vin din Vrancea, de la circa {{vrancea}} km, și ajung aici slăbite. Ce contează mai departe e cât de bine e construit și întreținut blocul."
           },
           "high": {
             "title": "Pe scurt: risc ridicat",
@@ -1029,7 +1032,9 @@
           "text": "<strong>Starea apartamentului o verifică un inspector,</strong> la fața locului: întrebări, fotografii, plan și tur 360°.",
           "book": "Programează inspecția",
           "another": "Vrei să verifici și altă adresă? <strong>Primești același tip de raport, în câteva minute.</strong>",
-          "anotherAction": "Verifică altă adresă"
+          "anotherAction": "Verifică altă adresă",
+          "titleGood": "Zona arată bine. Verifică și apartamentul.",
+          "textGood": "<strong>Zona arată bine. Starea apartamentului o verifică un inspector.</strong> La fața locului: întrebări, fotografii, plan și tur 360°. Raportul online e inclus."
         },
         "method": {
           "eyebrow": "Surse și date",

@@ -2,7 +2,11 @@ import { Trans, useTranslation } from 'react-i18next';
 import { ChapterSources } from '@/components/report/chapter-sources';
 import { ReportChapterHead } from '@/components/report/report-chapter-head';
 import { formatNumber } from '@/i18n/format';
-import { strongestEarthquakes, type SeismicEarthquakes } from '../../../seismic.utils';
+import {
+  earthquakeSpread,
+  strongestEarthquakes,
+  type SeismicEarthquakes,
+} from '../../../seismic.utils';
 import type { ReportChapterProps } from '../report-chapter-props';
 import { SeismicConclusion } from './seismic/seismic-conclusion';
 import { SeismicMapBlock } from './seismic/seismic-map-block';
@@ -48,26 +52,44 @@ export function SeismicChapter({ report }: ReportChapterProps) {
     ? t(`report.chapters.seismic.levels.${seismic.level}`, { defaultValue: seismic.level })
     : null;
 
-  const title =
-    earthquakes && biggest
-      ? t('report.chapters.seismic.headline.withQuakes', {
-          magnitude: formatNumber(biggest.magnitude, { minimumFractionDigits: 1 }),
+  const isNear = earthquakes !== null && (seismic.level === 'low' || seismic.level === 'moderate');
+  const spread = earthquakes ? earthquakeSpread(earthquakes) : null;
+  const magnitudeText = biggest
+    ? formatNumber(biggest.magnitude, { minimumFractionDigits: 1 })
+    : '';
+
+  let title = t('report.chapters.seismic.headline.withoutQuakes', {
+    value: formatNumber(seismic.ag_g, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    level: levelLabel?.toLocaleLowerCase() ?? '',
+  });
+  let lead = t('report.chapters.seismic.lead.withoutQuakes', {
+    code: seismic.code,
+    city: cityName,
+  });
+  if (earthquakes && biggest && spread) {
+    title = isNear
+      ? t('report.chapters.seismic.headline.nearModerate')
+      : t('report.chapters.seismic.headline.withQuakes', {
+          magnitude: magnitudeText,
+          year: biggest.date.slice(0, 4),
+        });
+    lead = isNear
+      ? t('report.chapters.seismic.lead.nearModerate', {
+          city: cityName,
+          min: spread.minKm,
+          max: spread.maxKm,
+          floor: Math.floor(spread.maxMagnitude),
+          magnitude: magnitudeText,
           year: biggest.date.slice(0, 4),
         })
-      : t('report.chapters.seismic.headline.withoutQuakes', {
-          value: formatNumber(seismic.ag_g, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-          level: levelLabel?.toLocaleLowerCase() ?? '',
-        });
-  const lead =
-    earthquakes && biggest
-      ? t('report.chapters.seismic.lead.withQuakes', {
+      : t('report.chapters.seismic.lead.withQuakes', {
           count: earthquakes.events.length,
           since: earthquakes.since_year,
           min: formatNumber(earthquakes.min_magnitude, { minimumFractionDigits: 1 }),
           radius: formatNumber(earthquakes.radius_km),
           city: cityName,
-        })
-      : t('report.chapters.seismic.lead.withoutQuakes', { code: seismic.code, city: cityName });
+        });
+  }
 
   return (
     <section aria-labelledby={SEISMIC_TITLE_ID} className="grid max-w-default min-w-0 gap-4">
@@ -82,7 +104,7 @@ export function SeismicChapter({ report }: ReportChapterProps) {
       {earthquakes ? (
         <SeismicMapBlock report={report} seismic={seismic} earthquakes={earthquakes} />
       ) : (
-        <SeismicConclusion seismic={seismic} />
+        <SeismicConclusion report={report} seismic={seismic} earthquakes={null} />
       )}
       <SeismicScaleCard seismic={seismic} citySlug={report.result.city.slug} cityName={cityName} />
       <ChapterSources title={t('report.chapters.seismic.sources.title')}>

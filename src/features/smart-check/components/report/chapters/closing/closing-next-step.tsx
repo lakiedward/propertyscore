@@ -4,10 +4,14 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Logo } from '@/components/brand/logo';
 import { HOME_SECTION } from '@/components/layout/site-navigation';
 import { SERVICE_PRICES } from '@/config/pricing';
+import { scoreBand } from '@/components/report/score-bands';
 import { formatPrice } from '@/i18n/format';
+import type { ReadyReport } from '../../../../report.types';
 
-export function ClosingNextStep() {
+export function ClosingNextStep({ report }: { report: ReadyReport }) {
   const { t } = useTranslation('smartCheck');
+  const { score } = report.result.zone;
+  const isGood = score !== null && ['good', 'top'].includes(scoreBand(score));
   const physicalPrice = formatPrice(
     SERVICE_PRICES.physical.amount,
     SERVICE_PRICES.physical.currency,
@@ -29,7 +33,9 @@ export function ClosingNextStep() {
         id="report-closing-next"
         className="mt-1.5 text-[clamp(24px,3vw,32px)] leading-[1.1] font-extrabold tracking-[-0.025em] text-balance"
       >
-        {t('report.chapters.closing.next.title')}
+        {t(
+          isGood ? 'report.chapters.closing.next.titleGood' : 'report.chapters.closing.next.title',
+        )}
       </h2>
       <div className="mt-4.5 grid gap-3.5">
         <article className="grid min-w-0 gap-3 rounded-icon bg-primary p-4.5 text-on-inverse shadow-report-card w560:px-6 w560:py-5.5">
@@ -42,7 +48,11 @@ export function ClosingNextStep() {
           <p className="text-[14.5px] leading-[1.55] text-on-inverse/90 [&_strong]:font-bold [&_strong]:text-cta">
             <Trans
               t={t}
-              i18nKey="report.chapters.closing.next.text"
+              i18nKey={
+                isGood
+                  ? 'report.chapters.closing.next.textGood'
+                  : 'report.chapters.closing.next.text'
+              }
               components={{ strong: <strong /> }}
             />
           </p>

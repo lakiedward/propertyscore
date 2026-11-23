@@ -1,11 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import { formatList } from '@/i18n/format';
+import { formatList, formatNumber } from '@/i18n/format';
 import {
   SEISMIC_COLOR,
   SEISMIC_COLOR_DARK,
   SEISMIC_TINT,
   buildingPeriodCodes,
+  earthquakeSpread,
+  vranceaDistanceKm,
+  type SeismicEarthquakes,
 } from '../../../../seismic.utils';
+import { reportCenter } from '../../../../report-map.utils';
 import type { ReadyReport } from '../../../../report.types';
 
 type Seismic = NonNullable<ReadyReport['result']['sections']['seismic']>;
@@ -16,7 +20,13 @@ function knownLevel(level: string | null) {
   return KNOWN_LEVELS.find((candidate) => candidate === level) ?? null;
 }
 
-export function SeismicConclusion({ seismic }: { seismic: Seismic }) {
+type SeismicConclusionProps = {
+  report: ReadyReport;
+  seismic: Seismic;
+  earthquakes: SeismicEarthquakes | null;
+};
+
+export function SeismicConclusion({ report, seismic, earthquakes }: SeismicConclusionProps) {
   const { t } = useTranslation('smartCheck');
   const level = knownLevel(seismic.level);
   const { building } = seismic;
@@ -48,7 +58,15 @@ export function SeismicConclusion({ seismic }: { seismic: Seismic }) {
             {t(`report.chapters.seismic.conclusion.${level}.title`)}
           </b>
           <p className="mt-1.5 text-[14px] leading-normal">
-            {t(`report.chapters.seismic.conclusion.${level}.body`)}
+            {level === 'moderate' && earthquakes
+              ? t('report.chapters.seismic.conclusion.moderate.bodyQuakes', {
+                  since: earthquakes.since_year,
+                  max: formatNumber(earthquakeSpread(earthquakes).maxMagnitude, {
+                    minimumFractionDigits: 1,
+                  }),
+                  vrancea: vranceaDistanceKm(reportCenter(report)),
+                })
+              : t(`report.chapters.seismic.conclusion.${level}.body`)}
           </p>
         </>
       ) : null}

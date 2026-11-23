@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { formatDate, formatNumber } from '@/i18n/format';
 import {
   SEISMIC_COLOR,
@@ -37,12 +37,6 @@ export function SeismicList({ events, since, radiusKm }: SeismicListProps) {
             >
               <span
                 aria-hidden="true"
-                className="grid size-5.5 flex-none place-items-center rounded-full bg-muted text-[12px] font-extrabold tabular-nums"
-              >
-                {index + 1}
-              </span>
-              <span
-                aria-hidden="true"
                 style={{ width: size, height: size, minWidth: 26, background: SEISMIC_COLOR }}
                 className="grid flex-none place-items-center rounded-full text-[12.5px] font-extrabold text-white"
               >
@@ -65,9 +59,14 @@ export function SeismicList({ events, since, radiusKm }: SeismicListProps) {
                 ) : null}
               </span>
               <span className="text-[18px] font-extrabold whitespace-nowrap tabular-nums">
-                {t('report.chapters.seismic.list.distance', {
-                  km: formatNumber(event.distance_km),
-                })}
+                <Trans
+                  t={t}
+                  i18nKey="report.chapters.seismic.list.distance"
+                  values={{ km: formatNumber(event.distance_km) }}
+                  components={{
+                    unit: <small className="text-[12px] font-bold text-muted-foreground" />,
+                  }}
+                />
               </span>
             </li>
           );

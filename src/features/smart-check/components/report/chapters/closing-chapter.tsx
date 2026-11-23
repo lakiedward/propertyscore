@@ -10,7 +10,7 @@ export function ClosingChapter({ report, onOpenChapter }: ReportChapterProps) {
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5.5">
       <ClosingQuestions questions={questions} onOpenChapter={onOpenChapter} />
-      <ClosingNextStep />
+      <ClosingNextStep report={report} />
       <ClosingMethod report={report} />
     </div>
   );

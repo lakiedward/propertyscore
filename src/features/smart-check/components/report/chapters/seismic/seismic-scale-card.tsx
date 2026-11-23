@@ -114,7 +114,7 @@ export function SeismicScaleCard({ seismic, citySlug, cityName }: SeismicScaleCa
                         : undefined
                     }
                     className={cn(
-                      'absolute top-10 left-1/2 size-3.5 -translate-x-1/2 rounded-full border-[3px] border-[#B9A58E] bg-card',
+                      'absolute top-10 left-1/2 size-3.5 -translate-x-1/2 rounded-full border-[3px] border-(--ps-amber-200) bg-card',
                       group.isHere && 'shadow-[0_0_0_3px_var(--card)]',
                     )}
                   />

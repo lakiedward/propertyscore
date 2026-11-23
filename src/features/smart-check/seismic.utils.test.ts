@@ -38,14 +38,14 @@ describe('strongestEarthquakes', () => {
 });
 
 describe('markerLabels', () => {
-  it('shares one label between earthquakes within 4 km', () => {
+  it('labels each earthquake with its year, once for earthquakes within 4 km', () => {
     const near = earthquake(5, 10, [21, 45.7]);
     const alsoNear = earthquake(4.9, 11, [21.01, 45.7]);
     const far = earthquake(4.8, 12, [22, 46]);
     const labels = markerLabels([near, alsoNear, far]);
-    expect(labels.get(near)).toBe('1·2');
+    expect(labels.get(near)).toBe('2000');
     expect(labels.get(alsoNear)).toBeNull();
-    expect(labels.get(far)).toBe('3');
+    expect(labels.get(far)).toBe('2000');
   });
 });
 

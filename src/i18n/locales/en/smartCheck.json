@@ -886,12 +886,14 @@
         },
         "headline": {
           "withQuakes": "Strongest nearby earthquake: {{magnitude}}, in {{year}}",
-          "withoutQuakes": "Design acceleration is {{value}} g: {{level}} level"
+          "withoutQuakes": "Design acceleration is {{value}} g: {{level}} level",
+          "nearModerate": "Earthquakes around here are close, but moderate"
         },
         "lead": {
           "withQuakes_one": "Since {{since}}, {{count}} earthquake of at least {{min}} within {{radius}} km of {{city}}.",
           "withQuakes_other": "Since {{since}}, {{count}} earthquakes of at least {{min}} within {{radius}} km of {{city}}.",
-          "withoutQuakes": "The value comes from the {{code}} seismic code and shows which earthquake buildings in {{city}} are designed for."
+          "withoutQuakes": "The value comes from the {{code}} seismic code and shows which earthquake buildings in {{city}} are designed for.",
+          "nearModerate": "{{city}} has its own earthquakes, {{min}}–{{max}} km away, rarely above {{floor}}. Strongest: {{magnitude}}, in {{year}}."
         },
         "noData": "We do not have the seismic code value for this address.",
         "levels": {
@@ -911,7 +913,7 @@
           "title": "The strongest earthquakes within {{radius}} km",
           "label": "The strongest earthquakes",
           "near": "near {{place}}",
-          "distance": "{{km}} km",
+          "distance": "{{km}} <unit>km</unit>",
           "rank": "{{rank}}"
         },
         "conclusion": {
@@ -921,7 +923,8 @@
           },
           "moderate": {
             "title": "In short: moderate risk, not high",
-            "body": "The area sits in the middle of the seismic code scale. The country's big earthquakes come from Vrancea and arrive here weakened. What matters next is how well the building is built and maintained."
+            "body": "The area sits in the middle of the seismic code scale. The country's big earthquakes come from Vrancea and arrive here weakened. What matters next is how well the building is built and maintained.",
+            "bodyQuakes": "Since {{since}}, no earthquake nearby has gone past {{max}}. The country's big earthquakes come from Vrancea, about {{vrancea}} km away, and reach here weakened. What matters next is how well the building is built and maintained."
           },
           "high": {
             "title": "In short: high risk",
@@ -1016,7 +1019,9 @@
           "text": "<strong>An inspector checks the apartment's condition</strong> on site: questions, photos, floor plan and a 360° tour.",
           "book": "Book the inspection",
           "another": "Want to check another address? <strong>You get the same kind of report, in a few minutes.</strong>",
-          "anotherAction": "Check another address"
+          "anotherAction": "Check another address",
+          "titleGood": "The area looks good. Check the apartment too.",
+          "textGood": "<strong>The area looks good. A single inspector checks the apartment's condition.</strong> On site: questions, photos, floor plan and a 360° tour. The online report is included."
         },
         "method": {
           "eyebrow": "Sources and data",
