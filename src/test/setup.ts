@@ -3,14 +3,16 @@ import { changeLocale, i18n } from '@/i18n/i18n';
 import enHome from '@/i18n/locales/en/home.json';
 import enListings from '@/i18n/locales/en/listings.json';
 import enPublish from '@/i18n/locales/en/publish.json';
+import enSmartCheck from '@/i18n/locales/en/smartCheck.json';
 import roHome from '@/i18n/locales/ro/home.json';
 import roListings from '@/i18n/locales/ro/listings.json';
 import roPublish from '@/i18n/locales/ro/publish.json';
+import roSmartCheck from '@/i18n/locales/ro/smartCheck.json';
 import { server } from './msw/server';
 
 const FEATURE_BUNDLES = {
-  ro: { home: roHome, listings: roListings, publish: roPublish },
-  en: { home: enHome, listings: enListings, publish: enPublish },
+  ro: { home: roHome, listings: roListings, publish: roPublish, smartCheck: roSmartCheck },
+  en: { home: enHome, listings: enListings, publish: enPublish, smartCheck: enSmartCheck },
 };
 
 for (const [language, bundles] of Object.entries(FEATURE_BUNDLES)) {
