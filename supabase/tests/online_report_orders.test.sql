@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(43);
+select plan(47);
 
 insert into auth.users (id, email, raw_user_meta_data)
 values
@@ -328,6 +328,26 @@ select results_eq(
 );
 
 update public.online_reports
+set claim_expires_at = now() - interval '1 minute', updated_at = now() - interval '20 minutes'
+where id = :'first_report';
+
+select ok(
+  private.extend_online_report_claim(:'first_report'),
+  'The worker renews the lease of a report it is still generating'
+);
+
+select is(
+  private.claim_next_online_report(),
+  null,
+  'A report whose lease was renewed is not taken by another worker'
+);
+
+select ok(
+  private.extend_online_report_claim(:'second_report'),
+  'A queued report that was taken can renew its lease too'
+);
+
+update public.online_reports
 set claim_expires_at = now() - interval '1 minute', updated_at = now() - interval '20 minutes', generation_attempts = 3
 where id = :'first_report';
 
@@ -341,6 +361,11 @@ select results_eq(
   format($$ select status::text, error_code from public.online_reports where id = %L $$, :'first_report'),
   $$ values ('failed'::text, 'generation_attempts_exhausted'::text) $$,
   'A report that failed three attempts is marked failed'
+);
+
+select ok(
+  not private.extend_online_report_claim(:'first_report'),
+  'A failed report cannot renew its lease'
 );
 
 alter table public.online_reports enable trigger online_reports_set_updated_at;

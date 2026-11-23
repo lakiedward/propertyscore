@@ -254,3 +254,19 @@ end;
 $$;
 
 revoke execute on function private.claim_next_online_report() from public, anon, authenticated;
+
+create function private.extend_online_report_claim(p_report_id uuid)
+returns boolean
+language sql
+set search_path = ''
+as $$
+  with extended as (
+    update public.online_reports
+    set claim_expires_at = now() + interval '15 minutes'
+    where id = p_report_id and status in ('queued', 'generating') and claim_expires_at is not null
+    returning id
+  )
+  select exists (select 1 from extended);
+$$;
+
+revoke execute on function private.extend_online_report_claim(uuid) from public, anon, authenticated;
