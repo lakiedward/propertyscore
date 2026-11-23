@@ -98,8 +98,24 @@ function nearestLandmark(
     .sort((left, right) => left.distance_m - right.distance_m)[0];
 }
 
+const CHIP_TYPES = [
+  'lighting',
+  'shop',
+  'nonstop',
+  'diplomatic',
+  'transit_stop',
+  'bar',
+  'park',
+  'isolated_passage',
+  'police',
+  'fire_station',
+  'train_station',
+] as const;
+
 export function landmarkTypes(landmarks: readonly SafetyLandmark[]): string[] {
-  return [...new Set(landmarks.map((landmark) => landmark.type))];
+  const present = new Set(landmarks.map((landmark) => landmark.type));
+  const extra = [...present].filter((type) => !(CHIP_TYPES as readonly string[]).includes(type));
+  return [...CHIP_TYPES, ...extra];
 }
 
 const HELP_LANDMARKS = ['nonstop', 'police', 'fire_station'] as const;
