@@ -13,7 +13,7 @@ type SafetyHelpCardProps = {
 export function SafetyHelpCard({ rows }: SafetyHelpCardProps) {
   const { t } = useTranslation('smartCheck');
   if (rows.length === 0) return null;
-  const longest = Math.max(...rows.map((row) => row.metres ?? 0), 1) * BAR_HEADROOM;
+  const longest = Math.max(...rows.map((row) => row.barValue), 1) * BAR_HEADROOM;
 
   return (
     <section
@@ -86,14 +86,12 @@ export function SafetyHelpCard({ rows }: SafetyHelpCardProps) {
                 aria-hidden="true"
                 className="col-span-2 col-start-2 row-start-2 h-2 overflow-hidden rounded-full bg-muted w760:col-span-1 w760:col-start-auto w760:row-start-auto"
               >
-                {row.metres === null ? null : (
-                  <i
-                    style={{
-                      width: `${String(Math.max(MIN_BAR_PERCENT, (row.metres / longest) * 100))}%`,
-                    }}
-                    className="block h-full rounded-full bg-(--c)"
-                  />
-                )}
+                <i
+                  style={{
+                    width: `${String(Math.max(MIN_BAR_PERCENT, (row.barValue / longest) * 100))}%`,
+                  }}
+                  className="block h-full rounded-full bg-(--c)"
+                />
               </span>
               <span className="col-start-3 row-start-1 flex flex-col items-end text-right w760:col-start-auto w760:row-start-auto">
                 <b className="text-[17px] font-extrabold tabular-nums">{value}</b>

@@ -80,8 +80,8 @@ export function safetyBreakdown(safety: Safety, when: SafetyWhen): SafetyBreakdo
     .filter((row) => row.points !== 0);
   const raises = rows.filter((row) => row.points > 0).sort((a, b) => b.points - a.points);
   const lowers = rows.filter((row) => row.points < 0).sort((a, b) => a.points - b.points);
-  const up = raises.reduce((sum, row) => sum + row.points, 0);
   const down = lowers.reduce((sum, row) => sum - row.points, 0);
+  const up = Math.max(0, score - start + down);
   const farTypes = moment.far_types.map((type) => ({
     type,
     distanceM: nearestLandmark(safety.landmarks, type)?.distance_m ?? null,
@@ -107,7 +107,9 @@ const HELP_LAYERS: Readonly<Record<string, { icon: LucideIcon; colorVar: string 
   h5: { icon: PillIcon, colorVar: '--ps-aqua-600' },
   h4: { icon: HeartPulseIcon, colorVar: '--ps-berry-600' },
 };
+const WALK_METRES_PER_MINUTE = 80;
 const WALKABLE_M = 1500;
+const CAR_METRES_PER_MINUTE = 500;
 
 export type HelpRow = {
   key: string;
@@ -118,6 +120,7 @@ export type HelpRow = {
   metres: number | null;
   minutes: number | null;
   mode: 'walk' | 'car';
+  barValue: number;
 };
 
 export function helpRows(result: ReportResult): HelpRow[] {
@@ -137,6 +140,7 @@ export function helpRows(result: ReportResult): HelpRow[] {
         metres: nearest.distance_m,
         minutes: null,
         mode: nearest.distance_m <= WALKABLE_M ? 'walk' : 'car',
+        barValue: nearest.distance_m,
       },
     ];
   });
@@ -153,15 +157,17 @@ export function helpRows(result: ReportResult): HelpRow[] {
         metres: null,
         minutes: layer.minutes,
         mode: layer.mode === 'car' ? 'car' : 'walk',
+        barValue:
+          layer.minutes * (layer.mode === 'car' ? CAR_METRES_PER_MINUTE : WALK_METRES_PER_MINUTE),
       },
     ];
   });
-  return [...landmarks, ...medical];
+  return [...landmarks, ...medical].sort((a, b) => a.barValue - b.barValue);
 }
 
 export function mapRadiusM(landmarks: readonly SafetyLandmark[]): number {
-  const MIN_M = 650;
-  const MAX_M = 1000;
+  const MIN_M = 1100;
+  const MAX_M = 1400;
   const PADDING_M = 120;
   const reach = Math.max(
     MIN_M,
@@ -186,7 +192,6 @@ export function formatDistanceM(metres: number): string {
   });
 }
 
-const WALK_METRES_PER_MINUTE = 80;
 const WALK_DETOUR = 1.3;
 
 export function walkMinutes(metres: number): number {

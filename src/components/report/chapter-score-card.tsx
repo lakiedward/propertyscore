@@ -10,6 +10,8 @@ import {
   type ScoreBand,
 } from './score-bands';
 
+const CLOSE_POINTS = 12;
+
 type ChapterScoreCardProps = {
   hue: ReportHue;
   score: number;
@@ -60,6 +62,7 @@ export function ChapterScoreCard({
 }: ChapterScoreCardProps) {
   const colors = REPORT_HUES[hue];
   const band = scoreBand(score);
+  const isAverageClose = average !== null && Math.abs(average - score) < CLOSE_POINTS;
   return (
     <section
       className={cn(
@@ -92,14 +95,19 @@ export function ChapterScoreCard({
         <p className="text-[clamp(18px,1.8vw,22px)] leading-[1.25] font-bold tracking-[-0.01em]">
           {headline}
         </p>
-        <div className="relative mt-2 pt-8.5 pb-10">
+        <div className={cn('relative mt-2 pt-8.5', isAverageClose ? 'pb-14' : 'pb-10')}>
           <BandTrack activeBand={band} />
           {range && rangeLabel ? (
             <span
               style={{ left: `${range.min}%`, width: `${range.max - range.min}%` }}
               className="absolute top-7 h-6 rounded-[3px] border-x-2 border-foreground/60 bg-foreground/6"
             >
-              <span className="absolute top-7.5 left-1/2 -translate-x-1/2 text-[12px] font-semibold whitespace-nowrap text-muted-foreground">
+              <span
+                className={cn(
+                  'absolute left-1/2 -translate-x-1/2 text-[12px] font-semibold whitespace-nowrap text-muted-foreground',
+                  isAverageClose ? 'top-12' : 'top-7.5',
+                )}
+              >
                 {rangeLabel}
               </span>
             </span>
@@ -109,7 +117,12 @@ export function ChapterScoreCard({
               style={{ left: `${average}%` }}
               className="absolute top-6.5 h-7 w-0.5 -translate-x-px bg-foreground"
             >
-              <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[12px] font-bold whitespace-nowrap">
+              <span
+                className={cn(
+                  'absolute left-1/2 -translate-x-1/2 text-[12px] font-bold whitespace-nowrap',
+                  isAverageClose ? 'top-7.5' : '-top-5',
+                )}
+              >
                 {averageLabel}
               </span>
             </span>

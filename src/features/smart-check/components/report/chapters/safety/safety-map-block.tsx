@@ -58,8 +58,8 @@ export function SafetyMapBlock({ report }: SafetyMapBlockProps) {
   };
 
   const moments = [
-    { key: 'day', icon: SunIcon, score: Math.round(safety.day) },
-    { key: 'night', icon: MoonIcon, score: Math.round(safety.night) },
+    { key: 'day', icon: SunIcon, score: Math.round(safety.address.day.score) },
+    { key: 'night', icon: MoonIcon, score: Math.round(safety.address.night.score) },
   ] as const;
 
   return (
@@ -105,7 +105,7 @@ export function SafetyMapBlock({ report }: SafetyMapBlockProps) {
             </button>
           ))}
         </div>
-        <div className="absolute inset-x-2.5 bottom-2.5 z-3 grid gap-2 rounded-xl border border-border bg-card/95 p-2 shadow-report-float w560:p-2.5">
+        <div className="absolute inset-x-2.5 bottom-7 z-3 grid gap-2 rounded-xl border border-border bg-card/95 p-2 shadow-report-float w560:p-2.5">
           {hasHeat ? (
             <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-bold text-muted-foreground">
               <b className="mr-0.5 text-[12.5px] text-foreground">
