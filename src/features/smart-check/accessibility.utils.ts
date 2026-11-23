@@ -98,9 +98,22 @@ function legsFor(destination: Destination): TripLeg[] {
   return legs.filter((leg) => leg.minutes > 0);
 }
 
-export function destinationRows(section: AccessibilitySection): DestinationRow[] {
+export const DESTINATION_GROUPS = ['places', 'highSchools', 'faculties'] as const;
+
+export type DestinationGroup = (typeof DESTINATION_GROUPS)[number];
+
+function groupDestinations(section: AccessibilitySection, group: DestinationGroup) {
+  if (group === 'highSchools') return section.destination_groups.high_schools;
+  if (group === 'faculties') return section.destination_groups.faculties;
+  return section.destinations;
+}
+
+export function destinationRows(
+  section: AccessibilitySection,
+  group: DestinationGroup = 'places',
+): DestinationRow[] {
   const seen = new Map<string, number>();
-  return section.destinations
+  return groupDestinations(section, group)
     .flatMap((destination) =>
       destination.minutes === null ? [] : [{ destination, minutes: destination.minutes }],
     )

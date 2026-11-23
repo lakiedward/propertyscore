@@ -481,6 +481,12 @@
         },
         "sourceTimetable": "Liniile, stațiile și orarul: transportul public local, orar din {{date}}, o zi lucrătoare. Drumurile pe jos urmează străzile din OpenStreetMap.",
         "sourceOsm": "Liniile și stațiile vin din OpenStreetMap, fără orar: așteptarea e estimată. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "groupLabel": "Tipul destinațiilor",
+        "groups": {
+          "places": "Locuri importante",
+          "highSchools": "Licee {{count}}",
+          "faculties": "Facultăți {{count}}"
+        },
         "sources": {
           "title": "Surse și date",
           "list": "<strong>Surse:</strong> {{sources}}",

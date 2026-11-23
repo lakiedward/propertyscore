@@ -2,7 +2,11 @@ import { InfoIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { destinationRows } from '../../../accessibility.utils';
+import {
+  DESTINATION_GROUPS,
+  type DestinationGroup,
+  destinationRows,
+} from '../../../accessibility.utils';
 import type { ReadyReport } from '../../../report.types';
 import type { AccessibilitySection } from '../../../sections/accessibility.types';
 import { AccessibilityRouteMap } from './accessibility-route-map';
@@ -28,7 +32,16 @@ export function AccessibilityRouteCard({
   const { t, i18n } = useTranslation('smartCheck');
   const language = i18n.resolvedLanguage === 'en' ? 'en' : 'ro';
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const rows = destinationRows(section);
+  const [group, setGroup] = useState<DestinationGroup>('places');
+  const rows = destinationRows(section, group);
+  const groups = DESTINATION_GROUPS.filter(
+    (option) => option === 'places' || destinationRows(section, option).length > 0,
+  );
+
+  const handleGroup = (next: DestinationGroup) => {
+    setGroup(next);
+    setSelectedId(null);
+  };
 
   const handleSelect = (id: string) => {
     setSelectedId((current) => (current === id ? null : id));
@@ -102,6 +115,33 @@ export function AccessibilityRouteCard({
             ))}
           </ul>
         </div>
+        {groups.length > 1 ? (
+          <div
+            role="radiogroup"
+            aria-label={t('report.chapters.accessibility.groupLabel')}
+            className="mt-3 inline-flex gap-0.5 rounded-lg bg-report-summary-soft p-0.75 max-[700px]:w-full"
+          >
+            {groups.map((option) => (
+              <button
+                key={option}
+                type="button"
+                role="radio"
+                aria-checked={option === group}
+                onClick={() => {
+                  handleGroup(option);
+                }}
+                className={cn(
+                  'rounded-md px-3.5 py-1.5 text-[14px] font-bold text-muted-foreground transition-colors focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none max-[700px]:flex-1',
+                  option === group && 'bg-card text-primary shadow-segment',
+                )}
+              >
+                {t(`report.chapters.accessibility.groups.${option}`, {
+                  count: destinationRows(section, option).length,
+                })}
+              </button>
+            ))}
+          </div>
+        ) : null}
         <div className="mt-3 grid">
           {rows.map((row) => (
             <DestinationRow

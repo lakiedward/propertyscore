@@ -472,6 +472,12 @@
         },
         "sourceTimetable": "Lines, stops and timetable: local public transport, timetable of {{date}}, a working day. Walking routes follow OpenStreetMap streets.",
         "sourceOsm": "Lines and stops come from OpenStreetMap, without a timetable: waiting time is estimated. Walking routes follow OpenStreetMap streets.",
+        "groupLabel": "Destination type",
+        "groups": {
+          "places": "Key places",
+          "highSchools": "High schools {{count}}",
+          "faculties": "Faculties {{count}}"
+        },
         "sources": {
           "title": "Sources and data",
           "list": "<strong>Sources:</strong> {{sources}}",
