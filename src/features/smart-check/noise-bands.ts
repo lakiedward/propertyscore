@@ -15,6 +15,16 @@ export const NOISE_BANDS = [
 
 export const NOISE_BAND_OPACITY = 0.5;
 
+const BASE_RGB = [239, 237, 227] as const satisfies Rgb;
+
+export function multipliedOverBase(color: Rgb): Rgb {
+  return [
+    Math.round((color[0] * BASE_RGB[0]) / 255),
+    Math.round((color[1] * BASE_RGB[1]) / 255),
+    Math.round((color[2] * BASE_RGB[2]) / 255),
+  ];
+}
+
 const PIXEL_M = 4;
 const FLOOR_DB = 50;
 const SMOOTHING_CELLS = 1;
@@ -119,9 +129,10 @@ export function noiseBandRaster(heat: Heat): BandRaster {
       const band = NOISE_BANDS.findLast((step) => level >= step[0]);
       if (band === undefined) continue;
       const offset = (row * width + column) * 4;
-      rgba[offset] = band[1][0];
-      rgba[offset + 1] = band[1][1];
-      rgba[offset + 2] = band[1][2];
+      const [red, green, blue] = multipliedOverBase(band[1]);
+      rgba[offset] = red;
+      rgba[offset + 1] = green;
+      rgba[offset + 2] = blue;
       rgba[offset + 3] = 255;
     }
   }
