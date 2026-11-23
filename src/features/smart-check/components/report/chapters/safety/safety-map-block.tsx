@@ -58,8 +58,8 @@ export function SafetyMapBlock({ report }: SafetyMapBlockProps) {
   };
 
   const moments = [
-    { key: 'day', icon: SunIcon, score: Math.round(safety.day) },
-    { key: 'night', icon: MoonIcon, score: Math.round(safety.night) },
+    { key: 'day', icon: SunIcon, score: Math.round(safety.address.day.score) },
+    { key: 'night', icon: MoonIcon, score: Math.round(safety.address.night.score) },
   ] as const;
 
   return (

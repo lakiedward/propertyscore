@@ -7,14 +7,14 @@ type Rgb = readonly [number, number, number];
 type HeatStop = readonly [score: number, rgb: Rgb];
 
 const SAFETY_HEAT_RAMP = [
-  [30, [189, 99, 78]],
-  [42, [218, 146, 88]],
-  [55, [225, 204, 153]],
-  [68, [202, 231, 188]],
-  [82, [214, 246, 224]],
+  [30, [226, 146, 120]],
+  [47, [235, 196, 96]],
+  [62, [236, 232, 210]],
+  [77, [136, 192, 155]],
+  [92, [46, 125, 85]],
 ] as const satisfies readonly HeatStop[];
 
-export const SAFETY_HEAT_OPACITY = 0.8;
+export const SAFETY_HEAT_OPACITY = 0.62;
 
 const HALF_WIDTH_M = 1900;
 const HALF_HEIGHT_M = 1200;

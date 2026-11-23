@@ -255,7 +255,7 @@
           "police": "Police",
           "fire_station": "Fire station",
           "h5": "All-night pharmacy",
-          "h4": "Hospital with emergency room",
+          "h4": "Emergency care for adults",
           "walk": "{{minutes}} on foot",
           "car": "by car",
           "minutes": "{{count}} min",
