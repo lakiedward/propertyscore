@@ -729,11 +729,7 @@
             "included": "<strong>Ține cont de</strong> instalațiile industriale din registrul european, până la 5 km",
             "excluded": "<strong>Nu ține cont de</strong> atelierele mici care nu intră în registru"
           },
-          "better": "Mai bine decât <strong>{{percent}}%</strong> din zonele din {{city}}",
-          "best": "Printre cele mai bune zone din {{city}}",
-          "worst": "Printre cele mai slabe zone din {{city}}",
-          "flat": "În {{city}} toate zonele au același scor, între {{min}} și {{max}}. Scorul nu poate deosebi adresele între ele.",
-          "none": "Fără comparație cu restul orașului",
+          "cityAverage": "Media orașului: <strong>{{average}}</strong>",
           "you": "Tu · {{score}}",
           "average": "Media {{average}}",
           "range": "Zonele orașului: {{min}}–{{max}}"

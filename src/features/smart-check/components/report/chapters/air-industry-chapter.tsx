@@ -1,6 +1,7 @@
 import { InfoIcon } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { ChapterSources } from '@/components/report/chapter-sources';
+import { REPORT_HUES } from '@/components/report/report-hues';
 import { ReportChapterHead } from '@/components/report/report-chapter-head';
 import { formatDate, formatList, formatNumber } from '@/i18n/format';
 import { airVerdict, hasWinterPeak, splitPeriod } from '../../../air-industry.utils';
@@ -58,7 +59,7 @@ export function AirIndustryChapter({ report }: ReportChapterProps) {
     const score = result.categories[category]?.score;
     const name = t(`report.categories.${category}.name`);
     return (
-      <span key={category} className={`text-report-${category}`}>
+      <span key={category} className={REPORT_HUES[category].text}>
         {score == null
           ? t('report.chapters.airIndustry.eyebrowPartNoScore', { name })
           : t('report.chapters.airIndustry.eyebrowPart', { name, score: Math.round(score) })}

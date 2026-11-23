@@ -12,7 +12,7 @@ type AirMonthsCardProps = {
 };
 
 function shortMonth(month: string): string {
-  return formatDate(`${month}-01`, { month: 'short', timeZone: 'UTC' }).replace(/\.$/, '');
+  return formatDate(`${month}-01`, { month: 'short', timeZone: 'UTC' }).slice(0, 3);
 }
 
 export function AirMonthsCard({ air }: AirMonthsCardProps) {
@@ -84,7 +84,7 @@ export function AirMonthsCard({ air }: AirMonthsCardProps) {
             style={{ bottom: `${String(limitHeight)}%` }}
             className="absolute inset-x-0 h-0 border-t-2 border-dashed border-(--ps-coral-600)"
           >
-            <span className="absolute -top-2 -left-6 text-[11px] font-extrabold text-(--ps-coral-600)">
+            <span className="absolute -top-2 -left-3.5 text-[11px] font-extrabold text-(--ps-coral-600) w760:-left-6">
               {formatNumber(air.limits.pm25)}
             </span>
           </b>

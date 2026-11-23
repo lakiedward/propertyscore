@@ -719,11 +719,7 @@
             "included": "<strong>Counts</strong> industrial sites in the European register, within 5 km",
             "excluded": "<strong>Does not count</strong> small workshops that are not in the register"
           },
-          "better": "Better than <strong>{{percent}}%</strong> of the areas in {{city}}",
-          "best": "Among the best areas in {{city}}",
-          "worst": "Among the weakest areas in {{city}}",
-          "flat": "In {{city}} every area has the same score, between {{min}} and {{max}}. The score cannot tell addresses apart.",
-          "none": "No comparison with the rest of the city",
+          "cityAverage": "City average: <strong>{{average}}</strong>",
           "you": "You · {{score}}",
           "average": "Average {{average}}",
           "range": "City areas: {{min}}–{{max}}"
