@@ -29,4 +29,15 @@ export const fifteenMinuteSectionSchema = z.object({
     }),
   ),
   isochrones: z.array(isochroneSchema),
+  routes: z
+    .array(
+      z.object({
+        place_id: z.string(),
+        minutes: z.number(),
+        distance_m: z.number(),
+        polyline6: z.string(),
+      }),
+    )
+    .default([]),
+  walk_speed_kmh: z.number().nullable().default(null),
 });
