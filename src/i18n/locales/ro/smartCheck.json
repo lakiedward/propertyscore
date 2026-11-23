@@ -14,6 +14,7 @@
   },
   "status": {
     "pending_payment": "Așteaptă plata",
+    "queued": "În așteptare",
     "generating": "Se generează",
     "ready": "Gata",
     "failed": "Eșuat"
@@ -36,6 +37,10 @@
       "pending_payment": {
         "title": "Raportul așteaptă plata",
         "description": "Îl pregătim imediat ce comanda este confirmată."
+      },
+      "queued": {
+        "title": "Raportul este la rând",
+        "description": "Începem să îl pregătim în câteva secunde. Pagina se actualizează singură."
       },
       "generating": {
         "title": "Pregătim raportul",
