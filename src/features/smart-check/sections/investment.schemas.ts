@@ -28,7 +28,9 @@ export const investmentSectionSchema = z.object({
     .nullable(),
   rent: z
     .looseObject({
+      count: z.number().nullable().optional(),
       median_eur: z.number().nullable().optional(),
+      median_eur_m2: z.number().nullable().optional(),
       estimate_eur: z.number().nullable().optional(),
       is_example: z.boolean().optional(),
     })

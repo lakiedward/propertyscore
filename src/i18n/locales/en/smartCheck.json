@@ -881,7 +881,86 @@
         "title": "Seismic risk"
       },
       "investment": {
-        "title": "Investment"
+        "title": "Investment",
+        "eyebrow": "Investment · context, not part of the score",
+        "badgeCity": "Precision: city",
+        "badgeNoData": "No data yet",
+        "example": "example",
+        "perM2": "€{{value}}/m²",
+        "offers_one": "{{amount}} listing",
+        "offers_other": "{{amount}} listings",
+        "note": "Not part of the zone score. Investment is context for buyers who plan to rent the home out.",
+        "headline": {
+          "city": "In {{city}}, asking prices are around €{{value}} per square metre"
+        },
+        "lead": {
+          "declared": "For {{area}} m², about {{price}}, asking price.",
+          "asking": "Asking prices in listings, not sale prices."
+        },
+        "empty": {
+          "headline": "Prices, rents and yield, once we have market data",
+          "lead": "The asking price per square metre, the rent and the yield against the city appear here once we have data for your city.",
+          "title": "We do not have asking prices for this city yet",
+          "text": "Without figures we do not estimate: it would not be honest."
+        },
+        "price": {
+          "eyebrow": "Asking price per square metre",
+          "titleRange": "Half of the apartments are listed between €{{low}} and €{{high}}/m²",
+          "titleMedian": "Middle asking price: €{{value}}/m²",
+          "cityWide": "{{city}}, whole city",
+          "nearby": "{{name}}, next to the city",
+          "typical": "Typical apartment in listings: {{area}} m², €{{price}}",
+          "legendRange": "typical range",
+          "legendMedian": "middle price"
+        },
+        "home": {
+          "eyebrow": "For your apartment",
+          "declaredArea": "Declared area",
+          "chosenArea": "Chosen area",
+          "area": "{{area}} m²",
+          "sliderLabel": "Apartment area",
+          "price": "Estimated asking price",
+          "approx": "≈ {{value}}",
+          "between": "between {{low}} and {{high}}",
+          "rent": "Estimated rent",
+          "perMonth": "per month"
+        },
+        "yield": {
+          "eyebrow": "Gross yield per year",
+          "title": "A year of rent is {{value}}% of the price",
+          "value": "{{value}}%",
+          "note": "Twelve months of rent divided by the price, before taxes, repairs and months without a tenant."
+        },
+        "history": {
+          "eyebrow_one": "Last month",
+          "eyebrow_other": "Last {{count}} months",
+          "title": {
+            "up": "Since {{month}}, the asking price rose by €{{value}}/m²",
+            "down": "Since {{month}}, the asking price fell by €{{value}}/m²",
+            "flat": "Since {{month}}, the asking price has not changed"
+          },
+          "chartLabel": "Median asking price per square metre, month by month",
+          "forArea": "For {{area}} m², compared with {{month}}",
+          "span_one": "{{percent}} in {{count}} month",
+          "span_other": "{{percent}} in {{count}} months"
+        },
+        "sources": {
+          "eyebrow": "Source of the figures{{date}}",
+          "open": "Open",
+          "note": "These are asking prices in listings, not sale prices.",
+          "exampleNote": "Figures marked “example” are replaced by the first import.",
+          "names": {
+            "apartamente_org": "apartamente.org, apartment prices",
+            "apartamente_org_index": "apartamente.org, monthly index",
+            "imospot_index": "Imospot Index (CC BY 4.0)"
+          },
+          "saleCity": "{{city}} · sale",
+          "saleCityOffers_one": "{{city}} · sale · {{amount}} listing",
+          "saleCityOffers_other": "{{city}} · sale · {{amount}} listings",
+          "rentCity": "{{city}} · rent",
+          "rentCityOffers_one": "{{city}} · rent · {{amount}} listing",
+          "rentCityOffers_other": "{{city}} · rent · {{amount}} listings"
+        }
       },
       "closing": {
         "title": "Before the viewing"

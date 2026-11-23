@@ -892,7 +892,91 @@
         "title": "Risc seismic"
       },
       "investment": {
-        "title": "Investiție"
+        "title": "Investiție",
+        "eyebrow": "Investiție · context, nu intră în scor",
+        "badgeCity": "Precizie: oraș",
+        "badgeNoData": "Fără date încă",
+        "example": "exemplu",
+        "perM2": "{{value}} €/m²",
+        "offers_one": "{{amount}} ofertă",
+        "offers_few": "{{amount}} oferte",
+        "offers_other": "{{amount}} de oferte",
+        "note": "Nu intră în scorul de zonă. Investiția e context pentru cine cumpără ca să închirieze.",
+        "headline": {
+          "city": "În {{city}} se cer în jur de {{value}} € pe metru pătrat"
+        },
+        "lead": {
+          "declared": "Pentru {{area}} m², cam {{price}}, preț cerut.",
+          "asking": "Preț cerut în anunțuri, nu preț de vânzare."
+        },
+        "empty": {
+          "headline": "Prețuri, chirii și randament, când avem date de piață",
+          "lead": "Prețul cerut pe metru pătrat, chiria și randamentul față de oraș apar aici când avem date pentru orașul tău.",
+          "title": "Încă nu avem prețuri cerute pentru orașul acesta",
+          "text": "Fără cifre, nu estimăm: n-ar fi cinstit."
+        },
+        "price": {
+          "eyebrow": "Preț cerut pe metru pătrat",
+          "titleRange": "Jumătate din apartamente se cer între {{low}} și {{high}} €/m²",
+          "titleMedian": "Prețul cerut din mijloc: {{value}} €/m²",
+          "cityWide": "{{city}}, tot orașul",
+          "nearby": "{{name}}, lângă oraș",
+          "typical": "Apartamentul tipic din anunțuri: {{area}} m², {{price}} €",
+          "legendRange": "intervalul tipic",
+          "legendMedian": "prețul din mijloc"
+        },
+        "home": {
+          "eyebrow": "Pentru apartamentul tău",
+          "declaredArea": "Suprafața declarată",
+          "chosenArea": "Suprafața aleasă",
+          "area": "{{area}} m²",
+          "sliderLabel": "Suprafața apartamentului",
+          "price": "Preț cerut estimat",
+          "approx": "≈ {{value}}",
+          "between": "între {{low}} și {{high}}",
+          "rent": "Chirie estimată",
+          "perMonth": "pe lună"
+        },
+        "yield": {
+          "eyebrow": "Randament brut pe an",
+          "title": "Chiria pe un an înseamnă {{value}}% din preț",
+          "value": "{{value}}%",
+          "note": "Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș."
+        },
+        "history": {
+          "eyebrow_one": "Ultima lună",
+          "eyebrow_few": "Ultimele {{count}} luni",
+          "eyebrow_other": "Ultimele {{count}} de luni",
+          "title": {
+            "up": "Din {{month}}, prețul cerut a urcat cu {{value}} €/m²",
+            "down": "Din {{month}}, prețul cerut a scăzut cu {{value}} €/m²",
+            "flat": "Din {{month}}, prețul cerut a rămas la fel"
+          },
+          "chartLabel": "Prețul cerut mediu pe metru pătrat, lună cu lună",
+          "forArea": "Pentru {{area}} m², față de {{month}}",
+          "span_one": "{{percent}} în {{count}} lună",
+          "span_few": "{{percent}} în {{count}} luni",
+          "span_other": "{{percent}} în {{count}} de luni"
+        },
+        "sources": {
+          "eyebrow": "Sursa cifrelor{{date}}",
+          "open": "Deschide",
+          "note": "Sunt prețuri cerute în anunțuri, nu prețuri de vânzare.",
+          "exampleNote": "Cifrele marcate „exemplu” se înlocuiesc la primul import.",
+          "names": {
+            "apartamente_org": "apartamente.org, prețuri apartamente",
+            "apartamente_org_index": "apartamente.org, indicele lunar",
+            "imospot_index": "Indicele Imospot (CC BY 4.0)"
+          },
+          "saleCity": "{{city}} · vânzare",
+          "saleCityOffers_one": "{{city}} · vânzare · {{amount}} ofertă",
+          "saleCityOffers_few": "{{city}} · vânzare · {{amount}} oferte",
+          "saleCityOffers_other": "{{city}} · vânzare · {{amount}} de oferte",
+          "rentCity": "{{city}} · închiriere",
+          "rentCityOffers_one": "{{city}} · închiriere · {{amount}} ofertă",
+          "rentCityOffers_few": "{{city}} · închiriere · {{amount}} oferte",
+          "rentCityOffers_other": "{{city}} · închiriere · {{amount}} de oferte"
+        }
       },
       "closing": {
         "title": "Înainte de vizionare"
