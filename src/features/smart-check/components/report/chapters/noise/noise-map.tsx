@@ -40,6 +40,7 @@ export function NoiseMap({ report }: NoiseMapProps) {
             coordinates: raster.coordinates,
             opacity: NOISE_BAND_OPACITY,
             isVisible: true,
+            placement: 'below-roads' as const,
           },
         ]
       : [];
