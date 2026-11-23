@@ -84,7 +84,7 @@ export function ReportChapters({ report, chapter, panelId, onOpenChapter }: Repo
         <Chapter report={report} onOpenChapter={onOpenChapter} />
         {nextCard()}
       </div>
-      <ClosingChapter />
+      <ClosingChapter report={report} onOpenChapter={onOpenChapter} />
     </div>
   );
 }

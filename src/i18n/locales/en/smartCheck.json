@@ -740,13 +740,174 @@
         }
       },
       "seismic": {
-        "title": "Seismic risk"
+        "title": "Seismic risk",
+        "eyebrow": "Seismic risk · context, not part of the score",
+        "precision": {
+          "address": "Precision: address area",
+          "city": "Precision: city"
+        },
+        "headline": {
+          "withQuakes": "Strongest nearby earthquake: {{magnitude}}, in {{year}}",
+          "withoutQuakes": "Design acceleration is {{value}} g: {{level}} level"
+        },
+        "lead": {
+          "withQuakes_one": "Since {{since}}, {{count}} earthquake of at least {{min}} within {{radius}} km of {{city}}.",
+          "withQuakes_other": "Since {{since}}, {{count}} earthquakes of at least {{min}} within {{radius}} km of {{city}}.",
+          "withoutQuakes": "The value comes from the {{code}} seismic code and shows which earthquake buildings in {{city}} are designed for."
+        },
+        "noData": "We do not have the seismic code value for this address.",
+        "levels": {
+          "low": "Low",
+          "moderate": "Moderate",
+          "high": "High",
+          "very_high": "Very high"
+        },
+        "map": {
+          "label": "Earthquakes around the address since {{since}}",
+          "keyQuake": "earthquake, the bigger the circle, the stronger it was",
+          "keyTop": "the {{count}} strongest, numbered as in the list",
+          "quakeLabel": "Earthquake of magnitude {{magnitude}}"
+        },
+        "list": {
+          "eyebrow": "Since {{since}}",
+          "title": "The strongest earthquakes within {{radius}} km",
+          "label": "The strongest earthquakes",
+          "near": "near {{place}}",
+          "distance": "{{km}} km",
+          "rank": "{{rank}}"
+        },
+        "conclusion": {
+          "low": {
+            "title": "In short: low risk",
+            "body": "The seismic code asks for the lowest design acceleration in the country here. How well the building is built and maintained still matters."
+          },
+          "moderate": {
+            "title": "In short: moderate risk, not high",
+            "body": "The area sits in the middle of the seismic code scale. The country's big earthquakes come from Vrancea and arrive here weakened. What matters next is how well the building is built and maintained."
+          },
+          "high": {
+            "title": "In short: high risk",
+            "body": "The area is in the upper part of the seismic code scale. Ask for the year of construction, the technical expertise and whether the building was strengthened."
+          },
+          "very_high": {
+            "title": "In short: very high risk",
+            "body": "The area has the highest design acceleration in the seismic code. Ask for the year of construction, the technical expertise, the seismic risk class and whether the building was strengthened."
+          },
+          "year": "Declared year of construction: {{year}}. Ask which code the building was designed to and whether it has a technical expertise.",
+          "yearCodes": "Declared year of construction: {{year}}. Buildings from this period were designed to {{codes}}. Ask whether it has a technical expertise.",
+          "yearBeforeCode": "Declared year of construction: {{year}}, before Romania's first seismic design code (1963). Ask whether it has a technical expertise and whether it was strengthened."
+        },
+        "source": "Earthquakes: {{catalogue}}, since {{since}}, magnitude of at least {{min}}{{retrieved}}. Map: OpenStreetMap.",
+        "retrieved": ", read on {{date}}",
+        "scale": {
+          "keyword": "Seismic",
+          "pill": "Level: {{level}}",
+          "title": "How {{city}} compares with the other {{count}} cities",
+          "track": "Design acceleration of the cities, between 0.05 g and 0.35 g",
+          "included": "<strong>Takes into account</strong> the design acceleration of the {{code}} seismic code",
+          "excluded": "<strong>Does not take into account</strong> the condition of the building or strengthening",
+          "unit": "g"
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> Seismic code {{code}}{{catalogue}}",
+          "weight": "<strong>Weight in the area score:</strong> not part of the score. It is context."
+        },
+        "cities": {
+          "bucuresti": "Bucharest",
+          "cluj-napoca": "Cluj-Napoca",
+          "timisoara": "Timișoara",
+          "iasi": "Iași",
+          "constanta": "Constanța",
+          "craiova": "Craiova",
+          "sibiu": "Sibiu",
+          "oradea": "Oradea",
+          "targu-mures": "Târgu Mureș"
+        }
       },
       "investment": {
         "title": "Investment"
       },
       "closing": {
-        "title": "Before the viewing"
+        "title": "Before the viewing",
+        "questions": {
+          "eyebrow": "To ask at the viewing",
+          "title_one": "One question for the owner",
+          "title_other": "{{count}} questions for the owner",
+          "progress": "<strong>{{done}}</strong> of {{total}} ticked",
+          "copy": "Copy the list",
+          "copied": "The list of questions was copied.",
+          "copyFailed": "The list could not be copied.",
+          "print": "Print",
+          "listLabel": "Questions for the owner",
+          "check": "Tick question {{number}}",
+          "openChapter": "See the {{topic}} chapter",
+          "topics": {
+            "noise": "Noise",
+            "seismic": "Seismic risk",
+            "apartment": "Apartment"
+          },
+          "items": {
+            "bedroom_facade_side": {
+              "question": "Which way do the bedrooms face: the street or the courtyard?",
+              "why": "Noise differs a lot between the front and the back of the building. The score describes the area, not the façade."
+            },
+            "construction_year": {
+              "question": "What year was the building built, and does it have a technical expertise?",
+              "why": "The year shows which code it was designed to. Without it, we cannot judge the building's risk."
+            },
+            "stairs_without_elevator": {
+              "question": "The building has no elevator: how is climbing the stairs with shopping or a child?",
+              "why": "On the upper floors, every daily trip and any move is felt in full."
+            },
+            "ground_floor_damp_and_security": {
+              "question": "The apartment is on the ground floor: is there damp, and how are the windows and door secured?",
+              "why": "The ground floor is more exposed to damp, street noise and unauthorised entry."
+            },
+            "top_floor_roof_and_insulation": {
+              "question": "The apartment is on the top floor: when was the roof redone and how is it insulated?",
+              "why": "Leaks and summer heat come from the roof and the terrace."
+            }
+          }
+        },
+        "next": {
+          "eyebrow": "Next step",
+          "title": "The report describes the area. Check the apartment too.",
+          "physicalLabel": "Property Fizic",
+          "includedPrefix": "The online report is included",
+          "text": "<strong>An inspector checks the apartment's condition</strong> on site: questions, photos, floor plan and a 360° tour.",
+          "book": "Book the inspection",
+          "another": "Want to check another address? <strong>You get the same kind of report, in a few minutes.</strong>",
+          "anotherAction": "Check another address"
+        },
+        "method": {
+          "eyebrow": "Sources and data",
+          "title": "The same address gets the same score whenever you check it.",
+          "lead": "Where we do not have good data, we tell you.",
+          "snapshot": "Data from {{month}} · {{city}}.",
+          "groups": {
+            "map": "Map and streets",
+            "transit": "Transport",
+            "air": "Air and industry",
+            "services": "Services",
+            "seismic": "Seismic"
+          },
+          "sources": {
+            "osm": "OpenStreetMap",
+            "walk_routing": "Walking routing",
+            "noise": "Noise",
+            "gtfs": "GTFS public transport",
+            "cams": "Copernicus CAMS",
+            "eea_stations": "EEA stations (air quality)",
+            "eea_air_map": "EEA air map",
+            "eea_industrial": "EEA industrial register",
+            "siiir": "SIIIR (education)",
+            "cnas": "CNAS providers",
+            "ms_upu": "Emergency units (UPU/CPU)",
+            "seismic": "Seismic code P100-1/2013",
+            "earthquakes": "USGS and EMSC earthquakes"
+          }
+        }
       }
     },
     "frame": {

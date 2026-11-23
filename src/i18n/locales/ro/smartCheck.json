@@ -750,13 +750,176 @@
         }
       },
       "seismic": {
-        "title": "Risc seismic"
+        "title": "Risc seismic",
+        "eyebrow": "Risc seismic · context, nu intră în scor",
+        "precision": {
+          "address": "Precizie: zona adresei",
+          "city": "Precizie: oraș"
+        },
+        "headline": {
+          "withQuakes": "Cel mai puternic cutremur din jur: {{magnitude}}, în {{year}}",
+          "withoutQuakes": "Accelerația de proiectare e {{value}} g: nivel {{level}}"
+        },
+        "lead": {
+          "withQuakes_one": "Din {{since}} încoace, {{count}} cutremur de cel puțin {{min}} la mai puțin de {{radius}} km de {{city}}.",
+          "withQuakes_few": "Din {{since}} încoace, {{count}} cutremure de cel puțin {{min}} la mai puțin de {{radius}} km de {{city}}.",
+          "withQuakes_other": "Din {{since}} încoace, {{count}} de cutremure de cel puțin {{min}} la mai puțin de {{radius}} km de {{city}}.",
+          "withoutQuakes": "Valoarea vine din codul seismic {{code}} și arată pentru ce cutremur se proiectează clădirile din {{city}}."
+        },
+        "noData": "Nu avem valoarea din codul seismic pentru această adresă.",
+        "levels": {
+          "low": "Scăzut",
+          "moderate": "Moderat",
+          "high": "Ridicat",
+          "very_high": "Foarte ridicat"
+        },
+        "map": {
+          "label": "Cutremurele din jurul adresei, din {{since}} încoace",
+          "keyQuake": "cutremur, cu cât mai mare cercul, cu atât mai puternic",
+          "keyTop": "cele mai puternice {{count}}, cu numărul din listă",
+          "quakeLabel": "Cutremur de magnitudine {{magnitude}}"
+        },
+        "list": {
+          "eyebrow": "Din {{since}} încoace",
+          "title": "Cele mai puternice cutremure la mai puțin de {{radius}} km",
+          "label": "Cele mai puternice cutremure",
+          "near": "lângă {{place}}",
+          "distance": "{{km}} km",
+          "rank": "{{rank}}"
+        },
+        "conclusion": {
+          "low": {
+            "title": "Pe scurt: risc scăzut",
+            "body": "Codul seismic cere aici cea mai mică accelerație de proiectare din țară. Contează în continuare cât de bine e construit și întreținut blocul."
+          },
+          "moderate": {
+            "title": "Pe scurt: risc moderat, nu ridicat",
+            "body": "Zona e la mijlocul scalei din codul seismic. Cutremurele mari ale țării vin din Vrancea și ajung aici slăbite. Ce contează mai departe e cât de bine e construit și întreținut blocul."
+          },
+          "high": {
+            "title": "Pe scurt: risc ridicat",
+            "body": "Zona e în partea de sus a scalei din codul seismic. Cere anul construcției, expertiza tehnică și dacă blocul a fost consolidat."
+          },
+          "very_high": {
+            "title": "Pe scurt: risc foarte ridicat",
+            "body": "Zona are cea mai mare accelerație de proiectare din codul seismic. Cere anul construcției, expertiza tehnică, clasa de risc seismic și dacă blocul a fost consolidat."
+          },
+          "year": "Anul declarat al construcției: {{year}}. Întreabă după ce normativ a fost proiectat blocul și dacă are expertiză tehnică.",
+          "yearCodes": "Anul declarat al construcției: {{year}}. Blocurile din această perioadă au fost proiectate după {{codes}}. Întreabă dacă are expertiză tehnică.",
+          "yearBeforeCode": "Anul declarat al construcției: {{year}}, înainte de primul cod de proiectare seismică din România (1963). Întreabă dacă are expertiză tehnică și dacă a fost consolidat."
+        },
+        "source": "Cutremure: {{catalogue}}, din {{since}} încoace, magnitudine de cel puțin {{min}}{{retrieved}}. Hartă: OpenStreetMap.",
+        "retrieved": ", citite pe {{date}}",
+        "scale": {
+          "keyword": "Seismic",
+          "pill": "Nivel: {{level}}",
+          "title": "Cum stă {{city}} față de celelalte {{count}} orașe",
+          "track": "Accelerația de proiectare a orașelor, între 0,05 g și 0,35 g",
+          "included": "<strong>Ține cont de</strong> accelerația de proiectare din codul seismic {{code}}",
+          "excluded": "<strong>Nu ține cont de</strong> starea clădirii și de consolidări",
+          "unit": "g"
+        },
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> Cod seismic {{code}}{{catalogue}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> nu intră în scor. E context."
+        },
+        "cities": {
+          "bucuresti": "București",
+          "cluj-napoca": "Cluj-Napoca",
+          "timisoara": "Timișoara",
+          "iasi": "Iași",
+          "constanta": "Constanța",
+          "craiova": "Craiova",
+          "sibiu": "Sibiu",
+          "oradea": "Oradea",
+          "targu-mures": "Târgu Mureș"
+        }
       },
       "investment": {
         "title": "Investiție"
       },
       "closing": {
-        "title": "Înainte de vizionare"
+        "title": "Înainte de vizionare",
+        "questions": {
+          "eyebrow": "De întrebat la vizionare",
+          "title_one": "O întrebare pentru proprietar",
+          "title_few": "{{count}} întrebări pentru proprietar",
+          "title_other": "{{count}} de întrebări pentru proprietar",
+          "progress": "<strong>{{done}}</strong> din {{total}} bifate",
+          "copy": "Copiază lista",
+          "copied": "Lista de întrebări a fost copiată.",
+          "copyFailed": "Lista nu a putut fi copiată.",
+          "print": "Printează",
+          "listLabel": "Întrebări pentru proprietar",
+          "check": "Bifează întrebarea {{number}}",
+          "openChapter": "Vezi capitolul {{topic}}",
+          "topics": {
+            "noise": "Zgomot",
+            "seismic": "Risc seismic",
+            "apartment": "Apartament"
+          },
+          "items": {
+            "bedroom_facade_side": {
+              "question": "Spre ce dau dormitoarele: spre stradă sau spre curte?",
+              "why": "Zgomotul diferă mult între fața și spatele blocului. Scorul descrie zona, nu fațada."
+            },
+            "construction_year": {
+              "question": "În ce an a fost construit blocul și are expertiză tehnică?",
+              "why": "Anul arată după ce normativ a fost proiectat. Fără el, nu putem judeca riscul clădirii."
+            },
+            "stairs_without_elevator": {
+              "question": "Blocul nu are lift: cum e urcatul pe scări cu cumpărături sau cu un copil?",
+              "why": "La etajele de sus, fiecare drum zilnic și orice mutare se simt din plin."
+            },
+            "ground_floor_damp_and_security": {
+              "question": "Apartamentul e la parter: apare umezeală și cum sunt asigurate geamurile și ușa?",
+              "why": "Parterul e mai expus la umezeală, la zgomotul străzii și la intrări neautorizate."
+            },
+            "top_floor_roof_and_insulation": {
+              "question": "Apartamentul e la ultimul etaj: când s-a refăcut acoperișul și cum e izolat?",
+              "why": "Infiltrațiile și căldura din timpul verii vin de la acoperiș și de la terasă."
+            }
+          }
+        },
+        "next": {
+          "eyebrow": "Pasul următor",
+          "title": "Raportul descrie zona. Verifică și apartamentul.",
+          "physicalLabel": "Property Fizic",
+          "includedPrefix": "Raportul online e inclus",
+          "text": "<strong>Starea apartamentului o verifică un inspector,</strong> la fața locului: întrebări, fotografii, plan și tur 360°.",
+          "book": "Programează inspecția",
+          "another": "Vrei să verifici și altă adresă? <strong>Primești același tip de raport, în câteva minute.</strong>",
+          "anotherAction": "Verifică altă adresă"
+        },
+        "method": {
+          "eyebrow": "Surse și date",
+          "title": "Aceeași adresă primește același scor, oricând o verifici.",
+          "lead": "Unde nu avem date bune, îți spunem.",
+          "snapshot": "Date din {{month}} · {{city}}.",
+          "groups": {
+            "map": "Hartă și străzi",
+            "transit": "Transport",
+            "air": "Aer și industrie",
+            "services": "Servicii",
+            "seismic": "Seismic"
+          },
+          "sources": {
+            "osm": "OpenStreetMap",
+            "walk_routing": "Rutare pe jos",
+            "noise": "Zgomot",
+            "gtfs": "GTFS transport public",
+            "cams": "Copernicus CAMS",
+            "eea_stations": "Stații EEA (calitatea aerului)",
+            "eea_air_map": "Harta aerului EEA",
+            "eea_industrial": "Registrul industrial EEA",
+            "siiir": "SIIIR (educație)",
+            "cnas": "Furnizori CNAS",
+            "ms_upu": "Unități de urgență (UPU/CPU)",
+            "seismic": "Cod seismic P100-1/2013",
+            "earthquakes": "Cutremure USGS și EMSC"
+          }
+        }
       }
     },
     "frame": {
