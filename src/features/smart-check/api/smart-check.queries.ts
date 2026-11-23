@@ -20,8 +20,10 @@ export const smartCheckQueries = {
     queryOptions({
       queryKey: [...smartCheckQueries.reports(), 'detail', id],
       queryFn: () => getReport(id),
-      refetchInterval: (query) =>
-        query.state.data?.status === 'generating' ? GENERATING_REFRESH_MS : false,
+      refetchInterval: (query) => {
+        const status = query.state.data?.status;
+        return status === 'queued' || status === 'generating' ? GENERATING_REFRESH_MS : false;
+      },
     }),
   sharedReport: (id: string, token: string) =>
     queryOptions({
