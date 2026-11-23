@@ -18,7 +18,12 @@ import { ScoreValue } from '@/components/trust/score-value';
 import { Button } from '@/components/ui/button';
 import { formatDate, formatNumber } from '@/i18n/format';
 import { addressLabel, areaCollection, reportCenter } from '../../report-map.utils';
-import { scoredCategories, strongestCategories, weakestCategory } from '../../report-summary.utils';
+import {
+  analysisRadiusKm,
+  scoredCategories,
+  strongestCategories,
+  weakestCategory,
+} from '../../report-summary.utils';
 import type { ReadyReport } from '../../report.types';
 import { useRegisterReportHero } from './report-hero-context';
 
@@ -112,6 +117,7 @@ export function ReportHero({ report }: ReportHeroProps) {
             <DatabaseIcon aria-hidden className="size-4 shrink-0" />
             {t('report.frame.hero.meta', {
               date: formatDate(result.snapshot.period, DATE_FORMAT),
+              radius: formatNumber(analysisRadiusKm(result), { maximumFractionDigits: 1 }),
             })}
           </p>
           <ul className="flex flex-wrap gap-2">

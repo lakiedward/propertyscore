@@ -1,6 +1,13 @@
 import { Trans, useTranslation } from 'react-i18next';
 import { ReportChapterHead } from '@/components/report/report-chapter-head';
-import { scoredCategories, weakestCategory, zonePosition } from '../../../report-summary.utils';
+import { formatNumber } from '@/i18n/format';
+import {
+  analysisRadiusKm,
+  reportContexts,
+  scoredCategories,
+  weakestCategory,
+  zonePosition,
+} from '../../../report-summary.utils';
 import type { ReportChapterProps } from '../report-chapter-props';
 import { AllScoresCard } from '../summary/all-scores-card';
 import { SummaryHighlights } from '../summary/summary-highlights';
@@ -19,13 +26,20 @@ export function SummaryChapter({ report, onOpenChapter }: ReportChapterProps) {
     city: result.city.name,
   });
 
+  const contexts = reportContexts(result);
+  const contextsKey = contexts.length === 2 ? 'both' : (contexts[0] ?? null);
+  const radius = formatNumber(analysisRadiusKm(result), { maximumFractionDigits: 1 });
+
   return (
     <section aria-labelledby={SUMMARY_TITLE_ID} className="grid max-w-default min-w-0 gap-4">
       <ReportChapterHead
         hue="summary"
         titleId={SUMMARY_TITLE_ID}
         eyebrow={t('report.chapters.summary.eyebrow')}
-        badge={t('report.chapters.summary.badge', { count: scored.length })}
+        badge={t('report.chapters.summary.badge', {
+          scores: t('report.chapters.summary.badgeScores', { count: scored.length }),
+          contexts: t('report.chapters.summary.badgeContexts', { count: contexts.length }),
+        })}
         title={
           weak ? (
             <Trans
@@ -44,7 +58,13 @@ export function SummaryChapter({ report, onOpenChapter }: ReportChapterProps) {
           )
         }
         lead={[
-          t('report.chapters.summary.lead', { count: scored.length }),
+          contextsKey === null
+            ? t('report.chapters.summary.leadNoContext', { count: scored.length, radius })
+            : t('report.chapters.summary.lead', {
+                count: scored.length,
+                radius,
+                contexts: t(`report.chapters.summary.contexts.${contextsKey}`),
+              }),
           zoneScore === null || result.zone.city_avg === null
             ? null
             : t('report.chapters.summary.leadZone', {

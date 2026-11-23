@@ -22,6 +22,26 @@ const HIGHLIGHTS = 3;
 const WEAK_POINT_BELOW = 55;
 const AT_AVERAGE_WITHIN = 2;
 const FAR_ABOVE_PERCENTILE = 90;
+const DEFAULT_WALK_SPEED_KMH = 4.5;
+const WALK_MINUTES = 15;
+
+export type ReportContext = 'seismic' | 'investment';
+
+export function walkSpeedKmh(result: ReportResult): number {
+  return result.sections.fifteen_minute?.walk_speed_kmh ?? DEFAULT_WALK_SPEED_KMH;
+}
+
+export function analysisRadiusKm(result: ReportResult): number {
+  return Math.ceil(walkSpeedKmh(result) * (WALK_MINUTES / 60) * 10) / 10;
+}
+
+export function reportContexts(result: ReportResult): ReportContext[] {
+  const { seismic, investment } = result.sections;
+  return [
+    ...(seismic ? (['seismic'] as const) : []),
+    ...(investment ? (['investment'] as const) : []),
+  ];
+}
 
 function isFlatDistribution(summary: CategorySummary): boolean {
   return summary.city_min === summary.city_max || summary.histogram.filter(Boolean).length <= 1;

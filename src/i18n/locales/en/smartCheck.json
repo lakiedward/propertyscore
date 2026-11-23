@@ -54,8 +54,20 @@
       "summary": {
         "title": "In short",
         "eyebrow": "In short",
-        "badge_one": "{{count}} score · 2 contexts",
-        "badge_other": "{{count}} scores · 2 contexts",
+        "badge": "{{scores}} · {{contexts}}",
+        "badgeScores_one": "{{count}} score",
+        "badgeScores_other": "{{count}} scores",
+        "badgeContexts_one": "{{count}} context",
+        "badgeContexts_other": "{{count}} contexts",
+        "lead_one": "We calculated {{count}} score within a radius of up to {{radius}} km, plus {{contexts}} as context.",
+        "lead_other": "We calculated {{count}} scores within a radius of up to {{radius}} km, plus {{contexts}} as context.",
+        "leadNoContext_one": "We calculated {{count}} score within a radius of up to {{radius}} km.",
+        "leadNoContext_other": "We calculated {{count}} scores within a radius of up to {{radius}} km.",
+        "contexts": {
+          "seismic": "seismic risk",
+          "investment": "investment",
+          "both": "seismic risk and investment"
+        },
         "position": {
           "unknown": "The area of the address, in {{city}}",
           "top": "One of the best areas in {{city}}",
@@ -64,8 +76,6 @@
           "below": "An area below the {{city}} average"
         },
         "headlineWeak": "{{position}}, with a single weak point: <mark>{{weak}}</mark>",
-        "lead_one": "We calculated {{count}} score within a radius of up to 1.2 km, plus seismic risk and investment as context.",
-        "lead_other": "We calculated {{count}} scores within a radius of up to 1.2 km, plus seismic risk and investment as context.",
         "leadZone": "The area gets {{score}} out of 100, against a city average of {{average}}.",
         "leadEnd": "Each score has its own chapter.",
         "good": "What is good",
@@ -203,7 +213,7 @@
         "leadNoStrengths": "The scores describe the area around the address.",
         "leadWeak": "Its weak point is {{weak}}.",
         "leadNoWeak": "No score is weak.",
-        "meta": "Calculated on data from {{date}} · radius of up to 1.2 km",
+        "meta": "Calculated on data from {{date}} · radius of up to {{radius}} km",
         "ready": "Report ready",
         "noDetails": "No details declared",
         "declaredArea": "Declared floor area: {{area}} m²",

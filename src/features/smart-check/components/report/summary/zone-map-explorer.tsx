@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatNumber } from '@/i18n/format';
 import { cn } from '@/lib/utils';
+import { walkSpeedKmh } from '../../../report-summary.utils';
 import type { ReadyReport } from '../../../report.types';
 import { ZONE_LAYERS, type ZoneLayer, type ZoneRoute } from '../../../zone-map.utils';
 import { ZoneMap } from './zone-map';
@@ -48,7 +49,6 @@ export function ZoneMapExplorer({
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [layers, setLayers] = useState<readonly ZoneLayer[]>([]);
   const routes = mode === 'transit' ? transit : walk;
-  const walkSpeed = report.result.sections.fifteen_minute?.walk_speed_kmh ?? null;
 
   const toggleLayer = (layer: ZoneLayer) => {
     setLayers((current) =>
@@ -124,7 +124,9 @@ export function ZoneMapExplorer({
               <p className="px-1.5 pt-2 pb-1.5 text-caption leading-compact text-muted-foreground">
                 {mode === 'walk'
                   ? t('report.chapters.summary.explorer.walkNote', {
-                      speed: formatNumber(walkSpeed ?? 4.5, { maximumFractionDigits: 1 }),
+                      speed: formatNumber(walkSpeedKmh(report.result), {
+                        maximumFractionDigits: 1,
+                      }),
                     })
                   : t(`report.chapters.summary.explorer.${mode}Note`)}
               </p>
