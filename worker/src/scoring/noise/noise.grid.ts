@@ -174,7 +174,7 @@ function addSegment(group: ClassGroup, from: Metres, to: Metres): void {
   }
 }
 
-export function groupLines(lines: readonly GridLine[]): ClassGroup[] {
+function groupLines(lines: readonly GridLine[]): ClassGroup[] {
   const groups = new Map<string, ClassGroup>();
   for (const line of lines) {
     const key = `${line.kind}:${line.sourceClass}`;
@@ -219,7 +219,7 @@ function nearestInGroup(
   return best !== null && best.distance <= radiusM ? best : null;
 }
 
-export function samplesAt(
+function samplesAt(
   point: Metres,
   groups: readonly ClassGroup[],
   buildings: BuildingIndex,

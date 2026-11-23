@@ -11,6 +11,7 @@ type ReportChapterHeadProps = {
   lead?: ReactNode;
   isEyebrowColored?: boolean;
   className?: string;
+  titleClassName?: string;
 };
 
 export function ReportChapterHead({
@@ -22,6 +23,7 @@ export function ReportChapterHead({
   lead,
   isEyebrowColored = false,
   className,
+  titleClassName,
 }: ReportChapterHeadProps) {
   const colors = REPORT_HUES[hue];
   return (
@@ -37,7 +39,10 @@ export function ReportChapterHead({
       </div>
       <h2
         id={titleId}
-        className="mt-2.5 max-w-[22ch] text-[clamp(28px,3.4vw,42px)] leading-[1.08] font-extrabold tracking-[-0.03em] text-balance"
+        className={cn(
+          'mt-2.5 text-[clamp(28px,3.4vw,42px)] leading-[1.08] font-extrabold tracking-[-0.03em] text-balance',
+          titleClassName,
+        )}
       >
         {title}
       </h2>

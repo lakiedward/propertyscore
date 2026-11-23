@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDate, formatNumber } from '@/i18n/format';
 import type { ReadyReport } from '../../../../report.types';
 import {
+  earthquakeCatalogue,
   LISTED_EARTHQUAKES,
   SEISMIC_COLOR,
   strongestEarthquakes,
@@ -67,7 +68,7 @@ export function SeismicMapBlock({ report, seismic, earthquakes }: SeismicMapBloc
         <InfoIcon aria-hidden className="mt-0.5 size-3.75 flex-none" />
         <span>
           {t('report.chapters.seismic.source', {
-            catalogue: earthquakes.catalogue,
+            catalogue: t(`report.chapters.seismic.catalogue.${earthquakeCatalogue(earthquakes)}`),
             since: earthquakes.since_year,
             min: formatNumber(earthquakes.min_magnitude, { minimumFractionDigits: 1 }),
             retrieved: earthquakes.retrieved_on

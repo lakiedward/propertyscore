@@ -22,7 +22,7 @@ const TITLE_ID = 'report-chapter-investment';
 function EmptyChapter() {
   const { t } = useTranslation('smartCheck');
   return (
-    <section aria-labelledby={TITLE_ID} className="grid max-w-default min-w-0 gap-4">
+    <section aria-labelledby={TITLE_ID} className="grid min-w-0 gap-4">
       <ReportChapterHead
         hue="context"
         titleId={TITLE_ID}
@@ -70,7 +70,7 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
     declaredArea === null ? null : estimateForArea(investment, sale, declaredArea).price;
 
   return (
-    <section aria-labelledby={TITLE_ID} className="grid max-w-default min-w-0 gap-4">
+    <section aria-labelledby={TITLE_ID} className="grid min-w-0 gap-4">
       <ReportChapterHead
         hue="context"
         titleId={TITLE_ID}

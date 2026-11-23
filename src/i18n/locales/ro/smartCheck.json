@@ -953,6 +953,15 @@
         },
         "source": "Cutremure: {{catalogue}}, din {{since}} încoace, magnitudine de cel puțin {{min}}{{retrieved}}. Hartă: OpenStreetMap.",
         "retrieved": ", citite pe {{date}}",
+        "catalogue": {
+          "both": "catalogul USGS și EMSC",
+          "usgs": "catalogul USGS",
+          "emsc": "catalogul EMSC"
+        },
+        "sourceNames": {
+          "usgs": "U.S. Geological Survey, catalogul ComCat, domeniu public",
+          "emsc": "EMSC (European-Mediterranean Seismological Centre), CC BY 4.0"
+        },
         "scale": {
           "keyword": "Seismic",
           "pill": "Nivel: {{level}}",

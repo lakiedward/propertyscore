@@ -941,6 +941,15 @@
         },
         "source": "Earthquakes: {{catalogue}}, since {{since}}, magnitude of at least {{min}}{{retrieved}}. Map: OpenStreetMap.",
         "retrieved": ", read on {{date}}",
+        "catalogue": {
+          "both": "the USGS and EMSC catalogues",
+          "usgs": "the USGS catalogue",
+          "emsc": "the EMSC catalogue"
+        },
+        "sourceNames": {
+          "usgs": "U.S. Geological Survey, ComCat catalogue, public domain",
+          "emsc": "EMSC (European-Mediterranean Seismological Centre), CC BY 4.0"
+        },
         "scale": {
           "keyword": "Seismic",
           "pill": "Level: {{level}}",

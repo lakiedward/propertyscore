@@ -17,7 +17,14 @@ export const seismicSectionSchema = z.object({
       min_magnitude: z.number(),
       retrieved_on: z.string().nullable().default(null),
       sources: z
-        .array(z.object({ name: z.string(), license: z.string(), url: httpsUrlSchema }))
+        .array(
+          z.object({
+            key: z.enum(['usgs', 'emsc']).optional(),
+            name: z.string(),
+            license: z.string(),
+            url: httpsUrlSchema,
+          }),
+        )
         .default([]),
       events: z.array(
         z.object({

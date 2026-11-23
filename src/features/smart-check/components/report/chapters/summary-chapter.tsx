@@ -35,6 +35,7 @@ export function SummaryChapter({ report, onOpenChapter }: ReportChapterProps) {
       <ReportChapterHead
         hue="summary"
         titleId={SUMMARY_TITLE_ID}
+        titleClassName="max-w-[22ch]"
         eyebrow={t('report.chapters.summary.eyebrow')}
         badge={t('report.chapters.summary.badge', {
           scores: t('report.chapters.summary.badgeScores', { count: scored.length }),
