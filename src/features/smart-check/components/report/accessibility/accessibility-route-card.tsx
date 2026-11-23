@@ -50,7 +50,7 @@ export function AccessibilityRouteCard({
           <i aria-hidden="true" className="size-2.25 rounded-full bg-report-noise" />
           {t('report.chapters.accessibility.mapChip')}
         </span>
-        <div className="pointer-events-none absolute bottom-2.5 left-2.5 z-3 grid gap-0.75 rounded-thumb border border-border bg-card/96 px-3 py-2 text-[12px] text-muted-foreground shadow-report-label">
+        <div className="pointer-events-none absolute bottom-9 left-2.5 z-3 grid gap-0.75 rounded-thumb border border-border bg-card/96 px-3 py-2 text-[12px] text-muted-foreground shadow-report-label min-[560px]:bottom-2.5">
           <b className="text-foreground">{t('report.chapters.accessibility.legendTitle')}</b>
           <span className="flex items-center gap-2">
             <i aria-hidden="true" className="size-2.5 rounded-full bg-primary" />
