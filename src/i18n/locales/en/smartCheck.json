@@ -647,10 +647,140 @@
         "title": "The 15-minute city"
       },
       "green": {
-        "title": "Green spaces"
+        "title": "Green spaces",
+        "eyebrow": "Green spaces · {{score}} / 100 · {{band}}",
+        "precision": "Precision: address",
+        "headline_one": "{{count}} large park, at most {{minutes}} min on foot",
+        "headline_other": "{{count}} large parks, at most {{minutes}} min on foot",
+        "headlineNone": "No park within walking distance of the address",
+        "lead": "Together they cover {{total}} ha. The largest, {{name}}, is {{area}} ha.",
+        "share": "{{share}}% of the area within {{radius}} m is green space, against {{average}}% for the city on average.",
+        "shareNoAverage": "{{share}}% of the area within {{radius}} m is green space.",
+        "noData": "We have no green space data for this address.",
+        "map": {
+          "label": "Map of the green spaces around the address · OpenStreetMap"
+        },
+        "parks": {
+          "label": "Parks nearby",
+          "list": "Parks nearby, press one to see it on the map",
+          "unnamed": "Unnamed green space",
+          "unnamedLower": "an unnamed green space",
+          "hectares": "ha",
+          "walk": "{{minutes}} min on foot",
+          "walkApprox": "about {{minutes}} min on foot",
+          "source": "Parks, grass, woods and paths: OpenStreetMap, extract from {{date}}.",
+          "sourceNoDate": "Parks, grass, woods and paths: OpenStreetMap."
+        },
+        "amenities": {
+          "playground": "Playground",
+          "dog_park": "Dog park",
+          "sports": "Sports field"
+        },
+        "score": {
+          "better": "Better than <strong>{{percent}}%</strong> of the areas in {{city}}",
+          "best": "Among the best areas in {{city}}",
+          "worst": "Among the weakest areas in {{city}}",
+          "flat": "In {{city}} every area has the same score, between {{min}} and {{max}}. The score cannot tell addresses apart.",
+          "none": "No comparison with the rest of the city",
+          "you": "You · {{score}}",
+          "average": "Average {{average}}",
+          "range": "City areas: {{min}}–{{max}}",
+          "included": "<strong>Takes into account</strong> how much green is around and how close the large parks are",
+          "excluded": "<strong>Does not take into account</strong> how well kept the parks are or private gardens"
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Walking routing"
+        }
       },
       "noise": {
-        "title": "Noise"
+        "title": "Noise",
+        "eyebrow": "Noise · {{score}} / 100 · {{band}}",
+        "precision": "Precision: estimate from streets",
+        "precisionStreet": "Precision: strategic noise maps",
+        "headline": "About {{band}} at the address, like a {{reference}}",
+        "headlineNone": "Noise around the address",
+        "leadSource": "The nearest noise source is {{name}}, {{distance}} m away.",
+        "leadNone": "We found no major noise sources nearby.",
+        "averageBelow": "The area scores {{score}}, below the city average ({{average}}).",
+        "averageAbove": "The area scores {{score}}, above the city average ({{average}}).",
+        "noData": "We have no noise data for this address.",
+        "map": {
+          "label": "Map of the estimated noise around the address · OpenStreetMap",
+          "below": "below 55 dB",
+          "range": "{{from}}–{{to}}",
+          "above": "over {{from}}",
+          "estimate": "daytime estimate",
+          "lines": {
+            "loud": "major road",
+            "busy": "boulevard, tram",
+            "moderate": "street",
+            "rail": "railway"
+          },
+          "method": "Estimate from the streets, tram lines, railway and buildings in OpenStreetMap, extract from {{date}}.",
+          "methodNoDate": "Estimate from the streets, tram lines, railway and buildings in OpenStreetMap.",
+          "methodStreet": "The value comes from the city's strategic noise maps."
+        },
+        "address": {
+          "eyebrow": "At the address",
+          "day": "daytime, like a {{reference}}",
+          "night": "at night"
+        },
+        "references": {
+          "40": "quiet room",
+          "50": "quiet street",
+          "60": "conversation",
+          "70": "heavy traffic"
+        },
+        "kinds": {
+          "road": "street",
+          "tram": "tram",
+          "rail": "railway",
+          "air": "airport",
+          "industry": "industry",
+          "aggregate": "several sources"
+        },
+        "classes": {
+          "motorway": "motorway",
+          "trunk": "expressway",
+          "primary": "boulevard",
+          "secondary": "busy street",
+          "tertiary": "neighbourhood street",
+          "residential": "quiet street",
+          "tram": "tram",
+          "rail": "railway"
+        },
+        "sources": {
+          "loudest": "What you hear loudest",
+          "none": "We found no major noise sources nearby.",
+          "metres": "m",
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "osm": "OpenStreetMap (streets, tram, railway)"
+        },
+        "score": {
+          "better": "Quieter than <strong>{{percent}}%</strong> of the areas in {{city}}",
+          "best": "Among the quietest areas in {{city}}",
+          "worst": "Among the noisiest areas in {{city}}",
+          "flat": "In {{city}} every area has the same score, between {{min}} and {{max}}. The score cannot tell addresses apart.",
+          "none": "No comparison with the rest of the city",
+          "you": "You · {{score}}",
+          "average": "Average {{average}}",
+          "range": "City areas: {{min}}–{{max}}",
+          "included": "<strong>Takes into account</strong> the surrounding streets, tram and railway",
+          "excluded": "<strong>Does not take into account</strong> windows, insulation or neighbours"
+        },
+        "decibels": "{{value}} dB",
+        "names": {
+          "tram": "Tram lines",
+          "rail": "Railway"
+        }
       },
       "airIndustry": {
         "title": "Air and industry"
