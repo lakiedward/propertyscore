@@ -56,7 +56,7 @@ export function DestinationRow({ row, isSelected, onSelect }: DestinationRowProp
       style={
         isSelected
           ? {
-              backgroundColor: `color-mix(in srgb, var(${row.swatch.token}) 8%, white)`,
+              backgroundColor: `color-mix(in srgb, var(${row.swatch.token}) 8%, var(--card))`,
               boxShadow: `inset 3px 0 0 var(${row.swatch.token})`,
             }
           : undefined
@@ -66,7 +66,7 @@ export function DestinationRow({ row, isSelected, onSelect }: DestinationRowProp
         aria-hidden="true"
         className="row-span-2 grid size-10 place-items-center rounded-icon w760:row-span-1 w760:size-11"
         style={{
-          backgroundColor: `color-mix(in srgb, var(${row.swatch.token}) 13%, white)`,
+          backgroundColor: `color-mix(in srgb, var(${row.swatch.token}) 13%, var(--card))`,
           color: `var(${row.swatch.token})`,
         }}
       >

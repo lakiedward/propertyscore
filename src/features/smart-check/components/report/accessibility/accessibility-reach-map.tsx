@@ -33,9 +33,7 @@ function coordinatesOf(geometry: unknown): LngLat[] {
 
 function reachBounds(center: LngLat, reach: AccessibilityReachMapProps['reach']): LngLatBounds {
   const outer = reach.isochrones.find((item) => item.minutes === REACH_MINUTES[2]);
-  const points = outer
-    ? coordinatesOf((outer.geometry as { coordinates?: unknown }).coordinates)
-    : [];
+  const points = outer ? coordinatesOf(outer.geometry.coordinates) : [];
   if (points.length === 0) return boundsAround(center, FALLBACK_RADIUS_M);
   const lngs = points.map(([lng]) => lng);
   const lats = points.map(([, lat]) => lat);
