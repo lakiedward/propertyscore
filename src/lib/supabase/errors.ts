@@ -62,6 +62,7 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   decision_message_required: 'decision_message_required',
   decision_message_too_long: 'decision_message_too_long',
   favorite_limit_reached: 'favorite_limit_reached',
+  account_not_found: 'account_not_found',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
@@ -70,6 +71,7 @@ const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
   decision_reason_invalid: 'reasons',
   decision_message_required: 'message',
   decision_message_too_long: 'message',
+  account_not_found: 'email',
 };
 
 const CHECK_CONSTRAINTS: Readonly<Record<string, { reason: AppErrorReason; field: string }>> = {

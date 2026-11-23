@@ -18,7 +18,7 @@ describe('AdminShell', { timeout: 20_000 }, () => {
       'aria-current',
       'page',
     );
-    expect(within(sidebar).getAllByRole('link')).toHaveLength(13);
+    expect(within(sidebar).getAllByRole('link')).toHaveLength(14);
     expect(screen.getAllByText(roCommon.panel.userMenu.role.admin).length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: roCommon.panel.backToSite })).toHaveAttribute(
       'href',

@@ -87,5 +87,26 @@
         "title": "Before the viewing"
       }
     }
+  },
+  "admin": {
+    "unlimited": {
+      "grant": {
+        "title": "Give unlimited access",
+        "text": "Find the account by email. It can order Smart Check reports without paying until you remove the tick.",
+        "label": "Account email",
+        "submit": "Tick the account"
+      },
+      "granted": "{{email}} now has unlimited Smart Check.",
+      "revoked": "Removed the tick from {{email}}.",
+      "list": {
+        "title": "Accounts with unlimited access",
+        "text": "Accounts that can generate reports without paying.",
+        "empty": "No account has the tick yet.",
+        "meta": "Ticked on {{date}}",
+        "metaNamed": "{{name}} · ticked on {{date}}",
+        "remove": "Remove tick",
+        "removeFor": "Remove the tick from {{email}}"
+      }
+    }
   }
 }

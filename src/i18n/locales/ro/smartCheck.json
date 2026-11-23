@@ -88,5 +88,26 @@
         "title": "Înainte de vizionare"
       }
     }
+  },
+  "admin": {
+    "unlimited": {
+      "grant": {
+        "title": "Dă acces nelimitat",
+        "text": "Caută contul după email. Contul poate comanda rapoarte Smart Check fără plată, până scoți bifa.",
+        "label": "Email cont",
+        "submit": "Bifează contul"
+      },
+      "granted": "Contul {{email}} are acum Smart Check nelimitat.",
+      "revoked": "Am scos bifa de la {{email}}.",
+      "list": {
+        "title": "Conturi cu acces nelimitat",
+        "text": "Conturile care pot genera rapoarte fără plată.",
+        "empty": "Niciun cont nu are încă bifa.",
+        "meta": "Bifat pe {{date}}",
+        "metaNamed": "{{name}} · bifat pe {{date}}",
+        "remove": "Scoate bifa",
+        "removeFor": "Scoate bifa de la {{email}}"
+      }
+    }
   }
 }

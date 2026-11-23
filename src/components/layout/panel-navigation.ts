@@ -9,6 +9,7 @@ import {
   HandshakeIcon,
   HeartIcon,
   InboxIcon,
+  InfinityIcon,
   LayoutDashboardIcon,
   MegaphoneIcon,
   MessageSquareIcon,
@@ -83,6 +84,7 @@ export const ADMIN_NAVIGATION = [
     items: [
       { id: 'payments', to: '/admin/payments', icon: CreditCardIcon },
       { id: 'scoring', to: '/admin/scoring', icon: SlidersHorizontalIcon },
+      { id: 'smartCheck', to: '/admin/smart-check', icon: InfinityIcon },
       { id: 'analytics', to: '/admin/analytics', icon: ChartLineIcon },
       { id: 'products', to: '/admin/products', icon: PackageIcon },
       { id: 'content', to: '/admin/content', icon: FilePenLineIcon },

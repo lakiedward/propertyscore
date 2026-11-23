@@ -40,6 +40,7 @@ import { Route as AuthenticatedAdminPaymentsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
 import { Route as AuthenticatedAdminScoringRouteImport } from './routes/_authenticated/admin/scoring'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
+import { Route as AuthenticatedAdminSmartCheckRouteImport } from './routes/_authenticated/admin/smart-check'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth/callback'
 import { Route as PublicAuthConfirmRouteImport } from './routes/_public/auth/confirm'
@@ -223,6 +224,12 @@ const AuthenticatedAdminSettingsRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminSmartCheckRoute =
+  AuthenticatedAdminSmartCheckRouteImport.update({
+    id: '/smart-check',
+    path: '/smart-check',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -310,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/smart-check': typeof AuthenticatedAdminSmartCheckRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
@@ -348,6 +356,7 @@ export interface FileRoutesByTo {
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/smart-check': typeof AuthenticatedAdminSmartCheckRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
@@ -393,6 +402,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/smart-check': typeof AuthenticatedAdminSmartCheckRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
   '/_public/auth/confirm': typeof PublicAuthConfirmRoute
@@ -435,6 +445,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/scoring'
     | '/admin/settings'
+    | '/admin/smart-check'
     | '/admin/users'
     | '/auth/callback'
     | '/auth/confirm'
@@ -473,6 +484,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/scoring'
     | '/admin/settings'
+    | '/admin/smart-check'
     | '/admin/users'
     | '/auth/callback'
     | '/auth/confirm'
@@ -517,6 +529,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/scoring'
     | '/_authenticated/admin/settings'
+    | '/_authenticated/admin/smart-check'
     | '/_authenticated/admin/users'
     | '/_public/auth/callback'
     | '/_public/auth/confirm'
@@ -758,6 +771,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/smart-check': {
+      id: '/_authenticated/admin/smart-check'
+      path: '/smart-check'
+      fullPath: '/admin/smart-check'
+      preLoaderRoute: typeof AuthenticatedAdminSmartCheckRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/users'
@@ -887,6 +907,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
   AuthenticatedAdminScoringRoute: typeof AuthenticatedAdminScoringRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminSmartCheckRoute: typeof AuthenticatedAdminSmartCheckRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -904,6 +925,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
     AuthenticatedAdminScoringRoute: AuthenticatedAdminScoringRoute,
     AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+    AuthenticatedAdminSmartCheckRoute: AuthenticatedAdminSmartCheckRoute,
     AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }
