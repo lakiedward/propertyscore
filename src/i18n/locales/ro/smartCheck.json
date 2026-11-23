@@ -546,7 +546,96 @@
         "title": "Zgomot"
       },
       "airIndustry": {
-        "title": "Aer și industrie"
+        "title": "Aer și industrie",
+        "eyebrowPart": "{{name}} · {{score}} / 100",
+        "eyebrowPartNoScore": "{{name}} · fără date",
+        "badge": "Precizie: aer la nivel de oraș, industrie la adresă",
+        "verdict": {
+          "clean_all_year": "Aer curat tot anul",
+          "winter_peaks": "Aer bun vara, mai încărcat iarna",
+          "above_limit_most_year": "Aer peste limita UE în cea mai mare parte a anului",
+          "default": "Aer ca în tot orașul"
+        },
+        "headline": {
+          "withNearest": "{{air}}, fabrici la peste {{distance}}",
+          "noSites": "{{air}}, nicio fabrică în registru aproape",
+          "airOnly": "{{air}}",
+          "industryNearest": "Fabrici la peste {{distance}}",
+          "industryNone": "Nicio fabrică în registru aproape"
+        },
+        "lead": {
+          "winter": "Iarna crește praful din aer, ca peste tot în {{city}}.",
+          "nearest": "Cea mai apropiată instalație industrială e la {{distance}}."
+        },
+        "months": {
+          "eyebrow": "Praful din aer, lună cu lună",
+          "title_one": "O lună din 12 peste limita UE din 2030",
+          "title_few": "{{count}} luni din 12 peste limita UE din 2030",
+          "title_other": "{{count}} de luni din 12 peste limita UE din 2030",
+          "titleNone": "Nicio lună peste limita UE din 2030",
+          "titleUnknown": "Praful fin din aer, pe 12 luni",
+          "legendPm25": "PM2,5, µg/m³",
+          "legendLimit": "limita UE din 2030",
+          "chartLabel": "Praful fin din aer (PM2,5) în fiecare lună din ultimul an, față de limita UE din 2030",
+          "annual": "Media pe an: {{value}} µg/m³.",
+          "annualCity": "Media pe an: {{value}} µg/m³, față de {{average}} media orașului."
+        },
+        "sites": {
+          "eyebrow": "Industria din jur",
+          "title": "Cele mai apropiate instalații din registrul european",
+          "empty": "Nicio instalație raportată pe o rază de {{distance}}.",
+          "sectors": {
+            "energy": "energie",
+            "metals": "metalurgie",
+            "minerals": "materiale de construcții",
+            "chemicals": "chimie",
+            "waste_water": "deșeuri și ape uzate",
+            "paper_wood": "hârtie și lemn",
+            "livestock": "fermă de animale",
+            "food": "industrie alimentară",
+            "other": "altă activitate"
+          },
+          "impacts": {
+            "air": "emisii în aer",
+            "water": "emisii în apă",
+            "odour": "poate produce mirosuri",
+            "seasonal_winter": "mai ales iarna"
+          }
+        },
+        "score": {
+          "air": {
+            "kicker": "Aer",
+            "included": "<strong>Ține cont de</strong> praful fin din aer, media pe un an, la nivel de oraș",
+            "excluded": "<strong>Nu ține cont de</strong> diferențele de la o stradă la alta"
+          },
+          "industry": {
+            "kicker": "Industrie",
+            "included": "<strong>Ține cont de</strong> instalațiile industriale din registrul european, până la 5 km",
+            "excluded": "<strong>Nu ține cont de</strong> atelierele mici care nu intră în registru"
+          },
+          "better": "Mai bine decât <strong>{{percent}}%</strong> din zonele din {{city}}",
+          "best": "Printre cele mai bune zone din {{city}}",
+          "worst": "Printre cele mai slabe zone din {{city}}",
+          "flat": "În {{city}} toate zonele au același scor, între {{min}} și {{max}}. Scorul nu poate deosebi adresele între ele.",
+          "none": "Fără comparație cu restul orașului",
+          "you": "Tu · {{score}}",
+          "average": "Media {{average}}",
+          "range": "Zonele orașului: {{min}}–{{max}}"
+        },
+        "note": {
+          "air": "Aer: modelul european Copernicus, corectat cu stațiile din oraș, {{period}}.",
+          "airNoPeriod": "Aer: modelul european Copernicus, corectat cu stațiile din oraș.",
+          "industry": "Industrie: registrul industrial european, raportările din {{year}}."
+        },
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{name}} {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "cams": "Copernicus CAMS",
+          "eea_stations": "Stații EEA",
+          "eea_industrial": "Registrul industrial EEA"
+        }
       },
       "seismic": {
         "title": "Risc seismic"
