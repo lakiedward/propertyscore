@@ -5,6 +5,7 @@ import type roListings from './locales/ro/listings.json';
 import type roModeration from './locales/ro/moderation.json';
 import type roMyListings from './locales/ro/myListings.json';
 import type roPublish from './locales/ro/publish.json';
+import type roSmartCheck from './locales/ro/smartCheck.json';
 
 declare module 'i18next' {
   interface CustomTypeOptions {
@@ -15,6 +16,7 @@ declare module 'i18next' {
       publish: typeof roPublish;
       moderation: typeof roModeration;
       myListings: typeof roMyListings;
+      smartCheck: typeof roSmartCheck;
     };
   }
 }
