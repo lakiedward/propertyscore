@@ -4,7 +4,7 @@ import { REPORT_HUES, type ReportHue } from './report-hues';
 
 type ReportChapterHeadProps = {
   hue: ReportHue;
-  eyebrow: string;
+  eyebrow: ReactNode;
   badge?: string;
   title: ReactNode;
   titleId?: string;
