@@ -474,7 +474,8 @@
             "places": "Locuri de zi cu zi"
           },
           "source": "Locurile: OpenStreetMap, {{date}}. Drumurile pe jos urmează străzile și aleile, la {{speed}} de metri pe minut.",
-          "sourceNoDate": "Locurile: OpenStreetMap. Drumurile pe jos urmează străzile și aleile, la {{speed}} de metri pe minut."
+          "sourceNoDate": "Locurile: OpenStreetMap. Drumurile pe jos urmează străzile și aleile, la {{speed}} de metri pe minut.",
+          "minutes": "{{minutes}} min"
         },
         "checklist": {
           "eyebrow": "Lista ta de zi cu zi",

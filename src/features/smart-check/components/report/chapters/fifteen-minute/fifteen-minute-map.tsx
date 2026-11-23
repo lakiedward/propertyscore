@@ -25,17 +25,35 @@ type FifteenMinuteMapProps = {
   selectedKey: string | null;
 };
 
-function PlaceDot({ family, state }: { family: Family; state: 'normal' | 'dim' | 'selected' }) {
+function PlaceDot({
+  family,
+  state,
+  label,
+}: {
+  family: Family;
+  state: 'normal' | 'dim' | 'selected';
+  label?: string;
+}) {
+  const background = `var(${FAMILY_STYLES[family].color})`;
   return (
-    <span
-      aria-hidden="true"
-      style={{ background: `var(${FAMILY_STYLES[family].color})` }}
-      className={cn(
-        'pointer-events-none block rounded-full border-2 border-card shadow-report-label transition-opacity duration-(--duration-fast)',
-        state === 'selected' ? 'size-4.5' : 'size-2.5',
-        state === 'dim' && 'opacity-35',
-      )}
-    />
+    <span aria-hidden="true" className="pointer-events-none flex items-center gap-1.5">
+      <span
+        style={{ background }}
+        className={cn(
+          'block rounded-full border-2 border-card shadow-report-label transition-opacity duration-(--duration-fast)',
+          state === 'selected' ? 'size-4.5' : 'size-2.5',
+          state === 'dim' && 'opacity-35',
+        )}
+      />
+      {label ? (
+        <span
+          style={{ background }}
+          className="rounded-full border-2 border-card px-2 py-0.5 text-meta font-extrabold whitespace-nowrap text-primary-foreground shadow-report-label"
+        >
+          {label}
+        </span>
+      ) : null}
+    </span>
   );
 }
 
@@ -87,12 +105,17 @@ export function FifteenMinuteMap({ report, section, selectedKey }: FifteenMinute
       return {
         id: place.id,
         position: [place.lng, place.lat] as [number, number],
-        anchor: 'center' as const,
+        anchor: isSelected ? ('left' as const) : ('center' as const),
         isRaised: isSelected,
         node: (
           <PlaceDot
             family={family}
             state={isSelected ? 'selected' : selectedKey === null ? 'normal' : 'dim'}
+            {...(isSelected
+              ? {
+                  label: t('report.chapters.fifteenMinute.map.minutes', { minutes: place.minutes }),
+                }
+              : {})}
           />
         ),
       };

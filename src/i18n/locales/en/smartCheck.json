@@ -467,7 +467,8 @@
             "places": "Everyday places"
           },
           "source": "Places: OpenStreetMap, {{date}}. Walking routes follow streets and paths, at {{speed}} metres a minute.",
-          "sourceNoDate": "Places: OpenStreetMap. Walking routes follow streets and paths, at {{speed}} metres a minute."
+          "sourceNoDate": "Places: OpenStreetMap. Walking routes follow streets and paths, at {{speed}} metres a minute.",
+          "minutes": "{{minutes}} min"
         },
         "checklist": {
           "eyebrow": "Your everyday list",
