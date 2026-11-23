@@ -470,6 +470,7 @@
         "routesTitle": "How long it takes to get there, at 8 in the morning",
         "rowLabel": "{{name}}, {{minutes}} minutes",
         "walkFaster": "{{minutes}} min on foot, quicker than by line",
+        "walkDistance": "{{distance}} on foot",
         "fromStop": "from {{stop}} stop",
         "legs": {
           "walk": "{{minutes}} min on foot",
@@ -486,8 +487,8 @@
         "groupLabel": "Destination type",
         "groups": {
           "places": "Key places",
-          "highSchools": "High schools {{count}}",
-          "faculties": "Faculties {{count}}"
+          "highSchools": "High schools",
+          "faculties": "Faculties"
         },
         "sources": {
           "title": "Sources and data",
@@ -525,6 +526,13 @@
             "from30": "30–45 min"
           },
           "mapLabel": "Map of the city: how far you get by public transport"
+        },
+        "search": {
+          "label": "Search",
+          "highSchools": "Search for a high school",
+          "faculties": "Search for a faculty",
+          "empty": "Nothing found for “{{query}}”.",
+          "hint": "Tap a row to see the trip on the map. On foot where that is faster than the line."
         }
       },
       "fifteenMinute": {

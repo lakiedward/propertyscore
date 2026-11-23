@@ -1,11 +1,13 @@
-import { InfoIcon } from 'lucide-react';
+import { InfoIcon, MapPinIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 import {
   DESTINATION_GROUPS,
   type DestinationGroup,
   destinationRows,
+  matchingRows,
 } from '../../../accessibility.utils';
 import type { ReadyReport } from '../../../report.types';
 import type { AccessibilitySection } from '../../../sections/accessibility.types';
@@ -33,13 +35,20 @@ export function AccessibilityRouteCard({
   const language = i18n.resolvedLanguage === 'en' ? 'en' : 'ro';
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [group, setGroup] = useState<DestinationGroup>('places');
-  const rows = destinationRows(section, group);
+  const [query, setQuery] = useState('');
+  const places = destinationRows(section);
+  const isPlaces = group === 'places';
+  const groupRows = isPlaces ? places : destinationRows(section, group);
+  const rows = isPlaces ? groupRows : matchingRows(groupRows, query, language);
+  const selectedPick = isPlaces ? undefined : groupRows.find((row) => row.id === selectedId);
+  const mapRows = selectedPick ? [...places, selectedPick] : places;
   const groups = DESTINATION_GROUPS.filter(
     (option) => option === 'places' || destinationRows(section, option).length > 0,
   );
 
   const handleGroup = (next: DestinationGroup) => {
     setGroup(next);
+    setQuery('');
     setSelectedId(null);
   };
 
@@ -55,7 +64,8 @@ export function AccessibilityRouteCard({
       <div className="relative h-130 overflow-hidden rounded-xl border border-border bg-report-map-land w760:h-140">
         <AccessibilityRouteMap
           report={report}
-          rows={rows}
+          rows={mapRows}
+          namedId={selectedPick?.id ?? null}
           stops={section.stops}
           selectedId={selectedId}
         />
@@ -84,8 +94,14 @@ export function AccessibilityRouteCard({
       </div>
 
       <ul className="flex flex-wrap gap-x-5 gap-y-2 px-1 text-small font-semibold">
-        {rows.map((row) => (
-          <li key={row.id} className="inline-flex items-baseline gap-2">
+        {mapRows.map((row) => (
+          <li
+            key={row.id}
+            className={cn(
+              'inline-flex items-baseline gap-2',
+              row.id === selectedPick?.id && '-mx-1.5 rounded-md bg-report-summary-soft px-1.5',
+            )}
+          >
             <i
               aria-hidden="true"
               className={cn('size-2.5 shrink-0 self-center rounded-full', row.swatch.fill)}
@@ -131,27 +147,62 @@ export function AccessibilityRouteCard({
                   handleGroup(option);
                 }}
                 className={cn(
-                  'rounded-md px-3.5 py-1.5 text-[14px] font-bold text-muted-foreground transition-colors focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none max-[700px]:flex-1',
+                  'rounded-md px-3.5 py-1.5 text-[14px] font-bold whitespace-nowrap text-muted-foreground transition-colors focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none max-[700px]:flex-1 max-[700px]:px-2 max-[700px]:text-[13px]',
                   option === group && 'bg-card text-primary shadow-segment',
                 )}
               >
-                {t(`report.chapters.accessibility.groups.${option}`, {
-                  count: destinationRows(section, option).length,
-                })}
+                {t(`report.chapters.accessibility.groups.${option}`)}
+                {option === 'places' ? null : (
+                  <span className="ml-1 text-[12px] font-extrabold text-muted-foreground">
+                    {destinationRows(section, option).length}
+                  </span>
+                )}
               </button>
             ))}
           </div>
         ) : null}
-        <div className="mt-3 grid">
+        {isPlaces ? null : (
+          <div className="mt-3 flex h-11 max-w-105 items-center gap-2 rounded-thumb border border-border bg-card px-3 focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/30">
+            <MapPinIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+            <Input
+              type="search"
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+              }}
+              placeholder={t(`report.chapters.accessibility.search.${group}`)}
+              aria-label={t('report.chapters.accessibility.search.label')}
+              className="h-full border-0 bg-transparent px-0 text-[15px] focus-visible:ring-0 md:text-[15px]"
+            />
+          </div>
+        )}
+        <div
+          className={cn(
+            'mt-3 grid',
+            !isPlaces &&
+              '-mr-1.5 max-h-110 [scrollbar-width:thin] overflow-auto pr-1.5 max-[700px]:max-h-130',
+          )}
+        >
           {rows.map((row) => (
             <DestinationRow
               key={row.id}
               row={row}
+              isPick={!isPlaces}
               isSelected={selectedId === row.id}
               onSelect={handleSelect}
             />
           ))}
+          {rows.length === 0 ? (
+            <p className="px-1 py-4 text-[14px] text-muted-foreground">
+              {t('report.chapters.accessibility.search.empty', { query })}
+            </p>
+          ) : null}
         </div>
+        {isPlaces ? null : (
+          <p className="mt-2 text-[12.5px] text-muted-foreground">
+            {t('report.chapters.accessibility.search.hint')}
+          </p>
+        )}
         <p className="mt-2.5 flex gap-2 text-[12.5px] leading-[1.45] text-muted-foreground">
           <InfoIcon aria-hidden="true" className="mt-0.5 size-3.75 shrink-0" />
           <span>{sourceNote}</span>

@@ -10,6 +10,7 @@ type RouteSwatch = {
 };
 
 const ROUTE_SWATCHES = {
+  sky: { token: '--report-safety', fill: 'bg-report-safety', text: 'text-report-safety' },
   teal: { token: '--report-noise', fill: 'bg-report-noise', text: 'text-report-noise' },
   rose: { token: '--report-health', fill: 'bg-report-health', text: 'text-report-health' },
   brown: {
@@ -39,6 +40,8 @@ const KIND_SWATCHES: Readonly<Record<string, readonly RouteSwatch[]>> = {
   airport: [ROUTE_SWATCHES.slate],
   university: [ROUTE_SWATCHES.violet, ROUTE_SWATCHES.berry, ROUTE_SWATCHES.teal],
   center: [ROUTE_SWATCHES.sun],
+  high_school: [ROUTE_SWATCHES.sky],
+  faculty: [ROUTE_SWATCHES.violet],
 };
 
 const FALLBACK_SWATCHES: readonly RouteSwatch[] = [
@@ -56,6 +59,8 @@ export type DestinationRow = {
   id: string;
   kind: string;
   label: { ro: string; en: string };
+  tag: string | null;
+  walkDistanceM: number | null;
   minutes: number;
   isWalkOnly: boolean;
   swatch: RouteSwatch;
@@ -71,6 +76,21 @@ function distanceMeters([lng1, lat1]: LngLat, [lng2, lat2]: LngLat): number {
   const dx = (lng1 - lng2) * metersPerDegree * Math.cos((lat1 * Math.PI) / 180);
   const dy = (lat1 - lat2) * metersPerDegree;
   return Math.hypot(dx, dy);
+}
+
+function pathMeters(path: Destination['path']): number | null {
+  const metres = path
+    .filter((leg) => leg.mode === 'walk')
+    .reduce(
+      (total, leg) =>
+        total +
+        leg.coordinates.slice(1).reduce((sum, point, index) => {
+          const previous = leg.coordinates[index] ?? point;
+          return sum + distanceMeters([previous[0], previous[1]], [point[0], point[1]]);
+        }, 0),
+      0,
+    );
+  return metres > 0 ? Math.round(metres) : null;
 }
 
 function boardingStopFor(section: AccessibilitySection, destination: Destination): string | null {
@@ -128,6 +148,8 @@ export function destinationRows(
         id: destination.id,
         kind: destination.kind,
         label: destination.label,
+        tag: destination.group,
+        walkDistanceM: destination.by_walking ? pathMeters(destination.path) : null,
         minutes,
         isWalkOnly: destination.by_walking,
         swatch,
@@ -144,6 +166,26 @@ export function destinationRows(
         end: last ? [last[0], last[1]] : destination.location,
       };
     });
+}
+
+function normalizedSearch(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+export function matchingRows(
+  rows: readonly DestinationRow[],
+  query: string,
+  language: 'ro' | 'en',
+): DestinationRow[] {
+  const needle = normalizedSearch(query);
+  if (needle === '') return [...rows];
+  return rows.filter((row) =>
+    normalizedSearch(`${row.label[language]} ${row.tag ?? ''}`).includes(needle),
+  );
 }
 
 export function nearestStopsSummary(section: AccessibilitySection) {

@@ -22,6 +22,7 @@ type AccessibilityRouteMapProps = {
   rows: readonly DestinationRow[];
   stops: readonly StopPoint[];
   selectedId: string | null;
+  namedId?: string | null;
   className?: string;
 };
 
@@ -51,9 +52,11 @@ export function AccessibilityRouteMap({
   rows,
   stops,
   selectedId,
+  namedId = null,
   className,
 }: AccessibilityRouteMapProps) {
-  const { t } = useTranslation('smartCheck');
+  const { t, i18n } = useTranslation('smartCheck');
+  const language = i18n.resolvedLanguage === 'en' ? 'en' : 'ro';
   const center = reportCenter(report);
 
   const overlays: MapOverlay[] = rows.flatMap((row) => {
@@ -113,6 +116,11 @@ export function AccessibilityRouteMap({
                 >
                   {t('report.chapters.accessibility.minutes', { minutes: row.minutes })}
                 </span>
+                {row.id === namedId ? (
+                  <span className="-ml-2.5 max-w-36 truncate rounded-r-full border-2 border-l-0 border-card bg-card py-0.5 pr-2.5 pl-2 text-meta font-bold whitespace-nowrap text-foreground shadow-report-label w760:max-w-90">
+                    {row.label[language]}
+                  </span>
+                ) : null}
               </span>
             ),
           },

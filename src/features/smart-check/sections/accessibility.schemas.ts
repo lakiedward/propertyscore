@@ -5,6 +5,7 @@ const destinationSchema = z.object({
   id: z.string(),
   kind: z.string(),
   label: z.object({ ro: z.string(), en: z.string() }),
+  group: z.string().nullable().default(null),
   location: positionSchema,
   minutes: z.number().nullable(),
   by_walking: z.boolean(),
