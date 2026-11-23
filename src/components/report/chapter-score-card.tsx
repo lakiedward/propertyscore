@@ -23,6 +23,7 @@ type ChapterScoreCardProps = {
   averageLabel: string | null;
   rangeLabel: string | null;
   measures: { included: ReactNode; excluded: ReactNode };
+  kicker?: string;
   className?: string;
 };
 
@@ -58,6 +59,7 @@ export function ChapterScoreCard({
   averageLabel,
   rangeLabel,
   measures,
+  kicker,
   className,
 }: ChapterScoreCardProps) {
   const colors = REPORT_HUES[hue];
@@ -70,7 +72,17 @@ export function ChapterScoreCard({
         className,
       )}
     >
-      <div className="flex items-center gap-3.5 border-b border-border-subtle pb-4 w760:flex-col w760:items-start w760:gap-2.5 w760:border-r w760:border-b-0 w760:pr-10 w760:pb-0">
+      <div className="flex flex-wrap items-center gap-3.5 border-b border-border-subtle pb-4 w760:flex-col w760:items-start w760:gap-2.5 w760:border-r w760:border-b-0 w760:pr-10 w760:pb-0">
+        {kicker ? (
+          <span
+            className={cn(
+              'w-full text-[13px] font-extrabold tracking-label uppercase',
+              colors.text,
+            )}
+          >
+            {kicker}
+          </span>
+        ) : null}
         <span
           className={cn(
             'text-[64px] leading-[0.95] font-extrabold tracking-[-0.04em] tabular-nums',

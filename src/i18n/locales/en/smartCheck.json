@@ -653,7 +653,91 @@
         "title": "Noise"
       },
       "airIndustry": {
-        "title": "Air and industry"
+        "title": "Air and industry",
+        "eyebrowPart": "{{name}} · {{score}} / 100",
+        "eyebrowPartNoScore": "{{name}} · no data",
+        "badge": "Precision: air at city level, industry at the address",
+        "verdict": {
+          "clean_all_year": "Clean air all year",
+          "winter_peaks": "Good air in summer, heavier in winter",
+          "above_limit_most_year": "Air above the EU limit for most of the year",
+          "default": "Air like the rest of the city"
+        },
+        "headline": {
+          "withNearest": "{{air}}, factories farther than {{distance}}",
+          "noSites": "{{air}}, no factory in the register nearby",
+          "airOnly": "{{air}}",
+          "industryNearest": "Factories farther than {{distance}}",
+          "industryNone": "No factory in the register nearby"
+        },
+        "lead": {
+          "winter": "Fine dust rises in winter, as everywhere in {{city}}.",
+          "nearest": "The nearest industrial site is {{distance}} away."
+        },
+        "months": {
+          "eyebrow": "Fine dust in the air, month by month",
+          "title_one": "{{count}} month out of 12 above the 2030 EU limit",
+          "title_other": "{{count}} months out of 12 above the 2030 EU limit",
+          "titleNone": "No month above the 2030 EU limit",
+          "titleUnknown": "Fine dust in the air over 12 months",
+          "legendPm25": "PM2.5, µg/m³",
+          "legendLimit": "EU limit from 2030",
+          "chartLabel": "Fine dust (PM2.5) in each month of the past year, against the 2030 EU limit",
+          "annual": "Yearly average: {{value}} µg/m³.",
+          "annualCity": "Yearly average: {{value}} µg/m³, against {{average}} for the whole city."
+        },
+        "sites": {
+          "eyebrow": "Industry around",
+          "title": "The nearest sites in the European register",
+          "empty": "No site reported within {{distance}}.",
+          "sectors": {
+            "energy": "energy",
+            "metals": "metals",
+            "minerals": "building materials",
+            "chemicals": "chemicals",
+            "waste_water": "waste and waste water",
+            "paper_wood": "paper and wood",
+            "livestock": "livestock farm",
+            "food": "food industry",
+            "other": "other activity"
+          },
+          "impacts": {
+            "air": "air emissions",
+            "water": "water emissions",
+            "odour": "may cause odours",
+            "seasonal_winter": "mostly in winter"
+          }
+        },
+        "score": {
+          "air": {
+            "kicker": "Air",
+            "included": "<strong>Counts</strong> fine dust in the air, yearly average, at city level",
+            "excluded": "<strong>Does not count</strong> differences from one street to another"
+          },
+          "industry": {
+            "kicker": "Industry",
+            "included": "<strong>Counts</strong> industrial sites in the European register, within 5 km",
+            "excluded": "<strong>Does not count</strong> small workshops that are not in the register"
+          },
+          "cityAverage": "City average: <strong>{{average}}</strong>",
+          "you": "You · {{score}}",
+          "average": "Average {{average}}",
+          "range": "City areas: {{min}}–{{max}}"
+        },
+        "note": {
+          "air": "Air: the European Copernicus model, corrected with the stations in the city, {{period}}.",
+          "airNoPeriod": "Air: the European Copernicus model, corrected with the stations in the city.",
+          "industry": "Industry: the European industrial register, reports from {{year}}."
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{name}} {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "cams": "Copernicus CAMS",
+          "eea_stations": "EEA stations",
+          "eea_industrial": "EEA industrial register"
+        }
       },
       "seismic": {
         "title": "Seismic risk"
