@@ -363,7 +363,90 @@
         }
       },
       "safety": {
-        "title": "Safety"
+        "title": "Safety",
+        "eyebrow": "Safety · {{score}} / 100 · {{band}}",
+        "precision": "Precision: area (cell)",
+        "headline": "Lighting, open shops and people on the street around the address",
+        "lead": "The map shows where it is less safe and where it is safer around the address, by day and by night, and every element we counted: street lamps, shops, all-night stores, police, fire stations, bars, parks, underpasses.",
+        "noData": "We have no safety data for this address.",
+        "map": {
+          "label": "Safety map around the address · OpenStreetMap",
+          "moment": "Time of day",
+          "day": "Day",
+          "night": "Night",
+          "elements": "Map elements",
+          "heat": "Heat map",
+          "legendLess": "less safe",
+          "legendMore": "safer",
+          "distance": "{{distance}}",
+          "source": "The elements on the map come from OpenStreetMap (extract from {{date}}).",
+          "sourceNoDate": "The elements on the map come from OpenStreetMap."
+        },
+        "types": {
+          "lighting": "Lighting",
+          "shop": "Shops",
+          "nonstop": "All-night",
+          "mixed_use": "Buildings with a shop on the ground floor",
+          "police": "Police",
+          "fire_station": "Fire stations",
+          "diplomatic": "Consulates",
+          "bar": "Bars, clubs",
+          "park": "Parks",
+          "park_lit": "Lit parks",
+          "isolated_passage": "Underpasses, railways",
+          "train_station": "Stations",
+          "train_halt": "Halts",
+          "transit_stop": "Stops",
+          "other": "Other element"
+        },
+        "waterfall": {
+          "titleDay": "Why the address scores {{score}} by day",
+          "titleNight": "Why the address scores {{score}} by night",
+          "equation": "<strong>{{start}}</strong> starting point <up>+{{up}}</up> what raises it <down>−{{down}}</down> what lowers it = <strong>{{score}}</strong>",
+          "raises": "What raises the score",
+          "lowers": "What lowers the score",
+          "empty": "Nothing nearby.",
+          "detailBoth": "{{count}} around · nearest at {{distance}}",
+          "detailCount": "{{count}} around",
+          "detailNearest": "nearest at {{distance}}",
+          "far": "<strong>Too far to matter:</strong> {{list}}. We show them on the map, but they do not change the score.",
+          "hint": "Tap a row: the map keeps only its elements."
+        },
+        "score": {
+          "better": "Better than <strong>{{percent}}%</strong> of the areas in {{city}}",
+          "best": "Among the best areas in {{city}}",
+          "worst": "Among the weakest areas in {{city}}",
+          "flat": "In {{city}} every area has the same score, between {{min}} and {{max}}. The score cannot tell addresses apart.",
+          "none": "No comparison with the rest of the city",
+          "you": "You · {{score}}",
+          "average": "Average {{average}}",
+          "range": "City areas: {{min}}–{{max}}",
+          "included": "<strong>Takes into account</strong> lighting, people on the street, open shops, police and fire stations",
+          "excluded": "<strong>Does not take into account</strong> crime: there is no public street-level data"
+        },
+        "help": {
+          "eyebrow": "If you need help",
+          "title": "How far help is",
+          "emergency": "Emergency <strong>112</strong>",
+          "emergencyLabel": "Call 112",
+          "nonstop": "All-night shop",
+          "police": "Police",
+          "fire_station": "Fire station",
+          "h5": "All-night pharmacy",
+          "h4": "Emergency care for adults",
+          "walk": "{{minutes}} on foot",
+          "car": "by car",
+          "minutes": "{{count}} min",
+          "listLabel": "How far emergency services are"
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Walking routing"
+        }
       },
       "accessibility": {
         "title": "Getting around"

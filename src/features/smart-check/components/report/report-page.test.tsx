@@ -40,7 +40,7 @@ describe('ReportPage', { timeout: 20_000 }, () => {
       ro.report.frame.tabs.names.safety,
     );
     expect(
-      screen.getByRole('heading', { level: 2, name: ro.report.chapters.safety.title }),
+      screen.getByRole('heading', { level: 2, name: ro.report.chapters.safety.headline }),
     ).toBeInTheDocument();
   });
 

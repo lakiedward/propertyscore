@@ -370,7 +370,90 @@
         }
       },
       "safety": {
-        "title": "Siguranță"
+        "title": "Siguranță",
+        "eyebrow": "Siguranță · {{score}} / 100 · {{band}}",
+        "precision": "Precizie: zonă (celulă)",
+        "headline": "Lumină, magazine deschise și lume pe stradă în jurul adresei",
+        "lead": "Harta arată unde e mai puțin sigur și unde e mai sigur în jurul adresei, ziua și noaptea, și fiecare element pe care l-am luat în calcul: felinare, magazine, non-stop, poliție, pompieri, baruri, parcuri, pasaje.",
+        "noData": "Nu avem date de siguranță pentru această adresă.",
+        "map": {
+          "label": "Harta siguranței în jurul adresei · OpenStreetMap",
+          "moment": "Momentul zilei",
+          "day": "Ziua",
+          "night": "Noaptea",
+          "elements": "Elemente pe hartă",
+          "heat": "Heat map",
+          "legendLess": "mai puțin sigur",
+          "legendMore": "mai sigur",
+          "distance": "{{distance}}",
+          "source": "Elementele de pe hartă sunt din OpenStreetMap (extras din {{date}}).",
+          "sourceNoDate": "Elementele de pe hartă sunt din OpenStreetMap."
+        },
+        "types": {
+          "lighting": "Iluminat",
+          "shop": "Magazine",
+          "nonstop": "Non-stop",
+          "mixed_use": "Clădiri cu parter comercial",
+          "police": "Poliție",
+          "fire_station": "Pompieri",
+          "diplomatic": "Consulate",
+          "bar": "Baruri, cluburi",
+          "park": "Parcuri",
+          "park_lit": "Parcuri iluminate",
+          "isolated_passage": "Pasaje, căi ferate",
+          "train_station": "Gări",
+          "train_halt": "Halte",
+          "transit_stop": "Stații",
+          "other": "Alt element"
+        },
+        "waterfall": {
+          "titleDay": "De ce are adresa {{score}} ziua",
+          "titleNight": "De ce are adresa {{score}} noaptea",
+          "equation": "<strong>{{start}}</strong> punct de pornire <up>+{{up}}</up> ce ridică <down>−{{down}}</down> ce coboară = <strong>{{score}}</strong>",
+          "raises": "Ce ridică scorul",
+          "lowers": "Ce coboară scorul",
+          "empty": "Nimic din jur.",
+          "detailBoth": "{{count}} în jur · cel mai aproape la {{distance}}",
+          "detailCount": "{{count}} în jur",
+          "detailNearest": "cel mai aproape la {{distance}}",
+          "far": "<strong>Prea departe ca să conteze:</strong> {{list}}. Le arătăm pe hartă, dar nu schimbă scorul.",
+          "hint": "Apasă pe un rând: pe hartă rămân doar elementele lui."
+        },
+        "score": {
+          "better": "Mai bine decât <strong>{{percent}}%</strong> din zonele din {{city}}",
+          "best": "Printre cele mai bune zone din {{city}}",
+          "worst": "Printre cele mai slabe zone din {{city}}",
+          "flat": "În {{city}} toate zonele au același scor, între {{min}} și {{max}}. Scorul nu poate deosebi adresele între ele.",
+          "none": "Fără comparație cu restul orașului",
+          "you": "Tu · {{score}}",
+          "average": "Media {{average}}",
+          "range": "Zonele orașului: {{min}}–{{max}}",
+          "included": "<strong>Ține cont de</strong> lumină, lume pe stradă, magazine deschise, poliție și pompieri",
+          "excluded": "<strong>Nu ține cont de</strong> infracțiuni: nu există date publice pe stradă"
+        },
+        "help": {
+          "eyebrow": "Dacă ai nevoie de ajutor",
+          "title": "Cât de departe e ajutorul",
+          "emergency": "Urgențe <strong>112</strong>",
+          "emergencyLabel": "Sună la 112",
+          "nonstop": "Magazin non-stop",
+          "police": "Poliție",
+          "fire_station": "Pompieri",
+          "h5": "Farmacie non-stop",
+          "h4": "Urgențe pentru adulți",
+          "walk": "{{minutes}} pe jos",
+          "car": "cu mașina",
+          "minutes": "{{count}} min",
+          "listLabel": "Cât de departe sunt serviciile de urgență"
+        },
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Rutare pe jos"
+        }
       },
       "accessibility": {
         "title": "Accesibilitate"

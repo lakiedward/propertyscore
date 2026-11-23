@@ -2,6 +2,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import {
   AttributionControl,
   GeoJSONSource,
+  ImageSource,
   Map as MapLibreMap,
   Marker,
   NavigationControl,
@@ -63,6 +64,14 @@ export type MapOverlay = {
   | { kind: 'fill'; colorToken: string; opacity: number; outlineWidth?: number }
 );
 
+export type MapImageOverlay = {
+  id: string;
+  url: string;
+  coordinates: [LngLat, LngLat, LngLat, LngLat];
+  opacity: number;
+  isVisible: boolean;
+};
+
 export type MapFocus = {
   position: LngLat;
   zoom?: number;
@@ -119,6 +128,7 @@ type MapCanvasProps = {
   focus?: MapFocus | undefined;
   markers: readonly MapMarkerItem[];
   overlays?: readonly MapOverlay[];
+  imageOverlays?: readonly MapImageOverlay[];
   listingTiles?: MapListingTiles | undefined;
   regions?: MapRegions | undefined;
   onError: () => void;
@@ -180,6 +190,7 @@ export function MapCanvas({
   focus,
   markers,
   overlays = [],
+  imageOverlays = [],
   listingTiles,
   regions,
   onError,
@@ -200,6 +211,7 @@ export function MapCanvas({
   const [map, setMap] = useState<MapLibreMap>();
   const [isStyleReady, setIsStyleReady] = useState(false);
   const appliedOverlays = useRef(new Map<string, string>());
+  const appliedImageOverlays = useRef(new Map<string, string>());
   const tileRequest = useRef<{ prefix: string; headers: Readonly<Record<string, string>> }>(
     undefined,
   );
@@ -266,6 +278,7 @@ export function MapCanvas({
       return;
     }
     const overlayRegistry = appliedOverlays.current;
+    const imageRegistry = appliedImageOverlays.current;
     if (initialView.current.hasNavigationControl) {
       instance.addControl(new NavigationControl({ showCompass: false }), 'top-right');
     }
@@ -289,6 +302,7 @@ export function MapCanvas({
         }
       }
       overlayRegistry.clear();
+      imageRegistry.clear();
       setIsStyleReady(true);
     });
     instance.on('error', () => {
@@ -305,6 +319,7 @@ export function MapCanvas({
       resizeObserver.disconnect();
       instance.remove();
       overlayRegistry.clear();
+      imageRegistry.clear();
       setMap(undefined);
       setIsStyleReady(false);
     };
@@ -346,6 +361,13 @@ export function MapCanvas({
     }
     syncOverlays(map, overlays, appliedOverlays.current);
   }, [map, isStyleReady, overlays]);
+
+  useEffect(() => {
+    if (!map || !isStyleReady) {
+      return;
+    }
+    syncImageOverlays(map, imageOverlays, appliedImageOverlays.current);
+  }, [map, isStyleReady, imageOverlays]);
 
   const fitToBounds = useEffectEvent((target: MapLibreMap) => {
     if (!bounds) {
@@ -526,6 +548,47 @@ function syncOverlays(
         map.setLayoutProperty(layerId, 'visibility', visibility);
       }
     }
+  }
+}
+
+function firstLabelLayerId(map: MapLibreMap): string | undefined {
+  return map.getStyle().layers.find((layer) => layer.type === 'symbol')?.id;
+}
+
+function syncImageOverlays(
+  map: MapLibreMap,
+  overlays: readonly MapImageOverlay[],
+  registry: Map<string, string>,
+) {
+  const nextIds = new Set(overlays.map((overlay) => overlay.id));
+  for (const id of registry.keys()) {
+    if (!nextIds.has(id)) {
+      removeLayersAndSource(map, id, [id]);
+      registry.delete(id);
+    }
+  }
+  for (const overlay of overlays) {
+    const source = map.getSource(overlay.id);
+    if (!source) {
+      map.addSource(overlay.id, {
+        type: 'image',
+        url: overlay.url,
+        coordinates: overlay.coordinates,
+      });
+      map.addLayer(
+        {
+          id: overlay.id,
+          type: 'raster',
+          source: overlay.id,
+          paint: { 'raster-opacity': overlay.opacity, 'raster-fade-duration': 0 },
+        },
+        firstLabelLayerId(map),
+      );
+    } else if (registry.get(overlay.id) !== overlay.url && source instanceof ImageSource) {
+      source.updateImage({ url: overlay.url, coordinates: overlay.coordinates });
+    }
+    registry.set(overlay.id, overlay.url);
+    map.setLayoutProperty(overlay.id, 'visibility', overlay.isVisible ? 'visible' : 'none');
   }
 }
 
