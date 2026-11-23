@@ -16,9 +16,9 @@ const SAFETY_HEAT_RAMP = [
 
 export const SAFETY_HEAT_OPACITY = 1;
 
-const HALF_WIDTH_M = 1900;
-const HALF_HEIGHT_M = 1200;
-const STEP_M = 25;
+const HALF_WIDTH_M = 3600;
+const HALF_HEIGHT_M = 2600;
+const STEP_M = 40;
 const SPREAD_PER_CELL = 0.9;
 const CUTOFF_SPREADS = 3;
 const EDGE_WEIGHT_FROM = 0.35;
