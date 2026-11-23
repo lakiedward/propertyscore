@@ -179,7 +179,7 @@
   },
   "status": {
     "pending_payment": "Așteaptă plata",
-    "queued": "În coadă",
+    "queued": "În așteptare",
     "generating": "Se generează",
     "ready": "Gata",
     "failed": "Eșuat"
@@ -204,8 +204,8 @@
         "description": "Îl pregătim imediat ce comanda este confirmată."
       },
       "queued": {
-        "title": "Raportul e în coadă",
-        "description": "Începem în câteva secunde. Pagina se actualizează singură."
+        "title": "Raportul este la rând",
+        "description": "Începem să îl pregătim în câteva secunde. Pagina se actualizează singură."
       },
       "generating": {
         "title": "Pregătim raportul",

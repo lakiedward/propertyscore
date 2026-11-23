@@ -202,8 +202,8 @@
         "description": "We prepare it as soon as the order is confirmed."
       },
       "queued": {
-        "title": "The report is queued",
-        "description": "We start in a few seconds. The page updates by itself."
+        "title": "The report is next in line",
+        "description": "We start preparing it in a few seconds. The page updates by itself."
       },
       "generating": {
         "title": "Preparing the report",
