@@ -43,7 +43,7 @@ describe('AirIndustryChapter', () => {
       <AirIndustryChapter report={readyReport()} onOpenChapter={vi.fn()} />,
     );
 
-    expect(await screen.findByText('Ține cont de', { exact: false })).toBeInTheDocument();
+    expect(await screen.findAllByText(/^Ține cont de$/)).toHaveLength(2);
     expect(screen.getAllByText(/Media orașului:/)).toHaveLength(2);
     expect(screen.getAllByText(/Pondere în scorul de zonă/)).toHaveLength(2);
   });
