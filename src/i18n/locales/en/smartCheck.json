@@ -449,7 +449,83 @@
         }
       },
       "accessibility": {
-        "title": "Getting around"
+        "title": "{{stops}} and {{lines}} that take you across the whole city",
+        "titleNoStops": "No public transport stop near the address",
+        "stopsPhrase_one": "{{count}} stop within a {{minutes}}-minute walk",
+        "stopsPhrase_other": "{{count}} stops within a {{minutes}}-minute walk",
+        "linesPhrase_one": "{{count}} line",
+        "linesPhrase_other": "{{count}} lines",
+        "eyebrow": "Accessibility · {{score}} / 100 · {{band}}",
+        "badge": "Accuracy: address · public transport",
+        "lead": "The city average is {{average}}. From here, public transport gets you around more easily than from {{percent}}% of the city's zones.",
+        "leadPlain": "The stops around and the trips from here to the city's key places.",
+        "mapLabel": "Map of trips by public transport",
+        "mapChip": "Transport routes",
+        "legendTitle": "On the map",
+        "legendAddress": "Address",
+        "legendVehicle": "On the vehicle",
+        "legendWalk": "Walking to the stop",
+        "minutes": "{{minutes}} min",
+        "min": "min",
+        "routesTitle": "How long it takes to get there, at 8 in the morning",
+        "rowLabel": "{{name}}, {{minutes}} minutes",
+        "walkFaster": "{{minutes}} min on foot, quicker than by line",
+        "fromStop": "from {{stop}} stop",
+        "legs": {
+          "walk": "{{minutes}} min on foot",
+          "wait": "{{minutes}} min waiting",
+          "ride": "{{minutes}} min on the line"
+        },
+        "legKey": {
+          "walk": "on foot",
+          "wait": "waiting",
+          "ride": "on the line"
+        },
+        "sourceTimetable": "Lines, stops and timetable: local public transport, timetable of {{date}}, a working day. Walking routes follow OpenStreetMap streets.",
+        "sourceOsm": "Lines and stops come from OpenStreetMap, without a timetable: waiting time is estimated. Walking routes follow OpenStreetMap streets.",
+        "groupLabel": "Destination type",
+        "groups": {
+          "places": "Key places",
+          "highSchools": "High schools {{count}}",
+          "faculties": "Faculties {{count}}"
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "osm": "OpenStreetMap",
+          "gtfs": "Public transport timetable",
+          "walk_routing": "Walking routing"
+        },
+        "scoreHeadline": "Better than <b>{{percent}}%</b> of the city's zones",
+        "scoreYou": "You · {{score}}",
+        "scoreAverage": "Average {{average}}",
+        "scoreRange": "City zones: {{min}}–{{max}}",
+        "measuresIncluded": "<b>Takes into account</b> the stops nearby, how many lines run, how often and how long it takes to reach the city",
+        "measuresExcluded": "<b>Does not take into account</b> crowding on vehicles and delays",
+        "reach": {
+          "eyebrow": "How far you get",
+          "title": "The city, in minutes from your door",
+          "timeLabel": "Within how long",
+          "option": "{{minutes}} min",
+          "ofCity": "of the city",
+          "sentence": "In <b>{{minutes}} minutes</b>, by public transport and on foot, you reach {{scale}}.",
+          "scales": {
+            "all": "almost the whole city",
+            "twoThirds": "more than two thirds of the city",
+            "half": "almost half of the city",
+            "third": "more than a third of the city",
+            "centre": "the centre and nearby neighbourhoods"
+          },
+          "neighbourhoods": "<b>{{reached}} of {{total}}</b> neighbourhoods, leaving at 8 in the morning.",
+          "key": {
+            "under15": "under 15 min",
+            "from15": "15–30 min",
+            "from30": "30–45 min"
+          },
+          "mapLabel": "Map of the city: how far you get by public transport"
+        }
       },
       "fifteenMinute": {
         "title": "The 15-minute city"
