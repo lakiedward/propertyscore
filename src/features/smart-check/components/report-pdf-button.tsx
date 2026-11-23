@@ -4,12 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { isAppError } from '@/lib/errors';
-import { useReportPdfUrl } from '../api/smart-check.queries';
+import { useReportPdfUrl, type ReportPdfRequest } from '../api/smart-check.queries';
 import { startDownload } from '../report-pdf.utils';
 
 type ReportPdfSource =
-  | { pdfPath: string | null; reportNumber: number; reportId?: never; shareToken?: never }
-  | { reportId: string; shareToken: string; pdfPath?: never; reportNumber?: never };
+  ReportPdfRequest | { pdfPath: null; reportNumber: number; reportId?: never; shareToken?: never };
 
 type ReportPdfButtonProps = Pick<
   ComponentProps<typeof Button>,

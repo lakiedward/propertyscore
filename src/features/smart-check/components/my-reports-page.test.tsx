@@ -1,5 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
+import { env } from '@/config/env';
 import roCommon from '@/i18n/locales/ro/common.json';
 import ro from '@/i18n/locales/ro/smartCheck.json';
 import { signedInAs } from '@/test/factories/auth';
@@ -98,7 +99,7 @@ describe('MyReportsPage', { timeout: 20_000 }, () => {
       name: ro.report.share.newLink,
     });
     expect(linkField).toHaveValue(
-      `${window.location.origin}/check/result/${SEEDED_REPORT.id}?share=${CREATED_SHARE_TOKEN}`,
+      `${env.siteUrl}/check/result/${SEEDED_REPORT.id}?share=${CREATED_SHARE_TOKEN}`,
     );
     expect(await within(dialog).findByText(ro.report.share.active)).toBeInTheDocument();
 

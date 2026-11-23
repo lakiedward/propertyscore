@@ -90,13 +90,13 @@ export function useCreateOnlineReport() {
   });
 }
 
-type ReportPdfSource =
+export type ReportPdfRequest =
   | { pdfPath: string; reportNumber: number; reportId?: never; shareToken?: never }
   | { reportId: string; shareToken: string; pdfPath?: never; reportNumber?: never };
 
 export function useReportPdfUrl() {
   return useMutation({
-    mutationFn: (source: ReportPdfSource) =>
+    mutationFn: (source: ReportPdfRequest) =>
       source.shareToken === undefined
         ? getReportPdfUrl(source.pdfPath, source.reportNumber)
         : getSharedReportPdfUrl(source.reportId, source.shareToken),
