@@ -71,6 +71,7 @@ describe('educationPlaces', () => {
     }),
     square('a10', 21.1, 45.7, 0.002, { amenity: 'university', name: 'Universitatea Ioan Slavici' }),
     point('n11', 21.22, 45.75, { shop: 'books', name: 'Liceul fals' }),
+    point('n12', 21.24, 45.76, { amenity: 'school', name: 'Liceu Teoretic Nikolaus Lenau' }),
   ];
 
   it('keeps high schools and faculties, one per name, nearest first', () => {
@@ -83,6 +84,12 @@ describe('educationPlaces', () => {
         group: null,
       },
       { id: 'high_school:a2', kind: 'high_school', name: 'Liceul Waldorf', group: null },
+      {
+        id: 'high_school:n12',
+        kind: 'high_school',
+        name: 'Liceu Teoretic Nikolaus Lenau',
+        group: null,
+      },
       { id: 'faculty:n7', kind: 'faculty', name: 'Mecanică', group: 'UPT' },
       { id: 'faculty:n9', kind: 'faculty', name: 'Drept', group: 'UVT' },
       { id: 'faculty:a10', kind: 'faculty', name: 'Universitatea Ioan Slavici', group: null },

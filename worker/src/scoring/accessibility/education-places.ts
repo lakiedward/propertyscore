@@ -23,7 +23,7 @@ const EDUCATION_FILTERS = [
 ] as const;
 
 const SEARCH_RADIUS_DEGREES = 0.3;
-const HIGH_SCHOOL_PREFIX = /^(liceul|colegiul)\b/;
+const HIGH_SCHOOL_PREFIX = /^(liceul?|colegiul?)\b/;
 const HIGH_SCHOOL_EXCLUDED =
   /\b(clasele\s+(i|0|primare)|postliceal|gradinita|scoala\s+gimnaziala)\b/;
 const FACULTY_PREFIX = /^facultatea\b/;
