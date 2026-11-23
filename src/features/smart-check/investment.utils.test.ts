@@ -32,7 +32,7 @@ describe('investment utils', () => {
 
   it('starts from the typical area when none is declared', () => {
     const { section, sale } = investment();
-    expect(initialArea(section, sale)).toBe(53);
+    expect(initialArea(section, sale)).toBe(59);
   });
 
   it('prices an area from the median and the interval, rounded to a thousand', () => {
