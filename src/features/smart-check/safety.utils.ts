@@ -166,8 +166,8 @@ export function helpRows(result: ReportResult): HelpRow[] {
 }
 
 export function mapRadiusM(landmarks: readonly SafetyLandmark[]): number {
-  const MIN_M = 800;
-  const MAX_M = 1000;
+  const MIN_M = 1100;
+  const MAX_M = 1400;
   const PADDING_M = 120;
   const reach = Math.max(
     MIN_M,

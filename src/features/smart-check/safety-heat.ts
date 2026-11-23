@@ -14,7 +14,7 @@ const SAFETY_HEAT_RAMP = [
   [92, [46, 125, 85]],
 ] as const satisfies readonly HeatStop[];
 
-export const SAFETY_HEAT_OPACITY = 0.62;
+export const SAFETY_HEAT_OPACITY = 1;
 
 const HALF_WIDTH_M = 1900;
 const HALF_HEIGHT_M = 1200;
@@ -93,12 +93,14 @@ export function heatRaster(
         1,
         Math.max(0, (weights - EDGE_WEIGHT_FROM) / (EDGE_WEIGHT_TO - EDGE_WEIGHT_FROM)),
       );
-      const [red, green, blue] = heatColour(total / weights);
+      const value = total / weights;
+      const [red, green, blue] = heatColour(value);
+      const strength = Math.min(0.68, 0.4 + (0.3 * Math.abs(value - 62)) / 30);
       const offset = (row * width + column) * 4;
       rgba[offset] = red;
       rgba[offset + 1] = green;
       rgba[offset + 2] = blue;
-      rgba[offset + 3] = Math.round(255 * edge);
+      rgba[offset + 3] = Math.round(255 * edge * strength);
     }
   }
   const at = (east: number, north: number): LngLat => [
