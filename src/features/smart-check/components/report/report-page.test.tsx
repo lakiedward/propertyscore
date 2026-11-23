@@ -9,6 +9,8 @@ import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
 import { REPORT_TABS } from '../../report-chapter-meta';
 
+vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
+
 describe('ReportPage', { timeout: 20_000 }, () => {
   it('opens a ready report on the summary chapter with a tab for every chapter', async () => {
     await renderAppRoute(`/check/result/${SEEDED_REPORT.id}`, { auth: signedInAs() });

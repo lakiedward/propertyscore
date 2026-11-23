@@ -28,10 +28,7 @@ export function ReportChapterNav({
     const list = listRef.current;
     const tab = list?.querySelector<HTMLElement>('[aria-selected="true"]');
     if (!list || !tab) return;
-    list.scrollTo({
-      left: tab.offsetLeft - list.clientWidth / 2 + tab.offsetWidth / 2,
-      behavior: 'smooth',
-    });
+    list.scrollLeft = tab.offsetLeft - list.clientWidth / 2 + tab.offsetWidth / 2;
   }, [selected]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
