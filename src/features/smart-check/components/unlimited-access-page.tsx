@@ -99,7 +99,7 @@ export function UnlimitedAccessPage() {
               </Field>
             )}
           />
-          <Button type="submit" disabled={setUnlimited.isPending} className="justify-self-start">
+          <Button type="submit" disabled={setUnlimited.isPending} className="self-start">
             {t('admin.unlimited.grant.submit')}
           </Button>
         </form>
