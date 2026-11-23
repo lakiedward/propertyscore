@@ -4,7 +4,7 @@ export const scoreSchema = z.number().min(0).max(100);
 
 export const positionSchema = z.tuple([z.number(), z.number()]);
 
-export const geometrySchema = z.looseObject({ type: z.string() });
+const geometrySchema = z.looseObject({ type: z.string() });
 
 export const featureCollectionSchema = z.object({
   type: z.literal('FeatureCollection'),

@@ -1,12 +1,6 @@
 import type { z } from 'zod';
 import type { getReport } from './api/smart-check.api';
-import type {
-  REPORT_CATEGORY_KEYS,
-  REPORT_SECTION_SCHEMAS,
-  reportSummarySchema,
-} from './report.schemas';
-
-export type ReportCategoryKey = (typeof REPORT_CATEGORY_KEYS)[number];
+import type { REPORT_SECTION_SCHEMAS, reportSummarySchema } from './report.schemas';
 
 export type ReportSectionKey = keyof typeof REPORT_SECTION_SCHEMAS;
 
@@ -19,6 +13,6 @@ export type ReportResult = z.infer<typeof reportSummarySchema> & {
   unreadableSections: ReportSectionKey[];
 };
 
-export type Report = Awaited<ReturnType<typeof getReport>>;
+type Report = Awaited<ReturnType<typeof getReport>>;
 
 export type ReadyReport = Report & { status: 'ready'; result: ReportResult };
