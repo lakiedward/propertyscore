@@ -884,7 +884,6 @@
         "title": "Investment",
         "eyebrow": "Investment · context, not part of the score",
         "badgeCity": "Precision: city",
-        "badgeAddress": "Precision: around the address",
         "badgeNoData": "No data yet",
         "example": "example",
         "perM2": "€{{value}}/m²",
@@ -892,8 +891,7 @@
         "offers_other": "{{amount}} listings",
         "note": "Not part of the zone score. Investment is context for buyers who plan to rent the home out.",
         "headline": {
-          "city": "In {{city}}, asking prices are around €{{value}} per square metre",
-          "address": "Around this address, asking prices are around €{{value}} per square metre"
+          "city": "In {{city}}, asking prices are around €{{value}} per square metre"
         },
         "lead": {
           "declared": "For {{area}} m², about {{price}}, asking price.",
@@ -910,7 +908,6 @@
           "titleRange": "Half of the apartments are listed between €{{low}} and €{{high}}/m²",
           "titleMedian": "Middle asking price: €{{value}}/m²",
           "cityWide": "{{city}}, whole city",
-          "aroundAddress": "Around the address",
           "nearby": "{{name}}, next to the city",
           "typical": "Typical apartment in listings: {{area}} m², €{{price}}",
           "legendRange": "typical range",
@@ -955,7 +952,7 @@
           "names": {
             "apartamente_org": "apartamente.org, apartment prices",
             "apartamente_org_index": "apartamente.org, monthly index",
-            "imospot_index": "Imospot Index"
+            "imospot_index": "Imospot Index (CC BY 4.0)"
           },
           "saleCity": "{{city}} · sale",
           "saleCityOffers_one": "{{city}} · sale · {{amount}} listing",

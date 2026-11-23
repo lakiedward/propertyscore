@@ -52,13 +52,12 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
   const { t } = useTranslation('smartCheck');
   const { result } = report;
   const investment = result.sections.investment;
-  const sale = investment?.sale ?? null;
+  const sale = investment?.sale && isCityWide(investment.sale.precision) ? investment.sale : null;
   const [chosenArea, setChosenArea] = useState<number | null>(null);
 
   if (!investment || !sale) return <EmptyChapter />;
 
   const cityName = result.city.name;
-  const cityWide = isCityWide(sale.precision);
   const area = chosenArea ?? initialArea(investment, sale);
   const estimate = estimateForArea(investment, sale, area);
   const rent = rentForArea(investment, area);
@@ -76,17 +75,11 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
         hue="context"
         titleId={TITLE_ID}
         eyebrow={t('report.chapters.investment.eyebrow')}
-        badge={t(
-          cityWide
-            ? 'report.chapters.investment.badgeCity'
-            : 'report.chapters.investment.badgeAddress',
-        )}
-        title={t(
-          cityWide
-            ? 'report.chapters.investment.headline.city'
-            : 'report.chapters.investment.headline.address',
-          { city: cityName, value: formatNumber(Math.round(sale.median_eur_m2)) },
-        )}
+        badge={t('report.chapters.investment.badgeCity')}
+        title={t('report.chapters.investment.headline.city', {
+          city: cityName,
+          value: formatNumber(Math.round(sale.median_eur_m2)),
+        })}
         lead={
           declaredArea !== null && declaredEstimate !== null
             ? t('report.chapters.investment.lead.declared', {

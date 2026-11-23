@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { formatNumber } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import {
-  isCityWide,
   priceIntervals,
   scalePosition,
   type IntervalScale,
@@ -86,11 +85,8 @@ function IntervalRow({ item, scale }: { item: PriceInterval; scale: IntervalScal
 
 export function InvestmentPriceCard({ investment, sale, cityName }: InvestmentPriceCardProps) {
   const { t } = useTranslation('smartCheck');
-  const cityWide = isCityWide(sale.precision);
   const { intervals, scale } = priceIntervals(investment, sale, {
-    city: cityWide
-      ? t('report.chapters.investment.price.cityWide', { city: cityName })
-      : t('report.chapters.investment.price.aroundAddress'),
+    city: t('report.chapters.investment.price.cityWide', { city: cityName }),
     nearby: (name) => t('report.chapters.investment.price.nearby', { name }),
   });
   const hasInterval = sale.p25_eur_m2 != null && sale.p75_eur_m2 != null;

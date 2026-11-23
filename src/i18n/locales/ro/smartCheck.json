@@ -895,7 +895,6 @@
         "title": "Investiție",
         "eyebrow": "Investiție · context, nu intră în scor",
         "badgeCity": "Precizie: oraș",
-        "badgeAddress": "Precizie: în jurul adresei",
         "badgeNoData": "Fără date încă",
         "example": "exemplu",
         "perM2": "{{value}} €/m²",
@@ -904,8 +903,7 @@
         "offers_other": "{{amount}} de oferte",
         "note": "Nu intră în scorul de zonă. Investiția e context pentru cine cumpără ca să închirieze.",
         "headline": {
-          "city": "În {{city}} se cer în jur de {{value}} € pe metru pătrat",
-          "address": "În jurul adresei se cer în jur de {{value}} € pe metru pătrat"
+          "city": "În {{city}} se cer în jur de {{value}} € pe metru pătrat"
         },
         "lead": {
           "declared": "Pentru {{area}} m², cam {{price}}, preț cerut.",
@@ -922,7 +920,6 @@
           "titleRange": "Jumătate din apartamente se cer între {{low}} și {{high}} €/m²",
           "titleMedian": "Prețul cerut din mijloc: {{value}} €/m²",
           "cityWide": "{{city}}, tot orașul",
-          "aroundAddress": "În jurul adresei",
           "nearby": "{{name}}, lângă oraș",
           "typical": "Apartamentul tipic din anunțuri: {{area}} m², {{price}} €",
           "legendRange": "intervalul tipic",
@@ -969,7 +966,7 @@
           "names": {
             "apartamente_org": "apartamente.org, prețuri apartamente",
             "apartamente_org_index": "apartamente.org, indicele lunar",
-            "imospot_index": "Indicele Imospot"
+            "imospot_index": "Indicele Imospot (CC BY 4.0)"
           },
           "saleCity": "{{city}} · vânzare",
           "saleCityOffers_one": "{{city}} · vânzare · {{amount}} ofertă",
