@@ -1,0 +1,86 @@
+{
+  "check": {
+    "pageTitle": "Smart Check",
+    "title": "Check an address with Smart Check",
+    "steps": {
+      "label": "Order steps",
+      "item": "{{number}}. {{label}}",
+      "address": "Address",
+      "confirm": "Confirm",
+      "details": "Details",
+      "payment": "Payment",
+      "done": "Report"
+    }
+  },
+  "status": {
+    "pending_payment": "Awaiting payment",
+    "generating": "Generating",
+    "ready": "Ready",
+    "failed": "Failed"
+  },
+  "myReports": {
+    "count_one": "{{count}} report",
+    "count_other": "{{count}} reports",
+    "meta": "Report no. {{number}} · {{date}}",
+    "more": "Show more reports",
+    "empty": {
+      "title": "You have no Smart Check reports yet",
+      "description": "Check an address and the report appears here, with a PDF and a share link.",
+      "action": "Check an address"
+    }
+  },
+  "report": {
+    "pageTitle": "Smart Check report",
+    "state": {
+      "pending_payment": {
+        "title": "The report is waiting for payment",
+        "description": "We prepare it as soon as the order is confirmed."
+      },
+      "generating": {
+        "title": "Preparing the report",
+        "description": "It usually takes less than a minute. The page updates by itself."
+      },
+      "ready": {
+        "title": "The report cannot be shown",
+        "description": "Try again in a few minutes."
+      },
+      "failed": {
+        "title": "The report could not be generated",
+        "description": "We are looking into it. Try again later or write to us."
+      },
+      "backToReports": "Back to my reports"
+    },
+    "chapters": {
+      "summary": {
+        "title": "In short"
+      },
+      "safety": {
+        "title": "Safety"
+      },
+      "accessibility": {
+        "title": "Getting around"
+      },
+      "fifteenMinute": {
+        "title": "The 15-minute city"
+      },
+      "green": {
+        "title": "Green spaces"
+      },
+      "noise": {
+        "title": "Noise"
+      },
+      "airIndustry": {
+        "title": "Air and industry"
+      },
+      "seismic": {
+        "title": "Seismic risk"
+      },
+      "investment": {
+        "title": "Investment"
+      },
+      "closing": {
+        "title": "Before the viewing"
+      }
+    }
+  }
+}

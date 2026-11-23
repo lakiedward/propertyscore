@@ -1,0 +1,87 @@
+{
+  "check": {
+    "pageTitle": "Smart Check",
+    "title": "Verifică o adresă cu Smart Check",
+    "steps": {
+      "label": "Pașii comenzii",
+      "item": "{{number}}. {{label}}",
+      "address": "Adresă",
+      "confirm": "Confirmare",
+      "details": "Detalii",
+      "payment": "Plată",
+      "done": "Raport"
+    }
+  },
+  "status": {
+    "pending_payment": "Așteaptă plata",
+    "generating": "Se generează",
+    "ready": "Gata",
+    "failed": "Eșuat"
+  },
+  "myReports": {
+    "count_one": "{{count}} raport",
+    "count_few": "{{count}} rapoarte",
+    "count_other": "{{count}} de rapoarte",
+    "meta": "Raportul nr. {{number}} · {{date}}",
+    "more": "Arată mai multe rapoarte",
+    "empty": {
+      "title": "Nu ai încă rapoarte Smart Check",
+      "description": "Verifică o adresă și raportul apare aici, cu PDF și link de partajare.",
+      "action": "Verifică o adresă"
+    }
+  },
+  "report": {
+    "pageTitle": "Raport Smart Check",
+    "state": {
+      "pending_payment": {
+        "title": "Raportul așteaptă plata",
+        "description": "Îl pregătim imediat ce comanda este confirmată."
+      },
+      "generating": {
+        "title": "Pregătim raportul",
+        "description": "Durează de obicei mai puțin de un minut. Pagina se actualizează singură."
+      },
+      "ready": {
+        "title": "Raportul nu poate fi afișat",
+        "description": "Încearcă din nou peste câteva minute."
+      },
+      "failed": {
+        "title": "Raportul nu a putut fi generat",
+        "description": "Ne ocupăm de el. Încearcă din nou mai târziu sau scrie-ne."
+      },
+      "backToReports": "Înapoi la rapoartele mele"
+    },
+    "chapters": {
+      "summary": {
+        "title": "Pe scurt"
+      },
+      "safety": {
+        "title": "Siguranță"
+      },
+      "accessibility": {
+        "title": "Accesibilitate"
+      },
+      "fifteenMinute": {
+        "title": "Orașul de 15 minute"
+      },
+      "green": {
+        "title": "Spații verzi"
+      },
+      "noise": {
+        "title": "Zgomot"
+      },
+      "airIndustry": {
+        "title": "Aer și industrie"
+      },
+      "seismic": {
+        "title": "Risc seismic"
+      },
+      "investment": {
+        "title": "Investiție"
+      },
+      "closing": {
+        "title": "Înainte de vizionare"
+      }
+    }
+  }
+}
