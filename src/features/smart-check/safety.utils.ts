@@ -80,8 +80,8 @@ export function safetyBreakdown(safety: Safety, when: SafetyWhen): SafetyBreakdo
     .filter((row) => row.points !== 0);
   const raises = rows.filter((row) => row.points > 0).sort((a, b) => b.points - a.points);
   const lowers = rows.filter((row) => row.points < 0).sort((a, b) => a.points - b.points);
-  const up = raises.reduce((sum, row) => sum + row.points, 0);
   const down = lowers.reduce((sum, row) => sum - row.points, 0);
+  const up = Math.max(0, score - start + down);
   const farTypes = moment.far_types.map((type) => ({
     type,
     distanceM: nearestLandmark(safety.landmarks, type)?.distance_m ?? null,
