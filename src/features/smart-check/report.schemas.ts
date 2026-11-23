@@ -13,7 +13,7 @@ import { safetySectionSchema } from './sections/safety.schemas';
 import { seismicSectionSchema } from './sections/seismic.schemas';
 import { scoreSchema } from './sections/shared.schemas';
 
-const REPORT_CATEGORY_KEYS = [
+export const REPORT_CATEGORY_KEYS = [
   'safety',
   'accessibility',
   'fifteen_minute',

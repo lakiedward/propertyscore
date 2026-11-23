@@ -7,18 +7,39 @@ import { SEEDED_REPORT, SEEDED_SHARE_TOKEN } from '@/test/msw/handlers/smart-che
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
-import { REPORT_CHAPTERS } from '../../report-chapters';
+import { REPORT_TABS } from '../../report-chapter-meta';
+
+vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 
 describe('ReportPage', { timeout: 20_000 }, () => {
-  it('shows a ready report with every chapter in order', async () => {
+  it('opens a ready report on the summary chapter with a tab for every chapter', async () => {
     await renderAppRoute(`/check/result/${SEEDED_REPORT.id}`, { auth: signedInAs() });
 
     expect(
       await screen.findByRole('heading', { level: 1, name: SEEDED_REPORT.address_text }),
     ).toBeInTheDocument();
+    expect(screen.getAllByRole('tab')).toHaveLength(REPORT_TABS.length);
+    expect(screen.getByRole('tab', { selected: true })).toHaveTextContent(
+      ro.report.frame.tabs.names.summary,
+    );
+    expect(screen.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', 'report-tab-summary');
+  });
+
+  it('shows one chapter at a time and switches from its tab', async () => {
+    const { user } = await renderAppRoute(`/check/result/${SEEDED_REPORT.id}`, {
+      auth: signedInAs(),
+    });
+
+    await user.click(
+      await screen.findByRole('tab', { name: new RegExp(ro.report.frame.tabs.names.safety) }),
+    );
+
+    expect(screen.getByRole('tab', { selected: true })).toHaveTextContent(
+      ro.report.frame.tabs.names.safety,
+    );
     expect(
-      screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent),
-    ).toEqual(REPORT_CHAPTERS.map((chapter) => ro.report.chapters[chapter].title));
+      screen.getByRole('heading', { level: 2, name: ro.report.chapters.safety.title }),
+    ).toBeInTheDocument();
   });
 
   it('opens a shared report without an account', async () => {

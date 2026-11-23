@@ -224,7 +224,132 @@
     },
     "chapters": {
       "summary": {
-        "title": "In short"
+        "title": "In short",
+        "eyebrow": "In short",
+        "badge": "{{scores}} · {{contexts}}",
+        "badgeScores_one": "{{count}} score",
+        "badgeScores_other": "{{count}} scores",
+        "badgeContexts_one": "{{count}} context",
+        "badgeContexts_other": "{{count}} contexts",
+        "lead_one": "We calculated {{count}} score within a radius of up to {{radius}} km, plus {{contexts}} as context.",
+        "lead_other": "We calculated {{count}} scores within a radius of up to {{radius}} km, plus {{contexts}} as context.",
+        "leadNoContext_one": "We calculated {{count}} score within a radius of up to {{radius}} km.",
+        "leadNoContext_other": "We calculated {{count}} scores within a radius of up to {{radius}} km.",
+        "contexts": {
+          "seismic": "seismic risk",
+          "investment": "investment",
+          "both": "seismic risk and investment"
+        },
+        "position": {
+          "unknown": "The area of the address, in {{city}}",
+          "top": "One of the best areas in {{city}}",
+          "above": "An area above the {{city}} average",
+          "average": "An area around the {{city}} average",
+          "below": "An area below the {{city}} average"
+        },
+        "headlineWeak": "{{position}}, with a single weak point: <mark>{{weak}}</mark>",
+        "leadZone": "The area gets {{score}} out of 100, against a city average of {{average}}.",
+        "leadEnd": "Each score has its own chapter.",
+        "good": "What is good",
+        "watch": "What to watch",
+        "cardTitle": {
+          "flat": "{{topic}}: the same across the city",
+          "farAbove": "{{topic}} well above the city",
+          "above": "{{topic}} above the city average",
+          "below": "{{topic}} below the city average",
+          "atAverage": "{{topic}} at the city average"
+        },
+        "standing": {
+          "flat": "A city-level estimate, the same for every area.",
+          "best": "Among the best areas in the city.",
+          "worst": "Among the weakest areas in the city.",
+          "better": "Better than {{percent}}% of the areas in {{city}}."
+        },
+        "cardAverage": "City average: {{average}}.",
+        "openChapter": "Open the chapter",
+        "mapBand": {
+          "eyebrow": "Area map",
+          "title": "Explore the area on the map",
+          "text": "Coloured routes, times on real streets and the layers that counted in the score.",
+          "walk": "places on foot",
+          "transit": "destinations by transit",
+          "layers": "layers",
+          "open": "Open the map"
+        },
+        "scores": {
+          "eyebrow": "All scores · weight in the score next to the name",
+          "title": "All scores, against the whole city",
+          "legendAddress": "address",
+          "legendAverage": "city average",
+          "hint": "Each bar starts at 0 and stops at the score of the address. The black line is the city average.",
+          "groups": {
+            "mostImportant": "Matters most",
+            "environment": "Environment and quiet",
+            "services": "Services"
+          },
+          "weight": "{{weight}}%",
+          "difference": {
+            "flat": "the same across the city",
+            "atAverage": "at the city average",
+            "up": "+{{points}} vs the city",
+            "down": "−{{points}} vs the city"
+          },
+          "rowLabel": "{{name}}: {{score}} out of 100, city average {{average}}. Open the chapter.",
+          "note_one": "The area score ({{score}}) is the weighted mean of the {{count}} score. Seismic risk and investment are context and do not count in the score.",
+          "note_other": "The area score ({{score}}) is the weighted mean of the {{count}} scores. Seismic risk and investment are context and do not count in the score."
+        },
+        "formation": {
+          "eyebrow": "Area score",
+          "aboveAverage": "<b>+{{points}}</b> above the city average",
+          "belowAverage": "<b>−{{points}}</b> below the city average",
+          "lowerShare": "<b>{{percent}}%</b> of areas score lower",
+          "atLeast": "only <b>{{count}}</b> of {{total}} areas score {{from}}+",
+          "histTitle": "Where the area stands in the whole city",
+          "histHint": "Each column is a group of areas with similar scores.",
+          "histLabel": "Score distribution across the {{count}} areas of {{city}}",
+          "histAverage": "city average · {{average}}",
+          "histAddress": "address · {{score}}",
+          "histBar": "{{count}} areas scoring {{from}} to {{to}}",
+          "sumTitle": "How the {{score}} points add up",
+          "lost": "lost",
+          "partLabel": "{{name}}: {{points}} points",
+          "lostLabel": "Points lost: {{points}}"
+        },
+        "explorer": {
+          "title": "Area map",
+          "heading": "What is around the address",
+          "close": "Close the map",
+          "walk": "On foot",
+          "transit": "Transit",
+          "layers": "Layers",
+          "modes": "What the map shows",
+          "walkNote": "Routed on real streets, at {{speed}} km/h.",
+          "transitNote": "Walk to the stop, wait, ride the line.",
+          "layersNote": "Turn a layer on to see what counted in the score.",
+          "footer": "Tap a route: it appears on the map, with its time. Drawn from OpenStreetMap.",
+          "minutes": "{{minutes}} min",
+          "routeLabel": "{{name}}, {{minutes}} minutes",
+          "mapLabel": "Map of the area around the address",
+          "placeKinds": {
+            "shops": "Shop",
+            "food_drink": "Restaurant or café",
+            "services": "Services",
+            "pharmacies": "Pharmacy",
+            "medical": "Medical practice",
+            "schools": "School",
+            "parks": "Park",
+            "sport": "Sport",
+            "culture": "Culture"
+          },
+          "layerNames": {
+            "green": "Green space",
+            "fifteen": "15 minutes on foot",
+            "ring": "500 m radius"
+          },
+          "empty": "We have no routes for this address.",
+          "legendTitle": "On the map",
+          "legendAddress": "Address"
+        }
       },
       "safety": {
         "title": "Safety"
@@ -253,6 +378,117 @@
       "closing": {
         "title": "Before the viewing"
       }
+    },
+    "frame": {
+      "hero": {
+        "eyebrow": "Smart Check · report no. {{number}} · {{date}}",
+        "leadNoStrengths": "The scores describe the area around the address.",
+        "leadWeak": "Its weak point is {{weak}}.",
+        "leadNoWeak": "No score is weak.",
+        "meta": "Calculated on data from {{date}} · radius of up to {{radius}} km",
+        "ready": "Report ready",
+        "noDetails": "No details declared",
+        "declaredArea": "Declared floor area: {{area}} m²",
+        "downloadPdf": "Download PDF",
+        "share": "Share",
+        "actionsSoon": "The PDF and the share link will appear here soon.",
+        "zoneScore": "Area score",
+        "zoneScoreLabel": "Area score {{score}} out of 100",
+        "zoneAverage": "City average {{average}}.",
+        "zoneBest": "Best score {{best}}.",
+        "noScore": "No data",
+        "mapLabel": "Green space around the address · OpenStreetMap",
+        "mapTitle": "Map of the green space around the address",
+        "mapError": "The map could not be loaded.",
+        "leadOneStrength": "The area does best on {{first}}.",
+        "leadTwoStrengths": "The area does best on {{first}} and {{second}}."
+      },
+      "tabs": {
+        "label": "Report chapters",
+        "names": {
+          "summary": "In short",
+          "safety": "Safety",
+          "accessibility": "Accessibility",
+          "fifteenMinute": "15 minutes",
+          "green": "Green",
+          "noise": "Noise",
+          "airIndustry": "Air and industry",
+          "seismic": "Seismic",
+          "investment": "Investment"
+        },
+        "noValue": "–",
+        "seismicValue": "{{value}} g",
+        "investmentValue": "€{{value}}/m²"
+      },
+      "next": {
+        "eyebrow": "Next chapter",
+        "score": "Score {{score}} out of 100 · city average {{average}}",
+        "open": "Open"
+      },
+      "outOf": "/100"
+    },
+    "categories": {
+      "safety": {
+        "name": "Safety",
+        "topic": "Safety",
+        "weakness": "safety",
+        "strength": "safety"
+      },
+      "accessibility": {
+        "name": "Accessibility",
+        "topic": "Public transport",
+        "weakness": "public transport",
+        "strength": "public transport"
+      },
+      "fifteen_minute": {
+        "name": "15 minutes",
+        "topic": "Places within 15 minutes",
+        "weakness": "places within a 15-minute walk",
+        "strength": "places within a 15-minute walk"
+      },
+      "green": {
+        "name": "Green",
+        "topic": "Green space",
+        "weakness": "green space",
+        "strength": "green space"
+      },
+      "noise": {
+        "name": "Noise",
+        "topic": "Noise",
+        "weakness": "noise",
+        "strength": "quiet"
+      },
+      "air": {
+        "name": "Air",
+        "topic": "Air",
+        "weakness": "air",
+        "strength": "air"
+      },
+      "industry": {
+        "name": "Industry",
+        "topic": "Industry",
+        "weakness": "nearby industry",
+        "strength": "distance from industry"
+      },
+      "education": {
+        "name": "Education",
+        "topic": "Schools",
+        "weakness": "schools",
+        "strength": "schools"
+      },
+      "health": {
+        "name": "Health",
+        "topic": "Health services",
+        "weakness": "health services",
+        "strength": "health services"
+      }
+    },
+    "bands": {
+      "low": "Low",
+      "below": "Below average",
+      "mid": "Average",
+      "good": "Good",
+      "top": "Very good"
     }
   }
 }

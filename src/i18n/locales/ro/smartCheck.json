@@ -226,7 +226,137 @@
     },
     "chapters": {
       "summary": {
-        "title": "Pe scurt"
+        "title": "Pe scurt",
+        "eyebrow": "Pe scurt",
+        "badge": "{{scores}} · {{contexts}}",
+        "badgeScores_one": "{{count}} scor",
+        "badgeScores_few": "{{count}} scoruri",
+        "badgeScores_other": "{{count}} de scoruri",
+        "badgeContexts_one": "{{count}} context",
+        "badgeContexts_few": "{{count}} contexte",
+        "badgeContexts_other": "{{count}} de contexte",
+        "lead_one": "Am calculat {{count}} scor pe o rază de până la {{radius}} km, plus {{contexts}} ca și context.",
+        "lead_few": "Am calculat {{count}} scoruri pe o rază de până la {{radius}} km, plus {{contexts}} ca și context.",
+        "lead_other": "Am calculat {{count}} de scoruri pe o rază de până la {{radius}} km, plus {{contexts}} ca și context.",
+        "leadNoContext_one": "Am calculat {{count}} scor pe o rază de până la {{radius}} km.",
+        "leadNoContext_few": "Am calculat {{count}} scoruri pe o rază de până la {{radius}} km.",
+        "leadNoContext_other": "Am calculat {{count}} de scoruri pe o rază de până la {{radius}} km.",
+        "contexts": {
+          "seismic": "riscul seismic",
+          "investment": "investiția",
+          "both": "riscul seismic și investiția"
+        },
+        "position": {
+          "unknown": "Zona adresei, în {{city}}",
+          "top": "Una dintre cele mai bune zone din {{city}}",
+          "above": "O zonă peste media din {{city}}",
+          "average": "O zonă în media din {{city}}",
+          "below": "O zonă sub media din {{city}}"
+        },
+        "headlineWeak": "{{position}}, cu un singur punct slab: <mark>{{weak}}</mark>",
+        "leadZone": "Zona primește {{score}} din 100, față de {{average}} media orașului.",
+        "leadEnd": "Fiecare scor are capitolul lui.",
+        "good": "Ce e bun",
+        "watch": "La ce să fii atent",
+        "cardTitle": {
+          "flat": "{{topic}}: la fel în tot orașul",
+          "farAbove": "{{topic}} mult peste oraș",
+          "above": "{{topic}} peste media orașului",
+          "below": "{{topic}} sub media orașului",
+          "atAverage": "{{topic}} la media orașului"
+        },
+        "standing": {
+          "flat": "Estimare la nivel de oraș, la fel pentru toate zonele.",
+          "best": "Printre cele mai bune zone din oraș.",
+          "worst": "Printre cele mai slabe zone din oraș.",
+          "better": "Mai bine decât {{percent}}% din zonele din {{city}}."
+        },
+        "cardAverage": "Media orașului: {{average}}.",
+        "openChapter": "Deschide capitolul",
+        "mapBand": {
+          "eyebrow": "Harta zonei",
+          "title": "Explorează zona pe hartă",
+          "text": "Trasee colorate, timpi pe străzi reale și straturile care au contat în scor.",
+          "walk": "locuri pe jos",
+          "transit": "destinații cu transportul",
+          "layers": "straturi",
+          "open": "Deschide harta"
+        },
+        "scores": {
+          "eyebrow": "Toate scorurile · ponderea în scor lângă nume",
+          "title": "Toate scorurile, față de tot orașul",
+          "legendAddress": "adresa",
+          "legendAverage": "media orașului",
+          "hint": "Fiecare bară pornește de la 0 și se oprește la scorul adresei. Linia neagră e media orașului.",
+          "groups": {
+            "mostImportant": "Contează cel mai mult",
+            "environment": "Mediu și liniște",
+            "services": "Servicii"
+          },
+          "weight": "{{weight}}%",
+          "difference": {
+            "flat": "la fel în tot orașul",
+            "atAverage": "la media orașului",
+            "up": "+{{points}} față de oraș",
+            "down": "−{{points}} față de oraș"
+          },
+          "rowLabel": "{{name}}: {{score}} din 100, media orașului {{average}}. Deschide capitolul.",
+          "note_one": "Scorul de zonă ({{score}}) este media ponderată a celui {{count}} scor. Riscul seismic și investiția sunt context și nu intră în scor.",
+          "note_few": "Scorul de zonă ({{score}}) este media ponderată a celor {{count}} scoruri. Riscul seismic și investiția sunt context și nu intră în scor.",
+          "note_other": "Scorul de zonă ({{score}}) este media ponderată a celor {{count}} de scoruri. Riscul seismic și investiția sunt context și nu intră în scor."
+        },
+        "formation": {
+          "eyebrow": "Scorul zonei",
+          "aboveAverage": "<b>+{{points}}</b> față de media orașului",
+          "belowAverage": "<b>−{{points}}</b> față de media orașului",
+          "lowerShare": "<b>{{percent}}%</b> din zone au un scor mai mic",
+          "atLeast": "doar <b>{{count}}</b> zone din {{total}} au {{from}}+",
+          "histTitle": "Unde se află zona față de tot orașul",
+          "histHint": "Fiecare coloană e un grup de zone cu scoruri apropiate.",
+          "histLabel": "Distribuția scorului în cele {{count}} zone din {{city}}",
+          "histAverage": "media orașului · {{average}}",
+          "histAddress": "adresa · {{score}}",
+          "histBar": "{{count}} zone cu scor între {{from}} și {{to}}",
+          "sumTitle": "Din ce se adună cele {{score}} de puncte",
+          "lost": "pierdut",
+          "partLabel": "{{name}}: {{points}} puncte",
+          "lostLabel": "Puncte pierdute: {{points}}"
+        },
+        "explorer": {
+          "title": "Harta zonei",
+          "heading": "Ce ai în jurul adresei",
+          "close": "Închide harta",
+          "walk": "Pe jos",
+          "transit": "Transport",
+          "layers": "Straturi",
+          "modes": "Ce arată harta",
+          "walkNote": "Rutat pe străzile reale, la {{speed}} km/h.",
+          "transitNote": "Mers până la stație, așteptare, drum cu linia.",
+          "layersNote": "Pornește un strat ca să vezi ce a contat în scor.",
+          "footer": "Apasă pe un drum: apare pe hartă, cu timpul. Desen din OpenStreetMap.",
+          "minutes": "{{minutes}} min",
+          "routeLabel": "{{name}}, {{minutes}} minute",
+          "mapLabel": "Harta zonei din jurul adresei",
+          "placeKinds": {
+            "shops": "Magazin",
+            "food_drink": "Restaurant sau cafenea",
+            "services": "Servicii",
+            "pharmacies": "Farmacie",
+            "medical": "Cabinet medical",
+            "schools": "Școală",
+            "parks": "Parc",
+            "sport": "Sport",
+            "culture": "Cultură"
+          },
+          "layerNames": {
+            "green": "Spații verzi",
+            "fifteen": "15 minute pe jos",
+            "ring": "Raza de 500 m"
+          },
+          "empty": "Nu avem trasee pentru adresa asta.",
+          "legendTitle": "Pe hartă",
+          "legendAddress": "Adresa"
+        }
       },
       "safety": {
         "title": "Siguranță"
@@ -255,6 +385,117 @@
       "closing": {
         "title": "Înainte de vizionare"
       }
+    },
+    "frame": {
+      "hero": {
+        "eyebrow": "Smart Check · raport nr. {{number}} · {{date}}",
+        "leadNoStrengths": "Scorurile descriu zona din jurul adresei.",
+        "leadWeak": "Punctul slab e {{weak}}.",
+        "leadNoWeak": "Niciun scor nu e slab.",
+        "meta": "Calculat pe datele din {{date}} · rază de până la {{radius}} km",
+        "ready": "Raport gata",
+        "noDetails": "Fără detalii declarate",
+        "declaredArea": "Suprafață declarată: {{area}} m²",
+        "downloadPdf": "Descarcă PDF",
+        "share": "Partajează",
+        "actionsSoon": "PDF-ul și linkul de partajare apar aici în curând.",
+        "zoneScore": "Scor de zonă",
+        "zoneScoreLabel": "Scor de zonă {{score}} din 100",
+        "zoneAverage": "Media orașului {{average}}.",
+        "zoneBest": "Cel mai bun scor {{best}}.",
+        "noScore": "Fără date",
+        "mapLabel": "Spații verzi în jurul adresei · OpenStreetMap",
+        "mapTitle": "Harta spațiilor verzi din jurul adresei",
+        "mapError": "Harta nu s-a putut încărca.",
+        "leadOneStrength": "Zona stă cel mai bine la {{first}}.",
+        "leadTwoStrengths": "Zona stă cel mai bine la {{first}} și {{second}}."
+      },
+      "tabs": {
+        "label": "Capitolele raportului",
+        "names": {
+          "summary": "Pe scurt",
+          "safety": "Siguranță",
+          "accessibility": "Accesibilitate",
+          "fifteenMinute": "15 minute",
+          "green": "Green",
+          "noise": "Zgomot",
+          "airIndustry": "Aer și industrie",
+          "seismic": "Seismic",
+          "investment": "Investiție"
+        },
+        "noValue": "–",
+        "seismicValue": "{{value}} g",
+        "investmentValue": "{{value}} €/m²"
+      },
+      "next": {
+        "eyebrow": "Capitolul următor",
+        "score": "Scor {{score}} din 100 · media orașului {{average}}",
+        "open": "Deschide"
+      },
+      "outOf": "/100"
+    },
+    "categories": {
+      "safety": {
+        "name": "Siguranță",
+        "topic": "Siguranța",
+        "weakness": "siguranța",
+        "strength": "siguranță"
+      },
+      "accessibility": {
+        "name": "Accesibilitate",
+        "topic": "Transportul public",
+        "weakness": "transportul public",
+        "strength": "transport public"
+      },
+      "fifteen_minute": {
+        "name": "15 minute",
+        "topic": "Locurile la 15 minute",
+        "weakness": "locurile la 15 minute pe jos",
+        "strength": "locuri la 15 minute pe jos"
+      },
+      "green": {
+        "name": "Green",
+        "topic": "Spațiile verzi",
+        "weakness": "spațiile verzi",
+        "strength": "spații verzi"
+      },
+      "noise": {
+        "name": "Zgomot",
+        "topic": "Zgomotul",
+        "weakness": "zgomotul",
+        "strength": "liniște"
+      },
+      "air": {
+        "name": "Aer",
+        "topic": "Aerul",
+        "weakness": "aerul",
+        "strength": "aer"
+      },
+      "industry": {
+        "name": "Industrie",
+        "topic": "Industria",
+        "weakness": "industria din jur",
+        "strength": "distanța față de industrie"
+      },
+      "education": {
+        "name": "Educație",
+        "topic": "Școlile",
+        "weakness": "școlile",
+        "strength": "școli"
+      },
+      "health": {
+        "name": "Sănătate",
+        "topic": "Serviciile de sănătate",
+        "weakness": "serviciile de sănătate",
+        "strength": "servicii de sănătate"
+      }
+    },
+    "bands": {
+      "low": "Scăzut",
+      "below": "Sub medie",
+      "mid": "Mediu",
+      "good": "Bun",
+      "top": "Foarte bun"
     }
   }
 }

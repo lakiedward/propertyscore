@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { formatNumber, parseLocaleNumber } from '@/i18n/format';
 import { messageKey, validationMessage } from '@/i18n/validation';
+import { REPORT_TABS } from './report-chapter-meta';
 import { shareTokenSchema } from './report.schemas';
 
 export const CHECK_STEPS = ['address', 'confirm', 'details', 'payment', 'done'] as const;
@@ -44,6 +45,7 @@ export type CheckSearch = z.infer<typeof checkSearchSchema>;
 
 export const reportSearchSchema = z.object({
   share: shareTokenSchema.optional().catch(undefined),
+  chapter: z.enum(REPORT_TABS).optional().catch(undefined),
 });
 
 function localeNumber(name: DetailNumber) {

@@ -1,6 +1,11 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
-import { useAuth } from '@/features/auth';
-import { useSyncProfileLocale } from '@/features/profile';
+import { homePathFor, useAuth } from '@/features/auth';
+import {
+  LanguageSwitcher,
+  SiteMenuAccount,
+  UserMenu,
+  useSyncProfileLocale,
+} from '@/features/profile';
 import { ReportLayout } from '@/features/smart-check';
 import { loadFeatureNamespaces } from '@/i18n/i18n';
 
@@ -10,11 +15,27 @@ export const Route = createFileRoute('/_report')({
 });
 
 function ReportRouteLayout() {
-  const { user } = useAuth();
+  const { user, roles } = useAuth();
+  const userId = user?.id;
+  const panelPath = homePathFor(roles);
 
   return (
-    <ReportLayout>
-      {user ? <ProfileLocaleSync userId={user.id} /> : null}
+    <ReportLayout
+      header={{
+        account: user
+          ? {
+              path: panelPath,
+              menu: <UserMenu user={user} tone="light" panelPath={panelPath} nameDisplay="first" />,
+              heroMenu: (
+                <UserMenu user={user} tone="inverse" panelPath={panelPath} nameDisplay="first" />
+              ),
+              menuSection: <SiteMenuAccount user={user} panelPath={panelPath} />,
+            }
+          : undefined,
+        menuLanguageSwitcher: <LanguageSwitcher userId={userId} variant="segmented" />,
+      }}
+    >
+      {userId ? <ProfileLocaleSync userId={userId} /> : null}
       <Outlet />
     </ReportLayout>
   );

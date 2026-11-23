@@ -12,7 +12,8 @@ type ScoreHue =
   | 'shopping'
   | 'green'
   | 'safety'
-  | 'city';
+  | 'city'
+  | 'report';
 
 const HUE_CLASS: Readonly<Record<ScoreHue, string>> = {
   online: '[--ring-color:var(--info)] [--ring-soft:var(--info-surface)]',
@@ -28,6 +29,7 @@ const HUE_CLASS: Readonly<Record<ScoreHue, string>> = {
   green: '[--ring-color:var(--category-green)] [--ring-soft:var(--category-green-surface)]',
   safety: '[--ring-color:var(--category-safety)] [--ring-soft:var(--category-safety-surface)]',
   city: '[--ring-color:var(--category-city)] [--ring-soft:var(--category-city-surface)]',
+  report: '[--ring-color:var(--report-hero)] [--ring-soft:var(--report-summary-surface)]',
 };
 
 const discVariants = cva(
@@ -61,6 +63,7 @@ const strokeNumberVariants = cva('tabular-nums', {
     size: {
       sm: 'text-lead-sm font-extrabold tracking-figure text-info-ink',
       lg: 'text-score-2xl text-on-inverse',
+      report: 'text-[length:36cqi] leading-none font-extrabold tracking-[-0.045em] text-info-ink',
     },
   },
 });
@@ -68,7 +71,18 @@ const strokeNumberVariants = cva('tabular-nums', {
 const STROKE_GEOMETRY = {
   sm: { box: 40, radius: 16, width: 4 },
   lg: { box: 120, radius: 50, width: 10 },
+  report: { box: 124, radius: 55, width: 11 },
 } as const;
+
+const strokeCaptionVariants = cva('mt-0.5', {
+  variants: {
+    size: {
+      sm: 'text-small font-bold text-on-info-muted',
+      lg: 'text-small font-bold text-on-info-muted',
+      report: 'text-meta font-bold text-muted-foreground',
+    },
+  },
+});
 
 type ScoreValueBaseProps = {
   value: number;
@@ -88,7 +102,7 @@ type ScoreValueProps = ScoreValueBaseProps &
       }
     | {
         variant: 'stroke';
-        size: 'sm' | 'lg';
+        size: 'sm' | 'lg' | 'report';
       }
   );
 
@@ -107,7 +121,7 @@ export function ScoreValue(props: ScoreValueProps) {
       <span
         role="img"
         aria-label={label}
-        className={cn('relative block aspect-square', HUE_CLASS[hue], className)}
+        className={cn('@container relative block aspect-square', HUE_CLASS[hue], className)}
       >
         <svg
           viewBox={`0 0 ${String(geometry.box)} ${String(geometry.box)}`}
@@ -132,7 +146,11 @@ export function ScoreValue(props: ScoreValueProps) {
             strokeDasharray={`${String(percent)} 100`}
             strokeLinecap="round"
             transform={`rotate(-90 ${String(center)} ${String(center)})`}
-            className="stroke-(--ring-color)"
+            className={cn(
+              'stroke-(--ring-color)',
+              props.size === 'report' &&
+                'transition-[stroke-dasharray] duration-1100 ease-standard starting:[stroke-dasharray:0_100]',
+            )}
           />
         </svg>
         <span
@@ -141,7 +159,7 @@ export function ScoreValue(props: ScoreValueProps) {
         >
           <b className={strokeNumberVariants({ size: props.size })}>{formatNumber(value)}</b>
           {caption ? (
-            <small className="mt-0.5 text-small font-bold text-on-info-muted">{caption}</small>
+            <small className={strokeCaptionVariants({ size: props.size })}>{caption}</small>
           ) : null}
         </span>
       </span>

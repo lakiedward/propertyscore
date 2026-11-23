@@ -1,6 +1,12 @@
 import type { z } from 'zod';
 import type { getReport } from './api/smart-check.api';
-import type { REPORT_SECTION_SCHEMAS, reportSummarySchema } from './report.schemas';
+import type {
+  REPORT_CATEGORY_KEYS,
+  REPORT_SECTION_SCHEMAS,
+  reportSummarySchema,
+} from './report.schemas';
+
+export type ReportCategoryKey = (typeof REPORT_CATEGORY_KEYS)[number];
 
 export type ReportSectionKey = keyof typeof REPORT_SECTION_SCHEMAS;
 

@@ -22,7 +22,14 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { MAP_STYLE_URL, type LngLat, type LngLatBounds } from './map.config';
+import {
+  MAP_STYLE_URL,
+  REPORT_MAP_STYLE_URL,
+  type LngLat,
+  type LngLatBounds,
+  type MapBasemap,
+} from './map.config';
+import { applyReportBasemap } from './report-basemap';
 import { removeLayersAndSource } from './map-layers';
 import { themeColor } from './map.theme';
 import {
@@ -122,6 +129,8 @@ type MapCanvasProps = {
   hasCooperativeGestures?: boolean;
   isPrintable?: boolean;
   hasNavigationControl?: boolean;
+  basemap?: MapBasemap;
+  isConfinedToBounds?: boolean;
   className?: string;
   ref?: Ref<MapCanvasController>;
 };
@@ -181,6 +190,8 @@ export function MapCanvas({
   hasCooperativeGestures = false,
   isPrintable = false,
   hasNavigationControl = true,
+  basemap = 'site',
+  isConfinedToBounds = false,
   className,
   ref,
 }: MapCanvasProps) {
@@ -200,6 +211,7 @@ export function MapCanvas({
     isScrollZoomEnabled,
     hasCooperativeGestures,
     hasNavigationControl,
+    basemap,
   });
   const labels: MapLabels = {
     zoomIn: t('map.zoomIn'),
@@ -225,7 +237,7 @@ export function MapCanvas({
     try {
       instance = new MapLibreMap({
         container,
-        style: MAP_STYLE_URL,
+        style: initialView.current.basemap === 'report' ? REPORT_MAP_STYLE_URL : MAP_STYLE_URL,
         center: initialView.current.center,
         zoom: initialView.current.zoom,
         attributionControl: false,
@@ -259,11 +271,15 @@ export function MapCanvas({
     }
     instance.addControl(new AttributionControl({ compact: true }), 'bottom-right');
     instance.on('style.load', () => {
-      if (instance.getLayer('background')) {
-        instance.setPaintProperty('background', 'background-color', themeColor('--background'));
-      }
-      if (instance.getLayer('water')) {
-        instance.setPaintProperty('water', 'fill-color', themeColor('--map-water'));
+      if (initialView.current.basemap === 'report') {
+        applyReportBasemap(instance);
+      } else {
+        if (instance.getLayer('background')) {
+          instance.setPaintProperty('background', 'background-color', themeColor('--background'));
+        }
+        if (instance.getLayer('water')) {
+          instance.setPaintProperty('water', 'fill-color', themeColor('--map-water'));
+        }
       }
       if (initialView.current.hidesPointsOfInterest) {
         for (const layer of instance.getStyle().layers) {
@@ -332,8 +348,17 @@ export function MapCanvas({
   }, [map, isStyleReady, overlays]);
 
   const fitToBounds = useEffectEvent((target: MapLibreMap) => {
-    if (bounds) {
-      target.fitBounds(bounds, { padding: boundsPadding, maxZoom: 15, duration: 0 });
+    if (!bounds) {
+      return;
+    }
+    if (isConfinedToBounds) {
+      target.setMaxBounds(null);
+      target.setMinZoom(null);
+    }
+    target.fitBounds(bounds, { padding: boundsPadding, maxZoom: 15, duration: 0 });
+    if (isConfinedToBounds) {
+      target.setMinZoom(target.getZoom());
+      target.setMaxBounds(target.getBounds());
     }
   });
   const boundsKey = bounds ? bounds.flat().join(',') : '';
