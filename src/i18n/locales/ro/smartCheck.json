@@ -479,6 +479,7 @@
         "routesTitle": "Cât faci până acolo, dimineața la 8",
         "rowLabel": "{{name}}, {{minutes}} minute",
         "walkFaster": "{{minutes}} min pe jos, mai repede decât cu linia",
+        "walkDistance": "{{distance}} pe jos",
         "fromStop": "din stația {{stop}}",
         "legs": {
           "walk": "{{minutes}} min pe jos",
@@ -495,8 +496,8 @@
         "groupLabel": "Tipul destinațiilor",
         "groups": {
           "places": "Locuri importante",
-          "highSchools": "Licee {{count}}",
-          "faculties": "Facultăți {{count}}"
+          "highSchools": "Licee",
+          "faculties": "Facultăți"
         },
         "sources": {
           "title": "Surse și date",
@@ -534,6 +535,13 @@
             "from30": "30–45 min"
           },
           "mapLabel": "Harta orașului: cât de departe ajungi cu transportul public"
+        },
+        "search": {
+          "label": "Caută",
+          "highSchools": "Caută un liceu",
+          "faculties": "Caută o facultate",
+          "empty": "Nu am găsit nimic cu „{{query}}”.",
+          "hint": "Apasă pe un rând ca să vezi drumul pe hartă. Pe jos, unde e mai repede decât cu linia."
         }
       },
       "fifteenMinute": {

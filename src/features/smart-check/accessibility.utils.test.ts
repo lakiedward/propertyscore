@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FREIDORF_REPORT_RESULT } from '@/test/factories/smart-check-report';
 import {
   destinationRows,
+  matchingRows,
   nearestStopsSummary,
   readableInk,
   reachScale,
@@ -71,5 +72,32 @@ describe('readableInk', () => {
     expect(readableInk('#F6C93E')).toBe('#2a2100');
     expect(readableInk('#0148A2')).toBe('#ffffff');
     expect(readableInk(null)).toBe('#ffffff');
+  });
+});
+
+describe('destination groups', () => {
+  const highSchools = destinationRows(section, 'highSchools');
+  const faculties = destinationRows(section, 'faculties');
+
+  it('lists the high schools and faculties of the report, quickest first', () => {
+    expect(highSchools.length).toBeGreaterThan(0);
+    expect(faculties.length).toBeGreaterThan(0);
+    expect(highSchools.map((row) => row.minutes)).toEqual(
+      [...highSchools.map((row) => row.minutes)].sort((a, b) => a - b),
+    );
+  });
+
+  it('measures a walk-only trip along its path', () => {
+    const walked = highSchools.find((row) => row.isWalkOnly);
+    expect(walked?.walkDistanceM).toBeGreaterThan(0);
+  });
+
+  it('finds a row without diacritics, by name or university', () => {
+    const tagged = faculties.find((row) => row.tag !== null);
+    expect(matchingRows(faculties, 'mecanica', 'ro').map((row) => row.label.ro)).toEqual([
+      'Mecanică',
+    ]);
+    expect(matchingRows(faculties, tagged?.tag ?? '', 'ro')).toContain(tagged);
+    expect(matchingRows(highSchools, 'nimic de gasit', 'ro')).toEqual([]);
   });
 });
