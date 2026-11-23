@@ -4,6 +4,14 @@ import type { ReportResult } from './report.types';
 type Seismic = NonNullable<ReportResult['sections']['seismic']>;
 export type SeismicEarthquakes = NonNullable<Seismic['earthquakes']>;
 export type SeismicEarthquake = SeismicEarthquakes['events'][number];
+export type EarthquakeCatalogue = 'both' | 'usgs' | 'emsc';
+
+export function earthquakeCatalogue(earthquakes: SeismicEarthquakes): EarthquakeCatalogue {
+  const keys = new Set(earthquakes.sources.map((source) => source.key));
+  if (keys.has('usgs') && !keys.has('emsc')) return 'usgs';
+  if (keys.has('emsc') && !keys.has('usgs')) return 'emsc';
+  return 'both';
+}
 
 export const SEISMIC_COLOR = 'var(--ps-amber-800)';
 export const SEISMIC_COLOR_DARK = 'color-mix(in oklab, var(--ps-amber-800) 70%, black)';

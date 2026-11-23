@@ -1,8 +1,10 @@
+import type { TFunction } from 'i18next';
 import { Trans, useTranslation } from 'react-i18next';
 import { ChapterSources } from '@/components/report/chapter-sources';
 import { ReportChapterHead } from '@/components/report/report-chapter-head';
 import { formatNumber } from '@/i18n/format';
 import {
+  earthquakeCatalogue,
   earthquakeSpread,
   strongestEarthquakes,
   type SeismicEarthquakes,
@@ -14,12 +16,19 @@ import { SeismicScaleCard } from './seismic/seismic-scale-card';
 
 const SEISMIC_TITLE_ID = 'report-chapter-seismic';
 
-function catalogueSources(earthquakes: SeismicEarthquakes | null): string {
+function catalogueSources(
+  earthquakes: SeismicEarthquakes | null,
+  t: TFunction<'smartCheck'>,
+): string {
   if (!earthquakes) return '';
   const names =
     earthquakes.sources.length > 0
-      ? earthquakes.sources.map((source) => `${source.name}, ${source.license}`)
-      : [earthquakes.catalogue];
+      ? earthquakes.sources.map((source) =>
+          source.key
+            ? t(`report.chapters.seismic.sourceNames.${source.key}`)
+            : `${source.name}, ${source.license}`,
+        )
+      : [t(`report.chapters.seismic.catalogue.${earthquakeCatalogue(earthquakes)}`)];
   return ` · ${names.join(' · ')}`;
 }
 
@@ -31,7 +40,7 @@ export function SeismicChapter({ report }: ReportChapterProps) {
 
   if (!seismic) {
     return (
-      <section aria-labelledby={SEISMIC_TITLE_ID} className="grid max-w-default min-w-0 gap-4">
+      <section aria-labelledby={SEISMIC_TITLE_ID} className="grid min-w-0 gap-4">
         <ReportChapterHead
           hue="context"
           titleId={SEISMIC_TITLE_ID}
@@ -92,7 +101,7 @@ export function SeismicChapter({ report }: ReportChapterProps) {
   }
 
   return (
-    <section aria-labelledby={SEISMIC_TITLE_ID} className="grid max-w-default min-w-0 gap-4">
+    <section aria-labelledby={SEISMIC_TITLE_ID} className="grid min-w-0 gap-4">
       <ReportChapterHead
         hue="context"
         titleId={SEISMIC_TITLE_ID}
@@ -112,7 +121,7 @@ export function SeismicChapter({ report }: ReportChapterProps) {
           <Trans
             t={t}
             i18nKey="report.chapters.seismic.sources.list"
-            values={{ code: seismic.code, catalogue: catalogueSources(earthquakes) }}
+            values={{ code: seismic.code, catalogue: catalogueSources(earthquakes, t) }}
             components={{ strong: <b /> }}
           />
         </p>

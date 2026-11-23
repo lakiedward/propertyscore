@@ -46,7 +46,7 @@ export function GreenChapter({ report }: ReportChapterProps) {
   };
 
   return (
-    <section aria-labelledby={TITLE_ID} className="grid max-w-default min-w-0 gap-4">
+    <section aria-labelledby={TITLE_ID} className="grid min-w-0 gap-4">
       <ReportChapterHead
         hue="green"
         titleId={TITLE_ID}

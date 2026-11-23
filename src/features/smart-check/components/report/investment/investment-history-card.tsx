@@ -17,11 +17,15 @@ function shortMonth(period: string): string {
     .slice(0, 3);
 }
 
+function longMonth(period: string): string {
+  return formatDate(`${period.slice(0, 7)}-01`, { month: 'long', timeZone: 'UTC' });
+}
+
 export function InvestmentHistoryCard({ change, area }: InvestmentHistoryCardProps) {
   const { t } = useTranslation('smartCheck');
   const direction = change.perM2 > 0 ? 'up' : change.perM2 < 0 ? 'down' : 'flat';
   const sign = direction === 'up' ? '+' : direction === 'down' ? '−' : '';
-  const first = shortMonth(change.first.period);
+  const first = longMonth(change.first.period);
   const percent = `${sign}${formatNumber(Math.abs(change.percent), { maximumFractionDigits: 1 })}%`;
   const amount = Math.abs(changeForArea(change, area));
 

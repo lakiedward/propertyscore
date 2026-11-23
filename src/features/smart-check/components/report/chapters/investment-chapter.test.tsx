@@ -77,7 +77,7 @@ describe('InvestmentChapter', () => {
 
     expect(await screen.findByText('Chirie estimată')).toBeInTheDocument();
     expect(screen.getByText('Chiria pe un an înseamnă 5% din preț')).toBeInTheDocument();
-    expect(screen.getByText('Din aug, prețul cerut a urcat cu 45 €/m²')).toBeInTheDocument();
+    expect(screen.getByText('Din august, prețul cerut a urcat cu 45 €/m²')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /lună cu lună/ })).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: /Deschide/ })).toHaveLength(2);
     expect(
@@ -133,6 +133,6 @@ describe('InvestmentChapter', () => {
 
     expect(await screen.findByText(en.report.chapters.investment.badgeCity)).toBeInTheDocument();
     expect(screen.getByText('Estimated asking price')).toBeInTheDocument();
-    expect(screen.getByText('Since Aug, the asking price rose by €45/m²')).toBeInTheDocument();
+    expect(screen.getByText('Since August, the asking price rose by €45/m²')).toBeInTheDocument();
   });
 });
