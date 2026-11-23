@@ -76,6 +76,7 @@ export type MapImageOverlay = {
   coordinates: [LngLat, LngLat, LngLat, LngLat];
   opacity: number;
   isVisible: boolean;
+  placement?: 'below-labels' | 'below-roads';
 };
 
 export type MapFocus = {
@@ -141,6 +142,7 @@ type MapCanvasProps = {
   onPick?: (position: LngLat) => void;
   onViewportChange?: (viewport: MapViewport) => void;
   hidesPointsOfInterest?: boolean;
+  hasLabels?: boolean;
   isScrollZoomEnabled?: boolean;
   hasCooperativeGestures?: boolean;
   isPrintable?: boolean;
@@ -203,6 +205,7 @@ export function MapCanvas({
   onPick,
   onViewportChange,
   hidesPointsOfInterest = false,
+  hasLabels = true,
   isScrollZoomEnabled = false,
   hasCooperativeGestures = false,
   isPrintable = false,
@@ -226,6 +229,7 @@ export function MapCanvas({
     zoom,
     isPrintable,
     hidesPointsOfInterest,
+    hasLabels,
     isScrollZoomEnabled,
     hasCooperativeGestures,
     hasNavigationControl,
@@ -298,6 +302,13 @@ export function MapCanvas({
         }
         if (instance.getLayer('water')) {
           instance.setPaintProperty('water', 'fill-color', themeColor('--map-water'));
+        }
+      }
+      if (!initialView.current.hasLabels) {
+        for (const layer of instance.getStyle().layers) {
+          if (layer.type === 'symbol') {
+            instance.setLayoutProperty(layer.id, 'visibility', 'none');
+          }
         }
       }
       if (initialView.current.hidesPointsOfInterest) {
@@ -557,8 +568,21 @@ function syncOverlays(
   }
 }
 
+const ROAD_LAYER_PATTERN = /^(building|tunnel|highway|road|bridge|railway|aeroway)/;
+
 function firstLabelLayerId(map: MapLibreMap): string | undefined {
   return map.getStyle().layers.find((layer) => layer.type === 'symbol')?.id;
+}
+
+function overlayAnchorLayerId(
+  map: MapLibreMap,
+  placement: MapImageOverlay['placement'],
+): string | undefined {
+  if (placement === 'below-roads') {
+    const road = map.getStyle().layers.find((layer) => ROAD_LAYER_PATTERN.test(layer.id));
+    if (road) return road.id;
+  }
+  return firstLabelLayerId(map);
 }
 
 function syncImageOverlays(
@@ -588,7 +612,7 @@ function syncImageOverlays(
           source: overlay.id,
           paint: { 'raster-opacity': overlay.opacity, 'raster-fade-duration': 0 },
         },
-        firstLabelLayerId(map),
+        overlayAnchorLayerId(map, overlay.placement),
       );
     } else if (registry.get(overlay.id) !== overlay.url && source instanceof ImageSource) {
       source.updateImage({ url: overlay.url, coordinates: overlay.coordinates });

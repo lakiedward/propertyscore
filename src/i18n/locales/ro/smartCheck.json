@@ -664,10 +664,141 @@
         "title": "Orașul de 15 minute"
       },
       "green": {
-        "title": "Spații verzi"
+        "title": "Spații verzi",
+        "eyebrow": "Spații verzi · {{score}} / 100 · {{band}}",
+        "precision": "Precizie: adresă",
+        "headline_one": "{{count}} parc mare, la cel mult {{minutes}} min pe jos",
+        "headline_few": "{{count}} parcuri mari, la cel mult {{minutes}} min pe jos",
+        "headline_other": "{{count}} de parcuri mari, la cel mult {{minutes}} min pe jos",
+        "headlineNone": "Niciun parc la o plimbare de adresă",
+        "lead": "Împreună au {{total}} ha. Cel mai mare, {{name}}, are {{area}} ha.",
+        "share": "{{share}}% din suprafața pe {{radius}} m e spațiu verde, față de {{average}}% media orașului.",
+        "shareNoAverage": "{{share}}% din suprafața pe {{radius}} m e spațiu verde.",
+        "noData": "Nu avem date despre spațiile verzi pentru această adresă.",
+        "map": {
+          "label": "Harta spațiilor verzi din jurul adresei · OpenStreetMap"
+        },
+        "parks": {
+          "label": "Parcurile din jur",
+          "list": "Parcurile din jur, apasă pe unul ca să-l vezi pe hartă",
+          "unnamed": "Spațiu verde fără nume",
+          "unnamedLower": "un spațiu verde fără nume",
+          "hectares": "ha",
+          "walk": "{{minutes}} min pe jos",
+          "walkApprox": "circa {{minutes}} min pe jos",
+          "source": "Parcuri, iarbă, păduri și alei: OpenStreetMap, extras din {{date}}.",
+          "sourceNoDate": "Parcuri, iarbă, păduri și alei: OpenStreetMap."
+        },
+        "amenities": {
+          "playground": "Loc de joacă",
+          "dog_park": "Loc pentru câini",
+          "sports": "Teren de sport"
+        },
+        "score": {
+          "better": "Mai bine decât <strong>{{percent}}%</strong> din zonele din {{city}}",
+          "best": "Printre cele mai bune zone din {{city}}",
+          "worst": "Printre cele mai slabe zone din {{city}}",
+          "flat": "În {{city}} toate zonele au același scor, între {{min}} și {{max}}. Scorul nu poate deosebi adresele între ele.",
+          "none": "Fără comparație cu restul orașului",
+          "you": "Tu · {{score}}",
+          "average": "Media {{average}}",
+          "range": "Zonele orașului: {{min}}–{{max}}",
+          "included": "<strong>Ține cont de</strong> cât verde e în jur și cât de aproape sunt parcurile mari",
+          "excluded": "<strong>Nu ține cont de</strong> cât de îngrijite sunt parcurile sau de curțile private"
+        },
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Rutare pe jos"
+        }
       },
       "noise": {
-        "title": "Zgomot"
+        "title": "Zgomot",
+        "eyebrow": "Zgomot · {{score}} / 100 · {{band}}",
+        "precision": "Precizie: estimare din străzi",
+        "precisionStreet": "Precizie: hărți strategice de zgomot",
+        "headline": "Cam {{band}} la adresă, cât o {{reference}}",
+        "headlineNone": "Zgomotul din jurul adresei",
+        "leadSource": "Cea mai apropiată sursă de zgomot e {{name}}, la {{distance}} m.",
+        "leadNone": "Nu am găsit surse mari de zgomot în apropiere.",
+        "averageBelow": "Zona are scorul {{score}}, sub media orașului ({{average}}).",
+        "averageAbove": "Zona are scorul {{score}}, peste media orașului ({{average}}).",
+        "noData": "Nu avem date de zgomot pentru această adresă.",
+        "map": {
+          "label": "Harta zgomotului estimat în jurul adresei · OpenStreetMap",
+          "below": "sub 55 dB",
+          "range": "{{from}}–{{to}}",
+          "above": "peste {{from}}",
+          "estimate": "estimare ziua",
+          "lines": {
+            "loud": "drum mare",
+            "busy": "bulevard, tramvai",
+            "moderate": "stradă",
+            "rail": "cale ferată"
+          },
+          "method": "Estimare din străzile, liniile de tramvai, calea ferată și clădirile din OpenStreetMap, extras din {{date}}.",
+          "methodNoDate": "Estimare din străzile, liniile de tramvai, calea ferată și clădirile din OpenStreetMap.",
+          "methodStreet": "Valoarea vine din hărțile strategice de zgomot ale orașului."
+        },
+        "address": {
+          "eyebrow": "La adresă",
+          "day": "ziua, cât o {{reference}}",
+          "night": "noaptea"
+        },
+        "references": {
+          "40": "cameră liniștită",
+          "50": "stradă liniștită",
+          "60": "conversație",
+          "70": "trafic intens"
+        },
+        "kinds": {
+          "road": "stradă",
+          "tram": "tramvai",
+          "rail": "cale ferată",
+          "air": "aeroport",
+          "industry": "industrie",
+          "aggregate": "mai multe surse"
+        },
+        "classes": {
+          "motorway": "autostradă",
+          "trunk": "drum expres",
+          "primary": "bulevard",
+          "secondary": "stradă circulată",
+          "tertiary": "stradă de cartier",
+          "residential": "stradă liniștită",
+          "tram": "tramvai",
+          "rail": "cale ferată"
+        },
+        "sources": {
+          "loudest": "Ce se aude cel mai tare",
+          "none": "Nu am găsit surse mari de zgomot în apropiere.",
+          "metres": "m",
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "osm": "OpenStreetMap (străzi, tramvai, cale ferată)"
+        },
+        "score": {
+          "better": "Mai liniștit decât <strong>{{percent}}%</strong> din zonele din {{city}}",
+          "best": "Printre cele mai liniștite zone din {{city}}",
+          "worst": "Printre cele mai zgomotoase zone din {{city}}",
+          "flat": "În {{city}} toate zonele au același scor, între {{min}} și {{max}}. Scorul nu poate deosebi adresele între ele.",
+          "none": "Fără comparație cu restul orașului",
+          "you": "Tu · {{score}}",
+          "average": "Media {{average}}",
+          "range": "Zonele orașului: {{min}}–{{max}}",
+          "included": "<strong>Ține cont de</strong> străzile, tramvaiul și calea ferată din jur",
+          "excluded": "<strong>Nu ține cont de</strong> ferestre, izolație sau vecini"
+        },
+        "decibels": "{{value}} dB",
+        "names": {
+          "tram": "Linii de tramvai",
+          "rail": "Calea ferată"
+        }
       },
       "airIndustry": {
         "title": "Aer și industrie",
