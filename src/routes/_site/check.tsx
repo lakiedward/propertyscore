@@ -11,6 +11,5 @@ export const Route = createFileRoute('/_site/check')({
 });
 
 function CheckRoute() {
-  const { step = 'address' } = Route.useSearch();
-  return <CheckPage step={step} />;
+  return <CheckPage />;
 }

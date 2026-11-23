@@ -106,6 +106,7 @@ export type MapMarkerItem = {
   node: ReactNode;
   anchor?: 'bottom' | 'center' | 'left';
   isRaised?: boolean;
+  onDragEnd?: ((position: LngLat) => void) | undefined;
 };
 
 type MapCanvasProps = {
@@ -471,6 +472,7 @@ export function MapCanvas({
               position={marker.position}
               anchor={marker.anchor ?? 'bottom'}
               isRaised={marker.isRaised ?? false}
+              onDragEnd={marker.onDragEnd}
             >
               {marker.node}
             </MapMarker>
@@ -583,20 +585,33 @@ type MapMarkerProps = {
   position: LngLat;
   anchor: 'bottom' | 'center' | 'left';
   isRaised: boolean;
+  onDragEnd: ((position: LngLat) => void) | undefined;
   children: ReactNode;
 };
 
-function MapMarker({ map, position, anchor, isRaised, children }: MapMarkerProps) {
+function MapMarker({ map, position, anchor, isRaised, onDragEnd, children }: MapMarkerProps) {
   const [element] = useState(() => document.createElement('div'));
   const [longitude, latitude] = position;
+  const isDraggable = onDragEnd !== undefined;
+  const reportDragEnd = useEffectEvent((next: LngLat) => {
+    onDragEnd?.(next);
+  });
 
   useEffect(() => {
-    const marker = new Marker({ element, anchor }).setLngLat([longitude, latitude]).addTo(map);
+    const marker = new Marker({ element, anchor, draggable: isDraggable })
+      .setLngLat([longitude, latitude])
+      .addTo(map);
     marker.getElement().style.zIndex = isRaised ? RAISED_MARKER_Z_INDEX : '';
+    const handleDragEnd = () => {
+      const { lng, lat } = marker.getLngLat();
+      reportDragEnd([lng, lat]);
+    };
+    marker.on('dragend', handleDragEnd);
     return () => {
+      marker.off('dragend', handleDragEnd);
       marker.remove();
     };
-  }, [map, element, anchor, longitude, latitude, isRaised]);
+  }, [map, element, anchor, longitude, latitude, isRaised, isDraggable]);
 
   return createPortal(children, element);
 }

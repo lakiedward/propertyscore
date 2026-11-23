@@ -2,14 +2,181 @@
   "check": {
     "pageTitle": "Smart Check",
     "title": "Check an address with Smart Check",
+    "eyebrow": "Online report {{price}} · Step {{number}} of {{total}}",
     "steps": {
       "label": "Order steps",
       "item": "{{number}}. {{label}}",
+      "done": "Report",
       "address": "Address",
       "confirm": "Confirm",
       "details": "Details",
       "payment": "Payment",
-      "done": "Report"
+      "completed": "{{label}}, done"
+    },
+    "heading": {
+      "address": {
+        "title": "Where is the home?",
+        "badge": "9 cities covered"
+      },
+      "confirm": {
+        "title": "Is this the home?",
+        "badge": "Check the pin on the map"
+      },
+      "details": {
+        "title": "What you know about the home",
+        "badge": "Optional · takes a minute"
+      },
+      "payment": {
+        "title": "Payment",
+        "badge": "Card payment is coming soon"
+      },
+      "done": {
+        "title": "Preparing the report",
+        "badge": "Usually takes under a minute"
+      }
+    },
+    "address": {
+      "label": "Where is the property?",
+      "placeholder": "Street, number and city",
+      "empty": "We can't find “{{query}}”. Check the spelling or add the city, e.g. “Strada Mărășești 6, Timișoara”.",
+      "searchError": "Address search is not responding right now. Place the pin on the map and type the address yourself.",
+      "locate": "Use my location",
+      "locateError": "We couldn't get your location. Search for the address or tap the map.",
+      "mapLabel": "Map with the home's pin",
+      "mapHint": "Drag the pin or tap the map",
+      "mapError": "The map can't load right now. Reload the page.",
+      "pinLabel": "Your home",
+      "coordinates": "{{lat}}, {{lng}}",
+      "resolving": "Looking up the pin's address…",
+      "noReverse": "We found no address exactly here. Type it yourself.",
+      "manualHint": "You can correct the address yourself, for example the block number. The pin stays where you put it.",
+      "noPin": "Search for the address or tap the map on the home's building.",
+      "required": "Enter the home's address.",
+      "pinRequired": "Place the pin on the map, on the home's building.",
+      "outside": {
+        "title": "This address is not in a covered city",
+        "description": "The online report works in: {{cities}}. We won't ask you to pay for this address."
+      },
+      "continue": "Continue",
+      "addressMissing": "No address yet"
+    },
+    "includes": {
+      "title": "What you get for {{price}}",
+      "items": {
+        "score": "Area score from 9 criteria, each explained",
+        "transit": "Accessibility: lines, frequency and directions, not just distance",
+        "fifteen": "15-minute city: what you can reach on foot, on real streets",
+        "green": "Green space within 500 m and 1 km",
+        "environment": "Safety, noise, air, industrial areas, seismic risk",
+        "market": "Prices, rents and yield in the area",
+        "questions": "What to ask at the viewing",
+        "share": "PDF and share link"
+      },
+      "note": "The score describes the area, not the condition of the home. That is what the physical inspection is for.",
+      "citiesTitle": "Available in 9 cities"
+    },
+    "confirm": {
+      "question": "Is this the home?",
+      "helper": "Check the pin. Distances and scores are measured from here.",
+      "movingQuestion": "Move the pin onto the building",
+      "movingHelper": "Tap or drag on the map. The report uses exactly this point.",
+      "move": "Move the pin",
+      "stopMoving": "Done, pin moved",
+      "continue": "Yes, continue",
+      "back": "Back to the address"
+    },
+    "details": {
+      "intro": "Fill in what you know from the listing or from talking to the seller. You can also continue without these details.",
+      "requiredNote": "The location is the only required information.",
+      "unknown": "I don't know",
+      "size": {
+        "legend": "Rooms and floor area",
+        "rooms": "Rooms",
+        "roomsPlaceholder": "e.g. 3",
+        "area": "Approx. floor area",
+        "areaPlaceholder": "e.g. 84",
+        "areaUnit": "m²"
+      },
+      "floor": {
+        "legend": "Floor",
+        "floor": "Floor",
+        "floorPlaceholder": "e.g. 3",
+        "floorHint": "0 for the ground floor, -1 for a semi-basement",
+        "floors": "out of",
+        "floorsPlaceholder": "e.g. 8",
+        "floorsUnit": "floors"
+      },
+      "elevator": {
+        "legend": "Lift",
+        "yes": "Yes",
+        "no": "No",
+        "unknown": "I don't know"
+      },
+      "year": {
+        "legend": "Year built",
+        "label": "Year",
+        "placeholder": "e.g. 1978"
+      },
+      "why": {
+        "title": "Why we ask",
+        "text": "Your answers don't change the area score. We use them for comparable prices, yield and the viewing questions. In the report they are marked “declared”.",
+        "progress_one": "{{count}} of {{total}} answers filled in",
+        "progress_other": "{{count}} of {{total}} answers filled in"
+      },
+      "back": "Back",
+      "skip": "Skip",
+      "continue": "Continue to payment · {{price}}"
+    },
+    "payment": {
+      "title": "Payment",
+      "signedOut": {
+        "title": "Sign in to order the report",
+        "description": "The report stays in your account, under “Reports”, with a PDF and a share link. The address and details you entered stay here.",
+        "signIn": "Sign in",
+        "signUp": "Create an account"
+      },
+      "unlimited": {
+        "title": "Test account: unlimited Smart Check",
+        "description": "You can generate as many reports as you like, without paying."
+      },
+      "comingSoon": {
+        "title": "Card payment is coming soon",
+        "description": "For now, only test accounts can generate the report. Your order stays here: the address and details are not lost."
+      },
+      "accessError": "We couldn't check your account's access. Reload the page.",
+      "generate": "Generate the report",
+      "generating": "Sending the order…",
+      "changeAddress": "Change the address",
+      "back": "Back to details"
+    },
+    "summary": {
+      "eyebrow": "Your order",
+      "product": "Online report",
+      "includesTitle": "What you get",
+      "items": {
+        "scores": "9 category scores from 0 to 100",
+        "market": "Asking prices and rents in the area, with €/m²",
+        "nearby": "Nearby amenities and walking routes",
+        "questions": "Questions to ask at the viewing",
+        "account": "Access in your account, PDF and share link"
+      },
+      "note": "The report describes the area. It can't see the condition of the home.",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "vat": "VAT included."
+    },
+    "done": {
+      "title": "Preparing the report",
+      "description": "We are calculating the scores for {{address}}. It usually takes under a minute and the page updates by itself.",
+      "queued": "The order is queued and starts in a few seconds.",
+      "failedTitle": "The report could not be generated",
+      "failedDescription": "It costs you nothing. Try again, and if it happens again, write to us.",
+      "retry": "Try again",
+      "loadError": "We can't read the report's status right now. We'll retry automatically.",
+      "myReports": "See my reports",
+      "newCheck": "Check another address",
+      "slow": "This is taking longer than usual. You can close the page: the report appears in My reports when it is ready.",
+      "stopped": "We stopped checking automatically. The report appears in My reports when it is ready."
     }
   },
   "status": {

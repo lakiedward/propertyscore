@@ -87,7 +87,12 @@
       "decision_message_too_long": "Mesajul poate avea cel mult 2.000 de caractere.",
       "listing_floor_above_building": "Etajul nu poate fi mai mare decât numărul de etaje ale clădirii.",
       "value_out_of_range": "Valoarea este în afara limitelor permise.",
-      "favorite_limit_reached": "Ai salvat deja 500 de locuințe. Scoate câteva din favorite ca să adaugi altele."
+      "favorite_limit_reached": "Ai salvat deja 500 de locuințe. Scoate câteva din favorite ca să adaugi altele.",
+      "address_invalid": "Scrie adresa locuinței (între 3 și 300 de caractere).",
+      "location_invalid": "Pune pinul pe hartă, pe clădirea locuinței.",
+      "outside_coverage": "Adresa nu este în zona acoperită de raportul online. Alege o adresă din cele 9 orașe.",
+      "no_ready_snapshot": "Datele pentru raport se actualizează acum. Încearcă din nou peste câteva minute.",
+      "payment_required": "Plata cu cardul vine în curând. Deocamdată raportul se poate genera doar din conturile de test."
     }
   },
   "validation": {
