@@ -123,7 +123,7 @@ export function SafetyMapBlock({ report }: SafetyMapBlockProps) {
           <div
             role="group"
             aria-label={t('report.chapters.safety.map.elements')}
-            className="flex [scrollbar-width:none] gap-1.5 overflow-x-auto w560:flex-wrap"
+            className="flex flex-wrap gap-1.5"
           >
             {hasHeat ? (
               <button

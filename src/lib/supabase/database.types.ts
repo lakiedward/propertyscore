@@ -328,6 +328,11 @@ isOneToOne: false
 "set_smartcheck_unlimited":
 { Args: { "p_email": string,"p_is_unlimited": boolean }; Returns: string
                            },
+"shared_report_pdf":
+{ Args: { "p_report_id": string,"p_token": string }; Returns: {
+              "number": number,"pdf_path": string
+            }[]
+                           },
 "start_listing_revision":
 { Args: { "p_listing_id": string }; Returns: string
                            },

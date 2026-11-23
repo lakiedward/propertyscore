@@ -195,6 +195,17 @@
       "title": "You have no Smart Check reports yet",
       "description": "Check an address and the report appears here, with a PDF and a share link.",
       "action": "Check an address"
+    },
+    "kind": "Online report",
+    "score": "{{score}} / 100",
+    "scoreLabel": "Area score {{score}} out of 100",
+    "open": "Open",
+    "note": {
+      "pending_payment": "Waiting for payment.",
+      "queued": "In line. We start in a few seconds.",
+      "generating": "Ready in a few minutes.",
+      "ready": "PDF and share link included.",
+      "failed": "It could not be generated. We are looking into it."
     }
   },
   "report": {
@@ -588,9 +599,6 @@
         "ready": "Report ready",
         "noDetails": "No details declared",
         "declaredArea": "Declared floor area: {{area}} m²",
-        "downloadPdf": "Download PDF",
-        "share": "Share",
-        "actionsSoon": "The PDF and the share link will appear here soon.",
         "zoneScore": "Area score",
         "zoneScoreLabel": "Area score {{score}} out of 100",
         "zoneAverage": "City average {{average}}.",
@@ -688,6 +696,41 @@
       "mid": "Average",
       "good": "Good",
       "top": "Very good"
+    },
+    "pdf": {
+      "download": "Download PDF",
+      "preparing": "Preparing the PDF",
+      "failed": "The PDF could not be downloaded. Please try again.",
+      "missing": "The PDF of this report is not available yet."
+    },
+    "share": {
+      "action": "Share",
+      "title": "Share the report",
+      "description": "The link shows the report without your account. You can revoke it at any time.",
+      "validity": "Valid for",
+      "options": {
+        "7": "7 days",
+        "30": "30 days",
+        "never": "No expiry"
+      },
+      "create": "Create link",
+      "replace": "Create a new link",
+      "replaceNote": "The new link replaces the active one, which will stop working.",
+      "newLink": "New link",
+      "newLinkNote": "The full link is shown only now. Copy it before you close this.",
+      "copy": "Copy link",
+      "copied": "Link copied.",
+      "copyFailed": "We could not copy the link. Select it and copy it by hand.",
+      "active": "Active link",
+      "createdOn": "Created on {{date}}",
+      "expiresOn": "expires on {{date}}",
+      "noExpiry": "no expiry",
+      "revoke": "Revoke",
+      "revoked": "The link was revoked and no longer opens the report.",
+      "none": "No active link.",
+      "createFailed": "We could not create the link. Please try again.",
+      "revokeFailed": "We could not revoke the link. Please try again.",
+      "loadFailed": "We could not load the active link."
     }
   }
 }

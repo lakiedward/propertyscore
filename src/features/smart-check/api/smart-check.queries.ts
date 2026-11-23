@@ -8,11 +8,16 @@ import type { LngLat } from '@/components/map/map.config';
 import { reverseGeocode, searchAddresses } from './geocoding.api';
 import {
   createOnlineReport,
+  createShareLink,
+  getActiveShareLink,
   getReport,
   getSharedReport,
+  getSharedReportPdfUrl,
   hasUnlimitedSmartCheck,
   listMyReports,
+  revokeShareLink,
 } from './smart-check.api';
+import { getReportPdfUrl } from './smart-check.storage';
 
 const GENERATING_REFRESH_MS = 5_000;
 const GEOCODING_STALE_MS = 24 * 60 * 60 * 1000;
@@ -31,6 +36,12 @@ export const smartCheckQueries = {
         const loaded = pages.reduce((count, page) => count + page.items.length, 0);
         return loaded < lastPage.total ? pages.length : undefined;
       },
+      refetchInterval: (query) =>
+        query.state.data?.pages.some((page) =>
+          page.items.some((report) => IN_PROGRESS_STATUSES.has(report.status)),
+        )
+          ? GENERATING_REFRESH_MS
+          : false,
     }),
   report: (id: string) =>
     queryOptions({
@@ -43,6 +54,11 @@ export const smartCheckQueries = {
     queryOptions({
       queryKey: [...smartCheckQueries.reports(), 'shared', id, token],
       queryFn: () => getSharedReport(id, token),
+    }),
+  shareLink: (reportId: string) =>
+    queryOptions({
+      queryKey: [...smartCheckQueries.reports(), 'share-link', reportId],
+      queryFn: () => getActiveShareLink(reportId),
     }),
   addressSearch: (query: string) =>
     queryOptions({
@@ -71,5 +87,39 @@ export function useCreateOnlineReport() {
     mutationFn: createOnlineReport,
     meta: { silent: true },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: smartCheckQueries.reports() }),
+  });
+}
+
+export type ReportPdfRequest =
+  | { pdfPath: string; reportNumber: number; reportId?: never; shareToken?: never }
+  | { reportId: string; shareToken: string; pdfPath?: never; reportNumber?: never };
+
+export function useReportPdfUrl() {
+  return useMutation({
+    mutationFn: (source: ReportPdfRequest) =>
+      source.shareToken === undefined
+        ? getReportPdfUrl(source.pdfPath, source.reportNumber)
+        : getSharedReportPdfUrl(source.reportId, source.shareToken),
+    meta: { silent: true },
+  });
+}
+
+export function useCreateShareLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createShareLink,
+    meta: { silent: true },
+    onSuccess: (_token, { reportId }) =>
+      queryClient.invalidateQueries({ queryKey: smartCheckQueries.shareLink(reportId).queryKey }),
+  });
+}
+
+export function useRevokeShareLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: revokeShareLink,
+    meta: { silent: true },
+    onSuccess: (_result, reportId) =>
+      queryClient.invalidateQueries({ queryKey: smartCheckQueries.shareLink(reportId).queryKey }),
   });
 }
