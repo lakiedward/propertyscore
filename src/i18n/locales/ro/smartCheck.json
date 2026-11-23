@@ -2,18 +2,184 @@
   "check": {
     "pageTitle": "Smart Check",
     "title": "Verifică o adresă cu Smart Check",
+    "eyebrow": "Raport online {{price}} · Pasul {{number}} din {{total}}",
     "steps": {
       "label": "Pașii comenzii",
       "item": "{{number}}. {{label}}",
+      "done": "Raport",
       "address": "Adresă",
       "confirm": "Confirmare",
       "details": "Detalii",
       "payment": "Plată",
-      "done": "Raport"
+      "completed": "{{label}}, gata"
+    },
+    "heading": {
+      "address": {
+        "title": "Unde e locuința?",
+        "badge": "9 orașe acoperite"
+      },
+      "confirm": {
+        "title": "Asta e locuința?",
+        "badge": "Verifică pinul pe hartă"
+      },
+      "details": {
+        "title": "Ce știi despre locuință",
+        "badge": "Opțional · durează un minut"
+      },
+      "payment": {
+        "title": "Plată",
+        "badge": "Plata cu cardul vine în curând"
+      },
+      "done": {
+        "title": "Pregătim raportul",
+        "badge": "Durează de obicei sub un minut"
+      }
+    },
+    "address": {
+      "label": "Unde este proprietatea?",
+      "placeholder": "Strada, numărul și orașul",
+      "empty": "Nu găsim „{{query}}”. Verifică scrierea sau adaugă orașul, de ex. „Strada Mărășești 6, Timișoara”.",
+      "searchError": "Căutarea adreselor nu răspunde acum. Pune pinul pe hartă și scrie adresa de mână.",
+      "locate": "Folosește locația mea",
+      "locateError": "Nu am putut afla locația ta. Caută adresa sau apasă pe hartă.",
+      "mapLabel": "Harta cu pinul locuinței",
+      "mapHint": "Trage pinul sau apasă pe hartă",
+      "mapError": "Harta nu se poate încărca acum. Reîncarcă pagina.",
+      "pinLabel": "Locuința ta",
+      "coordinates": "{{lat}}, {{lng}}",
+      "resolving": "Căutăm adresa pinului…",
+      "noReverse": "Nu am găsit o adresă exact aici. Scrie-o de mână.",
+      "manualHint": "Poți corecta adresa de mână, de exemplu numărul blocului. Pinul rămâne unde l-ai pus.",
+      "noPin": "Caută adresa sau apasă pe hartă, pe clădirea locuinței.",
+      "required": "Scrie adresa locuinței.",
+      "pinRequired": "Pune pinul pe hartă, pe clădirea locuinței.",
+      "outside": {
+        "title": "Adresa nu este într-un oraș acoperit",
+        "description": "Raportul online funcționează în: {{cities}}. Nu îți cerem nicio plată pentru această adresă."
+      },
+      "continue": "Continuă"
+    },
+    "includes": {
+      "title": "Ce primești pentru {{price}}",
+      "items": {
+        "score": "Scor de zonă din 9 criterii, fiecare explicat",
+        "transit": "Accesibilitate: linii, frecvență și direcții, nu doar distanța",
+        "fifteen": "Oraș de 15 minute: ce ai pe jos, pe străzi reale",
+        "green": "Spații verzi pe 500 m și 1 km",
+        "environment": "Siguranță, zgomot, aer, zone industriale, risc seismic",
+        "market": "Prețuri, chirii și randament în zonă",
+        "questions": "Ce să întrebi la vizionare",
+        "share": "PDF și link de partajare"
+      },
+      "note": "Scorul descrie zona, nu starea locuinței. Pentru asta e inspecția fizică.",
+      "citiesTitle": "Disponibil în 9 orașe"
+    },
+    "confirm": {
+      "question": "Asta e locuința?",
+      "helper": "Verifică pinul. Distanțele și scorurile se calculează de aici.",
+      "movingQuestion": "Mută pinul pe clădire",
+      "movingHelper": "Atinge sau trage pe hartă. Raportul folosește exact acest punct.",
+      "move": "Mută pinul",
+      "stopMoving": "Gata, am mutat pinul",
+      "continue": "Da, continuă",
+      "back": "Înapoi la adresă"
+    },
+    "details": {
+      "intro": "Completează ce știi din anunț sau din discuția cu vânzătorul. Poți continua și fără aceste detalii.",
+      "requiredNote": "Localizarea este singura informație obligatorie.",
+      "unknown": "Nu știu",
+      "size": {
+        "legend": "Camere și suprafață",
+        "rooms": "Camere",
+        "roomsPlaceholder": "ex. 3",
+        "area": "Suprafață aprox.",
+        "areaPlaceholder": "ex. 84",
+        "areaUnit": "m²"
+      },
+      "floor": {
+        "legend": "Etaj",
+        "floor": "Etajul",
+        "floorPlaceholder": "ex. 3",
+        "floorHint": "0 pentru parter, -1 pentru demisol",
+        "floors": "din câte",
+        "floorsPlaceholder": "ex. 8",
+        "floorsUnit": "etaje"
+      },
+      "elevator": {
+        "legend": "Lift",
+        "yes": "Da",
+        "no": "Nu",
+        "unknown": "Nu știu"
+      },
+      "year": {
+        "legend": "Anul construcției",
+        "label": "Anul",
+        "placeholder": "ex. 1978"
+      },
+      "why": {
+        "title": "De ce te întrebăm",
+        "text": "Răspunsurile nu schimbă scorul zonei. Le folosim pentru prețurile comparabile, randament și întrebările de la vizionare. În raport apar marcate „declarat”.",
+        "progress_one": "{{count}} din {{total}} răspunsuri completate",
+        "progress_few": "{{count}} din {{total}} răspunsuri completate",
+        "progress_other": "{{count}} din {{total}} de răspunsuri completate"
+      },
+      "back": "Înapoi",
+      "skip": "Sari peste",
+      "continue": "Continuă la plată · {{price}}"
+    },
+    "payment": {
+      "title": "Plata",
+      "signedOut": {
+        "title": "Intră în cont ca să comanzi raportul",
+        "description": "Raportul rămâne în contul tău, la „Rapoarte”, cu PDF și link de partajare. Adresa și detaliile completate rămân aici.",
+        "signIn": "Intră în cont",
+        "signUp": "Creează cont"
+      },
+      "unlimited": {
+        "title": "Cont de test: Smart Check nelimitat",
+        "description": "Poți genera oricâte rapoarte, fără plată."
+      },
+      "comingSoon": {
+        "title": "Plata cu cardul vine în curând",
+        "description": "Deocamdată raportul se poate genera doar din conturile de test. Comanda rămâne aici: adresa și detaliile nu se pierd."
+      },
+      "accessError": "Nu am putut verifica accesul contului. Reîncarcă pagina.",
+      "generate": "Generează raportul",
+      "generating": "Trimitem comanda…",
+      "changeAddress": "Schimbă adresa",
+      "back": "Înapoi la detalii"
+    },
+    "summary": {
+      "eyebrow": "Comanda ta",
+      "product": "Raport online",
+      "includesTitle": "Ce primești",
+      "items": {
+        "scores": "9 scoruri pe categorii, de la 0 la 100",
+        "market": "Prețuri cerute și chirii în zonă, cu €/m²",
+        "nearby": "Facilități din apropiere și trasee pe jos",
+        "questions": "Întrebări de pus la vizionare",
+        "account": "Acces în cont, PDF și link de partajare"
+      },
+      "note": "Raportul descrie zona. Nu poate vedea starea locuinței.",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "vat": "TVA inclus."
+    },
+    "done": {
+      "title": "Pregătim raportul",
+      "description": "Calculăm scorurile pentru {{address}}. Durează de obicei sub un minut, iar pagina se actualizează singură.",
+      "queued": "Comanda e în coadă și începe în câteva secunde.",
+      "failedTitle": "Raportul nu a putut fi generat",
+      "failedDescription": "Nu te costă nimic. Încearcă din nou, iar dacă se repetă, scrie-ne.",
+      "retry": "Încearcă din nou",
+      "loadError": "Nu putem citi starea raportului acum. Reîncercăm automat.",
+      "myReports": "Vezi rapoartele mele",
+      "newCheck": "Verifică altă adresă"
     }
   },
   "status": {
     "pending_payment": "Așteaptă plata",
+    "queued": "În coadă",
     "generating": "Se generează",
     "ready": "Gata",
     "failed": "Eșuat"
@@ -36,6 +202,10 @@
       "pending_payment": {
         "title": "Raportul așteaptă plata",
         "description": "Îl pregătim imediat ce comanda este confirmată."
+      },
+      "queued": {
+        "title": "Raportul e în coadă",
+        "description": "Începem în câteva secunde. Pagina se actualizează singură."
       },
       "generating": {
         "title": "Pregătim raportul",

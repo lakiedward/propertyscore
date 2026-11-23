@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase/client';
 import type { Tables } from '@/lib/supabase/database.types';
 import { toAppError } from '@/lib/supabase/errors';
 import { shareTokenSchema } from '../report.schemas';
+import type { CheckOrder } from '../smart-check.schemas';
 import { parseReportResult } from '../report.utils';
 
 export const MY_REPORTS_PAGE_SIZE = 24;
@@ -79,4 +80,31 @@ export async function listMyReports(page = 0) {
     .range(from, from + MY_REPORTS_PAGE_SIZE - 1);
   if (error) throw toAppError(error);
   return { items: data, total: count ?? data.length };
+}
+
+export async function hasUnlimitedSmartCheck(userId: string) {
+  const { data, error } = await supabase
+    .from('smartcheck_unlimited_accounts')
+    .select('user_id')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw toAppError(error);
+  return data !== null;
+}
+
+export async function createOnlineReport(order: CheckOrder) {
+  const { data, error } = await supabase.rpc('create_online_report', {
+    p_address_text: order.address,
+    p_latitude: order.latitude,
+    p_longitude: order.longitude,
+    p_locale: order.locale,
+    p_declared_rooms: order.rooms,
+    p_declared_area_m2: order.area,
+    p_declared_floor: order.floor,
+    p_declared_building_floors: order.floors,
+    p_declared_has_elevator: order.elevator === undefined ? undefined : order.elevator === 'yes',
+    p_declared_construction_year: order.year,
+  });
+  if (error) throw toAppError(error);
+  return data;
 }

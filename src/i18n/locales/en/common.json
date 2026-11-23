@@ -87,7 +87,12 @@
       "decision_message_too_long": "The message can have at most 2,000 characters.",
       "listing_floor_above_building": "The floor cannot be higher than the number of floors in the building.",
       "value_out_of_range": "The value is outside the allowed range.",
-      "favorite_limit_reached": "You have already saved 500 homes. Remove a few from your favourites to add more."
+      "favorite_limit_reached": "You have already saved 500 homes. Remove a few from your favourites to add more.",
+      "address_invalid": "Enter the address of the home (3 to 300 characters).",
+      "location_invalid": "Place the pin on the map, on the building.",
+      "outside_coverage": "This address is outside the area the online report covers. Choose an address in one of the 9 cities.",
+      "no_ready_snapshot": "The report data is being updated right now. Try again in a few minutes.",
+      "payment_required": "Card payment is coming soon. For now, only test accounts can generate the report."
     }
   },
   "validation": {

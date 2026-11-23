@@ -27,6 +27,7 @@ The table is a starting point, not the truth. Confirm it before relying on it: t
 | Valhalla | Railway, its own service | walking times for the scores | routing on the OSM network | anything else |
 | Frontend SPA | Netlify, static with SPA fallback and security headers | every screen | UI, UX checks | secrets, authorization, server code (no Netlify Functions) |
 | MapLibre with OpenFreeMap tiles | browser, and the worker's headless Chromium for documents | listings map, report map, the maps in the report PDF | maps without a key | map rendering outside a browser |
+| Photon (komoot, OpenStreetMap geocoder) | browser, `https://photon.komoot.io` (CSP `connect-src`), no key | the `/check` address search and the reverse lookup when the pin moves (`features/smart-check/api/geocoding.api.ts`): typing debounced 350 ms, at least 3 characters, results limited to Romania's bounding box, repeated places dropped | address suggestions and pin-to-address in the browser | bulk or server geocoding (the worker has its own offline geocoder), anything that needs a guaranteed service level |
 | Sentry | browser | errors and monitoring | errors | logs with personal data |
 | Cloudflare Turnstile | browser widget + Supabase Auth check | CAPTCHA on sign-up, sign-in, password reset and resend (switched off for now: no site key, `[auth.captcha] enabled = false`) | stopping scripted sign-ups and email floods | anything that is not an auth form |
 | GitHub Actions | GitHub | CI, `deploy.yml` | checks; on a tag, migrations and then the Netlify site | jobs the product runs |

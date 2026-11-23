@@ -62,6 +62,11 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   decision_message_required: 'decision_message_required',
   decision_message_too_long: 'decision_message_too_long',
   favorite_limit_reached: 'favorite_limit_reached',
+  address_invalid: 'address_invalid',
+  location_invalid: 'location_invalid',
+  outside_coverage: 'outside_coverage',
+  no_ready_snapshot: 'no_ready_snapshot',
+  payment_required: 'payment_required',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {

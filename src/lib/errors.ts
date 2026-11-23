@@ -29,7 +29,12 @@ export type AppErrorReason =
   | 'decision_message_too_long'
   | 'listing_floor_above_building'
   | 'value_out_of_range'
-  | 'favorite_limit_reached';
+  | 'favorite_limit_reached'
+  | 'address_invalid'
+  | 'location_invalid'
+  | 'outside_coverage'
+  | 'no_ready_snapshot'
+  | 'payment_required';
 
 type AppErrorOptions = {
   cause?: unknown;

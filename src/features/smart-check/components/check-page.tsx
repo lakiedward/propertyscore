@@ -1,40 +1,144 @@
+import { getRouteApi } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
-import { CHECK_STEPS } from '../smart-check.schemas';
+import type { LngLat } from '@/components/map/map.config';
+import type {
+  CheckDetailsSearch,
+  CheckOrder,
+  CheckSearch,
+  CheckStep,
+} from '../smart-check.schemas';
+import { CheckAddressStep } from './check-address-step';
+import { CheckConfirmStep } from './check-confirm-step';
+import { CheckDetailsStep } from './check-details-step';
+import { CheckGeneratingStep } from './check-generating-step';
+import { CheckHero } from './check-hero';
+import { CheckPaymentStep } from './check-payment-step';
 
-type CheckPageProps = {
-  step: (typeof CHECK_STEPS)[number];
-};
+const route = getRouteApi('/_site/check');
 
-export function CheckPage({ step }: CheckPageProps) {
-  const { t } = useTranslation('smartCheck');
+type Location = { address: string; pin: LngLat };
+
+function locationOf(search: CheckSearch): Location | undefined {
+  return search.address !== undefined && search.lat !== undefined && search.lng !== undefined
+    ? { address: search.address, pin: [search.lng, search.lat] }
+    : undefined;
+}
+
+function detailsOf(search: CheckSearch): CheckDetailsSearch {
+  return {
+    rooms: search.rooms,
+    area: search.area,
+    floor: search.floor,
+    floors: search.floors,
+    elevator: search.elevator,
+    year: search.year,
+  };
+}
+
+function effectiveStep(search: CheckSearch, hasLocation: boolean): CheckStep {
+  const step = search.step ?? 'address';
+  if (step !== 'address' && !hasLocation) {
+    return 'address';
+  }
+  if (step === 'done' && search.report === undefined) {
+    return 'payment';
+  }
+  return step;
+}
+
+export function CheckPage() {
+  const { i18n } = useTranslation();
+  const search = route.useSearch();
+  const navigate = route.useNavigate();
+  const location = locationOf(search);
+  const step = effectiveStep(search, location !== undefined);
+  const details = detailsOf(search);
+
+  const goTo = (next: CheckStep, changes: Partial<CheckSearch> = {}) => {
+    void navigate({
+      search: (previous) => ({ ...previous, ...changes, step: next }),
+      resetScroll: true,
+    });
+  };
+
+  const withLocation = ({ address, pin }: Location): Partial<CheckSearch> => ({
+    address,
+    lng: pin[0],
+    lat: pin[1],
+  });
+
+  const order: CheckOrder | undefined = location
+    ? {
+        ...details,
+        address: location.address,
+        longitude: location.pin[0],
+        latitude: location.pin[1],
+        locale: i18n.resolvedLanguage ?? i18n.language,
+      }
+    : undefined;
 
   return (
-    <section aria-labelledby="check-title" className="bg-card py-10 w767:py-14">
-      <div className="page-wrap flex flex-col gap-6">
-        <h1
-          id="check-title"
-          className="text-[32px] leading-[1.14] font-extrabold tracking-title text-foreground w767:text-[44px]"
-        >
-          {t('check.title')}
-        </h1>
-        <ol aria-label={t('check.steps.label')} className="flex flex-wrap gap-2">
-          {CHECK_STEPS.map((item, index) => (
-            <li
-              key={item}
-              aria-current={item === step ? 'step' : undefined}
-              className={cn(
-                'rounded-full border px-3.5 py-1.5 text-caption font-bold',
-                item === step
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-surface-subtle text-muted-foreground',
-              )}
-            >
-              {t('check.steps.item', { number: index + 1, label: t(`check.steps.${item}`) })}
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
+    <>
+      <CheckHero step={step} />
+      {step === 'address' || !location || !order ? (
+        <CheckAddressStep
+          initialAddress={location?.address ?? ''}
+          initialPin={location?.pin ?? null}
+          onContinue={(next) => {
+            goTo('confirm', withLocation(next));
+          }}
+        />
+      ) : step === 'confirm' ? (
+        <CheckConfirmStep
+          address={location.address}
+          pin={location.pin}
+          onBack={(next) => {
+            goTo('address', withLocation(next));
+          }}
+          onContinue={(next) => {
+            goTo('details', withLocation(next));
+          }}
+        />
+      ) : step === 'details' ? (
+        <CheckDetailsStep
+          initialDetails={details}
+          onBack={() => {
+            goTo('confirm');
+          }}
+          onContinue={(next) => {
+            goTo('payment', {
+              rooms: next.rooms,
+              area: next.area,
+              floor: next.floor,
+              floors: next.floors,
+              elevator: next.elevator,
+              year: next.year,
+            });
+          }}
+        />
+      ) : step === 'payment' ? (
+        <CheckPaymentStep
+          order={order}
+          onBack={() => {
+            goTo('details');
+          }}
+          onChangeAddress={() => {
+            goTo('address');
+          }}
+          onCreated={(reportId) => {
+            goTo('done', { report: reportId });
+          }}
+        />
+      ) : search.report ? (
+        <CheckGeneratingStep
+          key={search.report}
+          reportId={search.report}
+          order={order}
+          onCreated={(reportId) => {
+            goTo('done', { report: reportId });
+          }}
+        />
+      ) : null}
+    </>
   );
 }
