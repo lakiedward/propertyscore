@@ -528,6 +528,122 @@
         }
       },
       "fifteenMinute": {
+        "eyebrow": "15 minutes · {{score}} / 100 · {{band}}",
+        "precision": {
+          "routed": "Precision: address · real streets",
+          "estimated": "Precision: address · estimate"
+        },
+        "headline": {
+          "all": "All {{count}} everyday things within {{limit}} minutes on foot",
+          "some": "{{covered}} of {{total}} everyday things within {{limit}} minutes on foot",
+          "none": "What you have within {{limit}} minutes on foot"
+        },
+        "lead": {
+          "average": "The city average is {{average}}.",
+          "better": "Here you have more within reach than in {{percent}}% of {{city}}'s areas."
+        },
+        "noData": "We have no 15-minute places data for this address.",
+        "map": {
+          "label": "Map of places within 15 minutes on foot · OpenStreetMap",
+          "panelLabel": "Map and list",
+          "chip": "{{limit}} minutes on foot",
+          "key": {
+            "title": "On the map",
+            "address": "Address",
+            "zone": "{{limit}} minutes on foot",
+            "places": "Everyday places"
+          },
+          "source": "Places: OpenStreetMap, {{date}}. Walking routes follow streets and paths, at {{speed}} metres a minute.",
+          "sourceNoDate": "Places: OpenStreetMap. Walking routes follow streets and paths, at {{speed}} metres a minute.",
+          "minutes": "{{minutes}} min"
+        },
+        "checklist": {
+          "eyebrow": "Your everyday list",
+          "title": "{{covered}} of {{total}} within {{limit}} minutes on foot",
+          "only": "the only one within {{limit}} min",
+          "count": "{{count}} within {{limit}} min",
+          "farther": "farther than {{limit}} minutes",
+          "min": "min"
+        },
+        "categories": {
+          "supermarket": "Supermarket",
+          "convenience": "Corner shop",
+          "bakery": "Bakery",
+          "greengrocer_market": "Market or greengrocer",
+          "butcher": "Butcher",
+          "drugstore": "Drugstore",
+          "restaurant": "Restaurant",
+          "cafe": "Café",
+          "bank_atm": "Bank or ATM",
+          "post": "Post office or parcel locker",
+          "hairdresser": "Hairdresser or barber",
+          "laundry": "Dry cleaner",
+          "car_service": "Car service",
+          "public_office": "Public office",
+          "pharmacy": "Pharmacy",
+          "doctor": "Family doctor",
+          "dentist": "Dentist",
+          "clinic": "Clinic",
+          "veterinary": "Vet",
+          "kindergarten": "Kindergarten",
+          "school": "School",
+          "high_school": "High school",
+          "park": "Park",
+          "playground": "Playground",
+          "fitness": "Gym",
+          "sports_ground": "Sports ground",
+          "swimming_pool": "Swimming pool",
+          "library": "Library",
+          "cinema_theatre": "Cinema or theatre",
+          "place_of_worship": "Place of worship",
+          "other": "Other service"
+        },
+        "groups": {
+          "shops": "shops",
+          "food_drink": "restaurants and cafés",
+          "services": "banks, post and other services",
+          "pharmacies": "pharmacies",
+          "medical": "doctors and clinics",
+          "schools": "schools and kindergartens",
+          "parks": "parks and playgrounds",
+          "sport": "gyms and sports grounds",
+          "culture": "cinemas, theatres, libraries",
+          "other": "other places"
+        },
+        "tiles": {
+          "eyebrow": "Plenty to choose from",
+          "title": "Not just one place nearby, but several to choose from",
+          "many": "{{ratio}} times more",
+          "rare": "rare in other neighbourhoods",
+          "fewer": "fewer than usual",
+          "same": "about the same as a typical neighbourhood",
+          "typical": "typical neighbourhood: {{count}}",
+          "typicalNone": "typical neighbourhood: none",
+          "fewerItem": "{{label}}, {{count}} (a typical neighbourhood has {{typical}})",
+          "fewerNote": "Fewer than usual: {{list}}."
+        },
+        "score": {
+          "better": "Better than <strong>{{percent}}%</strong> of {{city}}'s areas",
+          "best": "Among the best areas in {{city}}",
+          "worst": "Among the weakest areas in {{city}}",
+          "flat": "In {{city}} every area has the same score, between {{min}} and {{max}}. The score cannot tell addresses apart.",
+          "none": "No comparison with the rest of the city",
+          "you": "You · {{score}}",
+          "average": "Average {{average}}",
+          "range": "City areas: {{min}}–{{max}}",
+          "included": "<strong>Takes into account</strong> shops, health, schools, parks and services within {{limit}} minutes on foot",
+          "excluded": "<strong>Does not take into account</strong> how good each place is"
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Walking routing",
+          "siiir": "SIIIR",
+          "cnas_upu": "CNAS and UPU"
+        },
         "title": "The 15-minute city"
       },
       "green": {
