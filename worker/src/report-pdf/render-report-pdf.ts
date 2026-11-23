@@ -39,20 +39,36 @@ function parseReportInput(raw: unknown): ReportData {
   return toReportData(parsed.data);
 }
 
+export type RenderReportOptions = {
+  chromiumPath?: string;
+  logger: Logger;
+};
+
+export async function renderReportDocument(
+  raw: unknown,
+  options: RenderReportOptions,
+): Promise<{ number: number; pdf: Buffer }> {
+  const report = parseReportInput(raw);
+  if (report.unreadableSections.length > 0) {
+    options.logger.warn('report sections left out of the pdf', {
+      sections: report.unreadableSections.join(','),
+    });
+  }
+  const document = await buildReportDocument(report);
+  const pdf = await renderPdf(document, { executablePath: options.chromiumPath });
+  return { number: report.number, pdf };
+}
+
 export async function renderReportPdf(options: RenderReportPdfOptions): Promise<void> {
   const { source, logger } = options;
   const raw =
     'reportId' in source
       ? await readReadyReport(source.sql, source.reportId)
       : await readInputFile(source.inputPath);
-  const report = parseReportInput(raw);
-  if (report.unreadableSections.length > 0) {
-    logger.warn('report sections left out of the pdf', {
-      sections: report.unreadableSections.join(','),
-    });
-  }
-  const document = await buildReportDocument(report);
-  const pdf = await renderPdf(document, { executablePath: options.chromiumPath });
+  const { number, pdf } = await renderReportDocument(raw, {
+    chromiumPath: options.chromiumPath,
+    logger,
+  });
   await writeFile(options.outputPath, pdf);
-  logger.info('report pdf written', { report_number: report.number, bytes: pdf.length });
+  logger.info('report pdf written', { report_number: number, bytes: pdf.length });
 }
