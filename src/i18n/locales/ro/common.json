@@ -88,7 +88,7 @@
       "listing_floor_above_building": "Etajul nu poate fi mai mare decât numărul de etaje ale clădirii.",
       "value_out_of_range": "Valoarea este în afara limitelor permise.",
       "favorite_limit_reached": "Ai salvat deja 500 de locuințe. Scoate câteva din favorite ca să adaugi altele.",
-      "account_not_found": "Nu există niciun cont cu acest email."
+      "account_not_found": "Nu am găsit contul."
     }
   },
   "validation": {
