@@ -1,4 +1,4 @@
-import type { JsonObject, Sql } from '../db/sql.ts';
+import type { JsonObject, Sql, SqlQueries } from '../db/sql.ts';
 import { WorkerError } from '../lib/errors.ts';
 import type { AddressScores } from './address-scores.ts';
 import type { DeclaredDetails } from './declared.ts';
@@ -52,7 +52,7 @@ export async function beginReport(sql: Sql, reportId: string): Promise<StartedRe
 }
 
 export async function completeReport(
-  sql: Sql,
+  sql: SqlQueries,
   reportId: string,
   started: StartedReport,
   sections: JsonObject,

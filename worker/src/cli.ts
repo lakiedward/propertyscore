@@ -23,6 +23,10 @@ export type GenerateReportCommand = {
   reportId: string;
 };
 
+export type ServeReportsCommand = {
+  command: 'serve-reports';
+};
+
 export type CreateReportCommand = {
   command: 'create-report';
   ownerEmail: string;
@@ -73,6 +77,7 @@ export type RenderReportPdfCommand = {
 export type WorkerCommand =
   | BuildSnapshotCommand
   | GenerateReportCommand
+  | ServeReportsCommand
   | RenderReportPdfCommand
   | CreateReportCommand
   | ImportMarketListingsCommand
@@ -175,6 +180,11 @@ function parseGenerateReport(argv: readonly string[]): GenerateReportCommand {
     throw new WorkerError('invalid_report_id', 'generate-report needs --report <uuid>');
   }
   return { command: 'generate-report', reportId: reportId.data };
+}
+
+function parseServeReports(argv: readonly string[]): ServeReportsCommand {
+  parseArgs({ args: [...argv], options: {} });
+  return { command: 'serve-reports' };
 }
 
 function parseRenderReportPdf(argv: readonly string[]): RenderReportPdfCommand {
@@ -370,6 +380,8 @@ export function parseCommand(argv: readonly string[], now: Date): WorkerCommand 
       return parseBuildSnapshot(rest, now);
     case 'generate-report':
       return parseGenerateReport(rest);
+    case 'serve-reports':
+      return parseServeReports(rest);
     case 'render-report-pdf':
       return parseRenderReportPdf(rest);
     case 'create-report':

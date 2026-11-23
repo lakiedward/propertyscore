@@ -4,6 +4,8 @@ export type Sql = postgres.Sql;
 
 export type SqlTransaction = postgres.TransactionSql;
 
+export type SqlQueries = postgres.ISql;
+
 type JsonValue = postgres.JSONValue;
 
 export type JsonObject = Record<string, JsonValue>;

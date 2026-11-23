@@ -8,7 +8,12 @@ import { createLogger, type Logger } from './lib/logger.ts';
 import { generateReport } from './report/generate-report.ts';
 import { insertReport } from './report/report.db.ts';
 import { REPORT_SECTIONS } from './report/sections.ts';
-import { renderReportPdf } from './report-pdf/render-report-pdf.ts';
+import { renderReportDocument, renderReportPdf } from './report-pdf/render-report-pdf.ts';
+import { processReport } from './report-queue/process-report.ts';
+import { createReportPdfStorage } from './report-queue/report-pdf-storage.ts';
+import { claimNextReport, REPORT_QUEUE_CHANNEL } from './report-queue/report-queue.db.ts';
+import { serveReports } from './report-queue/serve-reports.ts';
+import { createWorkSignal } from './report-queue/work-signal.ts';
 import { importHealthSources } from './scoring/health/import-health-sources.ts';
 import { createValhallaClient, type ValhallaClient } from './routing/valhalla.ts';
 import { importAreaStatistics } from './scoring/investment/area-statistics-import.ts';
@@ -32,6 +37,59 @@ function sourceMirror(env: Env): SourceMirror | undefined {
 
 function reportRouter(env: Env): ValhallaClient | null {
   return env.VALHALLA_URL ? createValhallaClient(env.VALHALLA_URL) : null;
+}
+
+function stopOnSignals(logger: Logger): AbortSignal {
+  const controller = new AbortController();
+  const stop = (signal: NodeJS.Signals) => {
+    logger.info('serve-reports stopping', { signal });
+    controller.abort();
+  };
+  process.once('SIGTERM', stop);
+  process.once('SIGINT', stop);
+  return controller.signal;
+}
+
+async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<void> {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SECRET_KEY) {
+    throw new WorkerError(
+      'report_storage_not_configured',
+      'serve-reports needs SUPABASE_URL and SUPABASE_SECRET_KEY',
+    );
+  }
+  const storage = createReportPdfStorage({
+    supabaseUrl: env.SUPABASE_URL,
+    secretKey: env.SUPABASE_SECRET_KEY,
+  });
+  const work = createWorkSignal();
+  const stop = stopOnSignals(logger);
+  const listener = await sql.listen(REPORT_QUEUE_CHANNEL, () => {
+    work.notify();
+  });
+  logger.info('serve-reports listening', { channel: REPORT_QUEUE_CHANNEL });
+  try {
+    const result = await serveReports({
+      claim: () => claimNextReport(sql),
+      process: (reportId) =>
+        processReport({
+          sql,
+          reportId,
+          sections: REPORT_SECTIONS,
+          router: reportRouter(env),
+          earthquakes: createEarthquakeCatalog(),
+          renderReport: async (raw) =>
+            (await renderReportDocument(raw, { chromiumPath: env.CHROMIUM_PATH, logger })).pdf,
+          storage,
+          logger,
+        }),
+      waitForWork: work.wait,
+      stop,
+      logger,
+    });
+    logger.info('serve-reports done', { completed: result.completed, failed: result.failed });
+  } finally {
+    await listener.unlisten();
+  }
 }
 
 async function runCommand(
@@ -71,6 +129,9 @@ async function runCommand(
         earthquakes: createEarthquakeCatalog(),
         logger,
       });
+      return;
+    case 'serve-reports':
+      await runReportService(sql, env, logger);
       return;
     case 'render-report-pdf':
       await renderReportPdf({
