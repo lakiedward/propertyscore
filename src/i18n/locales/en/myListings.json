@@ -29,7 +29,8 @@
     "pending_approval": "In review",
     "approved": "Published",
     "rejected": "Rejected",
-    "blocked": "Blocked"
+    "blocked": "Blocked",
+    "suspended": "Suspended"
   },
   "notice": {
     "rejected": {

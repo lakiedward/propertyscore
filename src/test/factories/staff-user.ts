@@ -14,6 +14,7 @@ export function buildStaffUser(overrides: Partial<StaffUser> = {}): StaffUser {
     inspector_city_id: null,
     inspector_city_name: null,
     is_blocked: false,
+    block_reason: null,
     created_at: '2026-10-02T09:00:00.000Z',
     total_count: 1,
     ...overrides,

@@ -40,7 +40,13 @@ export type AppErrorReason =
   | 'inspector_unavailable'
   | 'inspector_busy'
   | 'availability_invalid'
-  | 'inspector_not_found';
+  | 'inspector_not_found'
+  | 'cannot_block_self'
+  | 'cannot_block_admin'
+  | 'block_reason_invalid'
+  | 'user_not_found'
+  | 'user_not_blocked'
+  | 'account_blocked';
 
 type AppErrorOptions = {
   cause?: unknown;

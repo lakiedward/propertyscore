@@ -25,6 +25,11 @@ export const staffHandlers = [
     supabaseUrl('/rest/v1/rpc/remove_inspector'),
     () => new HttpResponse(null, { status: 204 }),
   ),
+  http.post(supabaseUrl('/rest/v1/rpc/block_user'), () => new HttpResponse(null, { status: 204 })),
+  http.post(
+    supabaseUrl('/rest/v1/rpc/unblock_user'),
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 ];
 
 export function weeklyHoursResponse(

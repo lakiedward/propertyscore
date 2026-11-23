@@ -82,3 +82,15 @@ export const exceptionFormSchema = z
   });
 
 export type ExceptionFormValues = z.infer<typeof exceptionFormSchema>;
+
+export const BLOCK_REASON_MAX = 300;
+
+export const blockUserSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(1, validationMessage('required'))
+    .max(BLOCK_REASON_MAX, validationMessage('maxLength', { count: BLOCK_REASON_MAX })),
+});
+
+export type BlockUserValues = z.infer<typeof blockUserSchema>;

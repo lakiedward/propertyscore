@@ -14,7 +14,8 @@ export type UserFilters = {
 
 type StaffUserRow = Database['public']['Functions']['admin_list_users']['Returns'][number];
 
-type NullableUserColumn = 'full_name' | 'phone' | 'inspector_city_id' | 'inspector_city_name';
+type NullableUserColumn =
+  'full_name' | 'phone' | 'inspector_city_id' | 'inspector_city_name' | 'block_reason';
 
 export type StaffUser = Omit<StaffUserRow, NullableUserColumn> & {
   [Column in NullableUserColumn]: StaffUserRow[Column] | null;

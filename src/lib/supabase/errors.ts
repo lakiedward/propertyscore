@@ -34,6 +34,7 @@ const AUTH_REASONS: Readonly<Record<string, AppErrorReason>> = {
   current_password_invalid: 'current_password_invalid',
   current_password_required: 'current_password_required',
   reauthentication_needed: 'reauthentication_needed',
+  user_banned: 'account_blocked',
 };
 
 const AUTH_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
@@ -73,6 +74,11 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   inspector_busy: 'inspector_busy',
   availability_invalid: 'availability_invalid',
   inspector_not_found: 'inspector_not_found',
+  cannot_block_self: 'cannot_block_self',
+  cannot_block_admin: 'cannot_block_admin',
+  block_reason_invalid: 'block_reason_invalid',
+  user_not_found: 'user_not_found',
+  user_not_blocked: 'user_not_blocked',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {

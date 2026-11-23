@@ -98,7 +98,13 @@
       "inspector_unavailable": "The inspector does not work at this time.",
       "inspector_busy": "The inspector already has an inspection at this time.",
       "availability_invalid": "Check the ranges: at most 4 a day, without overlaps.",
-      "inspector_not_found": "The inspector no longer exists."
+      "inspector_not_found": "The inspector no longer exists.",
+      "cannot_block_self": "You cannot block your own account.",
+      "cannot_block_admin": "An admin cannot be blocked.",
+      "block_reason_invalid": "Write the reason for blocking (at most 300 characters).",
+      "user_not_found": "The user no longer exists.",
+      "user_not_blocked": "The account is not blocked.",
+      "account_blocked": "Your account has been blocked. Write to us if you think this is a mistake."
     }
   },
   "validation": {

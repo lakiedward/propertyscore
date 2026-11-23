@@ -31,5 +31,8 @@ export const statusDotVariants = cva('size-2 shrink-0 rounded-full', {
 });
 
 export function toModerationStatus(status: ListingStatus): ModerationStatus {
-  return status === 'draft' ? 'pending_approval' : status;
+  if (status === 'draft') {
+    return 'pending_approval';
+  }
+  return status === 'suspended' ? 'approved' : status;
 }

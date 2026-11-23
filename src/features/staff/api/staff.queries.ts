@@ -7,6 +7,8 @@ import {
 import type { UserFilters } from '../staff.types';
 import {
   addException,
+  blockUser,
+  unblockUser,
   getInspectorProfile,
   listCities,
   listExceptions,
@@ -114,4 +116,14 @@ export function useRemoveException(inspectorId: string) {
     mutationFn: removeException,
     onSuccess: () => invalidate(inspectorId),
   });
+}
+
+export function useBlockUser() {
+  const invalidate = useInvalidateUsers();
+  return useMutation({ mutationFn: blockUser, meta: { silent: true }, onSuccess: invalidate });
+}
+
+export function useUnblockUser() {
+  const invalidate = useInvalidateUsers();
+  return useMutation({ mutationFn: unblockUser, onSuccess: invalidate });
 }

@@ -54,7 +54,8 @@ export function ScheduleCalendar() {
   const inspectors = useQuery(inspectionQueries.inspectors(cityId));
   const allInspectors = useQuery(inspectionQueries.inspectors(null));
   const shown = (inspectors.data ?? []).filter(
-    (inspector) => !search.inspector || inspector.user_id === search.inspector,
+    (inspector) =>
+      inspector.is_active && (!search.inspector || inspector.user_id === search.inspector),
   );
   const ids = (inspectors.data ?? []).map((inspector) => inspector.user_id);
   const ranges = useQuery(inspectionQueries.workingRanges(ids));

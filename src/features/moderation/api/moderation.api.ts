@@ -24,7 +24,7 @@ export async function getModerationCounts(): Promise<ModerationCounts> {
   if (error) throw toAppError(error);
   const counts = { ...EMPTY_COUNTS };
   for (const row of data) {
-    if (row.status !== 'draft') {
+    if (row.status !== 'draft' && row.status !== 'suspended') {
       counts[row.status] = row.total;
     }
   }

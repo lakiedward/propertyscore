@@ -109,4 +109,73 @@ describe('UsersPage', { timeout: 20_000 }, () => {
 
     expect(await screen.findByText(ro.users.empty.title)).toBeInTheDocument();
   });
+
+  it('blocks a user with a reason', async () => {
+    let payload: unknown;
+    server.use(
+      usersResponse([CLIENT]),
+      http.post(supabaseUrl('/rest/v1/rpc/block_user'), async ({ request }) => {
+        payload = await request.json();
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const { user } = await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: ro.users.actions.menu.replace('{{name}}', CLIENT.full_name ?? ''),
+      }),
+    );
+    await user.click(await screen.findByRole('menuitem', { name: ro.users.actions.block }));
+    const dialog = await screen.findByRole('alertdialog');
+    await user.click(within(dialog).getByRole('button', { name: ro.users.blockDialog.confirm }));
+    expect(payload).toBeUndefined();
+    await user.type(within(dialog).getByLabelText(ro.users.blockDialog.reason), 'Anunțuri false');
+    await user.click(within(dialog).getByRole('button', { name: ro.users.blockDialog.confirm }));
+
+    await waitFor(() => {
+      expect(payload).toEqual({ p_user_id: CLIENT.user_id, p_reason: 'Anunțuri false' });
+    });
+  });
+
+  it('offers to unblock a blocked user and shows the reason', async () => {
+    const blocked = buildStaffUser({
+      full_name: 'Dan Ilie',
+      is_blocked: true,
+      block_reason: 'Spam',
+    });
+    server.use(usersResponse([blocked]));
+    const { user } = await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
+
+    expect(await screen.findByText('Spam')).toBeInTheDocument();
+    expect(within(rowOf('Dan Ilie')).getByText(ro.users.state.blocked)).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: ro.users.actions.menu.replace('{{name}}', 'Dan Ilie') }),
+    );
+    expect(
+      await screen.findByRole('menuitem', { name: ro.users.actions.unblock }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: ro.users.actions.block }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('never offers to block an admin', async () => {
+    const admin = buildStaffUser({ full_name: 'Radu Marin', roles: ['admin'] });
+    server.use(usersResponse([admin]));
+    const { user } = await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: ro.users.actions.menu.replace('{{name}}', 'Radu Marin'),
+      }),
+    );
+
+    expect(
+      await screen.findByRole('menuitem', { name: ro.users.actions.makeInspector }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: ro.users.actions.block }),
+    ).not.toBeInTheDocument();
+  });
 });

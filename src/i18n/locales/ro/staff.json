@@ -47,9 +47,11 @@
     "noPhone": "—",
     "actions": {
       "menu": "Acțiuni pentru {{name}}",
-      "makeInspector": "Fă-l inspector…",
-      "changeCity": "Schimbă orașul…",
-      "removeInspector": "Scoate rolul de inspector"
+      "makeInspector": "Inspector",
+      "changeCity": "Schimbă orașul",
+      "removeInspector": "Scoate rolul de inspector",
+      "block": "Blochează contul",
+      "unblock": "Deblochează contul"
     },
     "more": "Arată mai mulți utilizatori",
     "empty": {
@@ -73,7 +75,29 @@
       "done": "{{name}} nu mai e inspector."
     },
     "unnamed": "Fără nume",
-    "csvFileName": "utilizatori.csv"
+    "csvFileName": "utilizatori.csv",
+    "blockDialog": {
+      "title": "Blochezi contul lui {{name}}?",
+      "description": "Contul rămâne în baza de date și îl poți debloca oricând.",
+      "consequences": {
+        "signIn": "Nu mai poate intra în cont, iar sesiunile deschise se închid.",
+        "listings": "Anunțurile publicate dispar de pe site până la deblocare.",
+        "bookings": "Inspecțiile programate pe viitor se anulează.",
+        "visits": "Dacă e inspector, vizitele lui viitoare revin la „Neasignate”."
+      },
+      "reason": "Motivul blocării",
+      "reasonHint": "Îl văd doar administratorii.",
+      "confirm": "Blochează contul",
+      "pending": "Se blochează…",
+      "done": "Contul lui {{name}} a fost blocat."
+    },
+    "unblockDialog": {
+      "title": "Deblochezi contul lui {{name}}?",
+      "description": "Poate intra din nou în cont, iar anunțurile suspendate revin pe site. Inspecțiile anulate nu se refac.",
+      "confirm": "Deblochează",
+      "pending": "Se deblochează…",
+      "done": "Contul lui {{name}} a fost deblocat."
+    }
   },
   "availability": {
     "weekly": {

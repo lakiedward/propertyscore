@@ -98,7 +98,13 @@
       "inspector_unavailable": "Inspectorul nu lucrează la această oră.",
       "inspector_busy": "Inspectorul are deja o inspecție la această oră.",
       "availability_invalid": "Verifică intervalele: cel mult 4 pe zi, fără suprapuneri.",
-      "inspector_not_found": "Inspectorul nu mai există."
+      "inspector_not_found": "Inspectorul nu mai există.",
+      "cannot_block_self": "Nu îți poți bloca propriul cont.",
+      "cannot_block_admin": "Un administrator nu poate fi blocat.",
+      "block_reason_invalid": "Scrie motivul blocării (cel mult 300 de caractere).",
+      "user_not_found": "Utilizatorul nu mai există.",
+      "user_not_blocked": "Contul nu este blocat.",
+      "account_blocked": "Contul tău a fost blocat. Scrie-ne dacă crezi că e o greșeală."
     }
   },
   "validation": {

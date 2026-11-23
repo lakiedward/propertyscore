@@ -143,3 +143,13 @@ export async function listFreeStarts(inspectorId: string, from: string, to: stri
   if (error) throw toAppError(error);
   return data.map((row) => row.starts_at);
 }
+
+export async function blockUser({ userId, reason }: { userId: string; reason: string }) {
+  const { error } = await supabase.rpc('block_user', { p_user_id: userId, p_reason: reason });
+  if (error) throw toAppError(error);
+}
+
+export async function unblockUser(userId: string) {
+  const { error } = await supabase.rpc('unblock_user', { p_user_id: userId });
+  if (error) throw toAppError(error);
+}

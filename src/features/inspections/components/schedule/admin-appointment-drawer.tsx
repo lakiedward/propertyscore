@@ -251,14 +251,16 @@ function AssignInspector({ inspection }: { inspection: AdminInspection }) {
               <SelectValue placeholder={t('schedule.drawer.choose')} />
             </SelectTrigger>
             <SelectContent>
-              {(inspectors.data ?? []).map((inspector) => (
-                <SelectItem key={inspector.user_id} value={inspector.user_id}>
-                  {t('schedule.drawer.option', {
-                    name: inspector.full_name ?? '',
-                    city: inspector.city_name,
-                  })}
-                </SelectItem>
-              ))}
+              {(inspectors.data ?? [])
+                .filter((inspector) => inspector.is_active)
+                .map((inspector) => (
+                  <SelectItem key={inspector.user_id} value={inspector.user_id}>
+                    {t('schedule.drawer.option', {
+                      name: inspector.full_name ?? '',
+                      city: inspector.city_name,
+                    })}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>

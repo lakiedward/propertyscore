@@ -94,6 +94,7 @@ describe('toAppError', () => {
 
   it.each([
     ['invalid_credentials', 'invalid_credentials'],
+    ['user_banned', 'account_blocked'],
     ['email_not_confirmed', 'email_not_confirmed'],
     ['user_already_exists', 'user_already_exists'],
     ['email_exists', 'user_already_exists'],

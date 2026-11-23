@@ -9,14 +9,17 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { useAuth } from '@/features/auth';
 import { initialsOf } from '@/features/profile';
 import { formatDate } from '@/i18n/format';
 import { cn } from '@/lib/utils';
-import { useRemoveInspector } from '../api/staff.queries';
+import { useRemoveInspector, useUnblockUser } from '../api/staff.queries';
 import type { StaffUser } from '../staff.types';
+import { BlockUserDialog } from './block-user-dialog';
 import { InspectorCityDialog } from './inspector-city-dialog';
 
 const ROLE_BADGE_CLASS = {
@@ -31,8 +34,11 @@ type UserRowProps = {
 
 export function UserRow({ user }: UserRowProps) {
   const { t } = useTranslation('staff');
-  const [dialog, setDialog] = useState<'city' | 'remove' | null>(null);
+  const [dialog, setDialog] = useState<'city' | 'remove' | 'block' | 'unblock' | null>(null);
   const removeInspector = useRemoveInspector();
+  const unblockUser = useUnblockUser();
+  const { user: currentUser } = useAuth();
+  const canBlock = !user.roles.includes('admin') && user.user_id !== currentUser?.id;
   const name = user.full_name ?? t('users.unnamed');
   const isInspector = user.roles.includes('inspector');
 
@@ -72,11 +78,21 @@ export function UserRow({ user }: UserRowProps) {
         {formatDate(user.created_at)}
       </TableCell>
       <TableCell>
-        <StatusPill
-          shape="tag"
-          tone={user.is_blocked ? 'error' : 'success'}
-          label={t(user.is_blocked ? 'users.state.blocked' : 'users.state.active')}
-        />
+        <span className="flex flex-col gap-1">
+          <StatusPill
+            shape="tag"
+            tone={user.is_blocked ? 'error' : 'success'}
+            label={t(user.is_blocked ? 'users.state.blocked' : 'users.state.active')}
+          />
+          {user.is_blocked && user.block_reason ? (
+            <span
+              className="max-w-50 truncate text-meta text-muted-foreground"
+              title={user.block_reason}
+            >
+              {user.block_reason}
+            </span>
+          ) : null}
+        </span>
       </TableCell>
       <TableCell className="px-5">
         <DropdownMenu>
@@ -109,6 +125,29 @@ export function UserRow({ user }: UserRowProps) {
                 {t('users.actions.removeInspector')}
               </DropdownMenuItem>
             ) : null}
+            {canBlock ? (
+              <>
+                <DropdownMenuSeparator />
+                {user.is_blocked ? (
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setDialog('unblock');
+                    }}
+                  >
+                    {t('users.actions.unblock')}
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onSelect={() => {
+                      setDialog('block');
+                    }}
+                  >
+                    {t('users.actions.block')}
+                  </DropdownMenuItem>
+                )}
+              </>
+            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
         <InspectorCityDialog
@@ -135,6 +174,33 @@ export function UserRow({ user }: UserRowProps) {
             removeInspector.mutate(user.user_id, {
               onSuccess: () => {
                 toast.success(t('users.removeDialog.done', { name }));
+                setDialog(null);
+              },
+            });
+          }}
+        />
+        <BlockUserDialog
+          userId={user.user_id}
+          name={name}
+          isOpen={dialog === 'block'}
+          onOpenChange={(isOpen) => {
+            setDialog(isOpen ? 'block' : null);
+          }}
+        />
+        <ConfirmDialog
+          isOpen={dialog === 'unblock'}
+          onOpenChange={(isOpen) => {
+            setDialog(isOpen ? 'unblock' : null);
+          }}
+          title={t('users.unblockDialog.title', { name })}
+          description={t('users.unblockDialog.description')}
+          confirmLabel={t('users.unblockDialog.confirm')}
+          pendingLabel={t('users.unblockDialog.pending')}
+          isPending={unblockUser.isPending}
+          onConfirm={() => {
+            unblockUser.mutate(user.user_id, {
+              onSuccess: () => {
+                toast.success(t('users.unblockDialog.done', { name }));
                 setDialog(null);
               },
             });
