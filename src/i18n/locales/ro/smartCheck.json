@@ -537,6 +537,122 @@
         }
       },
       "fifteenMinute": {
+        "eyebrow": "15 minute · {{score}} / 100 · {{band}}",
+        "precision": {
+          "routed": "Precizie: adresă · pe străzi reale",
+          "estimated": "Precizie: adresă · estimare"
+        },
+        "headline": {
+          "all": "Toate cele {{count}} lucruri de zi cu zi, la cel mult {{limit}} minute pe jos",
+          "some": "{{covered}} din {{total}} lucruri de zi cu zi, la cel mult {{limit}} minute pe jos",
+          "none": "Ce ai la {{limit}} minute pe jos"
+        },
+        "lead": {
+          "average": "Media orașului e {{average}}.",
+          "better": "Aici ai mai multe la îndemână decât în {{percent}}% din zonele din {{city}}."
+        },
+        "noData": "Nu avem date despre locurile de la 15 minute pentru această adresă.",
+        "map": {
+          "label": "Harta locurilor la 15 minute pe jos · OpenStreetMap",
+          "panelLabel": "Harta și lista",
+          "chip": "{{limit}} minute pe jos",
+          "key": {
+            "title": "Pe hartă",
+            "address": "Adresa",
+            "zone": "{{limit}} minute pe jos",
+            "places": "Locuri de zi cu zi"
+          },
+          "source": "Locurile: OpenStreetMap, {{date}}. Drumurile pe jos urmează străzile și aleile, la {{speed}} de metri pe minut.",
+          "sourceNoDate": "Locurile: OpenStreetMap. Drumurile pe jos urmează străzile și aleile, la {{speed}} de metri pe minut.",
+          "minutes": "{{minutes}} min"
+        },
+        "checklist": {
+          "eyebrow": "Lista ta de zi cu zi",
+          "title": "{{covered}} din {{total}} la {{limit}} minute pe jos",
+          "only": "singurul în {{limit}} min",
+          "count": "{{count}} în {{limit}} min",
+          "farther": "mai departe de {{limit}} minute",
+          "min": "min"
+        },
+        "categories": {
+          "supermarket": "Supermarket",
+          "convenience": "Magazin de cartier",
+          "bakery": "Brutărie",
+          "greengrocer_market": "Piață sau aprozar",
+          "butcher": "Măcelărie",
+          "drugstore": "Drogerie",
+          "restaurant": "Restaurant",
+          "cafe": "Cafenea",
+          "bank_atm": "Bancă sau bancomat",
+          "post": "Poștă sau easybox",
+          "hairdresser": "Frizerie sau coafor",
+          "laundry": "Curățătorie",
+          "car_service": "Service auto",
+          "public_office": "Instituție publică",
+          "pharmacy": "Farmacie",
+          "doctor": "Medic de familie",
+          "dentist": "Stomatolog",
+          "clinic": "Clinică",
+          "veterinary": "Cabinet veterinar",
+          "kindergarten": "Grădiniță",
+          "school": "Școală",
+          "high_school": "Liceu",
+          "park": "Parc",
+          "playground": "Loc de joacă",
+          "fitness": "Sală de fitness",
+          "sports_ground": "Teren de sport",
+          "swimming_pool": "Piscină",
+          "library": "Bibliotecă",
+          "cinema_theatre": "Cinema sau teatru",
+          "place_of_worship": "Lăcaș de cult",
+          "other": "Alt serviciu"
+        },
+        "groups": {
+          "shops": "magazine",
+          "food_drink": "restaurante și cafenele",
+          "services": "bănci, poștă și alte servicii",
+          "pharmacies": "farmacii",
+          "medical": "medici și clinici",
+          "schools": "școli și grădinițe",
+          "parks": "parcuri și locuri de joacă",
+          "sport": "săli și terenuri de sport",
+          "culture": "cinematografe, teatre, biblioteci",
+          "other": "alte locuri"
+        },
+        "tiles": {
+          "eyebrow": "Ai de unde alege",
+          "title": "Nu doar un loc aproape, ci mai multe din care alegi",
+          "many": "de {{ratio}} ori mai multe",
+          "rare": "rar în alte cartiere",
+          "fewer": "mai puține decât de obicei",
+          "same": "cam cât într-un cartier obișnuit",
+          "typical": "cartier obișnuit: {{count}}",
+          "typicalNone": "cartier obișnuit: niciunul",
+          "fewerItem": "{{label}}, {{count}} (un cartier obișnuit are {{typical}})",
+          "fewerNote": "Mai puține decât de obicei: {{list}}."
+        },
+        "score": {
+          "better": "Mai bine decât <strong>{{percent}}%</strong> din zonele din {{city}}",
+          "best": "Printre cele mai bune zone din {{city}}",
+          "worst": "Printre cele mai slabe zone din {{city}}",
+          "flat": "În {{city}} toate zonele au același scor, între {{min}} și {{max}}. Scorul nu poate deosebi adresele între ele.",
+          "none": "Fără comparație cu restul orașului",
+          "you": "Tu · {{score}}",
+          "average": "Media {{average}}",
+          "range": "Zonele orașului: {{min}}–{{max}}",
+          "included": "<strong>Ține cont de</strong> magazine, sănătate, școli, parcuri și servicii la cel mult {{limit}} minute pe jos",
+          "excluded": "<strong>Nu ține cont de</strong> cât de bun e fiecare loc"
+        },
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Rutare pe jos",
+          "siiir": "SIIIR",
+          "cnas_upu": "CNAS și UPU"
+        },
         "title": "Orașul de 15 minute"
       },
       "green": {
