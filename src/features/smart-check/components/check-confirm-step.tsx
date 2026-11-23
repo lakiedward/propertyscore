@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import type { LngLat } from '@/components/map/map.config';
 import { findCoveredCity } from '../check.utils';
+import { ADDRESS_MIN_LENGTH } from '../smart-check.schemas';
 import { usePinnedAddress } from '../hooks/use-pinned-address';
 import { CheckOutsideNotice } from './check-outside-notice';
 import { CheckPinMap } from './check-pin-map';
@@ -71,9 +72,14 @@ export function CheckConfirmStep({ address, pin, onBack, onContinue }: CheckConf
             type="button"
             size="lg"
             onClick={() => {
-              if (!isOutside && location.reverseState !== 'resolving') {
-                onContinue(current);
+              if (isOutside || location.reverseState === 'resolving') {
+                return;
               }
+              if (location.address.trim().length < ADDRESS_MIN_LENGTH) {
+                onBack(current);
+                return;
+              }
+              onContinue(current);
             }}
             aria-disabled={isOutside || location.reverseState === 'resolving'}
             className="flex-1 aria-disabled:opacity-60 w767:flex-none"

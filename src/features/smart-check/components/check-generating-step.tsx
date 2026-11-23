@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, Navigate } from '@tanstack/react-router';
 import { CircleAlertIcon, LoaderCircleIcon, RotateCcwIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,30 @@ import { useErrorMessage } from '@/i18n/error-message';
 import { cn } from '@/lib/utils';
 import { smartCheckQueries, useCreateOnlineReport } from '../api/smart-check.queries';
 import type { CheckOrder } from '../smart-check.schemas';
+
+const SLOW_AFTER_MS = 3 * 60 * 1000;
+const STOP_POLLING_AFTER_MS = 15 * 60 * 1000;
+
+type WaitPhase = 'normal' | 'slow' | 'stopped';
+
+function useWaitPhase(): WaitPhase {
+  const [phase, setPhase] = useState<WaitPhase>('normal');
+
+  useEffect(() => {
+    const slowTimer = window.setTimeout(() => {
+      setPhase('slow');
+    }, SLOW_AFTER_MS);
+    const stopTimer = window.setTimeout(() => {
+      setPhase('stopped');
+    }, STOP_POLLING_AFTER_MS);
+    return () => {
+      window.clearTimeout(slowTimer);
+      window.clearTimeout(stopTimer);
+    };
+  }, []);
+
+  return phase;
+}
 
 type CheckGeneratingStepProps = {
   reportId: string;
@@ -18,7 +43,11 @@ type CheckGeneratingStepProps = {
 export function CheckGeneratingStep({ reportId, order, onCreated }: CheckGeneratingStepProps) {
   const { t } = useTranslation('smartCheck');
   const errorMessage = useErrorMessage();
-  const report = useQuery(smartCheckQueries.report(reportId));
+  const waitPhase = useWaitPhase();
+  const report = useQuery({
+    ...smartCheckQueries.report(reportId),
+    ...(waitPhase === 'stopped' ? { refetchInterval: false } : {}),
+  });
   const retry = useCreateOnlineReport();
   const status = report.data?.status;
 
@@ -56,8 +85,13 @@ export function CheckGeneratingStep({ reportId, order, onCreated }: CheckGenerat
             ? t('check.done.failedDescription')
             : t('check.done.description', { address: order.address })}
         </p>
-        {status === 'queued' ? (
+        {status === 'queued' && waitPhase === 'normal' ? (
           <p className="text-small text-ink-soft">{t('check.done.queued')}</p>
+        ) : null}
+        {!isFailed && waitPhase !== 'normal' ? (
+          <p className="text-small text-ink-soft">
+            {waitPhase === 'slow' ? t('check.done.slow') : t('check.done.stopped')}
+          </p>
         ) : null}
         {report.isError && !report.data ? (
           <p className="text-small text-destructive">{t('check.done.loadError')}</p>

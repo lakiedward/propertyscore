@@ -49,7 +49,9 @@ export function CheckPinSummary({ address, pin, reverseState, className }: Check
       </span>
       <div className="flex min-w-0 flex-col gap-0.5">
         <p className="text-body-sm font-extrabold break-words text-foreground">
-          {isResolving ? t('check.address.resolving') : address}
+          {isResolving
+            ? t('check.address.resolving')
+            : address || t('check.address.addressMissing')}
         </p>
         <p className="text-small text-ink-soft tabular-nums">
           {t('check.address.coordinates', {

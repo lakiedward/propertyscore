@@ -16,6 +16,7 @@ import {
 
 const GENERATING_REFRESH_MS = 5_000;
 const GEOCODING_STALE_MS = 24 * 60 * 60 * 1000;
+const GEOCODING_RETRIES = 1;
 const IN_PROGRESS_STATUSES = new Set(['queued', 'generating']);
 
 export const smartCheckQueries = {
@@ -48,12 +49,14 @@ export const smartCheckQueries = {
       queryKey: [...smartCheckQueries.all(), 'address-search', query],
       queryFn: ({ signal }) => searchAddresses(query, signal),
       staleTime: GEOCODING_STALE_MS,
+      retry: GEOCODING_RETRIES,
     }),
   reverseAddress: (position: LngLat) =>
     queryOptions({
       queryKey: [...smartCheckQueries.all(), 'reverse-address', ...position],
       queryFn: ({ signal }) => reverseGeocode(position, signal),
       staleTime: GEOCODING_STALE_MS,
+      retry: GEOCODING_RETRIES,
     }),
   unlimitedAccess: (userId: string) =>
     queryOptions({

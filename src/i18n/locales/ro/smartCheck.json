@@ -57,7 +57,8 @@
         "title": "Adresa nu este într-un oraș acoperit",
         "description": "Raportul online funcționează în: {{cities}}. Nu îți cerem nicio plată pentru această adresă."
       },
-      "continue": "Continuă"
+      "continue": "Continuă",
+      "addressMissing": "Fără adresă"
     },
     "includes": {
       "title": "Ce primești pentru {{price}}",
@@ -174,7 +175,9 @@
       "retry": "Încearcă din nou",
       "loadError": "Nu putem citi starea raportului acum. Reîncercăm automat.",
       "myReports": "Vezi rapoartele mele",
-      "newCheck": "Verifică altă adresă"
+      "newCheck": "Verifică altă adresă",
+      "slow": "Durează mai mult decât de obicei. Poți închide pagina: raportul apare în Rapoartele mele când e gata.",
+      "stopped": "Nu mai verificăm automat. Raportul apare în Rapoartele mele când e gata."
     }
   },
   "status": {

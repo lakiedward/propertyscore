@@ -51,11 +51,13 @@ export function usePinnedAddress(initial: PinnedAddress) {
         setAddressText(match.label);
         setReverseState('idle');
       } else {
+        setAddressText('');
         setReverseState('notFound');
       }
     } catch (error) {
       logger.warn('Reverse geocoding failed', { error });
       if (current === requestId.current) {
+        setAddressText('');
         setReverseState('failed');
       }
     }

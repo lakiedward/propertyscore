@@ -57,7 +57,8 @@
         "title": "This address is not in a covered city",
         "description": "The online report works in: {{cities}}. We won't ask you to pay for this address."
       },
-      "continue": "Continue"
+      "continue": "Continue",
+      "addressMissing": "No address yet"
     },
     "includes": {
       "title": "What you get for {{price}}",
@@ -173,7 +174,9 @@
       "retry": "Try again",
       "loadError": "We can't read the report's status right now. We'll retry automatically.",
       "myReports": "See my reports",
-      "newCheck": "Check another address"
+      "newCheck": "Check another address",
+      "slow": "This is taking longer than usual. You can close the page: the report appears in My reports when it is ready.",
+      "stopped": "We stopped checking automatically. The report appears in My reports when it is ready."
     }
   },
   "status": {
