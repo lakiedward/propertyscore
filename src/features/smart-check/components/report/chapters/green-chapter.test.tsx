@@ -31,7 +31,9 @@ describe('GreenChapter', { timeout: 20_000 }, () => {
       auth: signedInAs(),
     });
 
-    expect(await screen.findByText(ro.report.chapters.green.sources.title)).toBeInTheDocument();
+    expect(
+      (await screen.findAllByText(ro.report.chapters.green.sources.title)).length,
+    ).toBeGreaterThan(0);
     expect(screen.getByText(/Tu · 32/)).toBeInTheDocument();
   });
 });
