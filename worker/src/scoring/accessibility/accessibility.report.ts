@@ -7,8 +7,9 @@ import { routeFromAddress } from './accessibility.address.ts';
 import { listCityCells, readTravelRow } from './accessibility.db.ts';
 import { parseAccessibilityParams } from './accessibility.params.ts';
 import { buildReach, decodeTravelRow } from './accessibility.reach.ts';
+import type { EducationKind, EducationPlace } from './education-places.ts';
 import type { NeighbourhoodPlace } from './osm-transit.ts';
-import type { Itinerary } from './routing.ts';
+import type { DestinationTiming, Itinerary } from './routing.ts';
 import { routeKeyResolver } from './transit-network.ts';
 
 const LISTED_ROUTES = 12;
@@ -222,6 +223,58 @@ function position(row: { longitude: number; latitude: number }): [number, number
   return [Number(row.longitude.toFixed(6)), Number(row.latitude.toFixed(6))];
 }
 
+type RouteLabel = (key: string | null) => JsonObject | null;
+
+function fastestMinutes(timing: DestinationTiming | undefined): number | null {
+  const values = [timing?.transitMinutes, timing?.walkMinutes].filter(
+    (value): value is number => typeof value === 'number',
+  );
+  return values.length === 0 ? null : Math.min(...values);
+}
+
+function educationGroup(
+  kind: EducationKind,
+  places: readonly EducationPlace[],
+  timings: ReadonlyMap<string, DestinationTiming>,
+  trips: ReadonlyMap<string, Itinerary>,
+  routeKeyOf: (routeId: string | null) => string | null,
+  routeLabel: RouteLabel,
+): JsonObject[] {
+  return places
+    .filter((place) => place.kind === kind)
+    .flatMap((place) => {
+      const timing = timings.get(place.id);
+      const minutes = fastestMinutes(timing);
+      if (minutes === null) return [];
+      const byWalking = timing?.walkMinutes === minutes;
+      const planned = trips.get(place.id);
+      const trip = byWalking ? undefined : planned;
+      const legs = byWalking ? planned?.walkLegs : planned?.legs;
+      return [
+        {
+          id: place.id,
+          kind,
+          label: { ro: place.name, en: place.name },
+          group: place.group,
+          location: position({ longitude: place.lng, latitude: place.lat }),
+          minutes: Math.round(minutes),
+          by_walking: byWalking,
+          walk: byWalking ? Math.round(minutes) : trip ? Math.round(trip.walkMinutes) : null,
+          wait: trip ? Math.round(trip.waitMinutes) : null,
+          ride: trip ? Math.round(trip.rideMinutes) : null,
+          transfers: trip ? trip.transfers : null,
+          route: trip ? routeLabel(routeKeyOf(trip.routeId)) : null,
+          path: (legs ?? []).map((leg) => ({
+            mode: leg.mode,
+            route: routeLabel(routeKeyOf(leg.routeId)),
+            coordinates: leg.coordinates,
+          })),
+        },
+      ];
+    })
+    .sort((left, right) => left.minutes - right.minutes);
+}
+
 export function accessibilitySection(input: {
   inputs: z.infer<typeof inputsSchema>;
   transit: z.infer<typeof transitRowSchema>;
@@ -229,6 +282,8 @@ export function accessibilitySection(input: {
   routes: readonly RouteRow[];
   destinations: readonly DestinationRow[];
   addressTrips?: ReadonlyMap<string, Itinerary>;
+  addressTimings?: ReadonlyMap<string, DestinationTiming>;
+  education?: readonly EducationPlace[];
   tripRoutes?: readonly RouteRow[];
   routeKeyOf?: (routeId: string | null) => string | null;
   reach?: JsonObject | null;
@@ -241,7 +296,7 @@ export function accessibilitySection(input: {
     [...(input.tripRoutes ?? []), ...input.routes].map((route) => [route.route_key, route]),
   );
   const destinationsById = new Map(input.destinations.map((item) => [item.id, item]));
-  const routeLabel = (key: string | null) => {
+  const routeLabel: RouteLabel = (key) => {
     if (key === null) return null;
     const route = routesByKey.get(key);
     return route ? { ref: route.ref, mode: route.mode, colour: route.colour } : null;
@@ -320,6 +375,24 @@ export function accessibilitySection(input: {
         },
       ];
     }),
+    destination_groups: {
+      high_schools: educationGroup(
+        'high_school',
+        input.education ?? [],
+        input.addressTimings ?? new Map(),
+        addressTrips,
+        routeKeyOf,
+        routeLabel,
+      ),
+      faculties: educationGroup(
+        'faculty',
+        input.education ?? [],
+        input.addressTimings ?? new Map(),
+        addressTrips,
+        routeKeyOf,
+        routeLabel,
+      ),
+    },
     reach: input.reach ?? null,
   };
 }
@@ -344,7 +417,12 @@ export const accessibilityReportSection: ReportSection = {
       ),
     ]);
     const accessibilityParams = parseAccessibilityParams(sectionParams(params, 'accessibility'));
-    const { trips: addressTrips, places } = await routeFromAddress({
+    const {
+      trips: addressTrips,
+      timings: addressTimings,
+      places,
+      education,
+    } = await routeFromAddress({
       sql,
       logger,
       snapshotId,
@@ -389,6 +467,8 @@ export const accessibilityReportSection: ReportSection = {
       routes,
       destinations,
       addressTrips,
+      addressTimings,
+      education,
       tripRoutes,
       routeKeyOf,
       reach,

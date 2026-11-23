@@ -4,6 +4,7 @@ import {
   LandmarkIcon,
   MapPinIcon,
   PlaneIcon,
+  SchoolIcon,
   ShoppingBagIcon,
   TrainFrontIcon,
   type LucideIcon,
@@ -11,6 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { DestinationRow as Row, TripLeg } from '../../../accessibility.utils';
+import { formatDistanceM } from '../../../safety.utils';
 import { LineChip } from './line-chip';
 
 const KIND_ICONS: Readonly<Record<string, LucideIcon>> = {
@@ -20,6 +22,8 @@ const KIND_ICONS: Readonly<Record<string, LucideIcon>> = {
   airport: PlaneIcon,
   university: GraduationCapIcon,
   center: LandmarkIcon,
+  high_school: SchoolIcon,
+  faculty: GraduationCapIcon,
 };
 
 const LEG_CLASSES: Readonly<Record<TripLeg['kind'], string>> = {
@@ -32,11 +36,12 @@ const MIN_LEG_FLEX = 2;
 
 type DestinationRowProps = {
   row: Row;
+  isPick?: boolean;
   isSelected: boolean;
   onSelect: (id: string) => void;
 };
 
-export function DestinationRow({ row, isSelected, onSelect }: DestinationRowProps) {
+export function DestinationRow({ row, isPick = false, isSelected, onSelect }: DestinationRowProps) {
   const { t, i18n } = useTranslation('smartCheck');
   const language = i18n.resolvedLanguage === 'en' ? 'en' : 'ro';
   const Icon = KIND_ICONS[row.kind] ?? MapPinIcon;
@@ -73,9 +78,20 @@ export function DestinationRow({ row, isSelected, onSelect }: DestinationRowProp
         <Icon className="size-5" />
       </span>
       <span className="flex min-w-0 flex-col gap-0.75">
-        <b className="text-[16px] leading-snug font-bold">{name}</b>
+        <b className="text-[16px] leading-snug font-bold">
+          {name}
+          {row.tag ? (
+            <em className="ml-1 rounded-md bg-report-context-surface px-1.5 py-0.5 align-[1px] text-[11.5px] font-extrabold text-muted-foreground not-italic">
+              {row.tag}
+            </em>
+          ) : null}
+        </b>
         <small className="flex flex-wrap items-center gap-1.5 text-[13px] text-muted-foreground">
-          {row.isWalkOnly ? (
+          {row.isWalkOnly && row.walkDistanceM !== null && isPick ? (
+            t('report.chapters.accessibility.walkDistance', {
+              distance: formatDistanceM(row.walkDistanceM),
+            })
+          ) : row.isWalkOnly ? (
             t('report.chapters.accessibility.walkFaster', { minutes: row.minutes })
           ) : (
             <>
