@@ -1,14 +1,12 @@
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query';
 import { getRouteApi, Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { StatusPill } from '@/components/feedback/status-pill';
 import { EmptyState } from '@/components/layout/empty-state';
 import { LoadMoreButton } from '@/components/layout/load-more-button';
 import { PanelPageHeader } from '@/components/layout/panel-page-header';
 import { Button } from '@/components/ui/button';
-import { formatDate } from '@/i18n/format';
 import { smartCheckQueries } from '../api/smart-check.queries';
-import { REPORT_STATUS_TONE } from '../report-status.utils';
+import { MyReportCard } from './my-report-card';
 
 const authenticatedRoute = getRouteApi('/_authenticated');
 
@@ -26,30 +24,10 @@ export function MyReportsPage() {
       />
       {items.length > 0 ? (
         <>
-          <ul aria-label={t('common:panel.account.nav.reports')} className="flex flex-col gap-3">
+          <ul aria-label={t('common:panel.account.nav.reports')} className="flex flex-col gap-4">
             {items.map((report) => (
               <li key={report.id}>
-                <Link
-                  to="/check/result/$reportId"
-                  params={{ reportId: report.id }}
-                  className="flex flex-col gap-2 rounded-xl border border-card bg-card p-4 shadow-card-soft transition-colors hover:bg-surface-subtle w560:flex-row w560:items-center w560:justify-between"
-                >
-                  <span className="flex min-w-0 flex-col gap-1">
-                    <span className="truncate font-bold text-foreground">
-                      {report.address_text}
-                    </span>
-                    <span className="text-caption text-muted-foreground">
-                      {t('smartCheck:myReports.meta', {
-                        number: report.number,
-                        date: formatDate(report.created_at),
-                      })}
-                    </span>
-                  </span>
-                  <StatusPill
-                    tone={REPORT_STATUS_TONE[report.status]}
-                    label={t(`smartCheck:status.${report.status}`)}
-                  />
-                </Link>
+                <MyReportCard report={report} />
               </li>
             ))}
           </ul>

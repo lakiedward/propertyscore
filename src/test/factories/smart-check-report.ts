@@ -15,6 +15,7 @@ type ReportRow = Pick<
   | 'declared_building_floors'
   | 'declared_construction_year'
   | 'overall_score'
+  | 'pdf_path'
   | 'created_at'
   | 'generated_at'
 > & { result: unknown };
@@ -23,10 +24,13 @@ export const FREIDORF_REPORT_RESULT: Record<string, unknown> = freidorfResult;
 
 let sequence = 0;
 
+const OWNER_ID = 'a0000000-0000-4000-8000-000000000001';
+
 export function buildReportRow(overrides: Partial<ReportRow> = {}): ReportRow {
   sequence += 1;
+  const id = `d1000000-0000-4000-8000-${String(sequence).padStart(12, '0')}`;
   return {
-    id: `d1000000-0000-4000-8000-${String(sequence).padStart(12, '0')}`,
+    id,
     number: sequence,
     status: 'ready',
     address_text: 'Freidorf, Timișoara',
@@ -38,6 +42,7 @@ export function buildReportRow(overrides: Partial<ReportRow> = {}): ReportRow {
     declared_building_floors: null,
     declared_construction_year: null,
     overall_score: 46,
+    pdf_path: `${OWNER_ID}/${id}.pdf`,
     created_at: '2026-11-19T13:58:40.000Z',
     generated_at: '2026-11-19T13:59:23.517Z',
     result: FREIDORF_REPORT_RESULT,
@@ -51,8 +56,13 @@ export function toMyReportRow({
   status,
   address_text,
   overall_score,
+  pdf_path,
   created_at,
   generated_at,
 }: ReportRow) {
-  return { id, number, status, address_text, overall_score, created_at, generated_at };
+  return { id, number, status, address_text, overall_score, pdf_path, created_at, generated_at };
+}
+
+export function toSharedReportRow(row: ReportRow) {
+  return Object.fromEntries(Object.entries(row).filter(([column]) => column !== 'pdf_path'));
 }

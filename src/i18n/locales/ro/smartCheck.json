@@ -197,6 +197,17 @@
       "title": "Nu ai încă rapoarte Smart Check",
       "description": "Verifică o adresă și raportul apare aici, cu PDF și link de partajare.",
       "action": "Verifică o adresă"
+    },
+    "kind": "Raport online",
+    "score": "{{score}} / 100",
+    "scoreLabel": "Scor de zonă {{score}} din 100",
+    "open": "Deschide",
+    "note": {
+      "pending_payment": "Așteaptă plata.",
+      "queued": "La rând. Începem în câteva secunde.",
+      "generating": "Gata în câteva minute.",
+      "ready": "PDF și link de partajare incluse.",
+      "failed": "Nu a putut fi generat. Ne ocupăm de el."
     }
   },
   "report": {
@@ -557,9 +568,6 @@
         "ready": "Raport gata",
         "noDetails": "Fără detalii declarate",
         "declaredArea": "Suprafață declarată: {{area}} m²",
-        "downloadPdf": "Descarcă PDF",
-        "share": "Partajează",
-        "actionsSoon": "PDF-ul și linkul de partajare apar aici în curând.",
         "zoneScore": "Scor de zonă",
         "zoneScoreLabel": "Scor de zonă {{score}} din 100",
         "zoneAverage": "Media orașului {{average}}.",
@@ -657,6 +665,41 @@
       "mid": "Mediu",
       "good": "Bun",
       "top": "Foarte bun"
+    },
+    "pdf": {
+      "download": "Descarcă PDF",
+      "preparing": "Se pregătește PDF-ul",
+      "failed": "PDF-ul nu s-a putut descărca. Încearcă din nou.",
+      "missing": "PDF-ul acestui raport nu este disponibil încă."
+    },
+    "share": {
+      "action": "Partajează",
+      "title": "Partajează raportul",
+      "description": "Linkul arată raportul fără contul tău. Îl poți revoca oricând.",
+      "validity": "Valabil",
+      "options": {
+        "7": "7 zile",
+        "30": "30 de zile",
+        "never": "Fără expirare"
+      },
+      "create": "Creează link",
+      "replace": "Creează un link nou",
+      "replaceNote": "Linkul nou îl înlocuiește pe cel activ, care nu va mai merge.",
+      "newLink": "Linkul nou",
+      "newLinkNote": "Linkul se vede întreg doar acum. Copiază-l înainte să închizi.",
+      "copy": "Copiază linkul",
+      "copied": "Linkul a fost copiat.",
+      "copyFailed": "Nu am putut copia linkul. Selectează-l și copiază-l manual.",
+      "active": "Link activ",
+      "createdOn": "Creat pe {{date}}",
+      "expiresOn": "expiră pe {{date}}",
+      "noExpiry": "fără expirare",
+      "revoke": "Revocă",
+      "revoked": "Linkul a fost revocat și nu mai deschide raportul.",
+      "none": "Niciun link activ.",
+      "createFailed": "Nu am putut crea linkul. Încearcă din nou.",
+      "revokeFailed": "Nu am putut revoca linkul. Încearcă din nou.",
+      "loadFailed": "Nu am putut încărca linkul activ."
     }
   }
 }

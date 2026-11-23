@@ -105,7 +105,7 @@ export function SafetyMapBlock({ report }: SafetyMapBlockProps) {
             </button>
           ))}
         </div>
-        <div className="absolute inset-x-2.5 bottom-2.5 z-3 grid gap-2 rounded-xl border border-border bg-card/95 p-2 shadow-report-float w560:p-2.5">
+        <div className="absolute inset-x-2.5 bottom-7 z-3 grid gap-2 rounded-xl border border-border bg-card/95 p-2 shadow-report-float w560:p-2.5">
           {hasHeat ? (
             <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-bold text-muted-foreground">
               <b className="mr-0.5 text-[12.5px] text-foreground">
@@ -123,7 +123,7 @@ export function SafetyMapBlock({ report }: SafetyMapBlockProps) {
           <div
             role="group"
             aria-label={t('report.chapters.safety.map.elements')}
-            className="flex [scrollbar-width:none] gap-1.5 overflow-x-auto w560:flex-wrap"
+            className="flex flex-wrap gap-1.5"
           >
             {hasHeat ? (
               <button

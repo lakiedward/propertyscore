@@ -1,21 +1,12 @@
-import {
-  CheckIcon,
-  DatabaseIcon,
-  FileDownIcon,
-  InfoIcon,
-  LayersIcon,
-  Share2Icon,
-} from 'lucide-react';
+import { CheckIcon, DatabaseIcon, InfoIcon, LayersIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 import type { MapMarkerItem, MapOverlay } from '@/components/map/map-canvas';
 import { AddressPin } from '@/components/report/address-pin';
 import { ReportMap } from '@/components/report/report-map';
 import { boundsAround, ringAround } from '@/components/report/report-map.utils';
 import { scoreBand } from '@/components/report/score-bands';
 import { ScoreValue } from '@/components/trust/score-value';
-import { Button } from '@/components/ui/button';
 import { formatDate, formatNumber } from '@/i18n/format';
 import { addressLabel, areaCollection, reportCenter } from '../../report-map.utils';
 import {
@@ -25,6 +16,7 @@ import {
   weakestCategory,
 } from '../../report-summary.utils';
 import type { ReadyReport } from '../../report.types';
+import { ReportHeroActions } from './report-hero-actions';
 import { useRegisterReportHero } from './report-hero-context';
 
 const HERO_MAP_RADIUS_M = 625;
@@ -33,9 +25,10 @@ const DATE_FORMAT = { day: 'numeric', month: 'short', year: 'numeric' } as const
 
 type ReportHeroProps = {
   report: ReadyReport;
+  shareToken?: string;
 };
 
-export function ReportHero({ report }: ReportHeroProps) {
+export function ReportHero({ report, shareToken }: ReportHeroProps) {
   const { t } = useTranslation('smartCheck');
   useRegisterReportHero();
   const { result } = report;
@@ -90,10 +83,6 @@ export function ReportHero({ report }: ReportHeroProps) {
     },
   ];
 
-  const showSoon = () => {
-    toast.info(t('report.frame.hero.actionsSoon'));
-  };
-
   return (
     <section aria-labelledby="report-title" className="bg-report-hero text-on-inverse">
       <div className="mx-auto grid max-w-report items-center gap-9 px-4 pt-7 pb-10 w560:pt-14 w560:pb-18 w1080:grid-cols-[minmax(0,1fr)_minmax(0,640px)] w1080:gap-14">
@@ -132,24 +121,7 @@ export function ReportHero({ report }: ReportHeroProps) {
                   })}
             </HeroFact>
           </ul>
-          <div className="flex flex-wrap gap-2.5 pt-1.5">
-            <Button
-              variant="cta"
-              className="h-12 rounded-md px-5.5 text-body-sm font-bold"
-              onClick={showSoon}
-            >
-              <FileDownIcon aria-hidden className="size-4.5" />
-              {t('report.frame.hero.downloadPdf')}
-            </Button>
-            <Button
-              variant="outlineInverse"
-              className="h-12 rounded-md border-on-inverse/45 px-5.5 text-body-sm font-bold"
-              onClick={showSoon}
-            >
-              <Share2Icon aria-hidden className="size-4.5" />
-              {t('report.frame.hero.share')}
-            </Button>
-          </div>
+          <ReportHeroActions report={report} shareToken={shareToken} />
         </div>
         <div className="relative min-w-0 pt-4 pr-3.5 w560:pt-7.5 w560:pr-7.5">
           <span
