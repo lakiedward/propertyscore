@@ -52,7 +52,7 @@ export function ReportPage({ reportId, shareToken }: ReportPageProps) {
   if (isReadyReport(report)) {
     return (
       <article aria-labelledby="report-title">
-        <ReportHero report={report} />
+        <ReportHero report={report} shareToken={shareToken} />
         <ReportChapterNav
           ref={navRef}
           report={report}

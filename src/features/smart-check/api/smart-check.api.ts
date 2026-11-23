@@ -1,3 +1,7 @@
+import type {
+  SharedReportPdfRequest,
+  SharedReportPdfResponse,
+} from '../../../../supabase/functions/_shared/types';
 import { z } from 'zod';
 import { AppError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase/client';
@@ -10,10 +14,10 @@ import { parseReportResult } from '../report.utils';
 export const MY_REPORTS_PAGE_SIZE = 24;
 
 const REPORT_COLUMNS =
-  'id, number, status, address_text, latitude, longitude, declared_rooms, declared_area_m2, declared_floor, declared_building_floors, declared_construction_year, overall_score, result, created_at, generated_at' as const;
+  'id, number, status, address_text, latitude, longitude, declared_rooms, declared_area_m2, declared_floor, declared_building_floors, declared_construction_year, overall_score, result, pdf_path, created_at, generated_at' as const;
 
 const MY_REPORT_COLUMNS =
-  'id, number, status, address_text, overall_score, created_at, generated_at' as const;
+  'id, number, status, address_text, overall_score, pdf_path, created_at, generated_at' as const;
 
 const reportIdSchema = z.uuid();
 
@@ -31,6 +35,7 @@ type ReportRow = Pick<
   | 'declared_building_floors'
   | 'declared_construction_year'
   | 'overall_score'
+  | 'pdf_path'
   | 'created_at'
   | 'generated_at'
 > & { result: unknown };
@@ -67,7 +72,7 @@ export async function getSharedReport(id: string, token: string) {
     .maybeSingle();
   if (error) throw toAppError(error);
   if (!data) throw new AppError('not_found', 'Shared report link is not valid');
-  return toReport(data);
+  return toReport({ ...data, pdf_path: null });
 }
 
 export async function listMyReports(page = 0) {
@@ -107,4 +112,56 @@ export async function createOnlineReport(order: CheckOrder) {
   });
   if (error) throw toAppError(error);
   return data;
+}
+
+const SHARE_LINK_COLUMNS = 'id, expires_at, created_at' as const;
+
+const sharedReportPdfResponseSchema = z.object({
+  url: z.url(),
+}) satisfies z.ZodType<SharedReportPdfResponse>;
+
+export async function getActiveShareLink(reportId: string) {
+  const { data, error } = await supabase
+    .from('report_share_links')
+    .select(SHARE_LINK_COLUMNS)
+    .eq('online_report_id', reportId)
+    .is('revoked_at', null)
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw toAppError(error);
+  return data;
+}
+
+export async function createShareLink({
+  reportId,
+  expiresInDays,
+}: {
+  reportId: string;
+  expiresInDays: number | null;
+}) {
+  const { data, error } = await supabase.rpc('create_report_share_link', {
+    p_report_id: reportId,
+    p_expires_in_days: expiresInDays ?? undefined,
+  });
+  if (error) throw toAppError(error);
+  return data;
+}
+
+export async function revokeShareLink(reportId: string) {
+  const { error } = await supabase.rpc('revoke_report_share_link', { p_report_id: reportId });
+  if (error) throw toAppError(error);
+}
+
+export async function getSharedReportPdfUrl(reportId: string, token: string) {
+  const body: SharedReportPdfRequest = { reportId, token };
+  const response = await supabase.functions.invoke<unknown>('shared-report-pdf', { body });
+  const error: unknown = response.error;
+  if (error) throw toAppError(error);
+  const parsed = sharedReportPdfResponseSchema.safeParse(response.data);
+  if (!parsed.success) {
+    throw new AppError('unknown', 'Shared report PDF response does not match its schema');
+  }
+  return parsed.data.url;
 }
