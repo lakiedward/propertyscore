@@ -11,6 +11,7 @@ export const accessibilitySectionSchema = z.object({
       name: z.string().nullable(),
       location: positionSchema,
       walk_min: z.number(),
+      walk_m: z.number().nullable().default(null),
       routes: z.array(z.string()),
     }),
   ),
@@ -19,6 +20,8 @@ export const accessibilitySectionSchema = z.object({
       key: z.string(),
       ref: z.string().nullable(),
       mode: z.string(),
+      colour: z.string().nullable().default(null),
+      text_colour: z.string().nullable().default(null),
       peak_per_hour: z.number().nullable(),
     }),
   ),
@@ -52,6 +55,15 @@ export const accessibilitySectionSchema = z.object({
     .object({
       minutes: z.number(),
       share_pct: z.number(),
+      shares: z
+        .array(
+          z.object({
+            minutes: z.number(),
+            share_pct: z.number(),
+            neighbourhoods_reached: z.number(),
+          }),
+        )
+        .default([]),
       neighbourhoods_reached: z.number(),
       neighbourhoods_total: z.number(),
       isochrones: z.array(isochroneSchema),

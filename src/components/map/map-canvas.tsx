@@ -59,7 +59,13 @@ export type MapOverlay = {
   data: MapFeatureCollection;
   isVisible: boolean;
 } & (
-  | { kind: 'line'; colorToken: string; width: number; hasCasing?: boolean }
+  | {
+      kind: 'line';
+      colorToken: string;
+      width: number;
+      hasCasing?: boolean;
+      dash?: readonly number[];
+    }
   | { kind: 'circle'; colorToken: string; radius: number; opacity: number }
   | { kind: 'fill'; colorToken: string; opacity: number; outlineWidth?: number }
 );
@@ -610,7 +616,11 @@ function addOverlay(map: MapLibreMap, overlay: MapOverlay) {
       type: 'line',
       source: overlay.id,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': color, 'line-width': overlay.width },
+      paint: {
+        'line-color': color,
+        'line-width': overlay.width,
+        ...(overlay.dash ? { 'line-dasharray': [...overlay.dash] } : {}),
+      },
     });
     return;
   }

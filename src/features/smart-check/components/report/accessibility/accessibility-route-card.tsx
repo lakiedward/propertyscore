@@ -1,0 +1,122 @@
+import { InfoIcon } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
+import { destinationRows } from '../../../accessibility.utils';
+import type { ReadyReport } from '../../../report.types';
+import type { AccessibilitySection } from '../../../sections/accessibility.types';
+import { AccessibilityRouteMap } from './accessibility-route-map';
+import { DestinationRow } from './destination-row';
+
+const LEG_KEY = [
+  { kind: 'walk', dot: 'bg-muted-foreground' },
+  { kind: 'wait', dot: 'bg-warning-fill' },
+  { kind: 'ride', dot: 'bg-report-industry' },
+] as const;
+
+type AccessibilityRouteCardProps = {
+  report: ReadyReport;
+  section: AccessibilitySection;
+  sourceNote: string;
+};
+
+export function AccessibilityRouteCard({
+  report,
+  section,
+  sourceNote,
+}: AccessibilityRouteCardProps) {
+  const { t, i18n } = useTranslation('smartCheck');
+  const language = i18n.resolvedLanguage === 'en' ? 'en' : 'ro';
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const rows = destinationRows(section);
+
+  const handleSelect = (id: string) => {
+    setSelectedId((current) => (current === id ? null : id));
+  };
+
+  return (
+    <section
+      aria-labelledby="accessibility-routes-title"
+      className="flex flex-col gap-3 min-[560px]:rounded-2xl min-[560px]:border min-[560px]:border-border min-[560px]:bg-card min-[560px]:p-5 min-[560px]:shadow-report-panel"
+    >
+      <div className="relative h-130 overflow-hidden rounded-xl border border-border bg-report-map-land w760:h-140">
+        <AccessibilityRouteMap
+          report={report}
+          rows={rows}
+          stops={section.stops}
+          selectedId={selectedId}
+        />
+        <span className="pointer-events-none absolute top-2.5 left-2.5 z-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/96 px-2.75 py-1.25 text-[12.5px] font-bold text-foreground shadow-report-label">
+          <i aria-hidden="true" className="size-2.25 rounded-full bg-report-noise" />
+          {t('report.chapters.accessibility.mapChip')}
+        </span>
+        <div className="pointer-events-none absolute bottom-2.5 left-2.5 z-3 grid gap-0.75 rounded-thumb border border-border bg-card/96 px-3 py-2 text-[12px] text-muted-foreground shadow-report-label">
+          <b className="text-foreground">{t('report.chapters.accessibility.legendTitle')}</b>
+          <span className="flex items-center gap-2">
+            <i aria-hidden="true" className="size-2.5 rounded-full bg-primary" />
+            {t('report.chapters.accessibility.legendAddress')}
+          </span>
+          <span className="flex items-center gap-2">
+            <i aria-hidden="true" className="h-2 w-4 rounded-[3px] bg-report-noise" />
+            {t('report.chapters.accessibility.legendVehicle')}
+          </span>
+          <span className="flex items-center gap-2">
+            <i
+              aria-hidden="true"
+              className="h-0.75 w-4 bg-[radial-gradient(circle,var(--report-noise)_1.5px,transparent_1.6px)] bg-size-[5px_3px]"
+            />
+            {t('report.chapters.accessibility.legendWalk')}
+          </span>
+        </div>
+      </div>
+
+      <ul className="flex flex-wrap gap-x-5 gap-y-2 px-1 text-small font-semibold">
+        {rows.map((row) => (
+          <li key={row.id} className="inline-flex items-baseline gap-2">
+            <i
+              aria-hidden="true"
+              className={cn('size-2.5 shrink-0 self-center rounded-full', row.swatch.fill)}
+            />
+            <span>{row.label[language]}</span>
+            <b className={cn('shrink-0 whitespace-nowrap', row.swatch.text)}>
+              {t('report.chapters.accessibility.minutes', { minutes: row.minutes })}
+            </b>
+          </li>
+        ))}
+      </ul>
+
+      <div className="px-1 pt-3 max-[559px]:rounded-xl max-[559px]:border max-[559px]:border-border max-[559px]:bg-card max-[559px]:p-4 max-[559px]:shadow-report-panel min-[560px]:pt-1">
+        <div className="flex flex-wrap items-end justify-between gap-x-5 gap-y-2">
+          <h3
+            id="accessibility-routes-title"
+            className="text-[18px] font-extrabold tracking-[-0.01em]"
+          >
+            {t('report.chapters.accessibility.routesTitle')}
+          </h3>
+          <ul className="hidden flex-wrap gap-3.5 text-[12px] text-muted-foreground w760:flex">
+            {LEG_KEY.map((item) => (
+              <li key={item.kind} className="inline-flex items-center gap-1.25">
+                <i aria-hidden="true" className={cn('size-2.5 rounded-[3px]', item.dot)} />
+                {t(`report.chapters.accessibility.legKey.${item.kind}`)}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="mt-3 grid">
+          {rows.map((row) => (
+            <DestinationRow
+              key={row.id}
+              row={row}
+              isSelected={selectedId === row.id}
+              onSelect={handleSelect}
+            />
+          ))}
+        </div>
+        <p className="mt-2.5 flex gap-2 text-[12.5px] leading-[1.45] text-muted-foreground">
+          <InfoIcon aria-hidden="true" className="mt-0.5 size-3.75 shrink-0" />
+          <span>{sourceNote}</span>
+        </p>
+      </div>
+    </section>
+  );
+}

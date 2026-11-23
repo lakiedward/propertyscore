@@ -445,7 +445,70 @@
         }
       },
       "accessibility": {
-        "title": "Accesibilitate"
+        "title": "{{stops}} și {{lines}} care te duc în tot orașul",
+        "titleNoStops": "Nicio stație de transport public lângă adresă",
+        "stopsPhrase_one": "{{count}} stație la {{minutes}} minute pe jos",
+        "stopsPhrase_few": "{{count}} stații la {{minutes}} minute pe jos",
+        "stopsPhrase_other": "{{count}} de stații la {{minutes}} minute pe jos",
+        "linesPhrase_one": "{{count}} linie",
+        "linesPhrase_few": "{{count}} linii",
+        "linesPhrase_other": "{{count}} de linii",
+        "eyebrow": "Accesibilitate · {{score}} / 100 · {{band}}",
+        "badge": "Precizie: adresă · transport public",
+        "lead": "Media orașului e {{average}}. De aici ajungi cu transportul public mai ușor decât din {{percent}}% din zonele orașului.",
+        "leadPlain": "Stațiile din jur și drumurile de aici către punctele importante ale orașului.",
+        "mapLabel": "Harta drumurilor cu transportul public",
+        "mapChip": "Trasee transport",
+        "legendTitle": "Pe hartă",
+        "legendAddress": "Adresa",
+        "legendVehicle": "Cu vehiculul",
+        "legendWalk": "Pe jos până la stație",
+        "minutes": "{{minutes}} min",
+        "min": "min",
+        "routesTitle": "Cât faci până acolo, dimineața la 8",
+        "rowLabel": "{{name}}, {{minutes}} minute",
+        "walkFaster": "{{minutes}} min pe jos, mai repede decât cu linia",
+        "fromStop": "din stația {{stop}}",
+        "legs": {
+          "walk": "{{minutes}} min pe jos",
+          "wait": "{{minutes}} min așteptare",
+          "ride": "{{minutes}} min cu linia"
+        },
+        "legKey": {
+          "walk": "pe jos",
+          "wait": "așteptare",
+          "ride": "cu linia"
+        },
+        "sourceTimetable": "Liniile, stațiile și orarul: transportul public local, orar din {{date}}, o zi lucrătoare. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "sourceOsm": "Liniile și stațiile vin din OpenStreetMap, fără orar: așteptarea e estimată. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "scoreHeadline": "Mai bine decât <b>{{percent}}%</b> din zonele orașului",
+        "scoreYou": "Tu · {{score}}",
+        "scoreAverage": "Media {{average}}",
+        "scoreRange": "Zonele orașului: {{min}}–{{max}}",
+        "measuresIncluded": "<b>Ține cont de</b> stațiile din jur, câte linii trec, cât de des și cât faci până în oraș",
+        "measuresExcluded": "<b>Nu ține cont de</b> aglomerația din vehicule și întârzieri",
+        "reach": {
+          "eyebrow": "Cât de departe ajungi",
+          "title": "Orașul, în minute de la ușa ta",
+          "timeLabel": "În cât timp",
+          "option": "{{minutes}} min",
+          "ofCity": "din oraș",
+          "sentence": "În <b>{{minutes}} de minute</b>, cu transportul public și pe jos, ajungi în {{scale}}.",
+          "scales": {
+            "all": "aproape tot orașul",
+            "twoThirds": "peste două treimi din oraș",
+            "half": "aproape jumătate din oraș",
+            "third": "peste o treime din oraș",
+            "centre": "centru și cartierele vecine"
+          },
+          "neighbourhoods": "<b>{{reached}} din {{total}}</b> cartiere, plecând la 8 dimineața.",
+          "key": {
+            "under15": "sub 15 min",
+            "from15": "15–30 min",
+            "from30": "30–45 min"
+          },
+          "mapLabel": "Harta orașului: cât de departe ajungi cu transportul public"
+        }
       },
       "fifteenMinute": {
         "title": "Orașul de 15 minute"
