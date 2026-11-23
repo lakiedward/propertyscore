@@ -141,6 +141,7 @@ type MapCanvasProps = {
   onPick?: (position: LngLat) => void;
   onViewportChange?: (viewport: MapViewport) => void;
   hidesPointsOfInterest?: boolean;
+  hasLabels?: boolean;
   isScrollZoomEnabled?: boolean;
   hasCooperativeGestures?: boolean;
   isPrintable?: boolean;
@@ -203,6 +204,7 @@ export function MapCanvas({
   onPick,
   onViewportChange,
   hidesPointsOfInterest = false,
+  hasLabels = true,
   isScrollZoomEnabled = false,
   hasCooperativeGestures = false,
   isPrintable = false,
@@ -226,6 +228,7 @@ export function MapCanvas({
     zoom,
     isPrintable,
     hidesPointsOfInterest,
+    hasLabels,
     isScrollZoomEnabled,
     hasCooperativeGestures,
     hasNavigationControl,
@@ -298,6 +301,13 @@ export function MapCanvas({
         }
         if (instance.getLayer('water')) {
           instance.setPaintProperty('water', 'fill-color', themeColor('--map-water'));
+        }
+      }
+      if (!initialView.current.hasLabels) {
+        for (const layer of instance.getStyle().layers) {
+          if (layer.type === 'symbol') {
+            instance.setLayoutProperty(layer.id, 'visibility', 'none');
+          }
         }
       }
       if (initialView.current.hidesPointsOfInterest) {

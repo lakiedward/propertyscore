@@ -80,6 +80,7 @@ export function NoiseMap({ report }: NoiseMapProps) {
       bounds={bounds}
       boundsPadding={0}
       hasNavigationControl
+      hasLabels={false}
       imageOverlays={imageOverlays}
       overlays={overlays}
       markers={markers}
