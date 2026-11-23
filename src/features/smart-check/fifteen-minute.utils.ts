@@ -10,7 +10,9 @@ import {
   TreesIcon,
   type LucideIcon,
 } from 'lucide-react';
+import { formatDate } from '@/i18n/format';
 import type { LngLat, LngLatBounds } from '@/components/map/map.config';
+import type { MapFeatureCollection } from '@/components/map/map-canvas';
 import { boundsAround } from '@/components/report/report-map.utils';
 import { areaCollection } from './report-map.utils';
 import type { ReportSections } from './report.types';
@@ -24,6 +26,7 @@ const TILE_COUNT = 8;
 const MORE_THAN_TYPICAL = 1.5;
 const DEFAULT_WALK_SPEED_KMH = 4.5;
 const MIN_MAP_RADIUS_M = 700;
+const SMOOTHING_ROUNDS = 3;
 
 export const FAMILIES = ['shop', 'health', 'kids', 'green', 'services', 'outing'] as const;
 
@@ -189,4 +192,58 @@ export function widestIsochrone(
   section: FifteenMinuteSection,
 ): FifteenMinuteSection['isochrones'][number] | undefined {
   return [...section.isochrones].sort((left, right) => right.minutes - left.minutes)[0];
+}
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const SOURCE_DATE_FORMAT = { day: 'numeric', month: 'short', year: 'numeric' } as const;
+
+export function formatSourceDate(value: string): string {
+  return ISO_DATE.test(value) ? formatDate(value, SOURCE_DATE_FORMAT) : value;
+}
+
+type Ring = readonly (readonly [number, number])[];
+
+function smoothRing(ring: Ring, rounds: number): [number, number][] {
+  let points = ring.slice(0, -1).map(([lng, lat]): [number, number] => [lng, lat]);
+  for (let round = 0; round < rounds; round += 1) {
+    points = points.flatMap((point, index): [number, number][] => {
+      const next = points[(index + 1) % points.length] ?? point;
+      return [
+        [0.75 * point[0] + 0.25 * next[0], 0.75 * point[1] + 0.25 * next[1]],
+        [0.25 * point[0] + 0.75 * next[0], 0.25 * point[1] + 0.75 * next[1]],
+      ];
+    });
+  }
+  const [first] = points;
+  return first ? [...points, first] : points;
+}
+
+export function smoothAreas(collection: MapFeatureCollection): MapFeatureCollection {
+  return {
+    ...collection,
+    features: collection.features.map((feature) => {
+      const { geometry } = feature;
+      if (geometry.type === 'Polygon') {
+        return {
+          ...feature,
+          geometry: {
+            type: 'Polygon',
+            coordinates: geometry.coordinates.map((ring) => smoothRing(ring, SMOOTHING_ROUNDS)),
+          },
+        };
+      }
+      if (geometry.type === 'MultiPolygon') {
+        return {
+          ...feature,
+          geometry: {
+            type: 'MultiPolygon',
+            coordinates: geometry.coordinates.map((polygon) =>
+              polygon.map((ring) => smoothRing(ring, SMOOTHING_ROUNDS)),
+            ),
+          },
+        };
+      }
+      return feature;
+    }),
+  };
 }

@@ -4,7 +4,7 @@ import { FAMILIES, FAMILY_STYLES, WALK_LIMIT_MIN } from '../../../../fifteen-min
 export function FifteenMinuteKey() {
   const { t } = useTranslation('smartCheck');
   return (
-    <div className="pointer-events-none absolute bottom-8 left-2.5 z-3 grid gap-1 rounded-[10px] border border-border bg-card/96 px-3 py-2 text-[12px] leading-[1.55] text-muted-foreground shadow-report-label w560:bottom-2.5">
+    <div className="pointer-events-none absolute bottom-8 left-2.5 z-3 grid gap-1 rounded-[10px] border border-border bg-card/96 px-3 py-2 text-meta leading-[1.55] text-muted-foreground shadow-report-label w560:bottom-2.5">
       <b className="text-foreground">{t('report.chapters.fifteenMinute.map.key.title')}</b>
       <span className="flex items-center gap-2">
         <i aria-hidden="true" className="size-2.5 rounded-full bg-primary" />

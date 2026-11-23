@@ -43,19 +43,17 @@ function RowBody({ row, label }: { row: ChecklistRow; label: string }) {
       <span className="flex min-w-0 flex-1 flex-col gap-px">
         <b
           className={cn(
-            'text-[14.5px] leading-[1.55] font-bold',
+            'text-small leading-[1.55] font-bold',
             !row.isReached && 'text-muted-foreground',
           )}
         >
           {label}
         </b>
-        <small className="truncate text-[12.5px] leading-[1.55] text-muted-foreground">
-          {detail}
-        </small>
+        <small className="truncate text-meta leading-[1.55] text-muted-foreground">{detail}</small>
       </span>
       {row.minutes === null ? null : (
-        <span className="text-[12.5px] whitespace-nowrap text-muted-foreground">
-          <b className="text-[18px] font-extrabold text-foreground tabular-nums">{row.minutes}</b>{' '}
+        <span className="text-meta whitespace-nowrap text-muted-foreground">
+          <b className="text-lg font-extrabold text-foreground tabular-nums">{row.minutes}</b>{' '}
           {t('report.chapters.fifteenMinute.checklist.min')}
         </span>
       )}
@@ -76,7 +74,7 @@ export function FifteenMinuteChecklist({
       <p className="text-meta font-extrabold tracking-label text-muted-foreground uppercase">
         {t('report.chapters.fifteenMinute.checklist.eyebrow')}
       </p>
-      <h3 className="mt-1 text-[18.72px] leading-[1.55] font-bold">
+      <h3 className="mt-1 text-h4 leading-[1.55] font-bold">
         {t('report.chapters.fifteenMinute.checklist.title', {
           covered: section.covered,
           total: section.total,

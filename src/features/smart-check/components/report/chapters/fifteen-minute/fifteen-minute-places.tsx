@@ -6,13 +6,11 @@ import { FifteenMinuteChecklist } from './fifteen-minute-checklist';
 import { FifteenMinuteMap } from './fifteen-minute-map';
 import {
   WALK_LIMIT_MIN,
+  formatSourceDate,
   walkMetersPerMinute,
   type FifteenMinuteSection,
 } from '../../../../fifteen-minute.utils';
 import type { ReadyReport } from '../../../../report.types';
-import { formatDate } from '@/i18n/format';
-
-const DATE_FORMAT = { day: 'numeric', month: 'short', year: 'numeric' } as const;
 
 type FifteenMinutePlacesProps = {
   report: ReadyReport;
@@ -26,7 +24,7 @@ export function FifteenMinutePlaces({ report, section }: FifteenMinutePlacesProp
   const speed = walkMetersPerMinute(section);
   const note = osmDate
     ? t('report.chapters.fifteenMinute.map.source', {
-        date: /^\d{4}-\d{2}-\d{2}$/.test(osmDate) ? formatDate(osmDate, DATE_FORMAT) : osmDate,
+        date: formatSourceDate(osmDate),
         speed,
       })
     : t('report.chapters.fifteenMinute.map.sourceNoDate', { speed });
@@ -39,7 +37,7 @@ export function FifteenMinutePlaces({ report, section }: FifteenMinutePlacesProp
       >
         <div className="relative h-[380px] min-h-[380px] w560:h-[460px] w1059:h-auto w1059:min-h-[640px]">
           <FifteenMinuteMap report={report} section={section} selectedKey={selectedKey} />
-          <span className="pointer-events-none absolute top-2.5 left-2.5 z-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/96 px-3 py-1.5 text-[12.5px] font-bold shadow-report-label">
+          <span className="pointer-events-none absolute top-2.5 left-2.5 z-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/96 px-3 py-1.5 text-meta font-bold shadow-report-label">
             <i aria-hidden="true" className="size-2 rounded-full bg-report-fifteen-minute" />
             {t('report.chapters.fifteenMinute.map.chip', { limit: WALK_LIMIT_MIN })}
           </span>
@@ -55,7 +53,7 @@ export function FifteenMinutePlaces({ report, section }: FifteenMinutePlacesProp
           />
         </aside>
       </section>
-      <p className="mt-2.5 flex gap-2 text-[12.5px] leading-[1.45] text-muted-foreground">
+      <p className="mt-2.5 flex gap-2 text-meta leading-[1.45] text-muted-foreground">
         <InfoIcon aria-hidden className="mt-0.5 size-3.75 shrink-0" />
         <span>{note}</span>
       </p>

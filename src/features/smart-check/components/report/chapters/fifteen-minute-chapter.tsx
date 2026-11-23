@@ -3,21 +3,14 @@ import { ChapterScoreCard } from '@/components/report/chapter-score-card';
 import { ChapterSources } from '@/components/report/chapter-sources';
 import { ReportChapterHead } from '@/components/report/report-chapter-head';
 import { scoreBand } from '@/components/report/score-bands';
-import { formatDate, formatList, formatNumber } from '@/i18n/format';
-import { WALK_LIMIT_MIN } from '../../../fifteen-minute.utils';
+import { formatList, formatNumber } from '@/i18n/format';
+import { WALK_LIMIT_MIN, formatSourceDate } from '../../../fifteen-minute.utils';
 import { scoredCategories, standing } from '../../../report-summary.utils';
 import type { ReportChapterProps } from '../report-chapter-props';
 import { FifteenMinuteChoiceCard } from './fifteen-minute/fifteen-minute-choice-card';
 import { FifteenMinutePlaces } from './fifteen-minute/fifteen-minute-places';
 
 const TITLE_ID = 'report-chapter-fifteen-minute';
-const DATE_FORMAT = { day: 'numeric', month: 'short', year: 'numeric' } as const;
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-
-function sourceDate(value: string): string {
-  return ISO_DATE.test(value) ? formatDate(value, DATE_FORMAT) : value;
-}
-
 export function FifteenMinuteChapter({ report }: ReportChapterProps) {
   const { t } = useTranslation('smartCheck');
   const { result } = report;
@@ -82,18 +75,20 @@ export function FifteenMinuteChapter({ report }: ReportChapterProps) {
   const weightTotal = scored.reduce((sum, entry) => sum + entry.weight, 0) || 1;
   const weight = item ? (item.weight / weightTotal) * 100 : null;
   const dates = result.snapshot.source_dates;
-  const upuDates = [dates.cnas, dates.ms_upu].flatMap((date) => (date ? [sourceDate(date)] : []));
+  const upuDates = [dates.cnas, dates.ms_upu].flatMap((date) =>
+    date ? [formatSourceDate(date)] : [],
+  );
   const sources = [
     ...(dates.osm
-      ? [`${t('report.chapters.fifteenMinute.sources.osm')} · ${sourceDate(dates.osm)}`]
+      ? [`${t('report.chapters.fifteenMinute.sources.osm')} · ${formatSourceDate(dates.osm)}`]
       : []),
     ...(dates.walk_routing
       ? [
-          `${t('report.chapters.fifteenMinute.sources.walk_routing')} · ${sourceDate(dates.walk_routing)}`,
+          `${t('report.chapters.fifteenMinute.sources.walk_routing')} · ${formatSourceDate(dates.walk_routing)}`,
         ]
       : []),
     ...(dates.siiir
-      ? [`${t('report.chapters.fifteenMinute.sources.siiir')} · ${sourceDate(dates.siiir)}`]
+      ? [`${t('report.chapters.fifteenMinute.sources.siiir')} · ${formatSourceDate(dates.siiir)}`]
       : []),
     ...(upuDates.length > 0
       ? [`${t('report.chapters.fifteenMinute.sources.cnas_upu')} · ${upuDates.join(' / ')}`]

@@ -9,6 +9,7 @@ import {
   categoryFamily,
   nearestPlace,
   placeBounds,
+  smoothAreas,
   widestIsochrone,
   type Family,
   type FifteenMinuteSection,
@@ -64,7 +65,7 @@ export function FifteenMinuteMap({ report, section, selectedKey }: FifteenMinute
             opacity: ZONE_OPACITY,
             outlineWidth: 2,
             isVisible: true,
-            data: areaCollection([widest.geometry]),
+            data: smoothAreas(areaCollection([widest.geometry])),
           },
         ]
       : []),

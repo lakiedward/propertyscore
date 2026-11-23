@@ -35,7 +35,7 @@ function ChoiceTileCard({ tile }: { tile: ChoiceTile }) {
       <b className="text-[32px] leading-none font-extrabold tracking-[-0.04em] tabular-nums w560:text-[40px]">
         {tile.count}
       </b>
-      <span className="text-[14.5px] leading-[1.3] font-bold">
+      <span className="text-small leading-[1.3] font-bold">
         {t(`report.chapters.fifteenMinute.groups.${tile.key}`, {
           defaultValue: t('report.chapters.fifteenMinute.groups.other'),
         })}
@@ -44,7 +44,7 @@ function ChoiceTileCard({ tile }: { tile: ChoiceTile }) {
         <>
           <em
             className={cn(
-              'mt-1.5 text-[13px] font-bold not-italic',
+              'mt-1.5 text-caption font-bold not-italic',
               comparison.kind === 'many' || comparison.kind === 'rare'
                 ? 'text-(--c)'
                 : 'text-muted-foreground',
@@ -58,7 +58,7 @@ function ChoiceTileCard({ tile }: { tile: ChoiceTile }) {
                 })
               : t(`report.chapters.fifteenMinute.tiles.${comparison.kind}`)}
           </em>
-          <small className="text-[12px] text-muted-foreground">
+          <small className="text-meta text-muted-foreground">
             {tile.typical === 0 || tile.typical === null
               ? t('report.chapters.fifteenMinute.tiles.typicalNone')
               : t('report.chapters.fifteenMinute.tiles.typical', { count: tile.typical })}
@@ -92,7 +92,7 @@ export function FifteenMinuteChoiceCard({ section }: FifteenMinuteChoiceCardProp
       </p>
       <h3
         id="fifteen-choice-title"
-        className="mt-1 text-[19px] leading-tight font-bold tracking-[-0.02em] w560:text-[22px]"
+        className="mt-1 text-h4 leading-tight font-bold tracking-[-0.02em] w560:text-[22px]"
       >
         {t('report.chapters.fifteenMinute.tiles.title')}
       </h3>
@@ -102,7 +102,7 @@ export function FifteenMinuteChoiceCard({ section }: FifteenMinuteChoiceCardProp
         ))}
       </ul>
       {fewer.length > 0 ? (
-        <p className="mt-3.5 flex gap-2 text-[13px] leading-[1.45] text-muted-foreground">
+        <p className="mt-3.5 flex gap-2 text-caption leading-[1.45] text-muted-foreground">
           <InfoIcon aria-hidden className="mt-0.5 size-3.75 shrink-0" />
           <span>
             {t('report.chapters.fifteenMinute.tiles.fewerNote', { list: formatList(fewer) })}
