@@ -112,7 +112,7 @@ export function SeismicMap({ report, earthquakes }: SeismicMapProps) {
       anchor: 'left' as const,
       node: (
         <span className="pointer-events-none text-[11px] font-bold text-(--ps-amber-800)">
-          {t('report.chapters.seismic.list.distance', { km })}
+          {t('report.chapters.seismic.map.ring', { km })}
         </span>
       ),
     })),

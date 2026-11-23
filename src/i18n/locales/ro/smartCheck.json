@@ -918,7 +918,8 @@
           "label": "Cutremurele din jurul adresei, din {{since}} încoace",
           "keyQuake": "cutremur, cu cât mai mare cercul, cu atât mai puternic",
           "keyTop": "cele mai puternice {{count}}, cu numărul din listă",
-          "quakeLabel": "Cutremur de magnitudine {{magnitude}}"
+          "quakeLabel": "Cutremur de magnitudine {{magnitude}}",
+          "ring": "{{km}} km"
         },
         "list": {
           "eyebrow": "Din {{since}} încoace",

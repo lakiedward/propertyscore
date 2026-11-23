@@ -906,7 +906,8 @@
           "label": "Earthquakes around the address since {{since}}",
           "keyQuake": "earthquake, the bigger the circle, the stronger it was",
           "keyTop": "the {{count}} strongest, numbered as in the list",
-          "quakeLabel": "Earthquake of magnitude {{magnitude}}"
+          "quakeLabel": "Earthquake of magnitude {{magnitude}}",
+          "ring": "{{km}} km"
         },
         "list": {
           "eyebrow": "Since {{since}}",
