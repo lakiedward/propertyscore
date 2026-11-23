@@ -1,14 +1,18 @@
 import { Trans, useTranslation } from 'react-i18next';
+import { ChapterSources } from '@/components/report/chapter-sources';
 import { ChapterScoreCard } from '@/components/report/chapter-score-card';
 import { ReportChapterHead } from '@/components/report/report-chapter-head';
 import { scoreBand } from '@/components/report/score-bands';
-import { formatDate } from '@/i18n/format';
+import { formatDate, formatList, formatNumber } from '@/i18n/format';
+import { scoredCategories } from '../../../report-summary.utils';
 import { nearestStopsSummary } from '../../../accessibility.utils';
 import type { ReportChapterProps } from '../report-chapter-props';
 import { AccessibilityReachCard } from '../accessibility/accessibility-reach-card';
 import { AccessibilityRouteCard } from '../accessibility/accessibility-route-card';
 
 const TITLE_ID = 'report-chapter-accessibility';
+const SOURCE_KEYS = ['osm', 'gtfs', 'walk_routing'] as const;
+const DATE_FORMAT = { day: 'numeric', month: 'short', year: 'numeric' } as const;
 
 export function AccessibilityChapter({ report }: ReportChapterProps) {
   const { t } = useTranslation('smartCheck');
@@ -47,6 +51,21 @@ export function AccessibilityChapter({ report }: ReportChapterProps) {
           date: formatDate(section.reference_date),
         })
       : t('report.chapters.accessibility.sourceOsm');
+
+  const scored = scoredCategories(result);
+  const item = scored.find((entry) => entry.key === 'accessibility');
+  const weightTotal = scored.reduce((sum, entry) => sum + entry.weight, 0) || 1;
+  const weight = item ? (item.weight / weightTotal) * 100 : null;
+  const sources = SOURCE_KEYS.flatMap((key) => {
+    const date = result.snapshot.source_dates[key];
+    return date
+      ? [
+          `${t(`report.chapters.accessibility.sources.${key}`)} · ${
+            /^\d{4}-\d{2}-\d{2}$/.test(date) ? formatDate(date, DATE_FORMAT) : date
+          }`,
+        ]
+      : [];
+  });
 
   return (
     <section aria-labelledby={TITLE_ID} className="grid max-w-default min-w-0 gap-4">
@@ -113,6 +132,32 @@ export function AccessibilityChapter({ report }: ReportChapterProps) {
         }}
       />
       <AccessibilityReachCard report={report} section={section} />
+      <ChapterSources title={t('report.chapters.accessibility.sources.title')}>
+        {sources.length > 0 ? (
+          <p>
+            <Trans
+              t={t}
+              i18nKey="report.chapters.accessibility.sources.list"
+              values={{ sources: formatList(sources) }}
+              components={{ strong: <b /> }}
+            />
+          </p>
+        ) : null}
+        {weight !== null && item ? (
+          <p>
+            <Trans
+              t={t}
+              i18nKey="report.chapters.accessibility.sources.weight"
+              values={{
+                weight: formatNumber(weight, { maximumFractionDigits: 0 }),
+                points: formatNumber((item.score * weight) / 100, { maximumFractionDigits: 1 }),
+              }}
+              components={{ strong: <b /> }}
+            />
+          </p>
+        ) : null}
+        <p>{t('report.chapters.accessibility.sources.same')}</p>
+      </ChapterSources>
     </section>
   );
 }

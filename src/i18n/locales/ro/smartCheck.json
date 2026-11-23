@@ -481,6 +481,15 @@
         },
         "sourceTimetable": "Liniile, stațiile și orarul: transportul public local, orar din {{date}}, o zi lucrătoare. Drumurile pe jos urmează străzile din OpenStreetMap.",
         "sourceOsm": "Liniile și stațiile vin din OpenStreetMap, fără orar: așteptarea e estimată. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "osm": "OpenStreetMap",
+          "gtfs": "Orar transport public",
+          "walk_routing": "Rutare pe jos"
+        },
         "scoreHeadline": "Mai bine decât <b>{{percent}}%</b> din zonele orașului",
         "scoreYou": "Tu · {{score}}",
         "scoreAverage": "Media {{average}}",

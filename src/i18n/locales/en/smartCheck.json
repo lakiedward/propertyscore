@@ -472,6 +472,15 @@
         },
         "sourceTimetable": "Lines, stops and timetable: local public transport, timetable of {{date}}, a working day. Walking routes follow OpenStreetMap streets.",
         "sourceOsm": "Lines and stops come from OpenStreetMap, without a timetable: waiting time is estimated. Walking routes follow OpenStreetMap streets.",
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "osm": "OpenStreetMap",
+          "gtfs": "Public transport timetable",
+          "walk_routing": "Walking routing"
+        },
         "scoreHeadline": "Better than <b>{{percent}}%</b> of the city's zones",
         "scoreYou": "You · {{score}}",
         "scoreAverage": "Average {{average}}",
