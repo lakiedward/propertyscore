@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { formatDate, formatNumber } from '@/i18n/format';
 import { fieldInspectionQueries } from '../api/field-inspection.queries';
 import { CONSENT_SECTION } from '../field-inspection.types';
-import { answerOf, firstCategoryWith, groupQuestions } from '../field-inspection.utils';
+import { groupQuestionsByCategory } from '@/lib/question-numbering';
+import { answerOf, firstCategoryWith } from '../field-inspection.utils';
 import { CategorySection } from './category-section';
 import { ConsentStep } from './consent-step';
 import { ScoreAside } from './score-aside';
@@ -24,12 +25,8 @@ export function InspectionWorkspacePage() {
     ...fieldInspectionQueries.progress(inspectionId),
     enabled: isSigned,
   });
-  const fileUrls = useQuery({
-    ...fieldInspectionQueries.fileUrls(workspace.media.map((item) => item.path)),
-    enabled: workspace.media.length > 0,
-  });
   const language = i18n.language;
-  const groups = groupQuestions(workspace.categories, workspace.questions);
+  const groups = groupQuestionsByCategory(workspace.categories, workspace.questions);
   const defaultSection =
     firstCategoryWith(groups, (question) => !answerOf(workspace.answers, question.id)?.answer)
       ?.key ?? groups[0]?.category.key;
@@ -91,7 +88,6 @@ export function InspectionWorkspacePage() {
               stats={progress.data?.categories.find(
                 (item) => item.category_id === group.category.id,
               )}
-              fileUrls={fileUrls.data ?? {}}
               language={language}
             />
           )}

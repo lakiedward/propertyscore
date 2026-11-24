@@ -32,13 +32,14 @@
     "sign": "Sign and start the inspection",
     "signing": "Starting…",
     "signedAt": "Signed · {{time}}",
-    "missingChecks_one": "{{count}} checkbox",
-    "missingChecks_other": "{{count}} checkboxes",
-    "missingSignature": "signature",
-    "missing": "missing: {{items}}",
     "ready": "Ready to sign",
     "signedNote": "The consent is signed. You can move on to the questions.",
-    "notStartable": "The inspection can start on the visit day, at most one hour early."
+    "notStartable": "The inspection can start on the visit day, at most one hour early.",
+    "missingChecks_one": "{{count}} checkbox is missing",
+    "missingChecks_other": "{{count}} checkboxes are missing",
+    "missingSignature": "The signature is missing",
+    "missingBoth_one": "{{count}} checkbox and the signature are missing",
+    "missingBoth_other": "{{count}} checkboxes and the signature are missing"
   },
   "question": {
     "requirement": {
@@ -71,8 +72,7 @@
     "removeMedia": "Delete file {{index}} from question {{number}}",
     "uploading": "Uploading…",
     "videoTooLarge": "The clip is over 50 MB. Record a shorter one.",
-    "fileTypeInvalid": "This file type is not accepted.",
-    "noteSavedLater": "The note is saved together with the answer."
+    "fileTypeInvalid": "This file type is not accepted."
   },
   "section": {
     "weightLine": "{{weight}}% of the grade · {{done}}/{{total}} · grade {{score}}",

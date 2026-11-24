@@ -99,5 +99,13 @@ export function workspaceHandlers({
       rows(request, consent ? [consent] : []),
     ),
     http.post(supabaseUrl('/rest/v1/rpc/inspection_progress'), () => HttpResponse.json(progress)),
+    http.post(
+      supabaseUrl('/rest/v1/rpc/save_inspection_answer'),
+      () => new HttpResponse(null, { status: 204 }),
+    ),
+    http.post(
+      supabaseUrl('/rest/v1/rpc/submit_inspection'),
+      () => new HttpResponse(null, { status: 204 }),
+    ),
   ];
 }

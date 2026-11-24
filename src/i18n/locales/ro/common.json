@@ -131,7 +131,10 @@
       "media_missing": "Fișierul nu s-a încărcat. Încearcă din nou.",
       "media_limit_reached": "Ai atins numărul maxim de fișiere pentru această întrebare.",
       "owner_name_required": "Scrie numele proprietarului.",
-      "inspection_incomplete": "Mai sunt întrebări fără răspuns sau media obligatorie lipsă."
+      "inspection_incomplete": "Mai sunt întrebări fără răspuns sau media obligatorie lipsă.",
+      "inspector_has_open_inspection": "Inspectorul are o inspecție în lucru. Așteaptă să fie trimisă înainte să-l scoți.",
+      "media_type_invalid": "Fișierul nu se potrivește cu tipul ales (foto sau video).",
+      "consent_item_invalid": "Verifică textele secțiunilor: unul e prea lung."
     }
   },
   "validation": {

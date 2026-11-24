@@ -1,3 +1,4 @@
+import { bucharestDay } from '@/lib/bucharest-time';
 import type { HomeFormValues } from './booking.schemas';
 import type { HomeChoice } from './booking.store';
 import type {
@@ -130,5 +131,19 @@ export function canChangeAppointment(row: { status: string; starts_at: string },
   return (
     (row.status === 'scheduled' || row.status === 'inspector_assigned') &&
     new Date(row.starts_at).getTime() > now.getTime()
+  );
+}
+
+export function currentInspectionOf(
+  agenda: readonly AgendaInspection[],
+  now: Date,
+): AgendaInspection | undefined {
+  const today = bucharestDay(now);
+  return (
+    agenda.find((item) => item.status === 'in_progress') ??
+    agenda.find(
+      (item) =>
+        item.status === 'inspector_assigned' && bucharestDay(new Date(item.starts_at)) === today,
+    )
   );
 }

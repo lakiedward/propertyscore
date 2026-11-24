@@ -1,3 +1,4 @@
+import type { ConsentSectionsValues } from './inspection-form.schemas';
 import { Constants, type Enums } from '@/lib/supabase/database.types';
 import type { getConsentEditor } from './api/consent.api';
 import type { getFormEditor } from './api/inspection-form.api';
@@ -30,18 +31,12 @@ export type PointsPatch = {
   points_problem: number;
 };
 
-export type ConsentSectionPatch = {
-  id: string;
-  title_ro: string;
-  title_en: string;
-  text_ro: string;
-  text_en: string;
-  check_ro: string;
-  check_en: string;
-};
+export type ConsentSectionPatch = ConsentSectionsValues['sections'][number];
 
 export type ConsentEditor = Awaited<ReturnType<typeof getConsentEditor>>;
 
 export type ConsentVersion = ConsentEditor['versions'][number];
 
 export const CONSENT_LANGUAGES = ['ro', 'en'] as const;
+
+export type ConsentLanguage = (typeof CONSENT_LANGUAGES)[number];

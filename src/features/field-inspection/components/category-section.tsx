@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { localizedText } from '@/i18n/localized';
 import { Button } from '@/components/ui/button';
 import { formatNumber } from '@/i18n/format';
 import type { CategoryProgress, Workspace } from '../field-inspection.types';
@@ -13,7 +14,6 @@ type CategorySectionProps = {
   previous: CategoryGroup | undefined;
   next: CategoryGroup | undefined;
   stats: CategoryProgress | undefined;
-  fileUrls: Readonly<Record<string, string>>;
   language: string;
 };
 
@@ -23,14 +23,13 @@ export function CategorySection({
   previous,
   next,
   stats,
-  fileUrls,
   language,
 }: CategorySectionProps) {
   const { t } = useTranslation('fieldInspection');
   const { inspection } = workspace;
   const isEditable = inspection.status === 'in_progress';
   const nameOf = (item: CategoryGroup) =>
-    language === 'en' && item.category.name_en ? item.category.name_en : item.category.name_ro;
+    localizedText(item.category.name_ro, item.category.name_en, language);
 
   return (
     <section
@@ -64,7 +63,6 @@ export function CategorySection({
               question={question}
               answer={answerOf(workspace.answers, question.id)}
               media={mediaOf(workspace.media, question.id)}
-              fileUrls={fileUrls}
               language={language}
               isEditable={isEditable}
             />

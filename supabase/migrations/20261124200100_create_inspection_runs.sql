@@ -24,7 +24,7 @@ alter table public.inspections add constraint inspections_started_check check (
 );
 
 alter table public.inspections add constraint inspections_submitted_check check (
-  status <> 'completed' or submitted_at is null or score is not null
+  status <> 'completed' or submitted_at is not null
 );
 
 create index inspections_form_version_id_idx on public.inspections (form_version_id);
@@ -165,10 +165,14 @@ create policy "Assigned inspectors upload files to their open inspections"
     )
   );
 
-create policy "Assigned inspectors delete files of their open inspections"
+create policy "Assigned inspectors delete unregistered files of their open inspections"
   on storage.objects for delete to authenticated
   using (
     bucket_id = 'inspection-media'
+    and not exists (
+      select 1 from public.inspection_media
+      where inspection_media.path = objects.name
+    )
     and exists (
       select 1 from public.inspections
       where inspections.id::text = (storage.foldername(name))[1]
@@ -350,7 +354,7 @@ begin
     raise exception using errcode = 'P0001', message = 'form_not_published';
   end if;
 
-  if p_language not in ('ro', 'en')
+  if coalesce(p_language, '') not in ('ro', 'en')
     or char_length(btrim(coalesce(p_signer_name, ''))) not between 1 and 120
     or (
       select coalesce(array_agg(id order by id), '{}') from public.consent_sections
@@ -415,7 +419,7 @@ $$;
 create function public.save_inspection_answer(
   p_inspection_id uuid,
   p_question_id uuid,
-  p_answer public.inspection_answer,
+  p_answer public.inspection_answer default null,
   p_note text default ''
 )
 returns void
@@ -443,7 +447,9 @@ begin
   insert into public.inspection_answers (inspection_id, question_id, answer, note, answered_by)
   values (p_inspection_id, p_question_id, p_answer, coalesce(p_note, ''), (select auth.uid()))
   on conflict (inspection_id, question_id) do update
-  set answer = excluded.answer, note = excluded.note, answered_by = excluded.answered_by;
+  set answer = coalesce(excluded.answer, inspection_answers.answer),
+    note = excluded.note,
+    answered_by = excluded.answered_by;
 end;
 $$;
 
@@ -464,6 +470,8 @@ declare
   target public.inspections;
   media_id uuid;
   existing integer;
+  stored_type text;
+  stored_size bigint;
 begin
   target := private.lock_assigned_inspection(p_inspection_id);
   if target.status <> 'in_progress' then
@@ -475,13 +483,20 @@ begin
   ) then
     raise exception using errcode = 'P0001', message = 'question_not_in_form';
   end if;
-  if p_path is null
-    or p_path not like p_inspection_id::text || '/question/%'
-    or not exists (
-      select 1 from storage.objects
-      where objects.bucket_id = 'inspection-media' and objects.name = p_path
-    ) then
+  select objects.metadata ->> 'mimetype', (objects.metadata ->> 'size')::bigint
+  into stored_type, stored_size
+  from storage.objects
+  where objects.bucket_id = 'inspection-media'
+    and objects.name = p_path
+    and p_path like p_inspection_id::text || '/question/%';
+  if not found then
     raise exception using errcode = 'P0001', message = 'media_missing';
+  end if;
+  stored_type := coalesce(stored_type, p_mime_type);
+  if stored_type is null
+    or (p_kind = 'photo' and stored_type not like 'image/%')
+    or (p_kind = 'video' and stored_type not like 'video/%') then
+    raise exception using errcode = 'P0001', message = 'media_type_invalid';
   end if;
 
   select count(*) into existing from public.inspection_media
@@ -494,7 +509,13 @@ begin
     inspection_id, question_id, kind, path, mime_type, size_bytes, created_by
   )
   values (
-    p_inspection_id, p_question_id, p_kind, p_path, p_mime_type, p_size_bytes, (select auth.uid())
+    p_inspection_id,
+    p_question_id,
+    p_kind,
+    p_path,
+    stored_type,
+    coalesce(stored_size, p_size_bytes),
+    (select auth.uid())
   )
   returning id into media_id;
 
@@ -595,7 +616,7 @@ begin
   update public.inspections
   set status = 'completed',
     submitted_at = now(),
-    score = coalesce(private.inspection_total_score(p_inspection_id), 0),
+    score = private.inspection_total_score(p_inspection_id),
     category_scores = (
       select jsonb_agg(
         jsonb_build_object(
@@ -746,12 +767,36 @@ as $$
   where inspections.inspector_id = (select auth.uid())
     and private.has_role('inspector')
     and inspections.status <> 'cancelled'
-    and inspections.starts_at < p_to
-    and inspections.ends_at > p_from
+    and (
+      (inspections.starts_at < p_to and inspections.ends_at > p_from)
+      or inspections.status = 'in_progress'
+    )
   order by inspections.starts_at;
 $$;
 
+create function private.refuse_deactivating_busy_inspector()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if old.is_active and not new.is_active and exists (
+    select 1 from public.inspections
+    where inspections.inspector_id = new.user_id and inspections.status = 'in_progress'
+  ) then
+    raise exception using errcode = 'P0001', message = 'inspector_has_open_inspection';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger inspector_profiles_refuse_deactivating_busy_inspector
+  before update of is_active on public.inspector_profiles
+  for each row execute function private.refuse_deactivating_busy_inspector();
+
 revoke execute on function
+  private.refuse_deactivating_busy_inspector(),
   private.lock_assigned_inspection(uuid),
   private.inspection_category_scores(uuid),
   private.inspection_total_score(uuid),

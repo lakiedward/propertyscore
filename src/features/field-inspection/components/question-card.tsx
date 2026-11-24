@@ -10,13 +10,21 @@ import {
   XIcon,
   type LucideIcon,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { useId, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { localizedText } from '@/i18n/localized';
 import { cn } from '@/lib/utils';
-import { useAddMedia, useRemoveMedia, useSaveAnswer } from '../api/field-inspection.queries';
+import {
+  fieldInspectionQueries,
+  useAddMedia,
+  useRemoveMedia,
+  useSaveAnswer,
+} from '../api/field-inspection.queries';
 import { NOTE_MAX } from '../field-inspection.schemas';
 import {
   INSPECTION_ANSWERS,
@@ -28,6 +36,7 @@ import {
   type WorkspaceMedia,
 } from '../field-inspection.types';
 import { isMediaMissing, type NumberedQuestion } from '../field-inspection.utils';
+import { useAutosavedNote } from '../hooks/use-autosaved-note';
 
 const ANSWER_ICONS: Record<InspectionAnswer, LucideIcon> = {
   good: CheckIcon,
@@ -37,30 +46,19 @@ const ANSWER_ICONS: Record<InspectionAnswer, LucideIcon> = {
 };
 
 const answerVariants = cva(
-  'inline-flex min-h-13 items-center justify-center gap-2 rounded-lg border-[1.5px] px-3 text-body-sm font-extrabold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 @xl:min-h-11 [&_svg]:size-4.5 [&_svg]:shrink-0',
+  'h-auto min-h-13 rounded-lg border-[1.5px] border-border bg-card px-3 text-body-sm font-extrabold text-foreground hover:bg-card focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=on]:border-2 data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm @xl:min-h-11 [&_svg]:size-4.5 data-[state=on]:[&_svg]:text-primary-foreground',
   {
     variants: {
       answer: {
-        good: '',
-        acceptable: '',
-        problem: '',
-        not_applicable: '',
-      },
-      isSelected: {
-        true: 'border-2 text-primary-foreground shadow-sm',
-        false: 'border-border bg-card text-foreground',
+        good: 'data-[state=on]:border-answer-good data-[state=on]:bg-answer-good [&_svg]:text-answer-good',
+        acceptable:
+          'data-[state=on]:border-answer-ok data-[state=on]:bg-answer-ok [&_svg]:text-answer-ok',
+        problem:
+          'data-[state=on]:border-answer-problem data-[state=on]:bg-answer-problem [&_svg]:text-answer-problem',
+        not_applicable:
+          'data-[state=on]:border-answer-na data-[state=on]:bg-answer-na [&_svg]:text-answer-na',
       },
     },
-    compoundVariants: [
-      { answer: 'good', isSelected: true, className: 'border-answer-good bg-answer-good' },
-      { answer: 'acceptable', isSelected: true, className: 'border-answer-ok bg-answer-ok' },
-      { answer: 'problem', isSelected: true, className: 'border-answer-problem bg-answer-problem' },
-      { answer: 'not_applicable', isSelected: true, className: 'border-answer-na bg-answer-na' },
-      { answer: 'good', isSelected: false, className: '[&_svg]:text-answer-good' },
-      { answer: 'acceptable', isSelected: false, className: '[&_svg]:text-answer-ok' },
-      { answer: 'problem', isSelected: false, className: '[&_svg]:text-answer-problem' },
-      { answer: 'not_applicable', isSelected: false, className: '[&_svg]:text-answer-na' },
-    ],
   },
 );
 
@@ -84,7 +82,6 @@ type QuestionCardProps = {
   question: NumberedQuestion;
   answer: WorkspaceAnswer | undefined;
   media: readonly WorkspaceMedia[];
-  fileUrls: Readonly<Record<string, string>>;
   language: string;
   isEditable: boolean;
 };
@@ -94,7 +91,6 @@ export function QuestionCard({
   question,
   answer,
   media,
-  fileUrls,
   language,
   isEditable,
 }: QuestionCardProps) {
@@ -105,13 +101,15 @@ export function QuestionCard({
   const saveAnswer = useSaveAnswer(inspectionId);
   const addMedia = useAddMedia(inspectionId);
   const removeMedia = useRemoveMedia(inspectionId);
-  const [note, setNote] = useState(answer?.note ?? '');
-  const [isNoteOpen, setIsNoteOpen] = useState((answer?.note ?? '') !== '');
   const current = answer?.answer ?? null;
+  const { note, setNote } = useAutosavedNote(answer?.note ?? '', (value) => {
+    saveAnswer.mutate({ questionId: question.id, answer: null, note: value });
+  });
+  const [isNoteOpen, setIsNoteOpen] = useState((answer?.note ?? '') !== '');
   const photos = media.filter((item) => item.kind === 'photo');
   const videos = media.filter((item) => item.kind === 'video');
   const isMissing = current !== null && isMediaMissing(question, current, media);
-  const text = language === 'en' && question.text_en ? question.text_en : question.text_ro;
+  const text = localizedText(question.text_ro, question.text_en, language);
 
   const choose = (value: InspectionAnswer) => {
     if (value === current) {
@@ -199,32 +197,33 @@ export function QuestionCard({
             </span>
           </div>
         </div>
-        <div
-          role="radiogroup"
+        <ToggleGroup
+          type="single"
+          value={current ?? ''}
+          disabled={!isEditable}
+          onValueChange={(value) => {
+            const option = INSPECTION_ANSWERS.find((item) => item === value);
+            if (option) {
+              choose(option);
+            }
+          }}
           aria-label={t('question.answerGroup', { number: question.number })}
-          className="grid grid-cols-2 gap-2 @xl:grid-cols-4"
+          className="grid w-full grid-cols-2 gap-2 @xl:grid-cols-4"
         >
           {INSPECTION_ANSWERS.map((option) => {
             const Icon = ANSWER_ICONS[option];
-            const isSelected = current === option;
             return (
-              <button
+              <ToggleGroupItem
                 key={option}
-                type="button"
-                role="radio"
-                aria-checked={isSelected}
-                disabled={!isEditable}
-                onClick={() => {
-                  choose(option);
-                }}
-                className={answerVariants({ answer: option, isSelected })}
+                value={option}
+                className={answerVariants({ answer: option })}
               >
                 <Icon aria-hidden />
                 {t(`question.answers.${option}`)}
-              </button>
+              </ToggleGroupItem>
             );
           })}
-        </div>
+        </ToggleGroup>
       </div>
       <div className="flex flex-col gap-3 border-t border-border-subtle bg-background px-4.5 py-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -268,28 +267,13 @@ export function QuestionCard({
         {media.length > 0 ? (
           <ul className="flex flex-wrap gap-2">
             {media.map((item, index) => {
-              const url = fileUrls[item.path];
               const label =
                 item.kind === 'photo'
                   ? t('question.mediaAlt', { index: index + 1, number: question.number })
                   : t('question.videoLabel', { index: index + 1, number: question.number });
               return (
                 <li key={item.id} className="relative">
-                  {item.kind === 'photo' && url ? (
-                    <img
-                      src={url}
-                      alt={label}
-                      className="size-14 rounded-thumb border-2 border-card object-cover"
-                    />
-                  ) : (
-                    <span
-                      role="img"
-                      aria-label={label}
-                      className="grid size-14 place-items-center rounded-thumb border-2 border-card bg-surface-alt text-brand"
-                    >
-                      <VideoIcon aria-hidden className="size-5" />
-                    </span>
-                  )}
+                  <MediaThumbnail media={item} label={label} />
                   {isEditable ? (
                     <button
                       type="button"
@@ -331,20 +315,50 @@ export function QuestionCard({
               onChange={(event) => {
                 setNote(event.target.value);
               }}
-              onBlur={() => {
-                if (current !== null && note !== (answer?.note ?? '')) {
-                  saveAnswer.mutate({ questionId: question.id, answer: current, note });
-                }
-              }}
             />
-            {current === null && note !== '' ? (
-              <span className="text-caption text-muted-foreground">
-                {t('question.noteSavedLater')}
-              </span>
-            ) : null}
           </Field>
         ) : null}
       </div>
     </article>
+  );
+}
+
+type MediaThumbnailProps = {
+  media: WorkspaceMedia;
+  label: string;
+};
+
+function MediaThumbnail({ media, label }: MediaThumbnailProps) {
+  const url = useQuery({
+    ...fieldInspectionQueries.fileUrl(media.path),
+    enabled: media.kind === 'photo',
+  });
+
+  if (media.kind === 'photo' && url.data) {
+    return (
+      <img
+        src={url.data}
+        alt={label}
+        width={56}
+        height={56}
+        loading="lazy"
+        decoding="async"
+        className="size-14 rounded-thumb border-2 border-card object-cover"
+      />
+    );
+  }
+
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      className="grid size-14 place-items-center rounded-thumb border-2 border-card bg-surface-alt text-brand"
+    >
+      {media.kind === 'photo' ? (
+        <CameraIcon aria-hidden className="size-5" />
+      ) : (
+        <VideoIcon aria-hidden className="size-5" />
+      )}
+    </span>
   );
 }

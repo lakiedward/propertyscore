@@ -1,19 +1,17 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
-import { PencilIcon, PlusIcon, SaveIcon, Trash2Icon, UploadIcon } from 'lucide-react';
-import { useId, useState } from 'react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { PencilIcon, PlusIcon, SaveIcon, UploadIcon } from 'lucide-react';
+import { useState } from 'react';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { InlineToast } from '@/components/feedback/inline-toast';
+import { SegmentedControl } from '@/components/forms/segmented-control';
 import { EmptyState } from '@/components/layout/empty-state';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Field, FieldLabel } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { oneOf } from '@/lib/utils';
+import { versionLabel } from '@/lib/version-label';
 import {
   inspectionFormQueries,
   useAddConsentSection,
@@ -23,19 +21,17 @@ import {
   useRemoveConsentSection,
   useSaveConsentSections,
 } from '../api/inspection-form.queries';
+import { consentSectionsSchema, type ConsentSectionsValues } from '../inspection-form.schemas';
 import {
   CONSENT_LANGUAGES,
   type ConsentEditor as ConsentEditorData,
-  type ConsentSectionPatch,
 } from '../inspection-form.types';
-import { versionLabel } from '@/lib/version-label';
+import { ConsentSectionFields } from './consent-section-fields';
 import { ConsentVersionList } from './consent-version-list';
 
 const route = getRouteApi('/_authenticated/admin/content');
 
-type ConsentFormValues = { sections: ConsentSectionPatch[] };
-
-function sectionValues(editor: ConsentEditorData): ConsentFormValues {
+function sectionValues(editor: ConsentEditorData): ConsentSectionsValues {
   return {
     sections: editor.sections.map((section) => ({
       id: section.id,
@@ -51,27 +47,8 @@ function sectionValues(editor: ConsentEditorData): ConsentFormValues {
 
 export function ConsentEditor() {
   const { t } = useTranslation('inspectionForm');
-  const search = route.useSearch();
-  const navigate = route.useNavigate();
-  const baseId = useId();
   const { data: editor } = useSuspenseQuery(inspectionFormQueries.consent());
   const createDraft = useCreateConsentDraft();
-  const discardDraft = useDiscardConsentDraft();
-  const publish = usePublishConsent();
-  const saveSections = useSaveConsentSections();
-  const addSection = useAddConsentSection();
-  const removeSection = useRemoveConsentSection();
-  const [dialog, setDialog] = useState<
-    { kind: 'discard' } | { kind: 'remove'; index: number } | null
-  >(null);
-  const [publishedVersion, setPublishedVersion] = useState<string | null>(null);
-  const form = useForm<ConsentFormValues>({
-    values: sectionValues(editor),
-    resetOptions: { keepDirtyValues: true },
-  });
-  const { fields } = useFieldArray({ control: form.control, name: 'sections', keyName: 'key' });
-  const language = search.lang;
-  const isDraft = editor.draft !== null;
 
   if (!editor.shown) {
     return (
@@ -94,29 +71,62 @@ export function ConsentEditor() {
     );
   }
 
-  const shownVersion = versionLabel(editor.shown.version);
-  const dirtySections = () => {
-    const dirty = form.formState.dirtyFields.sections ?? [];
-    return form
-      .getValues('sections')
-      .filter((_, index) => Object.keys(dirty[index] ?? {}).length > 0);
-  };
+  return <ConsentEditorBody key={editor.shown.id} editor={editor} />;
+}
+
+type ConsentEditorBodyProps = {
+  editor: ConsentEditorData;
+};
+
+function ConsentEditorBody({ editor }: ConsentEditorBodyProps) {
+  const { t } = useTranslation('inspectionForm');
+  const { t: tCommon } = useTranslation('common');
+  const search = route.useSearch();
+  const navigate = route.useNavigate();
+  const createDraft = useCreateConsentDraft();
+  const discardDraft = useDiscardConsentDraft();
+  const publish = usePublishConsent();
+  const saveSections = useSaveConsentSections();
+  const addSection = useAddConsentSection();
+  const removeSection = useRemoveConsentSection();
+  const [dialog, setDialog] = useState<
+    { kind: 'discard' } | { kind: 'remove'; index: number } | null
+  >(null);
+  const [publishedVersion, setPublishedVersion] = useState<string | null>(null);
+  const form = useForm<ConsentSectionsValues>({
+    resolver: zodResolver(consentSectionsSchema),
+    values: sectionValues(editor),
+    resetOptions: { keepDirtyValues: true },
+  });
+  const { fields } = useFieldArray({ control: form.control, name: 'sections', keyName: 'key' });
+  const language = search.lang;
+  const draft = editor.draft;
+  const shownVersion = editor.shown ? versionLabel(editor.shown.version) : '';
 
   const saveDraft = (onSaved?: () => void) => {
-    const changed = dirtySections();
-    if (changed.length === 0) {
-      onSaved?.();
+    if (!draft) {
       return;
     }
-    saveSections.mutate(changed, {
-      onSuccess: () => {
-        form.reset(form.getValues());
+    void form.handleSubmit((values) => {
+      const dirty = form.formState.dirtyFields.sections ?? [];
+      const changed = values.sections.filter(
+        (_, index) => Object.keys(dirty[index] ?? {}).length > 0,
+      );
+      if (changed.length === 0) {
         onSaved?.();
-      },
-    });
+        return;
+      }
+      saveSections.mutate(
+        { versionId: draft.id, sections: changed },
+        {
+          onSuccess: () => {
+            form.reset(values);
+            onSaved?.();
+          },
+        },
+      );
+    })();
   };
-
-  const draft = editor.draft;
 
   return (
     <div className="grid grid-cols-1 items-start gap-4 w1180:grid-cols-[280px_minmax(0,1fr)]">
@@ -125,129 +135,43 @@ export function ConsentEditor() {
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-card bg-card px-4 py-3.5 shadow-card-soft">
           <div className="flex min-w-0 flex-col">
             <strong className="text-base font-extrabold">
-              {t(isDraft ? 'consent.titleDraft' : 'consent.titlePublished', {
+              {t(draft ? 'consent.titleDraft' : 'consent.titlePublished', {
                 version: shownVersion,
                 language: t(`consent.languages.${language}`),
               })}
             </strong>
             <span className="text-small text-muted-foreground">{t('consent.helper')}</span>
           </div>
-          <ToggleGroup
-            type="single"
+          <SegmentedControl
+            ariaLabel={t('consent.languageLabel')}
             value={language}
-            onValueChange={(value) => {
-              const lang = oneOf(CONSENT_LANGUAGES, value);
-              if (lang) {
-                void navigate({ search: (previous) => ({ ...previous, lang }), replace: true });
-              }
+            onChange={(lang) => {
+              void navigate({ search: (previous) => ({ ...previous, lang }), replace: true });
             }}
-            aria-label={t('consent.languageLabel')}
-            className="gap-0 rounded-md border border-border bg-card p-0.75"
-          >
-            {CONSENT_LANGUAGES.map((option) => (
-              <ToggleGroupItem
-                key={option}
-                value={option}
-                lang={option}
-                className="touch-target h-7.5 min-w-12 rounded-[6px] px-3 text-caption font-bold text-brand data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-              >
-                {option.toUpperCase()}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+            options={CONSENT_LANGUAGES.map((option) => ({
+              value: option,
+              label: tCommon(`language.short.${option}`),
+              lang: option,
+            }))}
+          />
         </div>
-        {isDraft ? null : (
+        {draft ? null : (
           <Alert tone="info">
             <AlertTitle>{t('consent.readOnly.title')}</AlertTitle>
             <AlertDescription>{t('consent.readOnly.text')}</AlertDescription>
           </Alert>
         )}
         {fields.map((section, index) => (
-          <section
+          <ConsentSectionFields
             key={section.key}
-            aria-labelledby={`${baseId}-section-${String(index)}`}
-            className="flex flex-col gap-3 rounded-lg border border-card bg-card px-4.5 py-4 shadow-card-soft"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <span
-                id={`${baseId}-section-${String(index)}`}
-                className="text-eyebrow font-bold text-muted-foreground uppercase"
-              >
-                {t('consent.section', { number: index + 1 })}
-              </span>
-              {isDraft ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t('consent.removeSection', { number: index + 1 })}
-                  onClick={() => {
-                    setDialog({ kind: 'remove', index });
-                  }}
-                >
-                  <Trash2Icon aria-hidden />
-                </Button>
-              ) : null}
-            </div>
-            <Controller
-              key={`title-${language}`}
-              name={`sections.${index}.title_${language}`}
-              control={form.control}
-              render={({ field }) => (
-                <Field>
-                  <FieldLabel htmlFor={`${baseId}-${String(index)}-title`}>
-                    {t('consent.fields.title')}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id={`${baseId}-${String(index)}-title`}
-                    lang={language}
-                    maxLength={120}
-                    disabled={!isDraft}
-                  />
-                </Field>
-              )}
-            />
-            <Controller
-              key={`text-${language}`}
-              name={`sections.${index}.text_${language}`}
-              control={form.control}
-              render={({ field }) => (
-                <Field>
-                  <FieldLabel htmlFor={`${baseId}-${String(index)}-text`}>
-                    {t('consent.fields.text')}
-                  </FieldLabel>
-                  <Textarea
-                    {...field}
-                    id={`${baseId}-${String(index)}-text`}
-                    lang={language}
-                    maxLength={3000}
-                    disabled={!isDraft}
-                    className="min-h-37.5"
-                  />
-                </Field>
-              )}
-            />
-            <Controller
-              key={`check-${language}`}
-              name={`sections.${index}.check_${language}`}
-              control={form.control}
-              render={({ field }) => (
-                <Field>
-                  <FieldLabel htmlFor={`${baseId}-${String(index)}-check`}>
-                    {t('consent.fields.check')}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id={`${baseId}-${String(index)}-check`}
-                    lang={language}
-                    maxLength={200}
-                    disabled={!isDraft}
-                  />
-                </Field>
-              )}
-            />
-          </section>
+            index={index}
+            language={language}
+            control={form.control}
+            isEditable={draft !== null}
+            onRemove={() => {
+              setDialog({ kind: 'remove', index });
+            }}
+          />
         ))}
         {draft ? (
           <Button

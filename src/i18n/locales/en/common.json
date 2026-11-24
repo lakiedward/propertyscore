@@ -131,7 +131,10 @@
       "media_missing": "The file did not upload. Try again.",
       "media_limit_reached": "You reached the maximum number of files for this question.",
       "owner_name_required": "Write the owner's name.",
-      "inspection_incomplete": "Some questions are unanswered or required media is missing."
+      "inspection_incomplete": "Some questions are unanswered or required media is missing.",
+      "inspector_has_open_inspection": "The inspector has an inspection in progress. Wait until it is sent before removing them.",
+      "media_type_invalid": "The file does not match the chosen type (photo or video).",
+      "consent_item_invalid": "Check the section texts: one is too long."
     }
   },
   "validation": {

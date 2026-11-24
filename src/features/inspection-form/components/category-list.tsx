@@ -3,7 +3,9 @@ import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Controller, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { localizedText } from '@/i18n/localized';
 import { Button } from '@/components/ui/button';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useUpdateFormCategory } from '../api/inspection-form.queries';
@@ -33,7 +35,6 @@ export function CategoryList({
   const navigate = route.useNavigate();
   const updateCategory = useUpdateFormCategory();
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const isEnglish = i18n.language === 'en';
 
   return (
     <nav
@@ -43,7 +44,7 @@ export function CategoryList({
       <ul className="flex flex-col gap-0.5">
         {categories.map((category) => {
           const isSelected = category.id === selectedId;
-          const name = isEnglish && category.name_en ? category.name_en : category.name_ro;
+          const name = localizedText(category.name_ro, category.name_en, i18n.language);
           return (
             <li
               key={category.id}
@@ -72,11 +73,14 @@ export function CategoryList({
                 name={`weights.${category.id}`}
                 control={control}
                 render={({ field }) => (
-                  <span className="relative w-21.5 shrink-0">
+                  <Field className="relative w-21.5 shrink-0 gap-0">
+                    <FieldLabel htmlFor={`weight-${category.id}`} className="sr-only">
+                      {t('form.categories.weightLabel', { name })}
+                    </FieldLabel>
                     <Input
                       {...field}
+                      id={`weight-${category.id}`}
                       value={field.value}
-                      aria-label={t('form.categories.weightLabel', { name })}
                       inputMode="numeric"
                       disabled={!isEditable}
                       onChange={(event) => {
@@ -98,7 +102,7 @@ export function CategoryList({
                     >
                       %
                     </span>
-                  </span>
+                  </Field>
                 )}
               />
             </li>

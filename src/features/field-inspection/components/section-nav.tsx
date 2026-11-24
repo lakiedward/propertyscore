@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { PenLineIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { localizedText } from '@/i18n/localized';
 import { CategoryIcon } from '@/components/inspection/category-icon';
 import { formatDate, formatNumber } from '@/i18n/format';
 import { cn } from '@/lib/utils';
@@ -63,7 +64,7 @@ export function SectionNav({ workspace, groups, progress, current, language }: S
         const done = stats?.answered ?? 0;
         const isActive = current === category.key;
         const isComplete = questions.length > 0 && done === questions.length;
-        const name = language === 'en' && category.name_en ? category.name_en : category.name_ro;
+        const name = localizedText(category.name_ro, category.name_en, language);
         const content = (
           <>
             <span className={tile(isActive, isComplete)}>

@@ -32,14 +32,16 @@
     "sign": "Semnează și începe inspecția",
     "signing": "Se pornește…",
     "signedAt": "Semnat · {{time}}",
-    "missingChecks_one": "{{count}} bifă",
-    "missingChecks_few": "{{count}} bife",
-    "missingChecks_other": "{{count}} de bife",
-    "missingSignature": "semnătură",
-    "missing": "lipsesc: {{items}}",
     "ready": "Gata de semnat",
     "signedNote": "Consimțământul e semnat. Poți trece la întrebări.",
-    "notStartable": "Inspecția poate începe în ziua vizitei, cu cel mult o oră înainte."
+    "notStartable": "Inspecția poate începe în ziua vizitei, cu cel mult o oră înainte.",
+    "missingChecks_one": "Lipsește {{count}} bifă",
+    "missingChecks_few": "Lipsesc {{count}} bife",
+    "missingChecks_other": "Lipsesc {{count}} de bife",
+    "missingSignature": "Lipsește semnătura",
+    "missingBoth_one": "Lipsesc {{count}} bifă și semnătura",
+    "missingBoth_few": "Lipsesc {{count}} bife și semnătura",
+    "missingBoth_other": "Lipsesc {{count}} de bife și semnătura"
   },
   "question": {
     "requirement": {
@@ -73,8 +75,7 @@
     "removeMedia": "Șterge fișierul {{index}} de la întrebarea {{number}}",
     "uploading": "Se încarcă…",
     "videoTooLarge": "Clipul are peste 50 MB. Filmează unul mai scurt.",
-    "fileTypeInvalid": "Formatul fișierului nu e acceptat.",
-    "noteSavedLater": "Nota se salvează odată cu răspunsul."
+    "fileTypeInvalid": "Formatul fișierului nu e acceptat."
   },
   "section": {
     "weightLine": "{{weight}}% din notă · {{done}}/{{total}} · notă {{score}}",

@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(31);
+select plan(39);
 
 create temporary table fixture as
 select
@@ -59,6 +59,30 @@ select set_config(
 );
 
 insert into ids values ('draft', public.create_inspection_form_draft());
+
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', (select mihai_id from fixture), 'role', 'authenticated', 'user_roles', json_build_array('inspector'))::text,
+  true
+);
+
+select is(
+  (select count(*)::int from public.inspection_form_versions where status = 'draft'),
+  0,
+  'An inspector cannot see a draft form'
+);
+
+select is(
+  (select count(*)::int from public.inspection_form_categories where form_version_id = (select id from ids where name = 'draft')),
+  0,
+  'An inspector cannot read the categories of a draft'
+);
+
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', (select admin_id from fixture), 'role', 'authenticated', 'user_roles', json_build_array('admin'))::text,
+  true
+);
 
 select is(
   (select version from public.inspection_form_versions where id = (select id from ids where name = 'draft')),
@@ -242,6 +266,30 @@ select set_config(
 
 insert into ids values ('consent', public.create_consent_draft());
 
+select throws_ok(
+  $$ select public.create_consent_draft() $$,
+  'P0001', 'consent_draft_exists',
+  'Only one consent draft can exist'
+);
+
+select lives_ok(
+  $$ select public.save_consent_sections(
+       (select id from ids where name = 'consent'),
+       (select jsonb_agg(jsonb_build_object(
+          'id', id, 'title_ro', 'Date personale', 'title_en', title_en, 'text_ro', text_ro,
+          'text_en', text_en, 'check_ro', check_ro, 'check_en', check_en))
+        from public.consent_sections
+        where consent_version_id = (select id from ids where name = 'consent') and position = 0)
+     ) $$,
+  'An admin saves the draft sections in one call'
+);
+
+select is(
+  (select title_ro from public.consent_sections where consent_version_id = (select id from ids where name = 'consent') and position = 0),
+  'Date personale',
+  'The saved section keeps the new title'
+);
+
 select is(
   (select version from public.consent_versions where id = (select id from ids where name = 'consent')),
   1.1,
@@ -286,6 +334,31 @@ select is(
   (select count(*)::int from public.consent_versions where status = 'draft'),
   0,
   'An inspector never sees a consent draft'
+);
+
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', (select admin_id from fixture), 'role', 'authenticated', 'user_roles', json_build_array('admin'))::text,
+  true
+);
+
+insert into ids values ('second_draft', public.create_inspection_form_draft());
+
+select lives_ok(
+  $$ select public.discard_inspection_form_draft((select id from ids where name = 'second_draft')) $$,
+  'An admin discards a draft'
+);
+
+select is(
+  (select count(*)::int from public.inspection_form_versions where status = 'draft'),
+  0,
+  'Discarding removes the draft'
+);
+
+select throws_ok(
+  $$ select public.remove_inspection_form_category(gen_random_uuid()) $$,
+  'P0001', 'form_item_not_found',
+  'Removing an unknown category is refused'
 );
 
 select * from finish();

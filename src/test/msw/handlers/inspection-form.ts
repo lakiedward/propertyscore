@@ -55,6 +55,14 @@ const formQuestions = [
   },
 ];
 
+export function formCategoriesResponse(categories: readonly object[]) {
+  return http.get(supabaseUrl('/rest/v1/inspection_form_categories'), () =>
+    HttpResponse.json(categories),
+  );
+}
+
+export { formCategories };
+
 export function formVersionsResponse(versions: readonly object[]) {
   return http.get(supabaseUrl('/rest/v1/inspection_form_versions'), () =>
     HttpResponse.json(versions),
@@ -62,6 +70,15 @@ export function formVersionsResponse(versions: readonly object[]) {
 }
 
 export const inspectionFormHandlers = [
+  http.patch(supabaseUrl('/rest/v1/inspection_form_questions'), () =>
+    HttpResponse.json([{ id: 'q2' }]),
+  ),
+  http.patch(supabaseUrl('/rest/v1/inspection_form_categories'), () =>
+    HttpResponse.json([{ id: 'c1' }]),
+  ),
+  http.post(supabaseUrl('/rest/v1/rpc/add_inspection_form_category'), () =>
+    HttpResponse.json('c3'),
+  ),
   formVersionsResponse([publishedFormVersion]),
   http.get(supabaseUrl('/rest/v1/inspection_form_categories'), () =>
     HttpResponse.json(formCategories),

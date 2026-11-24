@@ -9,6 +9,7 @@ import {
 import { useId, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { localizedText } from '@/i18n/localized';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -82,7 +83,6 @@ export function QuestionEditorCard({
     resetOptions: { keepDirtyValues: true },
   });
   const [textRo, textEn] = useWatch({ control: form.control, name: ['textRo', 'textEn'] });
-  const isEnglish = i18n.language === 'en';
 
   const save = (patch: QuestionPatch) => {
     void form.handleSubmit(() => {
@@ -169,7 +169,7 @@ export function QuestionEditorCard({
                             });
                           }}
                         >
-                          {isEnglish && category.name_en ? category.name_en : category.name_ro}
+                          {localizedText(category.name_ro, category.name_en, i18n.language)}
                         </DropdownMenuItem>
                       ))}
                   </DropdownMenuSubContent>

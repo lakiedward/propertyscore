@@ -26,6 +26,10 @@ import {
 
 const INSPECTIONS_KEY = ['inspections'] as const;
 
+const FILE_URL_STALE_MS = 1_800_000;
+
+const SAVE_ANSWER_KEY = ['field-inspection', 'save-answer'] as const;
+
 export const fieldInspectionQueries = {
   all: () => ['field-inspection'] as const,
   workspace: (inspectionId: string) =>
@@ -38,11 +42,11 @@ export const fieldInspectionQueries = {
       queryKey: [...fieldInspectionQueries.all(), 'progress', inspectionId],
       queryFn: () => getProgress(inspectionId),
     }),
-  fileUrls: (paths: readonly string[]) =>
+  fileUrl: (path: string) =>
     queryOptions({
-      queryKey: [...fieldInspectionQueries.all(), 'file-urls', paths],
-      queryFn: () => signInspectionFiles(paths),
-      staleTime: 1_800_000,
+      queryKey: [...fieldInspectionQueries.all(), 'file-url', path],
+      queryFn: async () => (await signInspectionFiles([path]))[path] ?? null,
+      staleTime: FILE_URL_STALE_MS,
     }),
 };
 
@@ -84,7 +88,7 @@ export function useStartInspection(inspectionId: string) {
         throw error;
       }
     },
-    onSuccess: invalidate,
+    onSettled: invalidate,
   });
 }
 
@@ -92,37 +96,38 @@ export function useSaveAnswer(inspectionId: string) {
   const queryClient = useQueryClient();
   const workspaceKey = fieldInspectionQueries.workspace(inspectionId).queryKey;
   return useMutation({
-    mutationFn: (input: { questionId: string; answer: InspectionAnswer; note: string }) =>
+    mutationKey: [...SAVE_ANSWER_KEY, inspectionId],
+    mutationFn: (input: { questionId: string; answer: InspectionAnswer | null; note: string }) =>
       saveAnswer({ inspectionId, ...input }),
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: workspaceKey });
-      const previous = queryClient.getQueryData(workspaceKey);
-      queryClient.setQueryData(workspaceKey, (current: Workspace | undefined) =>
-        current
-          ? {
-              ...current,
-              answers: [
-                ...current.answers.filter((answer) => answer.question_id !== input.questionId),
-                { question_id: input.questionId, answer: input.answer, note: input.note },
-              ],
-            }
-          : current,
-      );
-      return { previous };
+      queryClient.setQueryData(workspaceKey, (current: Workspace | undefined) => {
+        if (!current) {
+          return current;
+        }
+        const previous = current.answers.find((answer) => answer.question_id === input.questionId);
+        return {
+          ...current,
+          answers: [
+            ...current.answers.filter((answer) => answer.question_id !== input.questionId),
+            {
+              question_id: input.questionId,
+              answer: input.answer ?? previous?.answer ?? null,
+              note: input.note,
+            },
+          ],
+        };
+      });
     },
-    onError: (_error, _input, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(workspaceKey, context.previous);
+    onError: () => queryClient.invalidateQueries({ queryKey: workspaceKey }),
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: fieldInspectionQueries.progress(inspectionId).queryKey,
+      });
+      if (queryClient.isMutating({ mutationKey: [...SAVE_ANSWER_KEY, inspectionId] }) <= 1) {
+        await queryClient.invalidateQueries({ queryKey: INSPECTIONS_KEY, refetchType: 'none' });
       }
     },
-    onSettled: () =>
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: workspaceKey }),
-        queryClient.invalidateQueries({
-          queryKey: fieldInspectionQueries.progress(inspectionId).queryKey,
-        }),
-        queryClient.invalidateQueries({ queryKey: INSPECTIONS_KEY }),
-      ]),
   });
 }
 
@@ -171,6 +176,7 @@ export function useSubmitInspection(inspectionId: string) {
   const invalidate = useInvalidateInspection(inspectionId);
   return useMutation({
     mutationFn: (ownerName: string) => submitInspection({ inspectionId, ownerName }),
+    meta: { silent: true },
     onSuccess: invalidate,
   });
 }

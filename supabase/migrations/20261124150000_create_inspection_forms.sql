@@ -131,34 +131,6 @@ create trigger consent_sections_set_updated_at
   before update on public.consent_sections
   for each row execute function private.set_updated_at();
 
-create function private.form_version_is_draft(p_form_version_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1 from public.inspection_form_versions
-    where inspection_form_versions.id = p_form_version_id
-      and inspection_form_versions.status = 'draft'
-  );
-$$;
-
-create function private.consent_version_is_draft(p_consent_version_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1 from public.consent_versions
-    where consent_versions.id = p_consent_version_id
-      and consent_versions.status = 'draft'
-  );
-$$;
-
 create function private.refuse_published_form_change()
 returns trigger
 language plpgsql
@@ -171,7 +143,10 @@ begin
   if current_setting('app.form_publish_switch', true) = 'on' then
     return case when tg_op = 'DELETE' then old else new end;
   end if;
-  if not private.form_version_is_draft(version_id)
+  perform 1 from public.inspection_form_versions
+  where inspection_form_versions.id = version_id and inspection_form_versions.status = 'draft'
+  for share;
+  if not found
     or (tg_op = 'UPDATE' and old.form_version_id <> new.form_version_id) then
     raise exception using errcode = 'P0001', message = 'form_not_draft';
   end if;
@@ -217,7 +192,10 @@ begin
   if current_setting('app.form_publish_switch', true) = 'on' then
     return case when tg_op = 'DELETE' then old else new end;
   end if;
-  if not private.consent_version_is_draft(version_id)
+  perform 1 from public.consent_versions
+  where consent_versions.id = version_id and consent_versions.status = 'draft'
+  for share;
+  if not found
     or (tg_op = 'UPDATE' and old.consent_version_id <> new.consent_version_id) then
     raise exception using errcode = 'P0001', message = 'consent_not_draft';
   end if;
@@ -917,6 +895,43 @@ begin
 end;
 $$;
 
+create function public.save_consent_sections(p_consent_version_id uuid, p_sections jsonb)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  updated integer;
+begin
+  perform private.require_admin();
+  perform private.lock_consent_draft(p_consent_version_id);
+  if jsonb_typeof(p_sections) <> 'array' then
+    raise exception using errcode = 'P0001', message = 'consent_item_invalid';
+  end if;
+
+  update public.consent_sections as section
+  set title_ro = item.title_ro,
+    title_en = item.title_en,
+    text_ro = item.text_ro,
+    text_en = item.text_en,
+    check_ro = item.check_ro,
+    check_en = item.check_en
+  from jsonb_to_recordset(p_sections) as item (
+    id uuid, title_ro text, title_en text, text_ro text, text_en text, check_ro text, check_en text
+  )
+  where section.id = item.id and section.consent_version_id = p_consent_version_id;
+
+  get diagnostics updated = row_count;
+  if updated <> jsonb_array_length(p_sections) then
+    raise exception using errcode = 'P0001', message = 'consent_item_not_found';
+  end if;
+exception
+  when check_violation or not_null_violation then
+    raise exception using errcode = 'P0001', message = 'consent_item_invalid';
+end;
+$$;
+
 create function public.publish_consent_version(p_consent_version_id uuid)
 returns void
 language plpgsql
@@ -955,8 +970,6 @@ end;
 $$;
 
 revoke execute on function
-  private.form_version_is_draft(uuid),
-  private.consent_version_is_draft(uuid),
   private.require_admin(),
   private.lock_form_draft(uuid),
   private.renumber_form(uuid),
@@ -983,6 +996,7 @@ revoke execute on function
   public.discard_consent_draft(uuid),
   public.add_consent_section(uuid),
   public.remove_consent_section(uuid),
+  public.save_consent_sections(uuid, jsonb),
   public.publish_consent_version(uuid)
   from public, anon;
 
@@ -1001,5 +1015,6 @@ grant execute on function
   public.discard_consent_draft(uuid),
   public.add_consent_section(uuid),
   public.remove_consent_section(uuid),
+  public.save_consent_sections(uuid, jsonb),
   public.publish_consent_version(uuid)
   to authenticated;

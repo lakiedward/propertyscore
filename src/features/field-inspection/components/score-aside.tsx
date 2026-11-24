@@ -1,6 +1,7 @@
 import { SendIcon, SquareIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { localizedText } from '@/i18n/localized';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { formatNumber } from '@/i18n/format';
@@ -68,7 +69,7 @@ export function ScoreAside({ workspace, groups, progress, language }: ScoreAside
         <span className="flex items-baseline gap-1">
           <strong className="text-title-lg leading-none font-extrabold tabular-nums">
             {progress?.score === null || progress?.score === undefined
-              ? '–'
+              ? t('section.noScore')
               : formatNumber(progress.score, ONE_DECIMAL)}
           </strong>
           <span className="text-lg font-bold">{t('aside.outOf')}</span>
@@ -108,14 +109,14 @@ export function ScoreAside({ workspace, groups, progress, language }: ScoreAside
                 className="grid min-h-7.5 grid-cols-[minmax(0,1fr)_40px_40px] items-center border-t border-border-subtle"
               >
                 <span className="truncate">
-                  {language === 'en' && category.name_en ? category.name_en : category.name_ro}
+                  {localizedText(category.name_ro, category.name_en, language)}
                 </span>
                 <span className="text-right text-muted-foreground tabular-nums">
                   {t('aside.weight', { weight: category.weight })}
                 </span>
                 <strong className={cn('text-right tabular-nums', scoreTone(stats?.score))}>
                   {stats?.score === null || stats?.score === undefined
-                    ? '–'
+                    ? t('section.noScore')
                     : formatNumber(stats.score, ONE_DECIMAL)}
                 </strong>
               </li>

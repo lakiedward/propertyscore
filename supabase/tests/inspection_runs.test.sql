@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(39);
 
 create temporary table fixture as
 select
@@ -19,10 +19,12 @@ select
   (select id from public.inspection_form_questions where key = 'umez-3'
    and form_version_id = (select id from public.inspection_form_versions where status = 'published')) as plain_question;
 
-insert into storage.objects (bucket_id, name)
+insert into storage.objects (bucket_id, name, metadata)
 values
-  ('inspection-media', 'd0000000-0000-4000-8000-000000000005/signature/owner.png'),
-  ('inspection-media', 'd0000000-0000-4000-8000-000000000005/question/photo-1.webp');
+  ('inspection-media', 'd0000000-0000-4000-8000-000000000005/signature/owner.png',
+   '{"mimetype": "image/png", "size": 2000}'),
+  ('inspection-media', 'd0000000-0000-4000-8000-000000000005/question/photo-1.webp',
+   '{"mimetype": "image/webp", "size": 1000}');
 
 grant select on fixture to authenticated, anon;
 
@@ -96,6 +98,26 @@ select throws_ok(
 );
 
 select lives_ok(
+  $$ insert into storage.objects (bucket_id, name)
+     values ('inspection-media', 'd0000000-0000-4000-8000-000000000005/signature/second.png') $$,
+  'The assigned inspector uploads a signature before the start'
+);
+
+select throws_ok(
+  $$ insert into storage.objects (bucket_id, name)
+     values ('inspection-media', 'd0000000-0000-4000-8000-000000000005/question/early.webp') $$,
+  '42501', null,
+  'Question media cannot be uploaded before the start'
+);
+
+select throws_ok(
+  $$ insert into storage.objects (bucket_id, name)
+     values ('inspection-media', gen_random_uuid()::text || '/signature/other.png') $$,
+  '42501', null,
+  'An inspector cannot upload into another inspection''s folder'
+);
+
+select lives_ok(
   $$ select public.start_inspection((select today_id from fixture), 'Ion Țurcanu', 'ro',
        'd0000000-0000-4000-8000-000000000005/signature/owner.png', (select sections from fixture), 45.75, 21.22) $$,
   'The assigned inspector starts the inspection with the signed consent'
@@ -149,6 +171,109 @@ select lives_ok(
   $$ select public.add_inspection_media((select today_id from fixture), (select photo_question from fixture), 'photo',
        'd0000000-0000-4000-8000-000000000005/question/photo-1.webp', 'image/webp', 1000) $$,
   'The inspector registers an uploaded photo'
+);
+
+select set_config('storage.allow_delete_query', 'true', true);
+
+delete from storage.objects
+where name = 'd0000000-0000-4000-8000-000000000005/question/photo-1.webp';
+
+select is(
+  (select count(*)::int from storage.objects
+   where name = 'd0000000-0000-4000-8000-000000000005/question/photo-1.webp'),
+  1,
+  'A registered file cannot be deleted straight from storage'
+);
+
+insert into storage.objects (bucket_id, name, metadata)
+values ('inspection-media', 'd0000000-0000-4000-8000-000000000005/question/clip.mp4',
+  '{"mimetype": "video/mp4", "size": 5000}');
+
+select throws_ok(
+  $$ select public.add_inspection_media((select today_id from fixture), (select photo_question from fixture), 'photo',
+       'd0000000-0000-4000-8000-000000000005/question/clip.mp4', 'image/webp', 1) $$,
+  'P0001', 'media_type_invalid',
+  'A video cannot be registered as a photo'
+);
+
+select lives_ok(
+  $$ select public.add_inspection_media((select today_id from fixture), (select photo_question from fixture), 'video',
+       'd0000000-0000-4000-8000-000000000005/question/clip.mp4', 'video/mp4', 1) $$,
+  'A video is registered with the type stored in storage'
+);
+
+select is(
+  public.remove_inspection_media(
+    (select id from public.inspection_media where path = 'd0000000-0000-4000-8000-000000000005/question/clip.mp4')
+  ),
+  'd0000000-0000-4000-8000-000000000005/question/clip.mp4',
+  'Removing media returns its path for the storage clean-up'
+);
+
+select throws_ok(
+  $$ select public.save_inspection_answer((select today_id from fixture), (select plain_question from fixture), 'good', repeat('a', 2001)) $$,
+  'P0001', 'note_too_long',
+  'A note over 2,000 characters is refused'
+);
+
+select is(
+  (select count(*)::int from public.inspector_agenda(now() + interval '20 days', now() + interval '21 days')
+   where id = (select today_id from fixture)),
+  1,
+  'The agenda always lists the inspection in progress'
+);
+
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', (select ion_id from fixture), 'role', 'authenticated', 'user_roles', json_build_array('user'))::text,
+  true
+);
+
+select is(
+  (select count(*)::int from public.inspection_consents where inspection_id = (select today_id from fixture)),
+  0,
+  'The customer cannot read the signed consent'
+);
+
+select is(
+  (select count(*)::int from public.inspection_media where inspection_id = (select today_id from fixture)),
+  0,
+  'The customer cannot read the media'
+);
+
+select is(
+  (select count(*)::int from storage.objects where bucket_id = 'inspection-media'),
+  0,
+  'The customer sees no inspection file'
+);
+
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', (select admin_id from fixture), 'role', 'authenticated', 'user_roles', json_build_array('admin'))::text,
+  true
+);
+
+select is(
+  (select count(*)::int from public.inspection_consents where inspection_id = (select today_id from fixture)),
+  1,
+  'An admin reads the signed consent'
+);
+
+select ok(
+  (select count(*) from storage.objects where bucket_id = 'inspection-media') > 0,
+  'An admin reads the inspection files'
+);
+
+select throws_ok(
+  $$ select public.remove_inspector((select mihai_id from fixture)) $$,
+  'P0001', 'inspector_has_open_inspection',
+  'An inspector with an inspection in progress cannot be removed'
+);
+
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', (select mihai_id from fixture), 'role', 'authenticated', 'user_roles', json_build_array('inspector'))::text,
+  true
 );
 
 select throws_ok(

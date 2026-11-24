@@ -1,21 +1,24 @@
 import { getRouteApi } from '@tanstack/react-router';
 import { PenLineIcon } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { SegmentedControl } from '@/components/forms/segmented-control';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/i18n/format';
+import { localizedText } from '@/i18n/localized';
+import { canStartAt } from '@/lib/bucharest-time';
 import { oneOf } from '@/lib/utils';
 import { versionLabel } from '@/lib/version-label';
 import { useStartInspection } from '../api/field-inspection.queries';
 import { SIGNER_LANGUAGES, type SignerLanguage, type Workspace } from '../field-inspection.types';
-import { canStartAt } from '../field-inspection.utils';
 import { ConsentSection } from './consent-section';
 import { SignaturePad } from './signature-pad';
 
 const route = getRouteApi('/_authenticated/field/inspections/$inspectionId');
 
 const TIME = { hour: '2-digit', minute: '2-digit' } as const;
+
+const CLOCK_TICK_MS = 30_000;
 
 type ConsentStepProps = {
   workspace: Workspace;
@@ -24,6 +27,7 @@ type ConsentStepProps = {
 
 export function ConsentStep({ workspace, firstSection }: ConsentStepProps) {
   const { t } = useTranslation('fieldInspection');
+  const { t: tCommon } = useTranslation('common');
   const navigate = route.useNavigate();
   const signerTitleId = useId();
   const { inspection, sections, consent } = workspace;
@@ -36,13 +40,26 @@ export function ConsentStep({ workspace, firstSection }: ConsentStepProps) {
   );
   const [signature, setSignature] = useState<Blob | null>(null);
   const start = useStartInspection(inspection.id);
-  const isStartable = canStartAt(inspection.starts_at, new Date());
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(new Date());
+    }, CLOCK_TICK_MS);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+  const isStartable = canStartAt(inspection.starts_at, now);
   const missingChecks = sections.length - checked.size;
-  const missing = [
-    missingChecks > 0 ? t('consent.missingChecks', { count: missingChecks }) : null,
-    signature ? null : t('consent.missingSignature'),
-  ].filter((item): item is string => item !== null);
-  const canSign = !isSigned && missing.length === 0 && isStartable && !start.isPending;
+  const missingText =
+    missingChecks > 0 && !signature
+      ? t('consent.missingBoth', { count: missingChecks })
+      : missingChecks > 0
+        ? t('consent.missingChecks', { count: missingChecks })
+        : signature
+          ? null
+          : t('consent.missingSignature');
+  const canSign = !isSigned && missingText === null && isStartable && !start.isPending;
   const signedAt = consent ? formatDate(consent.signed_at, TIME) : null;
 
   return (
@@ -50,40 +67,27 @@ export function ConsentStep({ workspace, firstSection }: ConsentStepProps) {
       <div className="flex min-w-0 flex-col gap-3.5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-title-xs leading-tight font-extrabold">{t('consent.title')}</h2>
-          <ToggleGroup
-            type="single"
+          <SegmentedControl
+            ariaLabel={t('consent.languageLabel')}
             value={language}
-            onValueChange={(value) => {
-              const next = oneOf(SIGNER_LANGUAGES, value);
-              if (next) {
-                setLanguage(next);
-              }
-            }}
-            aria-label={t('consent.languageLabel')}
-            className="gap-0 rounded-md border border-border bg-card p-0.75"
-          >
-            {SIGNER_LANGUAGES.map((option) => (
-              <ToggleGroupItem
-                key={option}
-                value={option}
-                lang={option}
-                className="touch-target h-8 min-w-12 rounded-[6px] px-3 text-caption font-bold text-brand data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-              >
-                {option.toUpperCase()}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+            onChange={setLanguage}
+            size="md"
+            options={SIGNER_LANGUAGES.map((option) => ({
+              value: option,
+              label: tCommon(`language.short.${option}`),
+              lang: option,
+            }))}
+          />
         </div>
         {sections.map((section, index) => {
-          const isEnglish = language === 'en';
           return (
             <ConsentSection
               key={section.id}
               number={index + 1}
               language={language}
-              title={isEnglish ? section.title_en : section.title_ro}
-              text={isEnglish ? section.text_en : section.text_ro}
-              checkLabel={isEnglish ? section.check_en : section.check_ro}
+              title={localizedText(section.title_ro, section.title_en, language)}
+              text={localizedText(section.text_ro, section.text_en, language)}
+              checkLabel={localizedText(section.check_ro, section.check_en, language)}
               meta={t('consent.version', {
                 version:
                   workspace.consentVersion === null ? '' : versionLabel(workspace.consentVersion),
@@ -182,9 +186,7 @@ export function ConsentStep({ workspace, firstSection }: ConsentStepProps) {
             ? t('consent.signedNote')
             : !isStartable
               ? t('consent.notStartable')
-              : missing.length > 0
-                ? t('consent.missing', { items: missing.join(' + ') })
-                : t('consent.ready')}
+              : (missingText ?? t('consent.ready'))}
         </p>
       </section>
     </div>

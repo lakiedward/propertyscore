@@ -137,13 +137,13 @@ export async function startInspection(input: {
 export async function saveAnswer(input: {
   inspectionId: string;
   questionId: string;
-  answer: InspectionAnswer;
+  answer: InspectionAnswer | null;
   note: string;
 }) {
   const { error } = await supabase.rpc('save_inspection_answer', {
     p_inspection_id: input.inspectionId,
     p_question_id: input.questionId,
-    p_answer: input.answer,
+    ...(input.answer ? { p_answer: input.answer } : {}),
     p_note: input.note,
   });
   if (error) throw toAppError(error);

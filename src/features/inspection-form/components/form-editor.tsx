@@ -5,13 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { groupQuestionsByCategory } from '@/lib/question-numbering';
 import { inspectionFormQueries, useCreateFormDraft } from '../api/inspection-form.queries';
-import {
-  parseWeight,
-  questionsByCategory,
-  WEIGHT_TOTAL,
-  weightSum,
-} from '../inspection-form.utils';
+import { parseWeight, WEIGHT_TOTAL, weightSum } from '../inspection-form.utils';
 import { AnswerPointsCard } from './answer-points-card';
 import { CategoryList } from './category-list';
 import { CategoryPanel } from './category-panel';
@@ -40,7 +36,7 @@ export function FormEditor() {
       parseWeight(weights[category.id] ?? String(category.weight)),
     ),
   );
-  const groups = questionsByCategory(editor.categories, editor.questions);
+  const groups = groupQuestionsByCategory(editor.categories, editor.questions);
   const selected = groups.find((group) => group.category.key === search.category) ?? groups[0];
 
   if (!editor.shown) {
@@ -90,7 +86,7 @@ export function FormEditor() {
             control={weightsForm.control}
             isEditable={isDraft}
           />
-          <AnswerPointsCard version={editor.shown} isEditable={isDraft} />
+          <AnswerPointsCard key={editor.shown.id} version={editor.shown} isEditable={isDraft} />
         </div>
         {selected ? (
           <CategoryPanel

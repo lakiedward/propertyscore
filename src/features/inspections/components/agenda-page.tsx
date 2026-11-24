@@ -3,11 +3,10 @@ import { getRouteApi } from '@tanstack/react-router';
 import { NavigationIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SegmentedControl } from '@/components/forms/segmented-control';
 import { EmptyState } from '@/components/layout/empty-state';
 import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatDate } from '@/i18n/format';
-import { oneOf } from '@/lib/utils';
 import { inspectionQueries } from '../api/inspections.queries';
 import { useAgendaText } from '../hooks/use-agenda-text';
 import { AGENDA_DAYS, type AgendaInspection } from '../inspection.types';
@@ -76,28 +75,17 @@ export function AgendaPage() {
                   year: 'numeric',
                 })}
           </h2>
-          <ToggleGroup
-            type="single"
+          <SegmentedControl
+            ariaLabel={t('agenda.dayLabel')}
             value={day}
-            onValueChange={(value) => {
-              const nextDay = oneOf(AGENDA_DAYS, value);
-              if (nextDay) {
-                void navigate({ search: { day: nextDay }, replace: true });
-              }
+            onChange={(nextDay) => {
+              void navigate({ search: { day: nextDay }, replace: true });
             }}
-            aria-label={t('agenda.dayLabel')}
-            className="gap-0 rounded-md border border-border bg-card p-0.75"
-          >
-            {AGENDA_DAYS.map((option) => (
-              <ToggleGroupItem
-                key={option}
-                value={option}
-                className="touch-target h-7.5 rounded-[6px] px-3 text-caption font-semibold text-brand data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-              >
-                {t(`agenda.days.${option}`)}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+            options={AGENDA_DAYS.map((option) => ({
+              value: option,
+              label: t(`agenda.days.${option}`),
+            }))}
+          />
         </div>
         {shown.length === 0 ? (
           <EmptyState

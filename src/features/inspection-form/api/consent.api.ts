@@ -66,9 +66,16 @@ export async function removeConsentSection(sectionId: string) {
   if (error) throw toAppError(error);
 }
 
-export async function saveConsentSections(sections: readonly ConsentSectionPatch[]) {
-  for (const { id, ...patch } of sections) {
-    const { error } = await supabase.from('consent_sections').update(patch).eq('id', id);
-    if (error) throw toAppError(error);
-  }
+export async function saveConsentSections({
+  versionId,
+  sections,
+}: {
+  versionId: string;
+  sections: ConsentSectionPatch[];
+}) {
+  const { error } = await supabase.rpc('save_consent_sections', {
+    p_consent_version_id: versionId,
+    p_sections: sections.map((section) => ({ ...section })),
+  });
+  if (error) throw toAppError(error);
 }

@@ -756,8 +756,11 @@ isOneToOne: false
 "revoke_report_share_link":
 { Args: { "p_report_id": string }; Returns: undefined
                            },
+"save_consent_sections":
+{ Args: { "p_consent_version_id": string,"p_sections": Json }; Returns: undefined
+                           },
 "save_inspection_answer":
-{ Args: { "p_answer": Database["public"]['Enums']["inspection_answer"],"p_inspection_id": string,"p_note"?: string,"p_question_id": string }; Returns: undefined
+{ Args: { "p_answer"?: Database["public"]['Enums']["inspection_answer"],"p_inspection_id": string,"p_note"?: string,"p_question_id": string }; Returns: undefined
                            },
 "set_inspector":
 { Args: { "p_city_id": string,"p_user_id": string }; Returns: undefined

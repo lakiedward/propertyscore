@@ -32,3 +32,23 @@ export const pointsSchema = z
   });
 
 export type PointsValues = z.infer<typeof pointsSchema>;
+
+const CONSENT_TITLE_MAX = 120;
+
+const CONSENT_TEXT_MAX = 3000;
+
+const CONSENT_CHECK_MAX = 200;
+
+const consentSectionSchema = z.object({
+  id: z.string(),
+  title_ro: z.string().max(CONSENT_TITLE_MAX),
+  title_en: z.string().max(CONSENT_TITLE_MAX),
+  text_ro: z.string().max(CONSENT_TEXT_MAX),
+  text_en: z.string().max(CONSENT_TEXT_MAX),
+  check_ro: z.string().max(CONSENT_CHECK_MAX),
+  check_en: z.string().max(CONSENT_CHECK_MAX),
+});
+
+export const consentSectionsSchema = z.object({ sections: z.array(consentSectionSchema) });
+
+export type ConsentSectionsValues = z.infer<typeof consentSectionsSchema>;

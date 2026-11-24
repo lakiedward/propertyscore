@@ -2,6 +2,7 @@ import { getRouteApi } from '@tanstack/react-router';
 import { ArrowDownIcon, ArrowUpIcon, PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { localizedText } from '@/i18n/localized';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { CategoryIcon } from '@/components/inspection/category-icon';
 import { EmptyState } from '@/components/layout/empty-state';
@@ -34,9 +35,8 @@ export function CategoryPanel({ versionId, group, categories, isEditable }: Cate
   const addQuestion = useAddFormQuestion();
   const { category, questions } = group;
   const index = categories.findIndex((item) => item.id === category.id);
-  const isEnglish = i18n.language === 'en';
-  const name = isEnglish && category.name_en ? category.name_en : category.name_ro;
-  const otherName = isEnglish ? category.name_ro : category.name_en;
+  const name = localizedText(category.name_ro, category.name_en, i18n.language);
+  const otherName = i18n.language === 'en' ? category.name_ro : category.name_en;
 
   const move = (offset: -1 | 1) => {
     reorderCategories.mutate({

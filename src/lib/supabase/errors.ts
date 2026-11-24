@@ -81,6 +81,9 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   user_not_blocked: 'user_not_blocked',
   user_blocked: 'user_blocked',
   admin_inspector_conflict: 'admin_inspector_conflict',
+  consent_item_invalid: 'consent_item_invalid',
+  media_type_invalid: 'media_type_invalid',
+  inspector_has_open_inspection: 'inspector_has_open_inspection',
   inspection_not_startable: 'inspection_not_startable',
   consent_incomplete: 'consent_incomplete',
   signature_missing: 'signature_missing',
@@ -114,6 +117,8 @@ const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
   decision_reason_invalid: 'reasons',
   decision_message_required: 'message',
   decision_message_too_long: 'message',
+  owner_name_required: 'ownerName',
+  note_too_long: 'note',
 };
 
 const CHECK_CONSTRAINTS: Readonly<Record<string, { reason: AppErrorReason; field: string }>> = {

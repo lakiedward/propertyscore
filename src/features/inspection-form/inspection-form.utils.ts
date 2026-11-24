@@ -1,5 +1,3 @@
-import type { FormCategory, FormQuestion } from './inspection-form.types';
-
 export const WEIGHT_TOTAL = 100;
 
 export function parseWeight(value: string): number {
@@ -9,23 +7,6 @@ export function parseWeight(value: string): number {
 
 export function weightSum(weights: readonly number[]): number {
   return weights.reduce((sum, weight) => sum + weight, 0);
-}
-
-export function questionsByCategory(
-  categories: readonly FormCategory[],
-  questions: readonly FormQuestion[],
-) {
-  let number = 0;
-  return categories.map((category) => {
-    const ordered = questions
-      .filter((question) => question.category_id === category.id)
-      .toSorted((first, second) => first.position - second.position)
-      .map((question) => {
-        number += 1;
-        return { ...question, number: String(number).padStart(2, '0') };
-      });
-    return { category, questions: ordered };
-  });
 }
 
 export function moveItem<T>(items: readonly T[], index: number, offset: -1 | 1): T[] {

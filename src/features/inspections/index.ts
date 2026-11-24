@@ -6,5 +6,5 @@ export { BookingPage } from './components/booking-page';
 export { BOOKING_STEPS } from './booking.store';
 export { AGENDA_DAYS, APPOINTMENT_MODES, SCHEDULE_TABS, SCHEDULE_VIEWS } from './inspection.types';
 export type { AdminInspection, AgendaInspection, MyInspection } from './inspection.types';
-export { agendaRange } from './inspection.utils';
+export { agendaRange, currentInspectionOf } from './inspection.utils';
 export { AdminSchedulePage } from './components/schedule/admin-schedule-page';

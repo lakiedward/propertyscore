@@ -2,14 +2,12 @@ import { Link } from '@tanstack/react-router';
 import { ArrowRightIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { canStartAt } from '@/features/field-inspection';
 import { formatDate } from '@/i18n/format';
+import { bucharestDay, canStartAt, startWindowOpensAt } from '@/lib/bucharest-time';
 import { cn } from '@/lib/utils';
 import type { AgendaInspection } from '../inspection.types';
 
 const TIME = { hour: '2-digit', minute: '2-digit' } as const;
-
-const START_LEAD_MS = 3_600_000;
 
 type AgendaStartButtonProps = {
   inspection: AgendaInspection;
@@ -45,8 +43,8 @@ export function AgendaStartButton({ inspection, look, now }: AgendaStartButtonPr
   }
 
   const isSent = inspection.status === 'completed' || inspection.status === 'book_ready';
-  const startsFrom = new Date(new Date(inspection.starts_at).getTime() - START_LEAD_MS);
-  const isSameDay = startsFrom.toDateString() === now.toDateString();
+  const startsFrom = startWindowOpensAt(inspection.starts_at);
+  const isSameDay = bucharestDay(startsFrom) === bucharestDay(now);
 
   return (
     <Button

@@ -1,9 +1,12 @@
 import { screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import ro from '@/i18n/locales/ro/fieldInspection.json';
 import { signedInAs } from '@/test/factories/auth';
 import { buildWorkspaceInspection } from '@/test/factories/field-inspection';
 import { workspaceHandlers } from '@/test/msw/handlers/field-inspection';
 import { server } from '@/test/msw/server';
+import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
 
 const NOW = new Date('2026-11-24T07:00:00.000Z');
@@ -84,5 +87,67 @@ describe('InspectionWorkspacePage', { timeout: 20_000 }, () => {
     const nav = screen.getByRole('navigation', { name: ro.nav.label });
     expect(within(nav).getByRole('link', { name: /Umezeală/u })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: ro.aside.submit })).toBeDisabled();
+  });
+
+  it('saves an answer and sends the inspection after the owner confirms', async () => {
+    const inspection = buildWorkspaceInspection({
+      status: 'in_progress',
+      started_at: '2026-11-24T07:20:00.000Z',
+      form_version_id: 'wv1',
+      consent_version_id: 'cv1',
+    });
+    const saved: unknown[] = [];
+    let sent: unknown = null;
+    server.use(
+      http.post(supabaseUrl('/rest/v1/rpc/save_inspection_answer'), async ({ request }) => {
+        saved.push(await request.json());
+        return new HttpResponse(null, { status: 204 });
+      }),
+      http.post(supabaseUrl('/rest/v1/rpc/submit_inspection'), async ({ request }) => {
+        sent = await request.json();
+        return new HttpResponse(null, { status: 204 });
+      }),
+      ...workspaceHandlers({
+        inspection,
+        answers: [{ question_id: 'wq1', answer: 'good', note: '' }],
+        consent: {
+          language: 'ro',
+          signer_name: 'D. Popescu',
+          signed_at: '2026-11-24T07:20:00.000Z',
+        },
+        progress: {
+          answered: 2,
+          total: 2,
+          photos: 1,
+          videos: 0,
+          missing_media: 0,
+          score: 8.5,
+          categories: [
+            { category_id: 'wc1', answered: 1, total: 1, score: 10 },
+            { category_id: 'wc2', answered: 1, total: 1, score: 6.5 },
+          ],
+        },
+      }),
+    );
+    await renderAppRoute(`/field/inspections/${inspection.id}?section=struct`, {
+      auth: signedInAs('inspector'),
+    });
+    const user = userEvent.setup();
+
+    const question = await screen.findByRole('article', {
+      name: 'Fisuri vizibile în pereți portanți?',
+    });
+    await user.click(within(question).getByRole('radio', { name: ro.question.answers.problem }));
+    await waitFor(() => {
+      expect(saved).toContainEqual(
+        expect.objectContaining({ p_question_id: 'wq1', p_answer: 'problem' }),
+      );
+    });
+
+    await user.click(await screen.findByRole('button', { name: ro.aside.submit }));
+    await user.click(await screen.findByRole('button', { name: ro.confirm.confirm }));
+    await waitFor(() => {
+      expect(sent).toMatchObject({ p_owner_name: 'D. Popescu' });
+    });
   });
 });

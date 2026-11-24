@@ -1,3 +1,4 @@
+import { AppError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';
 import type {
@@ -6,6 +7,14 @@ import type {
   QuestionPatch,
   RequiredMedia,
 } from '../inspection-form.types';
+
+const UPDATED_COLUMNS = 'id' as const;
+
+function assertDraftUpdated(rows: readonly unknown[]) {
+  if (rows.length === 0) {
+    throw new AppError('validation', 'The form is no longer a draft', { reason: 'form_not_draft' });
+  }
+}
 
 const VERSION_COLUMNS =
   'id, version, status, published_at, points_good, points_acceptable, points_problem' as const;
@@ -100,11 +109,13 @@ export async function updateFormPoints({
   versionId: string;
   points: PointsPatch;
 }) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('inspection_form_versions')
     .update(points)
-    .eq('id', versionId);
+    .eq('id', versionId)
+    .select(UPDATED_COLUMNS);
   if (error) throw toAppError(error);
+  assertDraftUpdated(data);
 }
 
 export async function addFormCategory({
@@ -131,11 +142,13 @@ export async function updateFormCategory({
   categoryId: string;
   patch: { name_ro?: string; name_en?: string; icon?: string; weight?: number };
 }) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('inspection_form_categories')
     .update(patch)
-    .eq('id', categoryId);
+    .eq('id', categoryId)
+    .select(UPDATED_COLUMNS);
   if (error) throw toAppError(error);
+  assertDraftUpdated(data);
 }
 
 export async function removeFormCategory(categoryId: string) {
@@ -183,11 +196,13 @@ export async function updateFormQuestion({
   questionId: string;
   patch: QuestionPatch;
 }) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('inspection_form_questions')
     .update(patch)
-    .eq('id', questionId);
+    .eq('id', questionId)
+    .select(UPDATED_COLUMNS);
   if (error) throw toAppError(error);
+  assertDraftUpdated(data);
 }
 
 export async function removeFormQuestion(questionId: string) {
