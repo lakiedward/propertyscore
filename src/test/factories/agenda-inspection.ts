@@ -24,6 +24,9 @@ export function buildAgendaInspection(overrides: Partial<AgendaInspection> = {})
     access_phone: '+40722000001',
     access_tags: ['intercom'],
     access_notes: 'Câinele stă pe balcon.',
+    answered_count: 0,
+    question_count: 44,
+    submitted_at: null,
     ...overrides,
   };
 }

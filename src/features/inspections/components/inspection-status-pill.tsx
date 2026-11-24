@@ -4,6 +4,7 @@ import {
   CalendarClockIcon,
   CheckIcon,
   CircleDashedIcon,
+  ClipboardPenIcon,
   CircleXIcon,
   SendIcon,
   UserCheckIcon,
@@ -13,11 +14,12 @@ import { useTranslation } from 'react-i18next';
 import { StatusPill } from '@/components/feedback/status-pill';
 import type { InspectionStatus } from '../inspection.types';
 
-type Look = { tone: 'info' | 'neutral' | 'success' | 'error'; icon: LucideIcon };
+type Look = { tone: 'info' | 'neutral' | 'success' | 'warning' | 'error'; icon: LucideIcon };
 
 const INSPECTOR_LOOK = {
   scheduled: { tone: 'info', icon: CalendarClockIcon },
   inspector_assigned: { tone: 'neutral', icon: CircleDashedIcon },
+  in_progress: { tone: 'warning', icon: ClipboardPenIcon },
   completed: { tone: 'success', icon: SendIcon },
   book_ready: { tone: 'success', icon: BookCheckIcon },
   cancelled: { tone: 'error', icon: CircleXIcon },
@@ -26,6 +28,7 @@ const INSPECTOR_LOOK = {
 const CLIENT_LOOK = {
   scheduled: { tone: 'info', icon: CalendarCheckIcon },
   inspector_assigned: { tone: 'info', icon: UserCheckIcon },
+  in_progress: { tone: 'info', icon: ClipboardPenIcon },
   completed: { tone: 'neutral', icon: CheckIcon },
   book_ready: { tone: 'success', icon: BookCheckIcon },
   cancelled: { tone: 'error', icon: CircleXIcon },

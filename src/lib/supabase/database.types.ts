@@ -91,6 +91,58 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"inspection_answers": {
+                  Row: {
+                    "answer": Database["public"]['Enums']["inspection_answer"] | null,"answered_by": string | null,"created_at": string,"id": string,"inspection_id": string,"note": string,"question_id": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answer"?: Database["public"]['Enums']["inspection_answer"] | null,"answered_by"?: string | null,"created_at"?: string,"id"?: string,"inspection_id": string,"note"?: string,"question_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "answer"?: Database["public"]['Enums']["inspection_answer"] | null,"answered_by"?: string | null,"created_at"?: string,"id"?: string,"inspection_id"?: string,"note"?: string,"question_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inspection_answers_inspection_id_fkey"
+      columns: ["inspection_id"]
+isOneToOne: false
+      referencedRelation: "inspections"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inspection_answers_question_id_fkey"
+      columns: ["question_id"]
+isOneToOne: false
+      referencedRelation: "inspection_form_questions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"inspection_consents": {
+                  Row: {
+                    "consent_version_id": string,"created_at": string,"created_by": string | null,"inspection_id": string,"language": string,"latitude": number | null,"longitude": number | null,"sections_snapshot": NonNullable<Json>,"signature_path": string,"signed_at": string,"signer_name": string,"signer_role": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "consent_version_id": string,"created_at"?: string,"created_by"?: string | null,"inspection_id": string,"language": string,"latitude"?: number | null,"longitude"?: number | null,"sections_snapshot": NonNullable<Json>,"signature_path": string,"signed_at"?: string,"signer_name": string,"signer_role"?: string
+                  }
+                  Update: {
+                    "consent_version_id"?: string,"created_at"?: string,"created_by"?: string | null,"inspection_id"?: string,"language"?: string,"latitude"?: number | null,"longitude"?: number | null,"sections_snapshot"?: NonNullable<Json>,"signature_path"?: string,"signed_at"?: string,"signer_name"?: string,"signer_role"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inspection_consents_consent_version_id_fkey"
+      columns: ["consent_version_id"]
+isOneToOne: false
+      referencedRelation: "consent_versions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inspection_consents_inspection_id_fkey"
+      columns: ["inspection_id"]
+isOneToOne: true
+      referencedRelation: "inspections"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"inspection_events": {
                   Row: {
                     "actor_id": string | null,"created_at": string,"details": NonNullable<Json>,"id": string,"inspection_id": string,"kind": Database["public"]['Enums']["inspection_event_kind"]
@@ -137,7 +189,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "category_id": string,"created_at"?: string,"form_version_id": string,"id"?: string,"key": string,"position": number,"required_media"?: Database["public"]['Enums']["inspection_required_media"],"text_en"?: string,"text_ro": string,"updated_at"?: string
+                    "category_id": string,"created_at"?: string,"form_version_id": string,"id"?: string,"key": string,"position": number,"required_media"?: Database["public"]['Enums']["inspection_required_media"],"text_en"?: string,"text_ro"?: string,"updated_at"?: string
                   }
                   Update: {
                     "category_id"?: string,"created_at"?: string,"form_version_id"?: string,"id"?: string,"key"?: string,"position"?: number,"required_media"?: Database["public"]['Enums']["inspection_required_media"],"text_en"?: string,"text_ro"?: string,"updated_at"?: string
@@ -171,19 +223,57 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"inspections": {
+                },"inspection_media": {
                   Row: {
-                    "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes": string | null,"access_phone": string,"access_tags": (string)[],"assigned_at": string | null,"cancel_reason": string | null,"cancelled_at": string | null,"cancelled_by": string | null,"created_at": string,"currency": string,"ends_at": string,"id": string,"inspector_id": string | null,"number": number,"partner_code": string | null,"payment_method": Database["public"]['Enums']["inspection_payment_method"],"payment_status": Database["public"]['Enums']["inspection_payment_status"],"price": number,"property_id": string,"requested_by": string,"starts_at": string,"status": Database["public"]['Enums']["inspection_status"],"updated_at": string
+                    "created_at": string,"created_by": string | null,"id": string,"inspection_id": string,"kind": Database["public"]['Enums']["inspection_media_kind"],"mime_type": string,"path": string,"question_id": string,"size_bytes": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes"?: string | null,"access_phone": string,"access_tags"?: (string)[],"assigned_at"?: string | null,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"cancelled_by"?: string | null,"created_at"?: string,"currency"?: string,"ends_at": string,"id"?: string,"inspector_id"?: string | null,"number"?: number,"partner_code"?: string | null,"payment_method": Database["public"]['Enums']["inspection_payment_method"],"payment_status"?: Database["public"]['Enums']["inspection_payment_status"],"price"?: number,"property_id": string,"requested_by": string,"starts_at": string,"status"?: Database["public"]['Enums']["inspection_status"],"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"inspection_id": string,"kind": Database["public"]['Enums']["inspection_media_kind"],"mime_type": string,"path": string,"question_id": string,"size_bytes": number
                   }
                   Update: {
-                    "access_mode"?: Database["public"]['Enums']["inspection_access_mode"],"access_name"?: string,"access_notes"?: string | null,"access_phone"?: string,"access_tags"?: (string)[],"assigned_at"?: string | null,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"cancelled_by"?: string | null,"created_at"?: string,"currency"?: string,"ends_at"?: string,"id"?: string,"inspector_id"?: string | null,"number"?: number,"partner_code"?: string | null,"payment_method"?: Database["public"]['Enums']["inspection_payment_method"],"payment_status"?: Database["public"]['Enums']["inspection_payment_status"],"price"?: number,"property_id"?: string,"requested_by"?: string,"starts_at"?: string,"status"?: Database["public"]['Enums']["inspection_status"],"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"inspection_id"?: string,"kind"?: Database["public"]['Enums']["inspection_media_kind"],"mime_type"?: string,"path"?: string,"question_id"?: string,"size_bytes"?: number
                   }
                   Relationships: [
                     {
+      foreignKeyName: "inspection_media_inspection_id_fkey"
+      columns: ["inspection_id"]
+isOneToOne: false
+      referencedRelation: "inspections"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inspection_media_question_id_fkey"
+      columns: ["question_id"]
+isOneToOne: false
+      referencedRelation: "inspection_form_questions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"inspections": {
+                  Row: {
+                    "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes": string | null,"access_phone": string,"access_tags": (string)[],"assigned_at": string | null,"cancel_reason": string | null,"cancelled_at": string | null,"cancelled_by": string | null,"category_scores": Json | null,"completion_confirmed_by": string | null,"consent_version_id": string | null,"created_at": string,"currency": string,"ends_at": string,"form_version_id": string | null,"id": string,"inspector_id": string | null,"number": number,"partner_code": string | null,"payment_method": Database["public"]['Enums']["inspection_payment_method"],"payment_status": Database["public"]['Enums']["inspection_payment_status"],"price": number,"property_id": string,"requested_by": string,"score": number | null,"started_at": string | null,"starts_at": string,"status": Database["public"]['Enums']["inspection_status"],"submitted_at": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes"?: string | null,"access_phone": string,"access_tags"?: (string)[],"assigned_at"?: string | null,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"cancelled_by"?: string | null,"category_scores"?: Json | null,"completion_confirmed_by"?: string | null,"consent_version_id"?: string | null,"created_at"?: string,"currency"?: string,"ends_at": string,"form_version_id"?: string | null,"id"?: string,"inspector_id"?: string | null,"number"?: number,"partner_code"?: string | null,"payment_method": Database["public"]['Enums']["inspection_payment_method"],"payment_status"?: Database["public"]['Enums']["inspection_payment_status"],"price"?: number,"property_id": string,"requested_by": string,"score"?: number | null,"started_at"?: string | null,"starts_at": string,"status"?: Database["public"]['Enums']["inspection_status"],"submitted_at"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "access_mode"?: Database["public"]['Enums']["inspection_access_mode"],"access_name"?: string,"access_notes"?: string | null,"access_phone"?: string,"access_tags"?: (string)[],"assigned_at"?: string | null,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"cancelled_by"?: string | null,"category_scores"?: Json | null,"completion_confirmed_by"?: string | null,"consent_version_id"?: string | null,"created_at"?: string,"currency"?: string,"ends_at"?: string,"form_version_id"?: string | null,"id"?: string,"inspector_id"?: string | null,"number"?: number,"partner_code"?: string | null,"payment_method"?: Database["public"]['Enums']["inspection_payment_method"],"payment_status"?: Database["public"]['Enums']["inspection_payment_status"],"price"?: number,"property_id"?: string,"requested_by"?: string,"score"?: number | null,"started_at"?: string | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["inspection_status"],"submitted_at"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inspections_consent_version_id_fkey"
+      columns: ["consent_version_id"]
+isOneToOne: false
+      referencedRelation: "consent_versions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inspections_form_version_id_fkey"
+      columns: ["form_version_id"]
+isOneToOne: false
+      referencedRelation: "inspection_form_versions"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "inspections_inspector_id_fkey"
       columns: ["inspector_id"]
 isOneToOne: false
@@ -481,6 +571,9 @@ isOneToOne: false
 "add_inspection_form_question":
 { Args: { "p_category_id": string,"p_required_media": Database["public"]['Enums']["inspection_required_media"],"p_text_en": string,"p_text_ro": string }; Returns: string
                            },
+"add_inspection_media":
+{ Args: { "p_inspection_id": string,"p_kind": Database["public"]['Enums']["inspection_media_kind"],"p_mime_type": string,"p_path": string,"p_question_id": string,"p_size_bytes": number }; Returns: string
+                           },
 "admin_inspections":
 { Args: { "p_city_id"?: string,"p_from": string,"p_to": string,"p_unassigned_only"?: boolean }; Returns: {
               "access_mode": Database["public"]['Enums']["inspection_access_mode"],"access_name": string,"access_notes": string,"access_phone": string,"access_tags": (string)[],"address_text": string,"area_m2": number,"building_floors": number,"city_id": string,"city_name": string,"client_name": string,"client_phone": string,"created_at": string,"currency": string,"ends_at": string,"floor": number,"id": string,"inspector_id": string,"inspector_name": string,"number": number,"payment_status": Database["public"]['Enums']["inspection_payment_status"],"price": number,"property_type": Database["public"]['Enums']["listing_property_type"],"starts_at": string,"status": Database["public"]['Enums']["inspection_status"]
@@ -565,6 +658,9 @@ isOneToOne: false
               "actor_name": string,"created_at": string,"details": Json,"kind": Database["public"]['Enums']["inspection_event_kind"]
             }[]
                            },
+"inspection_progress":
+{ Args: { "p_inspection_id": string }; Returns: Json
+                           },
 "inspection_slots":
 { Args: { "p_city_id": string,"p_from": string,"p_to": string }; Returns: {
               "free": number,"starts_at": string,"working": number
@@ -572,12 +668,17 @@ isOneToOne: false
                            },
 "inspector_agenda":
 { Args: { "p_from": string,"p_to": string }; Returns: {
-              "access_name": string,"access_notes": string,"access_phone": string,"access_tags": (string)[],"address_text": string,"area_m2": number,"building_floors": number,"city_name": string,"ends_at": string,"floor": number,"id": string,"latitude": number,"longitude": number,"number": number,"property_type": Database["public"]['Enums']["listing_property_type"],"starts_at": string,"status": Database["public"]['Enums']["inspection_status"],"year_built": number
+              "access_name": string,"access_notes": string,"access_phone": string,"access_tags": (string)[],"address_text": string,"answered_count": number,"area_m2": number,"building_floors": number,"city_name": string,"ends_at": string,"floor": number,"id": string,"latitude": number,"longitude": number,"number": number,"property_type": Database["public"]['Enums']["listing_property_type"],"question_count": number,"starts_at": string,"status": Database["public"]['Enums']["inspection_status"],"submitted_at": string,"year_built": number
             }[]
                            },
 "inspector_free_starts":
 { Args: { "p_from": string,"p_inspector_id": string,"p_to": string }; Returns: {
               "starts_at": string
+            }[]
+                           },
+"inspector_workspace":
+{ Args: { "p_inspection_id": string }; Returns: {
+              "access_name": string,"access_phone": string,"address_text": string,"area_m2": number,"building_floors": number,"city_name": string,"consent_version_id": string,"ends_at": string,"floor": number,"form_version_id": string,"id": string,"inspector_name": string,"number": number,"property_type": Database["public"]['Enums']["listing_property_type"],"score": number,"started_at": string,"starts_at": string,"status": Database["public"]['Enums']["inspection_status"],"submitted_at": string,"year_built": number
             }[]
                            },
 "list_my_favorite_listings":
@@ -629,6 +730,9 @@ isOneToOne: false
 "remove_inspection_form_question":
 { Args: { "p_question_id": string }; Returns: undefined
                            },
+"remove_inspection_media":
+{ Args: { "p_media_id": string }; Returns: string
+                           },
 "remove_inspector":
 { Args: { "p_user_id": string }; Returns: undefined
                            },
@@ -652,14 +756,23 @@ isOneToOne: false
 "revoke_report_share_link":
 { Args: { "p_report_id": string }; Returns: undefined
                            },
+"save_inspection_answer":
+{ Args: { "p_answer": Database["public"]['Enums']["inspection_answer"],"p_inspection_id": string,"p_note"?: string,"p_question_id": string }; Returns: undefined
+                           },
 "set_inspector":
 { Args: { "p_city_id": string,"p_user_id": string }; Returns: undefined
                            },
 "set_inspector_weekly_hours":
 { Args: { "p_inspector_id": string,"p_ranges": Json,"p_weekday": number }; Returns: undefined
                            },
+"start_inspection":
+{ Args: { "p_accepted_section_ids": (string)[],"p_inspection_id": string,"p_language": string,"p_latitude"?: number,"p_longitude"?: number,"p_signature_path": string,"p_signer_name": string }; Returns: undefined
+                           },
 "start_listing_revision":
 { Args: { "p_listing_id": string }; Returns: string
+                           },
+"submit_inspection":
+{ Args: { "p_inspection_id": string,"p_owner_name": string }; Returns: undefined
                            },
 "submit_listing":
 { Args: { "p_listing_id": string }; Returns: {
@@ -731,7 +844,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "app_role": "user"|"admin"|"inspector","form_version_status": "draft"|"published"|"archived","inspection_access_mode": "self"|"other","inspection_event_kind": "booked"|"rescheduled"|"assigned"|"unassigned"|"cancelled","inspection_payment_method": "card"|"apple_pay"|"google_pay","inspection_payment_status": "unpaid"|"paid"|"refunded","inspection_required_media": "photo"|"video"|"none","inspection_status": "scheduled"|"inspector_assigned"|"completed"|"book_ready"|"cancelled","inspector_exception_kind": "day_off"|"leave"|"training"|"other","listing_building_service": "administration"|"cleaning"|"security"|"video_surveillance","listing_building_type": "apartment_block"|"house_villa","listing_comfort": "first"|"second"|"third"|"luxury","listing_cooling": "air_conditioning"|"fan_heaters"|"fan_coils","listing_decision": "approved"|"rejected"|"blocked","listing_decision_reason": "photos"|"personal_data"|"price_area"|"description"|"contact_details"|"duplicate"|"unavailable"|"rules","listing_furnishing": "furnished"|"unfurnished"|"partly_furnished","listing_heating": "building_boiler"|"own_boiler"|"convector"|"infrared_panels"|"district_heating"|"heat_pump"|"solar_panels","listing_house_type": "detached"|"duplex"|"triplex"|"terraced"|"other","listing_interior_condition": "renovated"|"good"|"needs_renovation","listing_partitioning": "detached"|"semi_detached"|"non_detached"|"circular","listing_pets": "allowed"|"not_allowed","listing_pool": "own"|"shared","listing_property_type": "apartment"|"house","listing_status": "draft"|"pending_approval"|"approved"|"rejected"|"blocked"|"suspended","listing_transaction": "sale"|"rent","listing_utility": "water"|"sewerage"|"gas"|"electricity"|"cable_tv"|"internet","listing_verification": "physical"|"smartcheck"|"none","listing_yard": "yard"|"shared_yard"|"garden","online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
+            "app_role": "user"|"admin"|"inspector","form_version_status": "draft"|"published"|"archived","inspection_access_mode": "self"|"other","inspection_answer": "good"|"acceptable"|"problem"|"not_applicable","inspection_event_kind": "booked"|"rescheduled"|"assigned"|"unassigned"|"cancelled"|"started"|"submitted","inspection_media_kind": "photo"|"video","inspection_payment_method": "card"|"apple_pay"|"google_pay","inspection_payment_status": "unpaid"|"paid"|"refunded","inspection_required_media": "photo"|"video"|"none","inspection_status": "scheduled"|"inspector_assigned"|"in_progress"|"completed"|"book_ready"|"cancelled","inspector_exception_kind": "day_off"|"leave"|"training"|"other","listing_building_service": "administration"|"cleaning"|"security"|"video_surveillance","listing_building_type": "apartment_block"|"house_villa","listing_comfort": "first"|"second"|"third"|"luxury","listing_cooling": "air_conditioning"|"fan_heaters"|"fan_coils","listing_decision": "approved"|"rejected"|"blocked","listing_decision_reason": "photos"|"personal_data"|"price_area"|"description"|"contact_details"|"duplicate"|"unavailable"|"rules","listing_furnishing": "furnished"|"unfurnished"|"partly_furnished","listing_heating": "building_boiler"|"own_boiler"|"convector"|"infrared_panels"|"district_heating"|"heat_pump"|"solar_panels","listing_house_type": "detached"|"duplex"|"triplex"|"terraced"|"other","listing_interior_condition": "renovated"|"good"|"needs_renovation","listing_partitioning": "detached"|"semi_detached"|"non_detached"|"circular","listing_pets": "allowed"|"not_allowed","listing_pool": "own"|"shared","listing_property_type": "apartment"|"house","listing_status": "draft"|"pending_approval"|"approved"|"rejected"|"blocked"|"suspended","listing_transaction": "sale"|"rent","listing_utility": "water"|"sewerage"|"gas"|"electricity"|"cable_tv"|"internet","listing_verification": "physical"|"smartcheck"|"none","listing_yard": "yard"|"shared_yard"|"garden","online_report_status": "pending_payment"|"generating"|"ready"|"failed","scoring_kind": "online"|"inspection","snapshot_status": "building"|"ready"|"failed"|"superseded"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -851,7 +964,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "app_role": ["user", "admin", "inspector"],"form_version_status": ["draft", "published", "archived"],"inspection_access_mode": ["self", "other"],"inspection_event_kind": ["booked", "rescheduled", "assigned", "unassigned", "cancelled"],"inspection_payment_method": ["card", "apple_pay", "google_pay"],"inspection_payment_status": ["unpaid", "paid", "refunded"],"inspection_required_media": ["photo", "video", "none"],"inspection_status": ["scheduled", "inspector_assigned", "completed", "book_ready", "cancelled"],"inspector_exception_kind": ["day_off", "leave", "training", "other"],"listing_building_service": ["administration", "cleaning", "security", "video_surveillance"],"listing_building_type": ["apartment_block", "house_villa"],"listing_comfort": ["first", "second", "third", "luxury"],"listing_cooling": ["air_conditioning", "fan_heaters", "fan_coils"],"listing_decision": ["approved", "rejected", "blocked"],"listing_decision_reason": ["photos", "personal_data", "price_area", "description", "contact_details", "duplicate", "unavailable", "rules"],"listing_furnishing": ["furnished", "unfurnished", "partly_furnished"],"listing_heating": ["building_boiler", "own_boiler", "convector", "infrared_panels", "district_heating", "heat_pump", "solar_panels"],"listing_house_type": ["detached", "duplex", "triplex", "terraced", "other"],"listing_interior_condition": ["renovated", "good", "needs_renovation"],"listing_partitioning": ["detached", "semi_detached", "non_detached", "circular"],"listing_pets": ["allowed", "not_allowed"],"listing_pool": ["own", "shared"],"listing_property_type": ["apartment", "house"],"listing_status": ["draft", "pending_approval", "approved", "rejected", "blocked", "suspended"],"listing_transaction": ["sale", "rent"],"listing_utility": ["water", "sewerage", "gas", "electricity", "cable_tv", "internet"],"listing_verification": ["physical", "smartcheck", "none"],"listing_yard": ["yard", "shared_yard", "garden"],"online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
+            "app_role": ["user", "admin", "inspector"],"form_version_status": ["draft", "published", "archived"],"inspection_access_mode": ["self", "other"],"inspection_answer": ["good", "acceptable", "problem", "not_applicable"],"inspection_event_kind": ["booked", "rescheduled", "assigned", "unassigned", "cancelled", "started", "submitted"],"inspection_media_kind": ["photo", "video"],"inspection_payment_method": ["card", "apple_pay", "google_pay"],"inspection_payment_status": ["unpaid", "paid", "refunded"],"inspection_required_media": ["photo", "video", "none"],"inspection_status": ["scheduled", "inspector_assigned", "in_progress", "completed", "book_ready", "cancelled"],"inspector_exception_kind": ["day_off", "leave", "training", "other"],"listing_building_service": ["administration", "cleaning", "security", "video_surveillance"],"listing_building_type": ["apartment_block", "house_villa"],"listing_comfort": ["first", "second", "third", "luxury"],"listing_cooling": ["air_conditioning", "fan_heaters", "fan_coils"],"listing_decision": ["approved", "rejected", "blocked"],"listing_decision_reason": ["photos", "personal_data", "price_area", "description", "contact_details", "duplicate", "unavailable", "rules"],"listing_furnishing": ["furnished", "unfurnished", "partly_furnished"],"listing_heating": ["building_boiler", "own_boiler", "convector", "infrared_panels", "district_heating", "heat_pump", "solar_panels"],"listing_house_type": ["detached", "duplex", "triplex", "terraced", "other"],"listing_interior_condition": ["renovated", "good", "needs_renovation"],"listing_partitioning": ["detached", "semi_detached", "non_detached", "circular"],"listing_pets": ["allowed", "not_allowed"],"listing_pool": ["own", "shared"],"listing_property_type": ["apartment", "house"],"listing_status": ["draft", "pending_approval", "approved", "rejected", "blocked", "suspended"],"listing_transaction": ["sale", "rent"],"listing_utility": ["water", "sewerage", "gas", "electricity", "cable_tv", "internet"],"listing_verification": ["physical", "smartcheck", "none"],"listing_yard": ["yard", "shared_yard", "garden"],"online_report_status": ["pending_payment", "generating", "ready", "failed"],"scoring_kind": ["online", "inspection"],"snapshot_status": ["building", "ready", "failed", "superseded"]
           }
         }
 } as const

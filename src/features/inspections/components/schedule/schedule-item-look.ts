@@ -7,6 +7,7 @@ export const scheduleItemVariants = cva(
       status: {
         scheduled: 'border-step-slate-solid bg-step-slate-soft',
         inspector_assigned: 'border-primary bg-secondary',
+        in_progress: 'border-warning-fill bg-warning-surface',
         completed: 'border-border-strong bg-background',
         book_ready: 'border-border-strong bg-background',
         cancelled: 'border-border-strong bg-background',

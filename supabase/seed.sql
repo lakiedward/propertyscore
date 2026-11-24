@@ -454,3 +454,24 @@ values
 update public.consent_versions
 set status = 'published', published_at = '2026-09-01 09:00:00+03', published_by = 'a0000000-0000-4000-8000-000000000004'
 where id = 'c0000000-0000-4000-8000-000000000001';
+
+insert into public.inspections (
+  id, property_id, requested_by, inspector_id, status, starts_at, ends_at, access_mode, access_name,
+  access_phone, access_tags, access_notes, payment_method, assigned_at
+)
+values (
+  'd0000000-0000-4000-8000-000000000005',
+  'c0000000-0000-4000-8000-000000000003',
+  'a0000000-0000-4000-8000-000000000003',
+  'a0000000-0000-4000-8000-000000000005',
+  'inspector_assigned',
+  date_trunc('hour', now()) + interval '30 minutes',
+  date_trunc('hour', now()) + interval '150 minutes',
+  'self',
+  'Ion Țurcanu',
+  '+40722000003',
+  array['parking']::text[],
+  'Parcare în spatele blocului.',
+  'card',
+  now() - interval '1 day'
+);

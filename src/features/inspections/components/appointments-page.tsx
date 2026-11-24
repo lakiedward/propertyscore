@@ -23,6 +23,7 @@ const bandVariants = cva('flex flex-col items-center justify-center px-1.5 py-3 
     status: {
       scheduled: 'bg-step-leaf-surface text-step-leaf-ink',
       inspector_assigned: 'bg-primary text-primary-foreground',
+      in_progress: 'bg-primary text-cta',
       completed: 'bg-surface-alt text-foreground',
       book_ready: 'bg-cta text-cta-foreground',
       cancelled: 'bg-surface-alt text-muted-foreground',

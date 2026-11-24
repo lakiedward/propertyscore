@@ -23,7 +23,8 @@ type NullableAgendaColumn =
   | 'building_floors'
   | 'year_built'
   | 'latitude'
-  | 'longitude';
+  | 'longitude'
+  | 'submitted_at';
 
 export type AgendaInspection = Omit<AgendaRow, NullableAgendaColumn> & {
   [Column in NullableAgendaColumn]: AgendaRow[Column] | null;

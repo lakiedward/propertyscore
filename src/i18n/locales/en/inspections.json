@@ -35,6 +35,7 @@
     "status": {
       "scheduled": "Booked",
       "inspector_assigned": "Not started",
+      "in_progress": "In progress",
       "completed": "Submitted",
       "book_ready": "Book ready",
       "cancelled": "Cancelled"
@@ -326,6 +327,7 @@
     "status": {
       "scheduled": "Booked",
       "inspector_assigned": "Inspector assigned",
+      "in_progress": "Inspection in progress",
       "completed": "Done",
       "book_ready": "Book ready",
       "cancelled": "Cancelled"
@@ -362,7 +364,9 @@
         "rescheduled": "Rescheduled",
         "assigned": "Inspector assigned",
         "unassigned": "Inspector removed",
-        "cancelled": "Cancelled"
+        "cancelled": "Cancelled",
+        "started": "Inspection started",
+        "submitted": "Inspection sent for review"
       }
     },
     "locked": "The inspection has taken place. It can no longer be rescheduled or cancelled.",
