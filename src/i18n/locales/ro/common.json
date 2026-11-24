@@ -106,7 +106,21 @@
       "user_not_blocked": "Contul nu este blocat.",
       "account_blocked": "Contul tău a fost blocat. Scrie-ne dacă crezi că e o greșeală.",
       "user_blocked": "Contul este blocat. Deblochează-l mai întâi.",
-      "admin_inspector_conflict": "Un inspector nu poate fi administrator. Scoate-l mai întâi din rolul de inspector."
+      "admin_inspector_conflict": "Un inspector nu poate fi administrator. Scoate-l mai întâi din rolul de inspector.",
+      "form_draft_exists": "Există deja o ciornă. Deschide-o sau renunță la ea.",
+      "form_not_draft": "Doar ciorna se poate modifica.",
+      "form_items_changed": "Formularul s-a schimbat între timp. Reîncarcă pagina.",
+      "form_weights_invalid": "Ponderile trebuie să facă 100%.",
+      "form_category_empty": "Fiecare categorie are nevoie de cel puțin o întrebare.",
+      "form_question_empty": "Fiecare întrebare are nevoie de text în română.",
+      "form_translation_missing": "Lipsesc traduceri în engleză.",
+      "form_item_invalid": "Verifică numele și textul.",
+      "form_item_not_found": "Elementul nu mai există. Reîncarcă pagina.",
+      "consent_draft_exists": "Există deja o ciornă de consimțământ.",
+      "consent_not_draft": "Doar ciorna se poate modifica.",
+      "consent_translation_missing": "Completează titlul, textul și bifa în ambele limbi.",
+      "consent_empty": "Adaugă cel puțin o secțiune.",
+      "consent_item_not_found": "Secțiunea nu mai există. Reîncarcă pagina."
     }
   },
   "validation": {

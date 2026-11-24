@@ -106,7 +106,21 @@
       "user_not_blocked": "The account is not blocked.",
       "account_blocked": "Your account has been blocked. Write to us if you think this is a mistake.",
       "user_blocked": "The account is blocked. Unblock it first.",
-      "admin_inspector_conflict": "An inspector cannot be an admin. Remove the inspector role first."
+      "admin_inspector_conflict": "An inspector cannot be an admin. Remove the inspector role first.",
+      "form_draft_exists": "A draft already exists. Open it or discard it.",
+      "form_not_draft": "Only the draft can be changed.",
+      "form_items_changed": "The form changed in the meantime. Reload the page.",
+      "form_weights_invalid": "The weights must total 100%.",
+      "form_category_empty": "Every category needs at least one question.",
+      "form_question_empty": "Every question needs Romanian text.",
+      "form_translation_missing": "English translations are missing.",
+      "form_item_invalid": "Check the name and the text.",
+      "form_item_not_found": "The item no longer exists. Reload the page.",
+      "consent_draft_exists": "A consent draft already exists.",
+      "consent_not_draft": "Only the draft can be changed.",
+      "consent_translation_missing": "Fill in the title, text and checkbox in both languages.",
+      "consent_empty": "Add at least one section.",
+      "consent_item_not_found": "The section no longer exists. Reload the page."
     }
   },
   "validation": {

@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(30);
+select plan(31);
 
 create temporary table fixture as
 select
@@ -129,8 +129,16 @@ select throws_ok(
 
 insert into ids values (
   'question',
-  public.add_inspection_form_question((select id from ids where name = 'category'), 'Fațada are fisuri?', '', 'photo')
+  public.add_inspection_form_question((select id from ids where name = 'category'), '', '', 'photo')
 );
+
+select throws_ok(
+  $$ select public.publish_inspection_form((select id from ids where name = 'draft')) $$,
+  'P0001', 'form_question_empty',
+  'A question without Romanian text cannot be published'
+);
+
+update public.inspection_form_questions set text_ro = 'Fațada are fisuri?' where id = (select id from ids where name = 'question');
 
 select throws_ok(
   $$ select public.publish_inspection_form((select id from ids where name = 'draft')) $$,

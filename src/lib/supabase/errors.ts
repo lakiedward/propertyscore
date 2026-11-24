@@ -81,6 +81,20 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   user_not_blocked: 'user_not_blocked',
   user_blocked: 'user_blocked',
   admin_inspector_conflict: 'admin_inspector_conflict',
+  form_draft_exists: 'form_draft_exists',
+  form_not_draft: 'form_not_draft',
+  form_items_changed: 'form_items_changed',
+  form_weights_invalid: 'form_weights_invalid',
+  form_category_empty: 'form_category_empty',
+  form_question_empty: 'form_question_empty',
+  form_translation_missing: 'form_translation_missing',
+  form_item_invalid: 'form_item_invalid',
+  form_item_not_found: 'form_item_not_found',
+  consent_draft_exists: 'consent_draft_exists',
+  consent_not_draft: 'consent_not_draft',
+  consent_translation_missing: 'consent_translation_missing',
+  consent_empty: 'consent_empty',
+  consent_item_not_found: 'consent_item_not_found',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {

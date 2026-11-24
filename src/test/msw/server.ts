@@ -6,6 +6,7 @@ import { geoHandlers, listingHandlers, listingMapHandlers } from './handlers/lis
 import { moderationHandlers } from './handlers/moderation';
 import { myListingHandlers } from './handlers/my-listings';
 import { profileHandlers } from './handlers/profile';
+import { inspectionFormHandlers } from './handlers/inspection-form';
 import { availabilityHandlers, staffHandlers } from './handlers/staff';
 
 export const server = setupServer(
@@ -18,6 +19,7 @@ export const server = setupServer(
   ...listingMapHandlers,
   ...geoHandlers,
   ...staffHandlers,
+  ...inspectionFormHandlers,
   ...availabilityHandlers,
   ...inspectionHandlers,
 );

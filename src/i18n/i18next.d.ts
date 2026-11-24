@@ -1,6 +1,7 @@
 import 'i18next';
 import type { resources } from './i18n';
 import type roHome from './locales/ro/home.json';
+import type roInspectionForm from './locales/ro/inspectionForm.json';
 import type roInspections from './locales/ro/inspections.json';
 import type roListings from './locales/ro/listings.json';
 import type roModeration from './locales/ro/moderation.json';
@@ -19,6 +20,7 @@ declare module 'i18next' {
       myListings: typeof roMyListings;
       staff: typeof roStaff;
       inspections: typeof roInspections;
+      inspectionForm: typeof roInspectionForm;
     };
   }
 }

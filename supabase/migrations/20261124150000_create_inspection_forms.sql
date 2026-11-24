@@ -70,7 +70,7 @@ create table public.inspection_form_questions (
   form_version_id uuid not null references public.inspection_form_versions (id) on delete cascade,
   key text not null check (key ~ '^[a-z0-9_-]{1,40}$'),
   position smallint not null check (position >= 0),
-  text_ro text not null check (char_length(btrim(text_ro)) between 1 and 300),
+  text_ro text not null default '' check (char_length(text_ro) <= 300),
   text_en text not null default '' check (char_length(text_en) <= 300),
   required_media public.inspection_required_media not null default 'none',
   created_at timestamptz not null default now(),
@@ -756,6 +756,12 @@ begin
       )
   ) then
     raise exception using errcode = 'P0001', message = 'form_category_empty';
+  end if;
+  if exists (
+    select 1 from public.inspection_form_questions
+    where form_version_id = p_form_version_id and btrim(text_ro) = ''
+  ) then
+    raise exception using errcode = 'P0001', message = 'form_question_empty';
   end if;
   if exists (
     select 1 from public.inspection_form_categories

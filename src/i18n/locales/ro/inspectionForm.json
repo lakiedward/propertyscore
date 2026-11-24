@@ -1,0 +1,193 @@
+{
+  "content": {
+    "description": "Texte și formulare versionate",
+    "tabs": {
+      "label": "Secțiuni",
+      "consent": "Texte consimțământ",
+      "form": "Formular inspecție"
+    }
+  },
+  "status": {
+    "draft": "Ciornă",
+    "published": "Publicat",
+    "publishedFeminine": "Publicată",
+    "archived": "Arhivată"
+  },
+  "form": {
+    "titleDraft": "Formular inspecție · ciornă v{{version}}",
+    "titlePublished": "Formular inspecție · v{{version}} publicat",
+    "titleEmpty": "Formular inspecție",
+    "publishedLine": "Publicat: v{{version}}, {{date}} · {{questions}} în {{categories}}",
+    "noPublished": "Niciun formular publicat încă",
+    "questionCount_one": "{{count}} întrebare",
+    "questionCount_few": "{{count}} întrebări",
+    "questionCount_other": "{{count}} de întrebări",
+    "categoryCount_one": "{{count}} categorie",
+    "categoryCount_few": "{{count}} categorii",
+    "categoryCount_other": "{{count}} de categorii",
+    "weights": "Ponderi: {{sum}}%",
+    "publish": "Publică formularul",
+    "publishing": "Se publică…",
+    "publishedToast": "Formularul v{{version}} e publicat. Inspecțiile noi îl folosesc de acum.",
+    "createDraft": "Creează o ciornă",
+    "creatingDraft": "Se creează…",
+    "discard": "Renunță la ciornă",
+    "discardTitle": "Renunți la ciorna v{{version}}?",
+    "discardDescription": "Toate modificările din ciornă se pierd. Formularul publicat rămâne cum e.",
+    "discardConfirm": "Renunță la ciornă",
+    "discarding": "Se șterge…",
+    "readOnly": {
+      "title": "Formularul publicat nu se mai schimbă",
+      "text": "Creează o ciornă ca să modifici categoriile, ponderile sau întrebările. Inspecțiile începute păstrează versiunea cu care au pornit."
+    },
+    "weightsInvalid": {
+      "title": "Ponderile trebuie să facă 100%",
+      "text": "Acum fac {{sum}}%. Ajustează ca să poți publica."
+    },
+    "categories": {
+      "label": "Categorii",
+      "weightLabel": "Pondere {{name}}",
+      "add": "Adaugă categorie"
+    },
+    "category": {
+      "edit": "Editează",
+      "moveUp": "Mută mai sus",
+      "moveDown": "Mută mai jos",
+      "remove": "Șterge",
+      "removeTitle": "Ștergi categoria „{{name}}”?",
+      "removeDescription_one": "Se șterge și întrebarea ei din ciornă.",
+      "removeDescription_few": "Se șterg și cele {{count}} întrebări ale ei din ciornă.",
+      "removeDescription_other": "Se șterg și cele {{count}} de întrebări ale ei din ciornă.",
+      "removeConfirm": "Șterge categoria",
+      "removing": "Se șterge…",
+      "weightShare": "{{weight}}% din notă",
+      "dialog": {
+        "addTitle": "Categorie nouă",
+        "editTitle": "Editează categoria",
+        "description": "Numele apare pe telefonul inspectorului și în book.",
+        "nameRo": "Nume · RO",
+        "nameEn": "Nume · EN",
+        "icon": "Pictogramă",
+        "add": "Adaugă categoria",
+        "save": "Salvează",
+        "saving": "Se salvează…"
+      }
+    },
+    "icons": {
+      "building-2": "Clădire",
+      "droplets": "Umezeală",
+      "zap": "Electricitate",
+      "droplet": "Apă",
+      "flame": "Flacără",
+      "door-open": "Ușă",
+      "thermometer": "Termometru",
+      "paintbrush": "Pensulă",
+      "users": "Oameni",
+      "file-text": "Document",
+      "shield": "Scut",
+      "house": "Casă",
+      "wrench": "Cheie fixă",
+      "plug": "Priză",
+      "wind": "Aer",
+      "sun": "Soare",
+      "trees": "Copaci",
+      "car": "Mașină",
+      "key-round": "Cheie",
+      "clipboard-check": "Listă de verificare"
+    },
+    "question": {
+      "number": "Întrebarea {{number}}",
+      "missingEn": "lipsește EN",
+      "missingRo": "lipsește RO",
+      "textRo": "Text · RO",
+      "textEn": "Text · EN",
+      "textEnPlaceholder": "Traducerea în engleză",
+      "textRoPlaceholder": "Scrie întrebarea",
+      "media": "Media obligatorie",
+      "mediaOptions": {
+        "photo": "Foto obligatoriu",
+        "video": "Video obligatoriu",
+        "none": "Fără media obligatorie"
+      },
+      "actions": "Acțiuni pentru întrebarea {{number}}",
+      "moveUp": "Mută mai sus",
+      "moveDown": "Mută mai jos",
+      "moveTo": "Mută în altă categorie",
+      "remove": "Șterge întrebarea",
+      "removeTitle": "Ștergi întrebarea {{number}}?",
+      "removeDescription": "Întrebarea dispare din ciornă. Versiunile publicate nu se schimbă.",
+      "removeConfirm": "Șterge întrebarea",
+      "removing": "Se șterge…",
+      "add": "Adaugă întrebare",
+      "empty": {
+        "title": "Categoria nu are întrebări",
+        "description": "Adaugă cel puțin o întrebare ca să poți publica formularul."
+      }
+    },
+    "points": {
+      "title": "Punctaj răspunsuri",
+      "good": "Bine",
+      "acceptable": "Acceptabil",
+      "problem": "Problemă",
+      "hint": "N/A nu intră în notă. Nota categoriei e media răspunsurilor; nota finală e media ponderată a categoriilor."
+    },
+    "empty": {
+      "title": "Nu există încă un formular",
+      "description": "Creează o ciornă ca să adaugi categoriile și întrebările inspecției."
+    }
+  },
+  "consent": {
+    "versions": "Versiuni",
+    "versionLabel": "v{{version}}",
+    "draftLine": "Ciornă · editată {{date}}",
+    "publishedLine": "Publicată · din {{date}}",
+    "archivedLine": "Arhivată · {{from}} – {{to}}",
+    "signatures_one": "{{count}} semnătură",
+    "signatures_few": "{{count}} semnături",
+    "signatures_other": "{{count}} de semnături",
+    "titleDraft": "Ciorna v{{version}} · {{language}}",
+    "titlePublished": "Versiunea v{{version}} · {{language}}",
+    "languages": {
+      "ro": "Română",
+      "en": "English"
+    },
+    "languageLabel": "Limba",
+    "helper": "Se afișează pe telefonul inspectorului, înainte de inspecție.",
+    "section": "Secțiunea {{number}}",
+    "fields": {
+      "title": "Titlu",
+      "text": "Text",
+      "check": "Eticheta bifei"
+    },
+    "addSection": "Adaugă secțiune",
+    "removeSection": "Șterge secțiunea {{number}}",
+    "removeTitle": "Ștergi secțiunea {{number}}?",
+    "removeDescription": "Secțiunea dispare din ciornă, în ambele limbi.",
+    "removeConfirm": "Șterge secțiunea",
+    "removing": "Se șterge…",
+    "notice": {
+      "title": "Semnăturile vechi își păstrează versiunea",
+      "text": "Fiecare PDF semnat rămâne legat de textul pe care l-a văzut proprietarul. Versiunea nouă se folosește doar la inspecțiile care încep după publicare."
+    },
+    "publishedToast": "Versiunea {{version}} e publicată. Inspecțiile noi o folosesc de acum.",
+    "save": "Salvează ciorna",
+    "saving": "Se salvează…",
+    "saved": "Ciorna e salvată.",
+    "publish": "Publică versiunea nouă",
+    "publishing": "Se publică…",
+    "createDraft": "Creează o ciornă",
+    "discard": "Renunță la ciornă",
+    "discardTitle": "Renunți la ciorna v{{version}}?",
+    "discardDescription": "Modificările din ciornă se pierd. Versiunea publicată rămâne cum e.",
+    "discarding": "Se șterge…",
+    "readOnly": {
+      "title": "Versiunea publicată nu se mai schimbă",
+      "text": "Creează o ciornă ca să modifici textele. Inspecțiile începute păstrează versiunea semnată."
+    },
+    "empty": {
+      "title": "Nu există încă texte de consimțământ",
+      "description": "Creează o ciornă și adaugă secțiunile pe care le semnează proprietarul."
+    },
+    "unsaved": "Ai modificări nesalvate."
+  }
+}
