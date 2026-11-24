@@ -42,7 +42,6 @@ export function BookingStepRequester({ user, titleId }: BookingStepRequesterProp
       >
         <RoleCard
           image={ownerImage}
-          frameClassName="bg-step-coral-surface"
           icon={KeyRoundIcon}
           title={t('booking.requester.owner.title')}
           text={t('booking.requester.owner.text')}
@@ -50,7 +49,6 @@ export function BookingStepRequester({ user, titleId }: BookingStepRequesterProp
         />
         <RoleCard
           image={buyerImage}
-          frameClassName="bg-category-transport-surface"
           icon={SearchIcon}
           title={t('booking.requester.buyer.title')}
           text={t('booking.requester.buyer.text')}
@@ -94,7 +92,6 @@ export function BookingStepRequester({ user, titleId }: BookingStepRequesterProp
 
 type RoleCardProps = {
   image: string;
-  frameClassName: string;
   icon: typeof KeyRoundIcon;
   title: string;
   text: string;
@@ -102,15 +99,7 @@ type RoleCardProps = {
   isSelected: boolean;
 };
 
-function RoleCard({
-  image,
-  frameClassName,
-  icon: Icon,
-  title,
-  text,
-  badge,
-  isSelected,
-}: RoleCardProps) {
+function RoleCard({ image, icon: Icon, title, text, badge, isSelected }: RoleCardProps) {
   return (
     <button
       type="button"
@@ -125,23 +114,19 @@ function RoleCard({
           : 'cursor-not-allowed border-border opacity-70',
       )}
     >
-      <span className={cn('relative block px-3 pt-3', frameClassName)}>
-        <img
-          src={image}
-          alt=""
-          className="block aspect-16/8 w-full rounded-t-[14px] object-cover"
-        />
+      <span className="relative block">
+        <img src={image} alt="" className="block aspect-16/8 w-full object-cover" />
         <span
           aria-hidden
           className={cn(
-            'absolute top-5.5 right-5.5 grid size-7.5 place-items-center rounded-full border-2 shadow-booking-chip',
+            'absolute top-2.5 right-2.5 grid size-7.5 place-items-center rounded-full border-2 shadow-booking-chip',
             isSelected ? 'border-primary bg-primary text-cta' : 'border-border-strong bg-card',
           )}
         >
           {isSelected ? <CheckIcon className="size-4" /> : null}
         </span>
         {badge ? (
-          <span className="absolute top-5.5 left-5.5 rounded-full bg-card px-3 py-1 text-meta font-extrabold text-brand shadow-booking-check">
+          <span className="absolute top-2.5 left-2.5 rounded-full bg-card px-3 py-1 text-meta font-extrabold text-brand shadow-booking-check">
             {badge}
           </span>
         ) : null}

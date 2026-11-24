@@ -30,6 +30,7 @@
     "number": "#{{number}}",
     "start": "Start",
     "startSoon": "The inspection questionnaire will be available soon.",
+    "soonTag": "Coming soon",
     "navigate": "Directions",
     "status": {
       "scheduled": "Booked",
@@ -63,11 +64,7 @@
       "priceNote": "all included · VAT included",
       "duration": "1–2 hours at your home",
       "reschedule": "Reschedule for free up to 24 h before",
-      "bookBadge": "Book ready in 3 days",
-      "imageAlt": "PropertyScore inspector checking a window",
-      "inspectorInitials": "AM",
-      "inspectorName": "Ana M. · inspector",
-      "inspectorQuote": "“I explain everything on the spot.”"
+      "imageAlt": "PropertyScore inspector checking a window"
     },
     "steps": {
       "label": "Steps",

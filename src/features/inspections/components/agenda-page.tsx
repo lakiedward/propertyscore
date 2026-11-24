@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
-import { ArrowRightIcon, NavigationIcon } from 'lucide-react';
+import { NavigationIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
@@ -19,6 +19,7 @@ import {
   nextInspection,
 } from '../inspection.utils';
 import { AgendaCard } from './agenda-card';
+import { AgendaContact } from './agenda-contact';
 
 const route = getRouteApi('/_authenticated/field/');
 
@@ -137,7 +138,7 @@ function NextInspection({ inspection, now }: NextInspectionProps) {
 
   if (!inspection) {
     return (
-      <div className="flex flex-col gap-3 rounded-xl bg-surface-inverse p-5 text-on-inverse">
+      <div className="flex flex-col gap-3 rounded-2xl bg-surface-inverse p-6 text-on-inverse shadow-booking-photo">
         <span className="text-meta font-extrabold tracking-label text-cta uppercase">
           {t('agenda.next.eyebrowEmpty')}
         </span>
@@ -168,33 +169,42 @@ function NextInspectionCard({ inspection, now }: NextInspectionCardProps) {
       ? { hour: '2-digit', minute: '2-digit' }
       : { weekday: 'long', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' },
   );
-  const contact = [inspection.access_name, inspection.access_phone, access].filter(Boolean);
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-surface-inverse p-5 text-on-inverse">
+    <div className="flex flex-col gap-4 rounded-2xl bg-surface-inverse p-6 text-on-inverse shadow-booking-photo">
       <span className="text-meta font-extrabold tracking-label text-cta uppercase">
         {t('agenda.next.eyebrow', { when })}
       </span>
-      <strong className="text-h3 leading-[1.2] tracking-[-0.02em]">
+      <strong className="text-h3 leading-[1.2] tracking-[-0.02em] text-balance">
         {inspection.address_text}
       </strong>
-      {contact.length > 0 ? (
-        <span className="text-body-sm text-on-photo-faint">{contact.join(' · ')}</span>
-      ) : null}
-      <div className="flex flex-wrap gap-2.5">
-        <Button type="button" variant="cta" disabled aria-describedby={soonId}>
-          {t('agenda.next.start')}
-          <ArrowRightIcon aria-hidden />
-        </Button>
-        <span id={soonId} className="sr-only">
-          {t('agenda.startSoon')}
-        </span>
-        <Button asChild variant="inverse">
+      <AgendaContact inspection={inspection} access={access} tone="inverse" />
+      <div className="mt-auto flex flex-wrap gap-2.5 pt-1">
+        <Button asChild variant="cta" size="md">
           <a href={directionsUrl(inspection)} target="_blank" rel="noreferrer">
             <NavigationIcon aria-hidden />
             {t('agenda.navigate')}
           </a>
         </Button>
+        <Button
+          type="button"
+          variant="outlineInverse"
+          size="md"
+          disabled
+          aria-describedby={soonId}
+          className="disabled:border-dashed disabled:border-on-inverse/35 disabled:bg-transparent disabled:text-on-inverse-muted"
+        >
+          {t('agenda.next.start')}
+          <span
+            aria-hidden
+            className="rounded-full bg-on-inverse/12 px-2 py-0.5 text-meta font-bold text-cta"
+          >
+            {t('agenda.soonTag')}
+          </span>
+        </Button>
+        <span id={soonId} className="sr-only">
+          {t('agenda.startSoon')}
+        </span>
       </div>
     </div>
   );

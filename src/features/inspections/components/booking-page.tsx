@@ -67,7 +67,7 @@ export function BookingPage() {
   return (
     <div className="bg-surface-warm">
       <BookingHero step={step} />
-      <div className="mx-auto max-w-wide px-4 pt-6 pb-14 sm:px-8 sm:pt-9 sm:pb-24">
+      <div className="page-wrap pt-6 pb-14 sm:pt-9 sm:pb-24">
         <section aria-labelledby={titleId} className="flex min-w-0 flex-col gap-4.5">
           <div className="flex flex-col gap-1">
             <span className="text-eyebrow text-step-leaf-ink">

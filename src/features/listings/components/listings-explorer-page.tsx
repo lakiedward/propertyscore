@@ -389,7 +389,7 @@ export function ListingsExplorerPage({ search, onSearchChange }: ListingsExplore
           onZoomOut={() => mapRef.current?.zoomOut()}
         />
       </div>
-      <div className="mx-auto flex w-[min(1480px,calc(100%-48px))] flex-col pt-7">
+      <div className="page-wrap flex flex-col pt-7">
         <ListingsExplorerList
           transaction={transaction}
           data={cards.data}

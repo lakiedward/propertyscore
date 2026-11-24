@@ -104,7 +104,7 @@ export function BookingConfirmationPage() {
   return (
     <div className="bg-surface-warm">
       <section className="bg-step-leaf-soft">
-        <div className="mx-auto grid max-w-wide items-center gap-7 px-4 py-8 w960:grid-cols-[minmax(0,1fr)_440px] sm:px-8 sm:py-14">
+        <div className="page-wrap grid items-center gap-7 py-8 w960:grid-cols-[minmax(0,1fr)_440px] sm:py-14">
           <div className="flex flex-col items-start gap-3.5">
             <span className="grid size-14 place-items-center rounded-full bg-cta text-cta-foreground">
               <CircleCheckIcon aria-hidden className="size-7.5" />
@@ -163,7 +163,7 @@ export function BookingConfirmationPage() {
           </div>
         </div>
       </section>
-      <div className="mx-auto grid max-w-wide items-start gap-6 px-4 pt-6 pb-14 w960:grid-cols-[minmax(0,1fr)_380px] sm:px-8 sm:pt-9 sm:pb-24">
+      <div className="page-wrap grid items-start gap-6 pt-6 pb-14 w960:grid-cols-[minmax(0,1fr)_380px] sm:pt-9 sm:pb-24">
         <section
           aria-labelledby={nextId}
           className="flex flex-col gap-4.5 rounded-photo border border-card bg-card p-4.5 shadow-card-soft sm:p-6"

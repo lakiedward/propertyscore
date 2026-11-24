@@ -30,6 +30,7 @@
     "number": "#{{number}}",
     "start": "Începe",
     "startSoon": "Chestionarul de inspecție va fi disponibil în curând.",
+    "soonTag": "În curând",
     "navigate": "Navighează",
     "status": {
       "scheduled": "Programată",
@@ -63,11 +64,7 @@
       "priceNote": "totul inclus · TVA inclus",
       "duration": "1–2 ore la tine acasă",
       "reschedule": "Reprogramezi gratuit cu 24 h înainte",
-      "bookBadge": "Book gata în 3 zile",
-      "imageAlt": "Inspector PropertyScore verificând o fereastră",
-      "inspectorInitials": "AM",
-      "inspectorName": "Ana M. · inspector",
-      "inspectorQuote": "„Îți explic totul pe loc.”"
+      "imageAlt": "Inspector PropertyScore verificând o fereastră"
     },
     "steps": {
       "label": "Pași",
