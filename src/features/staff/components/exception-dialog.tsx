@@ -3,8 +3,9 @@ import { useId } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
+import { DatePicker } from '@/components/forms/date-picker';
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -64,6 +65,7 @@ export function ExceptionDialog({
     },
   });
   const isAllDay = useWatch({ control: form.control, name: 'isAllDay' });
+  const fromDate = useWatch({ control: form.control, name: 'fromDate' });
 
   const handleSubmit = form.handleSubmit((values) => {
     const { startsAt, endsAt } = exceptionBounds(values);
@@ -128,7 +130,17 @@ export function ExceptionDialog({
                   <FieldLabel htmlFor={fromId}>
                     {t('availability.exceptions.dialog.from')}
                   </FieldLabel>
-                  <Input {...field} id={fromId} type="date" aria-invalid={fieldState.invalid} />
+                  <DatePicker
+                    id={fromId}
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      if (form.getValues('toDate') < value) {
+                        form.setValue('toDate', value, { shouldValidate: true });
+                      }
+                    }}
+                    isInvalid={fieldState.invalid}
+                  />
                   <FieldError>{validationMessage(fieldState.error?.message)}</FieldError>
                 </Field>
               )}
@@ -139,7 +151,13 @@ export function ExceptionDialog({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={toId}>{t('availability.exceptions.dialog.to')}</FieldLabel>
-                  <Input {...field} id={toId} type="date" aria-invalid={fieldState.invalid} />
+                  <DatePicker
+                    id={toId}
+                    value={field.value}
+                    onChange={field.onChange}
+                    min={fromDate}
+                    isInvalid={fieldState.invalid}
+                  />
                   <FieldError>{validationMessage(fieldState.error?.message)}</FieldError>
                 </Field>
               )}
@@ -198,11 +216,13 @@ export function ExceptionDialog({
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={noteId}>{t('availability.exceptions.dialog.note')}</FieldLabel>
-                <Input
+                <Textarea
                   {...field}
                   id={noteId}
+                  rows={4}
                   maxLength={EXCEPTION_NOTE_MAX}
                   aria-invalid={fieldState.invalid}
+                  className="min-h-28 resize-y"
                 />
                 <FieldError>{validationMessage(fieldState.error?.message)}</FieldError>
               </Field>

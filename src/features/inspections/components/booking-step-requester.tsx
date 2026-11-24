@@ -191,7 +191,7 @@ function HomePicker({ user }: { user: User }) {
           <Skeleton className="h-85 rounded-xl" />
         </div>
       ) : properties.isError ? (
-        <EmptyState kind="error" variant="card" title={t('booking.home.error')} />
+        <EmptyState kind="error" title={t('booking.home.error')} />
       ) : (
         <div
           role="radiogroup"

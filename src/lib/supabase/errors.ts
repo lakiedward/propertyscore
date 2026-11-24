@@ -79,6 +79,8 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   block_reason_invalid: 'block_reason_invalid',
   user_not_found: 'user_not_found',
   user_not_blocked: 'user_not_blocked',
+  user_blocked: 'user_blocked',
+  admin_inspector_conflict: 'admin_inspector_conflict',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {

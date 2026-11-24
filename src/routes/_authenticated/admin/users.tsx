@@ -13,7 +13,7 @@ const usersSearchSchema = z.object({
 
 export const Route = createFileRoute('/_authenticated/admin/users')({
   validateSearch: usersSearchSchema,
-  beforeLoad: () => loadFeatureNamespaces(['staff']),
+  beforeLoad: () => loadFeatureNamespaces(['staff', 'listings', 'myListings']),
   head: panelPageHead('panel.admin.nav.users'),
   component: UsersPage,
 });

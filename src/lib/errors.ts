@@ -46,6 +46,8 @@ export type AppErrorReason =
   | 'block_reason_invalid'
   | 'user_not_found'
   | 'user_not_blocked'
+  | 'user_blocked'
+  | 'admin_inspector_conflict'
   | 'account_blocked';
 
 type AppErrorOptions = {

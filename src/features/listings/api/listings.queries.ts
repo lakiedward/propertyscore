@@ -7,6 +7,7 @@ import {
   getPublicListing,
   listExplorerListings,
   listListings,
+  listOwnerListings,
 } from './listings.api';
 import { getRomaniaRegions } from './romania-regions.api';
 
@@ -46,6 +47,13 @@ export const listingQueries = {
       initialPageParam: 0,
       getNextPageParam: (lastPage, pages) =>
         pages.length * EXPLORER_PAGE_SIZE < lastPage.total ? pages.length : undefined,
+    }),
+  owner: (ownerId: string) =>
+    infiniteQueryOptions({
+      queryKey: [...listingQueries.all(), 'owner', ownerId],
+      queryFn: ({ pageParam }) => listOwnerListings(ownerId, pageParam),
+      initialPageParam: 0,
+      getNextPageParam: (lastPage, pages) => (lastPage.hasMore ? pages.length : undefined),
     }),
   romaniaRegions: () =>
     queryOptions({

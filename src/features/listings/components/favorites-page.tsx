@@ -50,8 +50,6 @@ export function FavoritesPage() {
         </>
       ) : (
         <EmptyState
-          variant="card"
-          kind="empty"
           title={t('listings:favorites.empty.title')}
           description={t('listings:favorites.empty.description')}
           action={

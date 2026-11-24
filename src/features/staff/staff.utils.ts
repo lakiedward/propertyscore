@@ -94,23 +94,6 @@ export function addDaysTo(dateKey: string, days: number): string {
   return localDateKey(date);
 }
 
-export function previewDayKeys(now: Date, count: number): string[] {
-  const tomorrow = addDaysTo(localDateKey(now), 1);
-  return Array.from({ length: count }, (_, index) => addDaysTo(tomorrow, index));
-}
-
-export function freeStartsByDay(starts: readonly string[]): Map<string, Set<number>> {
-  const byDay = new Map<string, Set<number>>();
-  for (const value of starts) {
-    const date = new Date(value);
-    const key = localDateKey(date);
-    const times = byDay.get(key) ?? new Set<number>();
-    times.add(date.getTime());
-    byDay.set(key, times);
-  }
-  return byDay;
-}
-
 export function exceptionBounds(values: {
   fromDate: string;
   toDate: string;

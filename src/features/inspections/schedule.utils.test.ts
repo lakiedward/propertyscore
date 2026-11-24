@@ -68,4 +68,24 @@ describe('schedule.utils', () => {
       }),
     ).toBe('unavailable');
   });
+
+  it('accepts a visit that starts when the hours start, whatever the time format', () => {
+    const startsAt = new Date(2026, 10, 25, 14);
+    const endsAt = new Date(2026, 10, 25, 16);
+    const visit = {
+      id: 'a',
+      starts_at: startsAt.toISOString().replace('.000Z', '+00:00'),
+      ends_at: endsAt.toISOString().replace('.000Z', '+00:00'),
+    };
+
+    expect(
+      assignmentClash({
+        inspectorId: MIHAI,
+        ranges: RANGES,
+        blocks: [],
+        assigned: [],
+        inspection: visit,
+      }),
+    ).toBeNull();
+  });
 });

@@ -53,7 +53,6 @@ export const availabilityHandlers = [
       city: { name: 'Timișoara' },
     }),
   ),
-  http.post(supabaseUrl('/rest/v1/rpc/inspector_free_starts'), () => HttpResponse.json([])),
   http.post(
     supabaseUrl('/rest/v1/rpc/set_inspector_weekly_hours'),
     () => new HttpResponse(null, { status: 204 }),

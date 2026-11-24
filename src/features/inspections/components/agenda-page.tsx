@@ -99,8 +99,6 @@ export function AgendaPage() {
         </div>
         {shown.length === 0 ? (
           <EmptyState
-            kind="empty"
-            variant="card"
             title={t(day === 'week' ? 'agenda.empty.week' : 'agenda.empty.day')}
             description={
               later

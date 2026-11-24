@@ -104,7 +104,9 @@
       "block_reason_invalid": "Scrie motivul blocării (cel mult 300 de caractere).",
       "user_not_found": "Utilizatorul nu mai există.",
       "user_not_blocked": "Contul nu este blocat.",
-      "account_blocked": "Contul tău a fost blocat. Scrie-ne dacă crezi că e o greșeală."
+      "account_blocked": "Contul tău a fost blocat. Scrie-ne dacă crezi că e o greșeală.",
+      "user_blocked": "Contul este blocat. Deblochează-l mai întâi.",
+      "admin_inspector_conflict": "Un inspector nu poate fi administrator. Scoate-l mai întâi din rolul de inspector."
     }
   },
   "validation": {
@@ -499,6 +501,7 @@
   "calendar": {
     "today": "Azi",
     "previous": "Luna anterioară",
-    "next": "Luna următoare"
+    "next": "Luna următoare",
+    "choose": "Alege data"
   }
 }

@@ -5,7 +5,6 @@ import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
 import { LoadMoreButton } from '@/components/layout/load-more-button';
-import { PanelPageHeader } from '@/components/layout/panel-page-header';
 import { FilterChip } from '@/components/property/filter-chip';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,47 +44,45 @@ export function UsersPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PanelPageHeader
-        actions={
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            className="touch-target"
-            disabled={items.length === 0}
-            onClick={() => {
-              downloadCsv(
-                usersToCsv(items, {
-                  name: t('users.columns.name'),
-                  email: t('users.columns.email'),
-                  phone: t('users.columns.phone'),
-                  roles: t('users.columns.roles'),
-                  created: t('users.columns.created'),
-                  status: t('users.columns.status'),
-                  active: t('users.state.active'),
-                  blocked: t('users.state.blocked'),
-                }),
-                t('users.csvFileName'),
-              );
-            }}
-          >
-            <DownloadIcon aria-hidden />
-            {t('users.export')}
-          </Button>
-        }
-      />
       <section
         aria-labelledby={`${searchId}-title`}
         className="overflow-hidden rounded-lg border border-card bg-card shadow-card-soft"
       >
         <div className="flex flex-col gap-4 p-5">
-          <div>
-            <h2 id={`${searchId}-title`} className="text-[17px] leading-snug font-bold">
-              {t('users.card.title')}
-            </h2>
-            <p className="text-meta text-muted-foreground">
-              {t('users.card.shown', { count: items.length, total })}
-            </p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 id={`${searchId}-title`} className="text-[17px] leading-snug font-bold">
+                {t('users.card.title')}
+              </h2>
+              <p className="text-meta text-muted-foreground">
+                {t('users.card.shown', { count: items.length, total })}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              className="touch-target"
+              disabled={items.length === 0}
+              onClick={() => {
+                downloadCsv(
+                  usersToCsv(items, {
+                    name: t('users.columns.name'),
+                    email: t('users.columns.email'),
+                    phone: t('users.columns.phone'),
+                    roles: t('users.columns.roles'),
+                    created: t('users.columns.created'),
+                    status: t('users.columns.status'),
+                    active: t('users.state.active'),
+                    blocked: t('users.state.blocked'),
+                  }),
+                  t('users.csvFileName'),
+                );
+              }}
+            >
+              <DownloadIcon aria-hidden />
+              {t('users.export')}
+            </Button>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <label
@@ -160,12 +157,7 @@ export function UsersPage() {
           </div>
         ) : items.length === 0 ? (
           <div className="p-5">
-            <EmptyState
-              variant="card"
-              kind="empty"
-              title={t('users.empty.title')}
-              description={t('users.empty.description')}
-            />
+            <EmptyState title={t('users.empty.title')} description={t('users.empty.description')} />
           </div>
         ) : (
           <div className="overflow-x-auto">

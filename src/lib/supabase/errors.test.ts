@@ -36,6 +36,8 @@ describe('toAppError', () => {
     ['decision_reason_invalid', 'reasons'],
     ['decision_message_required', 'message'],
     ['decision_message_too_long', 'message'],
+    ['user_blocked', undefined],
+    ['admin_inspector_conflict', undefined],
   ])('maps the function error %s to its reason and the %s field', (message, field) => {
     const error = toAppError(postgrestError('P0001', message));
 

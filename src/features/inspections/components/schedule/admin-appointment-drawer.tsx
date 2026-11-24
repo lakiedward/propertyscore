@@ -5,16 +5,10 @@ import { useId, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { SearchSelect } from '@/components/forms/search-select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -23,6 +17,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
+import { initialsOf } from '@/features/profile';
 import { useErrorMessage } from '@/i18n/error-message';
 import { formatDate, formatNumber, formatPrice, toCurrency } from '@/i18n/format';
 import { useValidationMessage } from '@/i18n/validation';
@@ -72,7 +67,10 @@ export function AdminAppointmentDrawer({
         }
       }}
     >
-      <SheetContent side="right" className="w-full gap-0 overflow-y-auto p-0 sm:max-w-120">
+      <SheetContent
+        side="right"
+        className="gap-0 overflow-y-auto p-0 data-[side=right]:w-full data-[side=right]:sm:max-w-160"
+      >
         <SheetHeader className="border-b border-border-subtle px-5 py-4">
           <SheetTitle className="text-h4 first-letter:uppercase">
             {t('appointments.drawer.title', {
@@ -121,6 +119,7 @@ function Details({ inspection, isOpenForChanges, onReschedule, onCancelled }: De
   const { t } = useTranslation('inspections');
   const text = useBookingText();
   const [isCancelling, setIsCancelling] = useState(false);
+  const bookingTitleId = useId();
   const notes = [
     ...knownAccessTags(inspection.access_tags).map((tag) => t(`accessTag.${tag}`)),
     ...(inspection.access_notes ? [inspection.access_notes] : []),
@@ -185,35 +184,42 @@ function Details({ inspection, isOpenForChanges, onReschedule, onCancelled }: De
           ))}
       </dl>
       {isOpenForChanges ? (
-        <div className="flex flex-col gap-2.5 rounded-lg border border-card bg-card p-3.5 shadow-card-soft">
-          <strong className="text-body-sm">{t('schedule.drawer.inspector')}</strong>
+        <>
           <AssignInspector inspection={inspection} />
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="touch-target"
-              onClick={onReschedule}
-            >
-              <CalendarClockIcon aria-hidden />
-              {t('appointments.reschedule.open')}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              className="touch-target"
-              aria-expanded={isCancelling}
-              onClick={() => {
-                setIsCancelling(true);
-              }}
-            >
-              <CalendarXIcon aria-hidden />
-              {t('appointments.cancel.open')}
-            </Button>
-          </div>
-        </div>
+          <section
+            aria-labelledby={bookingTitleId}
+            className="flex flex-col gap-3 rounded-lg border border-card bg-card p-4 shadow-card-soft"
+          >
+            <h3 id={bookingTitleId} className="text-body-sm font-bold">
+              {t('schedule.drawer.booking')}
+            </h3>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="md"
+                className="touch-target"
+                onClick={onReschedule}
+              >
+                <CalendarClockIcon aria-hidden />
+                {t('appointments.reschedule.open')}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="md"
+                className="touch-target border-error-border text-destructive hover:border-destructive hover:bg-error-surface hover:text-destructive"
+                aria-expanded={isCancelling}
+                onClick={() => {
+                  setIsCancelling(true);
+                }}
+              >
+                <CalendarXIcon aria-hidden />
+                {t('schedule.drawer.cancel')}
+              </Button>
+            </div>
+          </section>
+        </>
       ) : null}
       {isCancelling ? (
         <CancelPanel
@@ -233,6 +239,7 @@ function AssignInspector({ inspection }: { inspection: AdminInspection }) {
   const { t } = useTranslation('inspections');
   const errorMessage = useErrorMessage();
   const selectId = useId();
+  const titleId = useId();
   const inspectors = useQuery(inspectionQueries.inspectors(inspection.city_id));
   const assign = useAssignInspector();
   const unassign = useUnassignInspector();
@@ -240,34 +247,63 @@ function AssignInspector({ inspection }: { inspection: AdminInspection }) {
   const isChange = inspection.inspector_id !== null;
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-end gap-2">
-        <div className="flex flex-1 flex-col gap-1.5">
-          <FieldLabel htmlFor={selectId} className="sr-only">
-            {t('schedule.drawer.inspector')}
-          </FieldLabel>
-          <Select value={inspectorId} onValueChange={setInspectorId}>
-            <SelectTrigger id={selectId}>
-              <SelectValue placeholder={t('schedule.drawer.choose')} />
-            </SelectTrigger>
-            <SelectContent>
-              {(inspectors.data ?? [])
-                .filter((inspector) => inspector.is_active)
-                .map((inspector) => (
-                  <SelectItem key={inspector.user_id} value={inspector.user_id}>
-                    {t('schedule.drawer.option', {
-                      name: inspector.full_name ?? '',
-                      city: inspector.city_name,
-                    })}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <section
+      aria-labelledby={titleId}
+      className="flex flex-col gap-3 rounded-lg border border-card bg-card p-4 shadow-card-soft"
+    >
+      <div className="flex min-h-8 items-center justify-between gap-2">
+        <h3 id={titleId} className="text-body-sm font-bold">
+          <label htmlFor={selectId}>{t('schedule.drawer.inspector')}</label>
+        </h3>
+        {isChange ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="touch-target text-muted-foreground"
+            disabled={unassign.isPending}
+            onClick={() => {
+              unassign.mutate(inspection.id, {
+                onSuccess: () => {
+                  setInspectorId('');
+                },
+              });
+            }}
+          >
+            <UserMinusIcon aria-hidden />
+            {t('schedule.drawer.unassign')}
+          </Button>
+        ) : null}
+      </div>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <SearchSelect
+          id={selectId}
+          value={inspectorId === '' ? null : inspectorId}
+          options={(inspectors.data ?? [])
+            .filter((inspector) => inspector.is_active)
+            .map((inspector) => ({
+              value: inspector.user_id,
+              label: inspector.full_name ?? '',
+              description: inspector.city_name,
+              leading: (
+                <span
+                  aria-hidden
+                  className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-nav-sm font-extrabold text-primary-foreground"
+                >
+                  {initialsOf(inspector.full_name ?? '')}
+                </span>
+              ),
+            }))}
+          onChange={setInspectorId}
+          placeholder={t('schedule.drawer.choose')}
+          searchPlaceholder={t('schedule.availability.search')}
+          emptyText={t('schedule.availability.noMatch')}
+          className="flex-1"
+        />
         <Button
           type="button"
-          size="sm"
-          className="touch-target"
+          size="md"
+          className="touch-target sm:min-w-28"
           disabled={
             inspectorId === '' || inspectorId === inspection.inspector_id || assign.isPending
           }
@@ -285,31 +321,12 @@ function AssignInspector({ inspection }: { inspection: AdminInspection }) {
           {isChange ? t('schedule.drawer.change') : t('schedule.drawer.assign')}
         </Button>
       </div>
-      {isChange ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="touch-target w-fit"
-          disabled={unassign.isPending}
-          onClick={() => {
-            unassign.mutate(inspection.id, {
-              onSuccess: () => {
-                setInspectorId('');
-              },
-            });
-          }}
-        >
-          <UserMinusIcon aria-hidden />
-          {t('schedule.drawer.unassign')}
-        </Button>
-      ) : null}
       {assign.isError ? (
         <Alert tone="error">
           <AlertDescription>{errorMessage(assign.error)}</AlertDescription>
         </Alert>
       ) : null}
-    </div>
+    </section>
   );
 }
 

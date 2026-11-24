@@ -104,7 +104,9 @@
       "block_reason_invalid": "Write the reason for blocking (at most 300 characters).",
       "user_not_found": "The user no longer exists.",
       "user_not_blocked": "The account is not blocked.",
-      "account_blocked": "Your account has been blocked. Write to us if you think this is a mistake."
+      "account_blocked": "Your account has been blocked. Write to us if you think this is a mistake.",
+      "user_blocked": "The account is blocked. Unblock it first.",
+      "admin_inspector_conflict": "An inspector cannot be an admin. Remove the inspector role first."
     }
   },
   "validation": {
@@ -491,6 +493,7 @@
   "calendar": {
     "today": "Today",
     "previous": "Previous month",
-    "next": "Next month"
+    "next": "Next month",
+    "choose": "Choose a date"
   }
 }

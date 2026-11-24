@@ -61,29 +61,27 @@ export function AppointmentsPage() {
         }
       />
       {appointments.length === 0 ? (
-        <div className="flex flex-col items-center gap-1.5 rounded-lg border border-card bg-card p-2 pb-5 shadow-card-soft">
-          <EmptyState
-            kind="empty"
-            title={t('appointments.empty.title')}
-            description={t('appointments.empty.text')}
-            className="border-0 bg-transparent"
-          />
-          <div className="flex flex-wrap justify-center gap-2.5">
-            <Button asChild variant="cta" size="md">
-              <Link to="/inspection">
-                {t('appointments.empty.book')}
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-meta tabular-nums">
-                  {price}
-                </span>
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" size="md">
-              <Link to="/" hash={HOME_SECTION.smartCheck}>
-                {t('appointments.empty.check')}
-              </Link>
-            </Button>
-          </div>
-        </div>
+        <EmptyState
+          title={t('appointments.empty.title')}
+          description={t('appointments.empty.text')}
+          action={
+            <div className="flex flex-wrap justify-center gap-2.5">
+              <Button asChild variant="cta" size="md">
+                <Link to="/inspection">
+                  {t('appointments.empty.book')}
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-meta tabular-nums">
+                    {price}
+                  </span>
+                </Link>
+              </Button>
+              <Button asChild variant="secondary" size="md">
+                <Link to="/" hash={HOME_SECTION.smartCheck}>
+                  {t('appointments.empty.check')}
+                </Link>
+              </Button>
+            </div>
+          }
+        />
       ) : (
         <ul className="flex flex-col gap-2.5">
           {appointments.map((appointment) => (

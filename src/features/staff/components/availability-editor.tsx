@@ -11,28 +11,17 @@ import {
 } from 'lucide-react';
 import { useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SlotPicker } from '@/components/forms/slot-picker';
+import { EmptyState } from '@/components/layout/empty-state';
 import { DashboardPanel } from '@/components/report/dashboard-panel';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import { INSPECTION_START_TIMES } from '@/config/inspections';
 import { formatDate } from '@/i18n/format';
 import { staffQueries, useRemoveException, useSetWeeklyHours } from '../api/staff.queries';
 import { WEEKDAYS, type InspectorExceptionKind, type TimeRange } from '../staff.types';
-import {
-  freeStartsByDay,
-  localDateKey,
-  localDateTime,
-  previewDayKeys,
-  weeklyRangesByDay,
-} from '../staff.utils';
+import { localDateKey, localDateTime, weeklyRangesByDay } from '../staff.utils';
 import { ExceptionDialog } from './exception-dialog';
 import { WeeklyHoursDialog } from './weekly-hours-dialog';
-
-const PREVIEW_DAYS = 14;
-
-const PREVIEW_STEPS = ['weekly', 'exceptions', 'visits'] as const;
 
 const DEFAULT_RANGES: readonly TimeRange[] = [{ startsAt: '08:00', endsAt: '17:00' }];
 
@@ -45,39 +34,20 @@ const EXCEPTION_ICON = {
 
 type AvailabilityEditorProps = {
   inspectorId: string;
-  inspectorName: string | null;
-  description: string;
-  toolbar?: ReactNode;
+  description: ReactNode;
 };
 
-export function AvailabilityEditor({
-  inspectorId,
-  inspectorName,
-  description,
-  toolbar,
-}: AvailabilityEditorProps) {
+export function AvailabilityEditor({ inspectorId, description }: AvailabilityEditorProps) {
   const { t } = useTranslation('staff');
   const [now] = useState(() => new Date());
   const todayKey = localDateKey(now);
 
   return (
-    <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="flex min-w-0 flex-col gap-4">
-        <DashboardPanel
-          title={t('availability.weekly.title')}
-          subtitle={t('availability.weekly.subtitle')}
-        >
-          <div className="flex flex-col gap-3.5">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <span className="max-w-90 text-small text-muted-foreground">{description}</span>
-              {toolbar}
-            </div>
-            <WeeklyHours inspectorId={inspectorId} />
-          </div>
-        </DashboardPanel>
-        <Exceptions inspectorId={inspectorId} todayKey={todayKey} />
-      </div>
-      <AvailabilityPreview inspectorId={inspectorId} inspectorName={inspectorName} now={now} />
+    <div className="flex min-w-0 flex-col gap-4">
+      <DashboardPanel title={t('availability.weekly.title')} subtitle={description}>
+        <WeeklyHours inspectorId={inspectorId} />
+      </DashboardPanel>
+      <Exceptions inspectorId={inspectorId} todayKey={todayKey} />
     </div>
   );
 }
@@ -223,26 +193,29 @@ function Exceptions({ inspectorId, todayKey }: { inspectorId: string; todayKey: 
     <DashboardPanel
       title={t('availability.exceptions.title')}
       subtitle={t('availability.exceptions.subtitle')}
+      actions={
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="touch-target"
+          onClick={() => {
+            setIsAdding(true);
+          }}
+        >
+          <PlusIcon aria-hidden />
+          {t('availability.exceptions.add')}
+        </Button>
+      }
     >
       <div className="flex flex-col gap-2.5">
-        <div className="flex justify-end">
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="touch-target"
-            onClick={() => {
-              setIsAdding(true);
-            }}
-          >
-            <PlusIcon aria-hidden />
-            {t('availability.exceptions.add')}
-          </Button>
-        </div>
         {exceptions.isPending ? (
           <Skeleton className="h-15" />
         ) : (exceptions.data ?? []).length === 0 ? (
-          <p className="text-small text-muted-foreground">{t('availability.exceptions.empty')}</p>
+          <EmptyState
+            title={t('availability.exceptions.empty.title')}
+            description={t('availability.exceptions.empty.text')}
+          />
         ) : (
           <ul className="flex flex-col gap-2.5">
             {(exceptions.data ?? []).map((exception) => {
@@ -327,82 +300,4 @@ function exceptionWhen(
     from: formatDate(startsAt, { ...dayFormat, ...timeFormat }),
     to: formatDate(endsAt, { ...dayFormat, ...timeFormat }),
   });
-}
-
-type AvailabilityPreviewProps = {
-  inspectorId: string;
-  inspectorName: string | null;
-  now: Date;
-};
-
-function AvailabilityPreview({ inspectorId, inspectorName, now }: AvailabilityPreviewProps) {
-  const { t } = useTranslation('staff');
-  const dayKeys = previewDayKeys(now, PREVIEW_DAYS);
-  const firstDay = dayKeys[0] ?? localDateKey(now);
-  const lastDay = dayKeys.at(-1) ?? firstDay;
-  const profile = useQuery(staffQueries.inspectorProfile(inspectorId));
-  const freeStarts = useQuery(staffQueries.freeStarts(inspectorId, firstDay, lastDay));
-  const byDay = freeStartsByDay(freeStarts.data ?? []);
-  const [pickedDay, setPickedDay] = useState<string | null>(null);
-  const [pickedTime, setPickedTime] = useState<string | null>(null);
-  const day = pickedDay ?? dayKeys.find((key) => byDay.has(key)) ?? null;
-  const freeOnDay = day ? byDay.get(day) : undefined;
-
-  return (
-    <aside className="flex flex-col gap-3 rounded-lg bg-step-slate-soft p-4.5">
-      <span className="text-eyebrow text-info-ink-muted">{t('availability.preview.eyebrow')}</span>
-      <strong className="text-[17px] leading-[1.35]">
-        {inspectorName
-          ? t('availability.preview.titleNamed', { name: inspectorName })
-          : t('availability.preview.title')}
-      </strong>
-      <ol className="flex flex-col gap-1.5 text-small">
-        {PREVIEW_STEPS.map((step, index) => (
-          <li key={step} className="flex gap-2">
-            <strong className="text-info-ink-muted tabular-nums">{index + 1}</strong>
-            {t(`availability.preview.steps.${step}`)}
-          </li>
-        ))}
-      </ol>
-      <div className="rounded-lg bg-card p-3">
-        {freeStarts.isPending ? (
-          <Skeleton className="h-55" />
-        ) : (
-          <SlotPicker
-            days={dayKeys.map((key) => {
-              const date = localDateTime(key, '00:00');
-              return {
-                value: key,
-                weekday: formatDate(date, { weekday: 'short' }),
-                day: formatDate(date, { day: 'numeric' }),
-                month: formatDate(date, { month: 'short' }),
-                label: formatDate(date, { weekday: 'long', day: 'numeric', month: 'long' }),
-                isDisabled: !byDay.has(key),
-              };
-            })}
-            times={INSPECTION_START_TIMES.map((time) => ({
-              value: time,
-              label: time,
-              isDisabled: !day || !freeOnDay?.has(localDateTime(day, time).getTime()),
-            }))}
-            day={day}
-            time={pickedTime}
-            onDayChange={(value) => {
-              setPickedDay(value);
-              setPickedTime(null);
-            }}
-            onTimeChange={setPickedTime}
-            dayLabel={t('availability.preview.day')}
-            timeLabel={t('availability.preview.time')}
-            emptyText={t('availability.preview.empty')}
-          />
-        )}
-      </div>
-      {profile.data?.city ? (
-        <span className="text-meta text-muted-foreground">
-          {t('availability.preview.note', { city: profile.data.city.name })}
-        </span>
-      ) : null}
-    </aside>
-  );
 }

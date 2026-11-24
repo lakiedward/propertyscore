@@ -11,7 +11,6 @@ export function MyAvailabilityPage() {
   return (
     <AvailabilityEditor
       inspectorId={user.id}
-      inspectorName={null}
       description={t('availability.weekly.selfDescription')}
     />
   );

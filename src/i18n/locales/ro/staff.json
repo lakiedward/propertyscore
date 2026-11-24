@@ -51,7 +51,8 @@
       "changeCity": "Schimbă orașul",
       "removeInspector": "Scoate rolul de inspector",
       "block": "Blochează contul",
-      "unblock": "Deblochează contul"
+      "unblock": "Deblochează contul",
+      "makeAdmin": "Fă-l administrator"
     },
     "more": "Arată mai mulți utilizatori",
     "empty": {
@@ -97,13 +98,24 @@
       "confirm": "Deblochează",
       "pending": "Se deblochează…",
       "done": "Contul lui {{name}} a fost deblocat."
+    },
+    "listings": {
+      "show": "Arată anunțurile lui {{name}}",
+      "hide": "Ascunde anunțurile lui {{name}}",
+      "title": "Anunțurile lui {{name}}"
+    },
+    "adminDialog": {
+      "title": "Faci din {{name}} administrator?",
+      "description": "Va avea acces complet la panoul de administrare: anunțuri, programări și utilizatori, și nu va mai folosi panoul de utilizator. Rolul ajunge în contul lui în cel mult o oră sau la următoarea autentificare.",
+      "confirm": "Fă-l administrator",
+      "pending": "Se salvează…",
+      "done": "{{name}} este acum administrator."
     }
   },
   "availability": {
     "weekly": {
       "title": "Program săptămânal",
-      "subtitle": "Se repetă în fiecare săptămână",
-      "selfDescription": "Orele în care poți primi programări noi.",
+      "selfDescription": "Orele în care poți primi programări noi, în fiecare săptămână.",
       "adminDescription": "Orele în care inspectorul poate primi programări noi.",
       "range": "{{from}}–{{to}}",
       "off": "Liber",
@@ -125,7 +137,10 @@
       "title": "Excepții",
       "subtitle": "Concedii, zile libere, ore blocate",
       "add": "Adaugă excepție",
-      "empty": "Nicio excepție programată.",
+      "empty": {
+        "title": "Nicio excepție programată",
+        "text": "Programul săptămânal se aplică fără întreruperi. Adaugă o excepție pentru concedii, zile libere sau ore blocate."
+      },
       "remove": "Șterge excepția",
       "range": "{{from}} – {{to}}",
       "hours": "{{day}} · {{from}}–{{to}}",
@@ -148,20 +163,6 @@
         "save": "Adaugă excepția",
         "saving": "Se adaugă…"
       }
-    },
-    "preview": {
-      "eyebrow": "Cum ajunge în programare",
-      "title": "Clientul vede doar orele în care ești liber",
-      "titleNamed": "Clientul vede doar orele în care {{name}} e liber",
-      "steps": {
-        "weekly": "Programul săptămânal",
-        "exceptions": "minus excepțiile",
-        "visits": "minus inspecțiile deja alocate (2 h + 30 min drum)"
-      },
-      "day": "Alege ziua",
-      "time": "Alege ora",
-      "empty": "Nu mai sunt ore libere în această zi. Alege altă zi.",
-      "note": "Previzualizare a pasului „Data” din programare, pentru {{city}}."
     }
   }
 }

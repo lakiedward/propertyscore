@@ -417,28 +417,45 @@
       "closed": "Closed"
     },
     "queue": {
-      "title_one": "Unassigned · {{count}}",
-      "title_other": "Unassigned · {{count}}",
-      "dragHint": "Drag onto an inspector's column",
-      "clickHint": "Open one to assign an inspector",
-      "empty": "No inspections to assign.",
-      "meta": "{{city}} · 2 hours",
-      "roleDescription": "inspection to assign"
+      "empty": {
+        "title": "No inspections to assign",
+        "text": "Every booking has an inspector. New ones show up here."
+      },
+      "details": "Details",
+      "roleDescription": "inspection to assign",
+      "city": "City",
+      "day": "Date",
+      "allDays": "All days",
+      "noMatch": {
+        "title": "No inspections for these filters",
+        "text": "Change the city or the day.",
+        "reset": "Show all"
+      },
+      "clearDay": "Show every day",
+      "heading": "Bookings to assign",
+      "count_one": "{{count}} inspection without an inspector",
+      "count_other": "{{count}} inspections without an inspector",
+      "hide": "Hide the list",
+      "show_one": "Bookings to assign · {{count}}",
+      "show_other": "Bookings to assign · {{count}}"
     },
     "day": {
       "subtitle_one": "{{count}} inspector · {{visits}} assigned",
       "subtitle_other": "{{count}} inspectors · {{visits}} assigned",
       "load_one": "{{city}} · {{count}} inspection",
       "load_other": "{{city}} · {{count}} inspections",
-      "noInspectors": "No inspector matches the filters.",
+      "noInspectors": {
+        "title": "No inspectors",
+        "text": "Change the city or the inspector in the filters."
+      },
       "unavailable": "Unavailable",
-      "column": "{{name}}'s column"
+      "column": "{{name}}'s column",
+      "roleDescription": "assigned inspection"
     },
     "ghost": {
       "free": "Free · drop here",
       "busy": "Already has an inspection at this time",
-      "unavailable": "Does not work at this time",
-      "otherDay": "The inspection is on another day"
+      "unavailable": "Does not work at this time"
     },
     "assigned": "PS-I-{{number}} assigned to {{name}}.",
     "undo": "Undo",
@@ -446,13 +463,12 @@
       "title": "{{name}} cannot take the inspection"
     },
     "dnd": {
-      "instructions": "Press space to pick up the inspection, the arrow keys to move it onto an inspector's column and space to drop it. Escape cancels."
+      "instructions": "Press space to pick up the inspection, the arrow keys to move it onto an inspector’s column and space to drop it. Escape cancels."
     },
     "drawer": {
       "description": "The booking details, the inspector, rescheduling and cancelling.",
       "inspector": "Inspector",
       "choose": "Choose the inspector",
-      "option": "{{name}} · {{city}}",
       "assign": "Assign",
       "change": "Change",
       "unassign": "Remove the inspector",
@@ -464,7 +480,9 @@
         "opener": "Opens the door",
         "notes": "Notes",
         "payment": "Payment"
-      }
+      },
+      "booking": "Booking",
+      "cancel": "Cancel the inspection"
     },
     "payment": {
       "unpaid": "Unpaid · {{price}}",
@@ -478,12 +496,22 @@
       "back": "Back"
     },
     "availability": {
-      "description": "The hours when the inspector can take new bookings.",
-      "inspector": "Inspector",
+      "description": "The hours when <name>{{name}}</name> can take new bookings, every week.",
       "empty": {
         "title": "No inspectors yet",
         "text": "Make a user an inspector on the Users page."
-      }
-    }
+      },
+      "picker": "Choose the inspector",
+      "inactiveCity": "{{city}} · Inactive",
+      "inspector": "Inspector",
+      "search": "Search by name or city",
+      "noMatch": "No inspector found.",
+      "city": "City",
+      "allCities": "All cities",
+      "citySearch": "Search the city",
+      "noCity": "No city found."
+    },
+    "assignTo": "Assign to {{name}}",
+    "resetFilters": "Reset the filters"
   }
 }

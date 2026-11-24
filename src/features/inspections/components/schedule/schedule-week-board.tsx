@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DashboardPanel } from '@/components/report/dashboard-panel';
 import { initialsOf } from '@/features/profile';
@@ -12,7 +13,8 @@ const TIME = { hour: '2-digit', minute: '2-digit' } as const;
 
 type ScheduleWeekBoardProps = {
   start: Date;
-  title: string;
+  title: ReactNode;
+  toolbar: ReactNode;
   subtitle: string;
   inspectors: readonly AdminInspector[];
   inspections: readonly AdminInspection[];
@@ -24,6 +26,7 @@ type ScheduleWeekBoardProps = {
 export function ScheduleWeekBoard({
   start,
   title,
+  toolbar,
   subtitle,
   inspectors,
   inspections,
@@ -39,7 +42,7 @@ export function ScheduleWeekBoard({
   const days = Array.from({ length: 7 }, (_, index) => addDays(start, index));
 
   return (
-    <DashboardPanel title={title} subtitle={subtitle} isFlush className="min-w-0">
+    <DashboardPanel title={title} toolbar={toolbar} subtitle={subtitle} isFlush className="min-w-0">
       <div className="overflow-x-auto rounded-b-lg">
         <div className="grid min-w-[700px] grid-cols-7">
           {days.map((day) => {

@@ -421,14 +421,29 @@
       "closed": "Închis"
     },
     "queue": {
-      "title_one": "Neasignate · {{count}}",
-      "title_few": "Neasignate · {{count}}",
-      "title_other": "Neasignate · {{count}}",
-      "dragHint": "Trage pe coloana unui inspector",
-      "clickHint": "Deschide una ca să aloci un inspector",
-      "empty": "Nicio inspecție de alocat.",
-      "meta": "{{city}} · 2 ore",
-      "roleDescription": "inspecție de alocat"
+      "empty": {
+        "title": "Nicio inspecție de alocat",
+        "text": "Toate programările au un inspector. Cele noi apar aici."
+      },
+      "details": "Detalii",
+      "roleDescription": "inspecție de alocat",
+      "city": "Oraș",
+      "day": "Data",
+      "allDays": "Toate zilele",
+      "noMatch": {
+        "title": "Nicio inspecție pentru filtrele alese",
+        "text": "Schimbă orașul sau ziua.",
+        "reset": "Arată toate"
+      },
+      "clearDay": "Arată toate zilele",
+      "heading": "Programări de alocat",
+      "count_one": "{{count}} inspecție fără inspector",
+      "count_few": "{{count}} inspecții fără inspector",
+      "count_other": "{{count}} de inspecții fără inspector",
+      "hide": "Ascunde lista",
+      "show_one": "Programări de alocat · {{count}}",
+      "show_few": "Programări de alocat · {{count}}",
+      "show_other": "Programări de alocat · {{count}}"
     },
     "day": {
       "subtitle_one": "{{count}} inspector · {{visits}} alocate",
@@ -437,15 +452,18 @@
       "load_one": "{{city}} · {{count}} inspecție",
       "load_few": "{{city}} · {{count}} inspecții",
       "load_other": "{{city}} · {{count}} de inspecții",
-      "noInspectors": "Niciun inspector pentru filtrele alese.",
+      "noInspectors": {
+        "title": "Niciun inspector",
+        "text": "Schimbă orașul sau inspectorul din filtre."
+      },
       "unavailable": "Indisponibil",
-      "column": "Coloana lui {{name}}"
+      "column": "Coloana lui {{name}}",
+      "roleDescription": "inspecție alocată"
     },
     "ghost": {
       "free": "Liber · lasă aici",
       "busy": "Are deja o inspecție la această oră",
-      "unavailable": "Nu lucrează la această oră",
-      "otherDay": "Inspecția e în altă zi"
+      "unavailable": "Nu lucrează la această oră"
     },
     "assigned": "PS-I-{{number}} alocat lui {{name}}.",
     "undo": "Anulează",
@@ -459,7 +477,6 @@
       "description": "Detaliile programării, alocarea inspectorului, reprogramarea și anularea.",
       "inspector": "Inspector",
       "choose": "Alege inspectorul",
-      "option": "{{name}} · {{city}}",
       "assign": "Alocă",
       "change": "Schimbă",
       "unassign": "Retrage inspectorul",
@@ -471,7 +488,9 @@
         "opener": "Deschide",
         "notes": "Note",
         "payment": "Plată"
-      }
+      },
+      "booking": "Programare",
+      "cancel": "Anulează inspecția"
     },
     "payment": {
       "unpaid": "Neplătită · {{price}}",
@@ -485,12 +504,22 @@
       "back": "Renunță"
     },
     "availability": {
-      "description": "Orele în care inspectorul poate primi programări noi.",
-      "inspector": "Inspector",
+      "description": "Orele în care <name>{{name}}</name> poate primi programări noi, în fiecare săptămână.",
       "empty": {
         "title": "Încă nu ai inspectori",
         "text": "Fă un utilizator inspector din pagina Utilizatori."
-      }
-    }
+      },
+      "picker": "Alege inspectorul",
+      "inactiveCity": "{{city}} · Inactiv",
+      "inspector": "Inspector",
+      "search": "Caută după nume sau oraș",
+      "noMatch": "Niciun inspector găsit.",
+      "city": "Oraș",
+      "allCities": "Toate orașele",
+      "citySearch": "Caută orașul",
+      "noCity": "Niciun oraș găsit."
+    },
+    "assignTo": "Alocă lui {{name}}",
+    "resetFilters": "Resetează filtrele"
   }
 }

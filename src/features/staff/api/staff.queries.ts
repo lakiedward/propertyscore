@@ -12,10 +12,10 @@ import {
   getInspectorProfile,
   listCities,
   listExceptions,
-  listFreeStarts,
   listRoleCounts,
   listUsers,
   listWeeklyHours,
+  makeAdmin,
   removeException,
   removeInspector,
   setInspector,
@@ -61,11 +61,6 @@ export const staffQueries = {
     queryOptions({
       queryKey: [...staffQueries.availability(inspectorId), 'exceptions', from],
       queryFn: () => listExceptions(inspectorId, from),
-    }),
-  freeStarts: (inspectorId: string, from: string, to: string) =>
-    queryOptions({
-      queryKey: [...staffQueries.availability(inspectorId), 'free-starts', from, to],
-      queryFn: () => listFreeStarts(inspectorId, from, to),
     }),
 };
 
@@ -126,4 +121,9 @@ export function useBlockUser() {
 export function useUnblockUser() {
   const invalidate = useInvalidateUsers();
   return useMutation({ mutationFn: unblockUser, onSuccess: invalidate });
+}
+
+export function useMakeAdmin() {
+  const invalidate = useInvalidateUsers();
+  return useMutation({ mutationFn: makeAdmin, onSuccess: invalidate });
 }

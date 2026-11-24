@@ -483,6 +483,9 @@ isOneToOne: false
               "status": Database["public"]['Enums']["listing_status"],"total": number
             }[]
                            },
+"make_admin":
+{ Args: { "p_user_id": string }; Returns: undefined
+                           },
 "my_bookable_properties":
 { Args: Record<PropertyKey, never>; Returns: {
               "address_text": string,"area_m2": number,"building_floors": number,"city_id": string,"city_name": string,"floor": number,"last_inspection_at": string,"latitude": number,"listing_currency": string,"listing_id": string,"listing_price": number,"listing_status": Database["public"]['Enums']["listing_status"],"listing_transaction": Database["public"]['Enums']["listing_transaction"],"longitude": number,"photo_path": string,"property_id": string,"property_type": Database["public"]['Enums']["listing_property_type"],"rooms": number,"year_built": number

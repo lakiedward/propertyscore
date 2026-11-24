@@ -114,11 +114,7 @@ export function ListingsBoard({ transaction, onTransactionChange }: ListingsBoar
           }
         />
       ) : query.data && items.length === 0 ? (
-        <EmptyState
-          kind="empty"
-          title={t('board.empty.title')}
-          description={t('board.empty.description')}
-        />
+        <EmptyState title={t('board.empty.title')} description={t('board.empty.description')} />
       ) : (
         <div className="grid grid-cols-1 gap-3.5 lg:h-140 lg:grid-cols-[1.45fr_1fr]">
           <div className="relative h-95 overflow-hidden rounded-xl lg:h-full">

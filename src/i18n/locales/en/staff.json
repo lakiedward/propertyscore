@@ -50,7 +50,8 @@
       "changeCity": "Change the city",
       "removeInspector": "Remove the inspector role",
       "block": "Block the account",
-      "unblock": "Unblock the account"
+      "unblock": "Unblock the account",
+      "makeAdmin": "Make admin"
     },
     "more": "Show more users",
     "empty": {
@@ -96,13 +97,24 @@
       "confirm": "Unblock",
       "pending": "Unblocking…",
       "done": "{{name}}'s account was unblocked."
+    },
+    "listings": {
+      "show": "Show {{name}}'s listings",
+      "hide": "Hide {{name}}'s listings",
+      "title": "{{name}}'s listings"
+    },
+    "adminDialog": {
+      "title": "Make {{name}} an admin?",
+      "description": "They will have full access to the admin panel: listings, appointments and users, and will no longer use the user panel. The role reaches their account within an hour or at their next sign-in.",
+      "confirm": "Make admin",
+      "pending": "Saving…",
+      "done": "{{name}} is now an admin."
     }
   },
   "availability": {
     "weekly": {
       "title": "Weekly schedule",
-      "subtitle": "Repeats every week",
-      "selfDescription": "The hours when you can take new bookings.",
+      "selfDescription": "The hours when you can take new bookings, every week.",
       "adminDescription": "The hours when the inspector can take new bookings.",
       "range": "{{from}}–{{to}}",
       "off": "Off",
@@ -124,7 +136,10 @@
       "title": "Exceptions",
       "subtitle": "Leave, days off, blocked hours",
       "add": "Add an exception",
-      "empty": "No exceptions scheduled.",
+      "empty": {
+        "title": "No exceptions scheduled",
+        "text": "The weekly schedule applies without breaks. Add an exception for leave, days off or blocked hours."
+      },
       "remove": "Remove the exception",
       "range": "{{from}} – {{to}}",
       "hours": "{{day}} · {{from}}–{{to}}",
@@ -147,20 +162,6 @@
         "save": "Add the exception",
         "saving": "Adding…"
       }
-    },
-    "preview": {
-      "eyebrow": "How it reaches booking",
-      "title": "Clients only see the hours when you are free",
-      "titleNamed": "Clients only see the hours when {{name}} is free",
-      "steps": {
-        "weekly": "The weekly schedule",
-        "exceptions": "minus the exceptions",
-        "visits": "minus the inspections already assigned (2 h + 30 min travel)"
-      },
-      "day": "Choose the day",
-      "time": "Choose the time",
-      "empty": "No free times left on this day. Choose another day.",
-      "note": "Preview of the “Date” step of booking, for {{city}}."
     }
   }
 }

@@ -1,7 +1,10 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
+import roListings from '@/i18n/locales/ro/listings.json';
+import roMyListings from '@/i18n/locales/ro/myListings.json';
 import ro from '@/i18n/locales/ro/staff.json';
 import { signedInAs } from '@/test/factories/auth';
+import { buildListing } from '@/test/factories/listing';
 import { buildStaffUser } from '@/test/factories/staff-user';
 import { usersResponse } from '@/test/msw/handlers/staff';
 import { server } from '@/test/msw/server';
@@ -176,6 +179,106 @@ describe('UsersPage', { timeout: 20_000 }, () => {
     ).toBeInTheDocument();
     expect(
       screen.queryByRole('menuitem', { name: ro.users.actions.block }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("opens a row on the user's listings, linking the published ones to their page", async () => {
+    const published = buildListing({ title: 'Apartament în Fabric', status: 'approved' });
+    const inReview = buildListing({ title: 'Casă în Dumbrăvița', status: 'pending_approval' });
+    let ownerFilter: string | null = null;
+    server.use(
+      usersResponse([CLIENT]),
+      http.get(supabaseUrl('/rest/v1/listings'), ({ request }) => {
+        ownerFilter = new URL(request.url).searchParams.get('owner_id');
+        return HttpResponse.json([published, inReview]);
+      }),
+    );
+    const { user } = await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
+    const toggle = await screen.findByRole('button', {
+      name: ro.users.listings.show.replace('{{name}}', CLIENT.full_name ?? ''),
+    });
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await user.click(toggle);
+
+    const panel = await screen.findByRole('region', {
+      name: ro.users.listings.title.replace('{{name}}', CLIENT.full_name ?? ''),
+    });
+    expect(
+      await within(panel).findByRole('link', { name: 'Apartament în Fabric' }),
+    ).toHaveAttribute('href', `/listings/${published.id}`);
+    expect(within(panel).getByText('Casă în Dumbrăvița')).toBeInTheDocument();
+    expect(
+      within(panel).queryByRole('link', { name: 'Casă în Dumbrăvița' }),
+    ).not.toBeInTheDocument();
+    expect(within(panel).getByText(roMyListings.status.pending_approval)).toBeInTheDocument();
+    expect(ownerFilter).toBe(`eq.${CLIENT.user_id}`);
+    expect(
+      screen.getByRole('button', {
+        name: ro.users.listings.hide.replace('{{name}}', CLIENT.full_name ?? ''),
+      }),
+    ).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('says when the user has no listings', async () => {
+    server.use(
+      usersResponse([CLIENT]),
+      http.get(supabaseUrl('/rest/v1/listings'), () => HttpResponse.json([])),
+    );
+    const { user } = await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: ro.users.listings.show.replace('{{name}}', CLIENT.full_name ?? ''),
+      }),
+    );
+
+    expect(await screen.findByText(roListings.owner.empty.title)).toBeInTheDocument();
+  });
+
+  it('makes a user an admin after confirming', async () => {
+    let payload: unknown;
+    server.use(
+      usersResponse([CLIENT]),
+      http.post(supabaseUrl('/rest/v1/rpc/make_admin'), async ({ request }) => {
+        payload = await request.json();
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const { user } = await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: ro.users.actions.menu.replace('{{name}}', CLIENT.full_name ?? ''),
+      }),
+    );
+    await user.click(await screen.findByRole('menuitem', { name: ro.users.actions.makeAdmin }));
+    const dialog = await screen.findByRole('alertdialog', {
+      name: ro.users.adminDialog.title.replace('{{name}}', CLIENT.full_name ?? ''),
+    });
+    expect(payload).toBeUndefined();
+    await user.click(within(dialog).getByRole('button', { name: ro.users.adminDialog.confirm }));
+
+    await waitFor(() => {
+      expect(payload).toEqual({ p_user_id: CLIENT.user_id });
+    });
+  });
+
+  it('does not offer the admin role to an inspector', async () => {
+    server.use(usersResponse([INSPECTOR]));
+    const { user } = await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: ro.users.actions.menu.replace('{{name}}', INSPECTOR.full_name ?? ''),
+      }),
+    );
+
+    expect(
+      await screen.findByRole('menuitem', { name: ro.users.actions.changeCity }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: ro.users.actions.makeAdmin }),
     ).not.toBeInTheDocument();
   });
 });

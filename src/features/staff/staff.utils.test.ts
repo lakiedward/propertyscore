@@ -1,11 +1,4 @@
-import {
-  addDaysTo,
-  exceptionBounds,
-  freeStartsByDay,
-  previewDayKeys,
-  SCHEDULE_TIMES,
-  weeklyRangesByDay,
-} from './staff.utils';
+import { addDaysTo, exceptionBounds, SCHEDULE_TIMES, weeklyRangesByDay } from './staff.utils';
 
 describe('staff.utils', () => {
   it('offers half-hour times from 06:00 to 22:00', () => {
@@ -29,23 +22,9 @@ describe('staff.utils', () => {
     expect(byDay.get(1)).toBeUndefined();
   });
 
-  it('lists the preview days from tomorrow across a month end', () => {
-    expect(previewDayKeys(new Date(2026, 10, 29, 15, 0), 3)).toEqual([
-      '2026-11-30',
-      '2026-12-01',
-      '2026-12-02',
-    ]);
+  it('adds days across a month and a year end', () => {
+    expect(addDaysTo('2026-11-30', 1)).toBe('2026-12-01');
     expect(addDaysTo('2026-12-31', 1)).toBe('2027-01-01');
-  });
-
-  it('groups free start times by their local day', () => {
-    const first = new Date(2026, 10, 24, 8, 0);
-    const second = new Date(2026, 10, 24, 9, 30);
-    const third = new Date(2026, 10, 25, 8, 0);
-    const byDay = freeStartsByDay([first, second, third].map((date) => date.toISOString()));
-
-    expect(byDay.get('2026-11-24')).toEqual(new Set([first.getTime(), second.getTime()]));
-    expect(byDay.get('2026-11-25')?.size).toBe(1);
   });
 
   it('turns a whole-day exception into midnight to midnight after the last day', () => {

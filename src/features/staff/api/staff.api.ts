@@ -60,6 +60,11 @@ export async function removeInspector(userId: string) {
   if (error) throw toAppError(error);
 }
 
+export async function makeAdmin(userId: string) {
+  const { error } = await supabase.rpc('make_admin', { p_user_id: userId });
+  if (error) throw toAppError(error);
+}
+
 const INSPECTOR_PROFILE_COLUMNS = 'user_id, city_id, is_active, city:cities(name)' as const;
 
 const WEEKLY_HOURS_COLUMNS = 'id, weekday, starts_at, ends_at' as const;
@@ -132,16 +137,6 @@ export async function addException(exception: InspectorExceptionInsert) {
 export async function removeException(id: string) {
   const { error } = await supabase.from('inspector_exceptions').delete().eq('id', id);
   if (error) throw toAppError(error);
-}
-
-export async function listFreeStarts(inspectorId: string, from: string, to: string) {
-  const { data, error } = await supabase.rpc('inspector_free_starts', {
-    p_inspector_id: inspectorId,
-    p_from: from,
-    p_to: to,
-  });
-  if (error) throw toAppError(error);
-  return data.map((row) => row.starts_at);
 }
 
 export async function blockUser({ userId, reason }: { userId: string; reason: string }) {

@@ -122,7 +122,9 @@ export function assignmentClash({
 }): Clash {
   const day = dayStart(dateKey(new Date(inspection.starts_at)));
   const isInsideHours = workingIntervals(inspectorId, day, ranges).some(
-    (range) => range.starts_at <= inspection.starts_at && range.ends_at >= inspection.ends_at,
+    (range) =>
+      new Date(range.starts_at).getTime() <= new Date(inspection.starts_at).getTime() &&
+      new Date(range.ends_at).getTime() >= new Date(inspection.ends_at).getTime(),
   );
   const isBlocked = blocks.some(
     (block) => block.inspector_id === inspectorId && overlaps(block, inspection),

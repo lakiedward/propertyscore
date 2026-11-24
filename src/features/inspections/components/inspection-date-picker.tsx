@@ -61,7 +61,7 @@ export function InspectionDatePicker({
     return <Skeleton className="h-150 rounded-photo" />;
   }
   if (slots.isError) {
-    return <EmptyState kind="error" variant="card" title={t('booking.date.error')} />;
+    return <EmptyState kind="error" title={t('booking.date.error')} />;
   }
 
   const byDay = availabilityByDay(slots.data);
@@ -112,13 +112,10 @@ export function InspectionDatePicker({
 
   if (!firstFree) {
     return (
-      <div className="rounded-photo border border-card bg-card p-2 pb-5 shadow-card-soft">
-        <EmptyState
-          kind="empty"
-          title={t('booking.date.noSlots.title')}
-          description={t('booking.date.noSlots.text', { city: cityName })}
-        />
-      </div>
+      <EmptyState
+        title={t('booking.date.noSlots.title')}
+        description={t('booking.date.noSlots.text', { city: cityName })}
+      />
     );
   }
 

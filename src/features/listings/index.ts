@@ -16,3 +16,4 @@ export { ListingUnavailable } from './components/listing-unavailable';
 export { favoriteQueries, warmFavoriteIds } from './api/favorites.queries';
 export { FavoritesPage } from './components/favorites-page';
 export type { FavoriteListing } from './api/favorites.api';
+export { OwnerListings } from './components/owner-listings';

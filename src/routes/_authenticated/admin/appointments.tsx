@@ -16,6 +16,9 @@ const scheduleSearchSchema = z.object({
   city: z.uuid().optional().catch(undefined),
   inspector: z.uuid().optional().catch(undefined),
   sheet: z.uuid().optional().catch(undefined),
+  pick: z.uuid().optional().catch(undefined),
+  queueCity: z.uuid().optional().catch(undefined),
+  queueDate: z.iso.date().optional().catch(undefined),
   mode: z.enum(APPOINTMENT_MODES).optional().catch(undefined),
 });
 
