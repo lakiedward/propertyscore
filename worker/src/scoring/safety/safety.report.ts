@@ -23,6 +23,7 @@ import {
   walkedCellDistances,
   walkingTypes,
 } from './safety.cells.ts';
+import { elementsJson, readMapElements } from './safety.elements.ts';
 import { finalScore, scoreAtPoint, smooth, type PointSafety } from './safety.formula.ts';
 import {
   safetyParamsSchema,
@@ -377,6 +378,7 @@ function safetySection(input: {
   addressScore: number;
   landmarks: readonly Landmark[];
   heat: JsonObject | null;
+  elements: JsonObject;
   params: SafetyParams;
   distanceMethod: DistanceMethod;
 }): JsonObject {
@@ -405,6 +407,7 @@ function safetySection(input: {
       distance_m: Math.round(landmark.distance_m),
     })),
     ...(input.heat ? { heat: input.heat } : {}),
+    elements: input.elements,
   };
 }
 
@@ -452,12 +455,14 @@ export const safetyReportSection: ReportSection = {
       Math.max(...Object.values(reach)),
     );
     const heat = await readHeatCells(sql, snapshotId, cellId, position);
+    const elements = await readMapElements(sql, snapshotId, cell.cityId, position);
     return safetySection({
       cell: inputs.data,
       point,
       addressScore: smoothedAddressScore(point, neighbours, safetyParams),
       landmarks: walkedLandmarks(landmarks, walked, safetyParams),
       heat: heatJson(heat.sizeM, heat.cells),
+      elements: elementsJson(elements, safetyParams),
       params: safetyParams,
       distanceMethod: walked?.routed.some((candidate) => candidate.leg)
         ? 'pedestrian_routing'

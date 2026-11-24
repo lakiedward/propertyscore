@@ -6,6 +6,8 @@ import { formatDate } from '@/i18n/format';
 import type { ReadyReport } from '../../../../report.types';
 import { heatGradient } from '../../../../safety-heat';
 import {
+  chipOfType,
+  HIDDEN_CHIPS_BY_DEFAULT,
   landmarkTypes,
   safetyBreakdown,
   safetyTypeMeta,
@@ -26,7 +28,9 @@ const CHIP_BASE =
 export function SafetyMapBlock({ report }: SafetyMapBlockProps) {
   const { t } = useTranslation('smartCheck');
   const [when, setWhen] = useState<SafetyWhen>('day');
-  const [hiddenTypes, setHiddenTypes] = useState<ReadonlySet<string>>(new Set());
+  const [hiddenTypes, setHiddenTypes] = useState<ReadonlySet<string>>(
+    () => new Set(HIDDEN_CHIPS_BY_DEFAULT),
+  );
   const [isHeatVisible, setIsHeatVisible] = useState(true);
   const [focusedType, setFocusedType] = useState<string | null>(null);
   const safety = report.result.sections.safety;
@@ -44,15 +48,18 @@ export function SafetyMapBlock({ report }: SafetyMapBlockProps) {
       else next.add(type);
       return next;
     });
-    setFocusedType((current) => (current === type ? null : current));
+    setFocusedType((current) =>
+      current !== null && chipOfType(current) === type ? null : current,
+    );
   };
 
   const focusType = (type: string) => {
     setFocusedType((current) => (current === type ? null : type));
+    const chip = chipOfType(type);
     setHiddenTypes((current) => {
-      if (!current.has(type)) return current;
+      if (!current.has(chip)) return current;
       const next = new Set(current);
-      next.delete(type);
+      next.delete(chip);
       return next;
     });
   };
@@ -161,7 +168,9 @@ export function SafetyMapBlock({ report }: SafetyMapBlockProps) {
                   className={cn(
                     CHIP_BASE,
                     'shrink-0',
-                    focusedType === type && 'border-(--c) shadow-[0_0_0_2px_var(--c)]',
+                    focusedType !== null &&
+                      chipOfType(focusedType) === type &&
+                      'border-(--c) shadow-[0_0_0_2px_var(--c)]',
                   )}
                 >
                   <span

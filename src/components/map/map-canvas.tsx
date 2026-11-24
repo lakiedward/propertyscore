@@ -65,9 +65,25 @@ export type MapOverlay = {
       width: number;
       hasCasing?: boolean;
       dash?: readonly number[];
+      opacity?: number;
     }
-  | { kind: 'circle'; colorToken: string; radius: number; opacity: number }
-  | { kind: 'fill'; colorToken: string; opacity: number; outlineWidth?: number }
+  | {
+      kind: 'circle';
+      colorToken: string;
+      radius: number;
+      opacity: number;
+      strokeColorToken?: string;
+      strokeWidth?: number;
+    }
+  | {
+      kind: 'fill';
+      colorToken: string;
+      opacity: number;
+      outlineWidth?: number;
+      outlineColorToken?: string;
+      outlineDash?: readonly number[];
+      outlineOpacity?: number;
+    }
 );
 
 export type MapImageOverlay = {
@@ -644,6 +660,7 @@ function addOverlay(map: MapLibreMap, overlay: MapOverlay) {
         'line-color': color,
         'line-width': overlay.width,
         ...(overlay.dash ? { 'line-dasharray': [...overlay.dash] } : {}),
+        ...(overlay.opacity === undefined ? {} : { 'line-opacity': overlay.opacity }),
       },
     });
     return;
@@ -660,7 +677,14 @@ function addOverlay(map: MapLibreMap, overlay: MapOverlay) {
         id: `${overlay.id}-casing`,
         type: 'line',
         source: overlay.id,
-        paint: { 'line-color': color, 'line-width': overlay.outlineWidth },
+        paint: {
+          'line-color': overlay.outlineColorToken ? themeColor(overlay.outlineColorToken) : color,
+          'line-width': overlay.outlineWidth,
+          ...(overlay.outlineDash ? { 'line-dasharray': [...overlay.outlineDash] } : {}),
+          ...(overlay.outlineOpacity === undefined
+            ? {}
+            : { 'line-opacity': overlay.outlineOpacity }),
+        },
       });
     }
     return;
@@ -673,6 +697,13 @@ function addOverlay(map: MapLibreMap, overlay: MapOverlay) {
       'circle-color': color,
       'circle-radius': overlay.radius,
       'circle-opacity': overlay.opacity,
+      ...(overlay.strokeColorToken
+        ? {
+            'circle-stroke-color': themeColor(overlay.strokeColorToken),
+            'circle-stroke-width': overlay.strokeWidth ?? 1,
+            'circle-stroke-opacity': overlay.opacity,
+          }
+        : {}),
     },
   });
 }

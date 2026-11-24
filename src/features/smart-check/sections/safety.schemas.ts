@@ -33,6 +33,14 @@ export const safetySectionSchema = z.object({
       distance_m: z.number(),
     }),
   ),
+  elements: z
+    .object({
+      reach_m: z.record(z.string(), z.number()),
+      points: z.record(z.string(), z.array(positionSchema)),
+      lines: z.record(z.string(), z.array(z.array(positionSchema))),
+      areas: z.record(z.string(), z.array(z.array(z.array(positionSchema)))),
+    })
+    .optional(),
   heat: z
     .object({
       cell_size_m: z.number().positive(),
