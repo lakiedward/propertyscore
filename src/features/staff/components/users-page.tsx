@@ -27,6 +27,8 @@ const ROLE_FILTERS = ['user', 'inspector', 'admin'] as const satisfies readonly 
 
 const SEARCH_DEBOUNCE_MS = 250;
 
+const ALL_CITIES = 'all';
+
 const route = getRouteApi('/_authenticated/admin/users');
 
 export function UsersPage() {
@@ -36,9 +38,15 @@ export function UsersPage() {
   const searchId = useId();
   const [query, setQuery] = useState(search.q);
   const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS);
-  const filters = { search: debouncedQuery, role: search.role ?? null, state: search.state };
+  const filters = {
+    search: debouncedQuery,
+    role: search.role ?? null,
+    state: search.state,
+    cityId: search.city ?? null,
+  };
   const users = useInfiniteQuery(staffQueries.users(filters));
   const counts = useQuery(staffQueries.roleCounts());
+  const cities = useQuery(staffQueries.cities());
   const items: StaffUser[] = users.data?.pages.flatMap((page) => page.items) ?? [];
   const total = users.data?.pages[0]?.total ?? 0;
 
@@ -106,6 +114,29 @@ export function UsersPage() {
                 className="min-w-0 flex-1 bg-transparent text-body-sm outline-none placeholder:text-muted-foreground"
               />
             </label>
+            <Select
+              value={search.city ?? ALL_CITIES}
+              onValueChange={(value) => {
+                void navigate({
+                  search: (previous) => ({
+                    ...previous,
+                    city: value === ALL_CITIES ? undefined : value,
+                  }),
+                });
+              }}
+            >
+              <SelectTrigger aria-label={t('users.city.label')} className="h-10 sm:w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_CITIES}>{t('users.city.all')}</SelectItem>
+                {(cities.data ?? []).map((city) => (
+                  <SelectItem key={city.id} value={city.id}>
+                    {city.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select
               value={search.state}
               onValueChange={(value) => {

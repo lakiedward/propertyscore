@@ -10,6 +10,7 @@ export type UserFilters = {
   search: string;
   role: AppRole | null;
   state: UserStateFilter;
+  cityId: string | null;
 };
 
 type StaffUserRow = Database['public']['Functions']['admin_list_users']['Returns'][number];

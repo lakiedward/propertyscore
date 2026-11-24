@@ -44,10 +44,11 @@ export function UserRow({ user }: UserRowProps) {
   const unblockUser = useUnblockUser();
   const makeAdmin = useMakeAdmin();
   const { user: currentUser } = useAuth();
-  const canBlock = !user.roles.includes('admin') && user.user_id !== currentUser?.id;
+  const isAdmin = user.roles.includes('admin');
+  const canBlock = !isAdmin && user.user_id !== currentUser?.id;
   const name = user.full_name ?? t('users.unnamed');
   const isInspector = user.roles.includes('inspector');
-  const canMakeAdmin = !user.roles.includes('admin') && !isInspector && !user.is_blocked;
+  const canMakeAdmin = !isAdmin && !isInspector && !user.is_blocked;
   const [isExpanded, setIsExpanded] = useState(false);
   const panelId = useId();
 
@@ -138,70 +139,72 @@ export function UserRow({ user }: UserRowProps) {
           </span>
         </TableCell>
         <TableCell className="px-5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="touch-target"
-                aria-label={t('users.actions.menu', { name })}
-              >
-                <EllipsisIcon aria-hidden />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onSelect={() => {
-                  setDialog('city');
-                }}
-              >
-                {t(isInspector ? 'users.actions.changeCity' : 'users.actions.makeInspector')}
-              </DropdownMenuItem>
-              {isInspector ? (
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={() => {
-                    setDialog('remove');
-                  }}
+          {isAdmin ? null : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="touch-target"
+                  aria-label={t('users.actions.menu', { name })}
                 >
-                  {t('users.actions.removeInspector')}
-                </DropdownMenuItem>
-              ) : null}
-              {canMakeAdmin ? (
+                  <EllipsisIcon aria-hidden />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onSelect={() => {
-                    setDialog('admin');
+                    setDialog('city');
                   }}
                 >
-                  {t('users.actions.makeAdmin')}
+                  {t(isInspector ? 'users.actions.changeCity' : 'users.actions.makeInspector')}
                 </DropdownMenuItem>
-              ) : null}
-              {canBlock ? (
-                <>
-                  <DropdownMenuSeparator />
-                  {user.is_blocked ? (
-                    <DropdownMenuItem
-                      onSelect={() => {
-                        setDialog('unblock');
-                      }}
-                    >
-                      {t('users.actions.unblock')}
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onSelect={() => {
-                        setDialog('block');
-                      }}
-                    >
-                      {t('users.actions.block')}
-                    </DropdownMenuItem>
-                  )}
-                </>
-              ) : null}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {isInspector ? (
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onSelect={() => {
+                      setDialog('remove');
+                    }}
+                  >
+                    {t('users.actions.removeInspector')}
+                  </DropdownMenuItem>
+                ) : null}
+                {canMakeAdmin ? (
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setDialog('admin');
+                    }}
+                  >
+                    {t('users.actions.makeAdmin')}
+                  </DropdownMenuItem>
+                ) : null}
+                {canBlock ? (
+                  <>
+                    <DropdownMenuSeparator />
+                    {user.is_blocked ? (
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          setDialog('unblock');
+                        }}
+                      >
+                        {t('users.actions.unblock')}
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onSelect={() => {
+                          setDialog('block');
+                        }}
+                      >
+                        {t('users.actions.block')}
+                      </DropdownMenuItem>
+                    )}
+                  </>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <InspectorCityDialog
             userId={user.user_id}
             name={name}

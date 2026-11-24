@@ -9,6 +9,7 @@ const usersSearchSchema = z.object({
   q: z.string().max(100).catch('').default(''),
   role: z.enum(Constants.public.Enums.app_role).optional().catch(undefined),
   state: z.enum(USER_STATE_FILTERS).catch('all').default('all'),
+  city: z.uuid().optional().catch(undefined),
 });
 
 export const Route = createFileRoute('/_authenticated/admin/users')({

@@ -17,6 +17,10 @@
       "active": "Active",
       "blocked": "Blocked"
     },
+    "city": {
+      "label": "City",
+      "all": "All cities"
+    },
     "roles": {
       "label": "Filter by role",
       "all": "All",

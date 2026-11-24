@@ -209,6 +209,10 @@ values
   ('a0000000-0000-4000-8000-000000000005', 'inspector'),
   ('a0000000-0000-4000-8000-000000000006', 'inspector');
 
+delete from public.user_roles
+where user_roles.role = 'user'
+  and user_roles.user_id in ('a0000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000006');
+
 insert into public.inspector_profiles (user_id, city_id)
 select seed.user_id, cities.id
 from (

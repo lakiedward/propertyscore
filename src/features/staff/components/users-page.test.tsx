@@ -163,22 +163,16 @@ describe('UsersPage', { timeout: 20_000 }, () => {
     ).not.toBeInTheDocument();
   });
 
-  it('never offers to block an admin', async () => {
+  it('offers no actions on an admin', async () => {
     const admin = buildStaffUser({ full_name: 'Radu Marin', roles: ['admin'] });
     server.use(usersResponse([admin]));
-    const { user } = await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
+    await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
 
-    await user.click(
-      await screen.findByRole('button', {
+    expect(await screen.findByText('Radu Marin')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', {
         name: ro.users.actions.menu.replace('{{name}}', 'Radu Marin'),
       }),
-    );
-
-    expect(
-      await screen.findByRole('menuitem', { name: ro.users.actions.makeInspector }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole('menuitem', { name: ro.users.actions.block }),
     ).not.toBeInTheDocument();
   });
 

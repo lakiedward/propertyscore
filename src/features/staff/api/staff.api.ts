@@ -12,11 +12,12 @@ const USERS_PAGE_SIZE = 50;
 
 const CITY_COLUMNS = 'id, name' as const;
 
-export async function listUsers({ search, role, state }: UserFilters, page = 0) {
+export async function listUsers({ search, role, state, cityId }: UserFilters, page = 0) {
   const { data, error } = await supabase.rpc('admin_list_users', {
     p_search: search,
     ...(role ? { p_role: role } : {}),
     ...(state === 'all' ? {} : { p_blocked: state === 'blocked' }),
+    ...(cityId ? { p_city_id: cityId } : {}),
     p_limit: USERS_PAGE_SIZE,
     p_offset: page * USERS_PAGE_SIZE,
   });

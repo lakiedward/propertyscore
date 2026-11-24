@@ -18,6 +18,10 @@
       "active": "Active",
       "blocked": "Blocate"
     },
+    "city": {
+      "label": "Oraș",
+      "all": "Toate orașele"
+    },
     "roles": {
       "label": "Filtrează după rol",
       "all": "Toate",
