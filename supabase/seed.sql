@@ -342,3 +342,115 @@ insert into public.inspection_events (inspection_id, kind, actor_id, created_at)
 select inspections.id, 'cancelled', inspections.cancelled_by, inspections.cancelled_at
 from public.inspections
 where inspections.status = 'cancelled';
+
+insert into public.inspection_form_versions (id, version, status, created_by)
+values (
+  'f0000000-0000-4000-8000-000000000001', 1, 'draft', 'a0000000-0000-4000-8000-000000000004'
+);
+
+insert into public.inspection_form_categories (form_version_id, key, position, name_ro, name_en, icon, weight)
+values
+  ('f0000000-0000-4000-8000-000000000001', 'struct', 0, 'Structură', 'Structure', 'building-2', 15),
+  ('f0000000-0000-4000-8000-000000000001', 'umez', 1, 'Umezeală', 'Damp', 'droplets', 15),
+  ('f0000000-0000-4000-8000-000000000001', 'elec', 2, 'Instalații electrice', 'Electrical installation', 'zap', 12),
+  ('f0000000-0000-4000-8000-000000000001', 'apa', 3, 'Apă & canalizare', 'Water & drainage', 'droplet', 10),
+  ('f0000000-0000-4000-8000-000000000001', 'incalz', 4, 'Încălzire & apă caldă', 'Heating & hot water', 'flame', 12),
+  ('f0000000-0000-4000-8000-000000000001', 'tampl', 5, 'Tâmplărie & uși', 'Windows & doors', 'door-open', 8),
+  ('f0000000-0000-4000-8000-000000000001', 'izol', 6, 'Izolație & confort', 'Insulation & comfort', 'thermometer', 7),
+  ('f0000000-0000-4000-8000-000000000001', 'finis', 7, 'Finisaje', 'Finishes', 'paintbrush', 6),
+  ('f0000000-0000-4000-8000-000000000001', 'comun', 8, 'Părți comune & exterior', 'Common areas & exterior', 'users', 5),
+  ('f0000000-0000-4000-8000-000000000001', 'acte', 9, 'Acte & context', 'Documents & context', 'file-text', 5),
+  ('f0000000-0000-4000-8000-000000000001', 'sig', 10, 'Siguranță & vecinătate', 'Safety & neighbourhood', 'shield', 5);
+
+insert into public.inspection_form_questions (category_id, key, position, text_ro, text_en, required_media)
+select categories.id, seed.key, seed.position, seed.text_ro, seed.text_en, seed.required_media::public.inspection_required_media
+from (
+  values
+    ('struct', 'struct-1', 0, 'Fisuri vizibile în pereți portanți, grinzi sau tavane?', 'Visible cracks in load-bearing walls, beams or ceilings?', 'photo'),
+    ('struct', 'struct-2', 1, 'Planșee și pardoseli: denivelări, tasări, scârțâit la mers?', 'Floors and slabs: unevenness, settling, creaking underfoot?', 'video'),
+    ('struct', 'struct-3', 2, 'Balcon / terasă: placa, balustrada, urme de infiltrații?', 'Balcony / terrace: slab, railing, signs of water ingress?', 'photo'),
+    ('struct', 'struct-4', 3, 'Tipul și anul structurii corespund cu anunțul (cadre beton, zidărie, panouri)?', 'Do the structure type and year match the listing (concrete frame, masonry, panels)?', 'photo'),
+    ('umez', 'umez-1', 0, 'Pete, mucegai sau igrasie pe pereți și tavane?', 'Stains, mould or rising damp on walls and ceilings?', 'photo'),
+    ('umez', 'umez-2', 1, 'Umiditate măsurată pe peretele cel mai expus (%, cu aparatul în cadru)', 'Moisture measured on the most exposed wall (%, with the meter in the frame)', 'photo'),
+    ('umez', 'umez-3', 2, 'Miros de umezeală sau mucegai în baie / bucătărie?', 'Damp or mouldy smell in the bathroom / kitchen?', 'none'),
+    ('umez', 'umez-4', 3, 'Urme de infiltrații de la vecini sau acoperiș (tavan, colțuri)?', 'Signs of leaks from neighbours or the roof (ceiling, corners)?', 'photo'),
+    ('elec', 'elec-1', 0, 'Tablou electric: siguranțe automate, diferențial, stare generală?', 'Fuse box: circuit breakers, residual current device, general condition?', 'photo'),
+    ('elec', 'elec-2', 1, 'Prize cu împământare, funcționale în toate încăperile (test)?', 'Earthed sockets working in every room (tested)?', 'none'),
+    ('elec', 'elec-3', 2, 'Cabluri vizibile, improvizații, doze deschise?', 'Exposed cables, makeshift wiring, open junction boxes?', 'photo'),
+    ('elec', 'elec-4', 3, 'Contor și branșament: individual, accesibil, în stare bună?', 'Meter and supply connection: individual, accessible, in good condition?', 'photo'),
+    ('apa', 'apa-1', 0, 'Presiune și debit la robinete (baie, bucătărie)?', 'Water pressure and flow at the taps (bathroom, kitchen)?', 'video'),
+    ('apa', 'apa-2', 1, 'Scurgeri sub chiuvete, la WC, la cadă / duș?', 'Leaks under the sinks, at the toilet, bath / shower?', 'photo'),
+    ('apa', 'apa-3', 2, 'Țevi: material (fier / cupru / PPR), coroziune, vechime vizibilă?', 'Pipes: material (iron / copper / PPR), corrosion, visible age?', 'photo'),
+    ('apa', 'apa-4', 3, 'Apometre individuale, accesibile, cu sigilii intacte?', 'Individual water meters, accessible, seals intact?', 'photo'),
+    ('incalz', 'incalz-1', 0, 'Sursa: centrală proprie / termoficare / sobă; anul centralei de pe plăcuță', 'Source: own boiler / district heating / stove; boiler year from its plate', 'photo'),
+    ('incalz', 'incalz-2', 1, 'Centrala pornește, arde curat, presiunea e în plaja normală?', 'Does the boiler start, burn cleanly, with pressure in the normal range?', 'video'),
+    ('incalz', 'incalz-3', 2, 'Caloriferele se încălzesc uniform, robineții funcționează?', 'Do the radiators heat evenly and do the valves work?', 'photo'),
+    ('incalz', 'incalz-4', 3, 'Verificare ISCIR / revizie centrală în termen?', 'Boiler safety check / service up to date?', 'photo'),
+    ('tampl', 'tampl-1', 0, 'Ferestre: material, geam termopan, închid etanș?', 'Windows: material, double glazing, do they close tightly?', 'video'),
+    ('tampl', 'tampl-2', 1, 'Garnituri, feronerie, condens între foile de geam?', 'Seals, hardware, condensation between the panes?', 'photo'),
+    ('tampl', 'tampl-3', 2, 'Ușa de intrare: material, încuietori, blindată?', 'Front door: material, locks, reinforced?', 'photo'),
+    ('tampl', 'tampl-4', 3, 'Uși interioare: se închid, praguri, deteriorări?', 'Interior doors: do they close, thresholds, damage?', 'none'),
+    ('izol', 'izol-1', 0, 'Blocul / casa e reabilitat(ă) termic la exterior?', 'Is the building / house externally insulated?', 'photo'),
+    ('izol', 'izol-2', 1, 'Zgomot din stradă sau de la vecini cu ferestrele închise?', 'Noise from the street or neighbours with the windows closed?', 'video'),
+    ('izol', 'izol-3', 2, 'Curent de aer la ferestre / ușă (test cu mâna)?', 'Draughts at the windows / door (hand test)?', 'none'),
+    ('izol', 'izol-4', 3, 'Orientare și lumină naturală în camerele principale?', 'Orientation and daylight in the main rooms?', 'photo'),
+    ('finis', 'finis-1', 0, 'Pardoseli: tip, stare, zone deteriorate?', 'Floors: type, condition, damaged areas?', 'photo'),
+    ('finis', 'finis-2', 1, 'Pereți și tavane: zugrăveală, fisuri superficiale?', 'Walls and ceilings: paint, surface cracks?', 'photo'),
+    ('finis', 'finis-3', 2, 'Baie: gresie / faianță, obiecte sanitare, ventilație?', 'Bathroom: tiles, sanitary fittings, ventilation?', 'photo'),
+    ('finis', 'finis-4', 3, 'Bucătărie: mobilier, electrocasnice incluse, hotă / ventilație?', 'Kitchen: units, included appliances, hood / ventilation?', 'photo'),
+    ('comun', 'comun-1', 0, 'Scară, lift, interfon: stare și funcționare?', 'Stairwell, lift, intercom: condition and operation?', 'video'),
+    ('comun', 'comun-2', 1, 'Acoperiș / terasa blocului, jgheaburi, fațadă (ce se vede)?', 'Roof / building terrace, gutters, facade (what can be seen)?', 'photo'),
+    ('comun', 'comun-3', 2, 'Subsol: uscat, fără mirosuri, instalații comune în stare bună?', 'Basement: dry, no smells, shared installations in good condition?', 'photo'),
+    ('comun', 'comun-4', 3, 'Parcare, curte, acces, iluminat exterior?', 'Parking, yard, access, outdoor lighting?', 'photo'),
+    ('acte', 'acte-1', 0, 'Suprafața măsurată corespunde cu anunțul (±3%)?', 'Does the measured area match the listing (±3%)?', 'photo'),
+    ('acte', 'acte-2', 1, 'Există certificat energetic; ce clasă?', 'Is there an energy certificate; which class?', 'photo'),
+    ('acte', 'acte-3', 2, 'Restanțe la asociație / utilități, declarate de proprietar?', 'Arrears to the owners'' association / utilities, as declared by the owner?', 'none'),
+    ('acte', 'acte-4', 3, 'Modificări neautorizate (pereți demolați, balcon închis, spațiu comun ocupat)?', 'Unauthorised changes (walls removed, balcony enclosed, common space taken over)?', 'photo'),
+    ('sig', 'sig-1', 0, 'Ușa de intrare în bloc / poarta: se închide, interfon funcțional, acces controlat?', 'Building entrance / gate: does it close, working intercom, controlled access?', 'photo'),
+    ('sig', 'sig-2', 1, 'Iluminat la intrare, pe scară și pe stradă în fața imobilului?', 'Lighting at the entrance, in the stairwell and on the street in front?', 'photo'),
+    ('sig', 'sig-3', 2, 'Semne de vandalism, graffiti, geamuri sparte, clădiri abandonate pe stradă?', 'Signs of vandalism, graffiti, broken windows, abandoned buildings on the street?', 'photo'),
+    ('sig', 'sig-4', 3, 'Asociația / vecinii: incidente în ultimele 12 luni (spargeri, furturi, scandaluri)?', 'Association / neighbours: incidents in the last 12 months (break-ins, thefts, disturbances)?', 'none')
+) as seed (category_key, key, position, text_ro, text_en, required_media)
+join public.inspection_form_categories as categories
+  on categories.form_version_id = 'f0000000-0000-4000-8000-000000000001'
+ and categories.key = seed.category_key;
+
+update public.inspection_form_versions
+set status = 'published', published_at = '2026-09-01 09:00:00+03', published_by = 'a0000000-0000-4000-8000-000000000004'
+where id = 'f0000000-0000-4000-8000-000000000001';
+
+insert into public.consent_versions (id, version, status, created_by)
+values ('c0000000-0000-4000-8000-000000000001', 1.0, 'draft', 'a0000000-0000-4000-8000-000000000004');
+
+insert into public.consent_sections (
+  consent_version_id, position, title_ro, title_en, text_ro, text_en, check_ro, check_en
+)
+values
+  (
+    'c0000000-0000-4000-8000-000000000001', 0,
+    'Prelucrarea datelor personale', 'Personal data processing',
+    'PropertyScore SRL, operator de date, prelucrează numele, telefonul, emailul și datele locuinței tale ca să facă inspecția, să genereze book-ul și să ți-l trimită. Datele se păstrează cât e valabil book-ul plus perioada cerută de lege. Ai dreptul de acces, rectificare, ștergere, restricționare, portabilitate și opoziție, la gdpr@propertyscore.ro. Nu vindem datele. Le vede echipa PropertyScore și, dacă ai venit printr-un partener, partenerul vede stadiul și book-ul.',
+    'PropertyScore SRL, as data controller, processes your name, phone, email and the property data to carry out the inspection, generate the book and deliver it to you. Data is kept for the validity of the book plus the legally required period. You have the right of access, rectification, erasure, restriction, portability and objection at gdpr@propertyscore.ro. We do not sell data. It is seen by the PropertyScore team and, if you came through a partner, the partner sees the status and the book.',
+    'Am citit și sunt de acord cu prelucrarea datelor mele personale.',
+    'I have read and agree to the processing of my personal data.'
+  ),
+  (
+    'c0000000-0000-4000-8000-000000000001', 1,
+    'Poze și video în locuință', 'Photos and video in the property',
+    'Agentul face fotografii și clipuri în toate încăperile, câte o panoramă cu o cameră 360 în fiecare cameră și scanează locuința cu Polycam pentru un plan de prezentare. Materialele rămân la inspecție și intră în anunțul tău doar dacă decizi să îl publici. Evităm persoanele, actele și obiectele personale. Poți cere pe loc să nu fie fotografiat ceva anume.',
+    'The inspector takes photos and videos in every room, one 360-degree panorama in each room, and scans the home with Polycam for a presentation floor plan. The materials remain with the inspection and appear in your listing only if you choose to publish it. We avoid people, documents and personal items. You can ask for a specific item not to be photographed.',
+    'Sunt de acord să se facă fotografii și clipuri în locuință, în condițiile de mai sus.',
+    'I agree to photos and videos being taken in the property, under the conditions above.'
+  ),
+  (
+    'c0000000-0000-4000-8000-000000000001', 2,
+    'Termenii inspecției și răspunderea', 'Inspection terms and liability',
+    'Inspecția e vizuală și cu instrumente simple, fără demontări, fără expertize de specialitate. Book-ul descrie ce s-a putut vedea și măsura la data inspecției; nu garantează lipsa defectelor ascunse și nu înlocuiește o expertiză tehnică. Nota se calculează automat din răspunsurile la 44 de întrebări. Răspunderea PropertyScore se limitează la valoarea serviciului.',
+    'The inspection is visual, with simple instruments, without dismantling or specialist surveys. The book describes what could be seen and measured on the inspection date; it does not guarantee the absence of hidden defects and does not replace a technical survey. The grade is computed automatically from the answers to 44 questions. PropertyScore''s liability is limited to the value of the service.',
+    'Am înțeles ce este și ce nu este inspecția și accept termenii.',
+    'I understand what the inspection is and is not, and I accept the terms.'
+  );
+
+update public.consent_versions
+set status = 'published', published_at = '2026-09-01 09:00:00+03', published_by = 'a0000000-0000-4000-8000-000000000004'
+where id = 'c0000000-0000-4000-8000-000000000001';

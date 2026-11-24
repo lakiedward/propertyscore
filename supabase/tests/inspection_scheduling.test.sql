@@ -279,7 +279,7 @@ select is(
 );
 
 select is(
-  (select roles from public.admin_list_users('insp doi', null, null, 50, 0)),
+  (select roles from public.admin_list_users('insp doi', null, null, null, 50, 0)),
   array['inspector']::public.app_role[],
   'The users list shows the roles'
 );
