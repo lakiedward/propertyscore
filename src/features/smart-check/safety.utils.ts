@@ -16,11 +16,13 @@ import {
   WineIcon,
   type LucideIcon,
 } from 'lucide-react';
+import type { LngLat } from '@/components/map/map.config';
 import { formatNumber } from '@/i18n/format';
 import type { ReportResult } from './report.types';
 
 type Safety = NonNullable<ReportResult['sections']['safety']>;
 export type SafetyLandmark = Safety['landmarks'][number];
+export type SafetyElements = NonNullable<Safety['elements']>;
 export type SafetyWhen = 'day' | 'night';
 
 type SafetyTypeMeta = { icon: LucideIcon; colorVar: string };
@@ -212,4 +214,70 @@ const WALK_DETOUR = 1.3;
 
 export function walkMinutes(metres: number): number {
   return Math.max(1, Math.round((metres * WALK_DETOUR) / WALK_METRES_PER_MINUTE));
+}
+
+const CHIP_OF_TYPE: Readonly<Record<string, string>> = {
+  park_lit: 'park',
+  train_halt: 'train_station',
+};
+
+export function chipOfType(type: string): string {
+  return CHIP_OF_TYPE[type] ?? type;
+}
+
+export const ICON_ELEMENT_TYPES: ReadonlySet<string> = new Set([
+  'nonstop',
+  'diplomatic',
+  'police',
+  'fire_station',
+  'train_station',
+  'train_halt',
+]);
+
+export const HIDDEN_CHIPS_BY_DEFAULT: ReadonlySet<string> = new Set(['transit_stop']);
+
+const EARTH_RADIUS_M = 6_371_008.8;
+
+function straightDistanceM(from: LngLat, to: LngLat): number {
+  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+  const latitudeDelta = toRadians(to[1] - from[1]);
+  const longitudeDelta = toRadians(to[0] - from[0]);
+  const haversine =
+    Math.sin(latitudeDelta / 2) ** 2 +
+    Math.cos(toRadians(from[1])) * Math.cos(toRadians(to[1])) * Math.sin(longitudeDelta / 2) ** 2;
+  return 2 * EARTH_RADIUS_M * Math.asin(Math.sqrt(haversine));
+}
+
+function elementPositions(elements: SafetyElements, chip: string): LngLat[] {
+  const ofChip = <T>(groups: Readonly<Record<string, readonly T[]>>) =>
+    Object.entries(groups).flatMap(([type, items]) => (chipOfType(type) === chip ? items : []));
+  return [
+    ...ofChip(elements.points),
+    ...ofChip(elements.lines).flat(),
+    ...ofChip(elements.areas).flat(2),
+  ];
+}
+
+export type NearestElement = { position: LngLat; distanceM: number };
+
+export function nearestElement(
+  safety: Pick<Safety, 'landmarks' | 'elements'>,
+  chip: string,
+  center: LngLat,
+): NearestElement | null {
+  const landmark = safety.landmarks
+    .filter((item) => chipOfType(item.type) === chip)
+    .sort((left, right) => left.distance_m - right.distance_m)[0];
+  if (landmark) return { position: landmark.location, distanceM: landmark.distance_m };
+  if (!safety.elements) return null;
+  let nearest: NearestElement | null = null;
+  for (const position of elementPositions(safety.elements, chip)) {
+    const distanceM = straightDistanceM(center, position);
+    if (!nearest || distanceM < nearest.distanceM) nearest = { position, distanceM };
+  }
+  return nearest;
+}
+
+export function midpoint(from: LngLat, to: LngLat): LngLat {
+  return [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
 }
