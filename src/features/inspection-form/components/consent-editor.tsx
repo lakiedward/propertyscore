@@ -28,7 +28,7 @@ import {
   type ConsentEditor as ConsentEditorData,
   type ConsentSectionPatch,
 } from '../inspection-form.types';
-import { consentVersionLabel } from '../inspection-form.utils';
+import { versionLabel } from '@/lib/version-label';
 import { ConsentVersionList } from './consent-version-list';
 
 const route = getRouteApi('/_authenticated/admin/content');
@@ -94,7 +94,7 @@ export function ConsentEditor() {
     );
   }
 
-  const shownVersion = consentVersionLabel(editor.shown.version);
+  const shownVersion = versionLabel(editor.shown.version);
   const dirtySections = () => {
     const dirty = form.formState.dirtyFields.sections ?? [];
     return form
@@ -311,7 +311,7 @@ export function ConsentEditor() {
                   saveDraft(() => {
                     publish.mutate(draft.id, {
                       onSuccess: () => {
-                        setPublishedVersion(consentVersionLabel(draft.version));
+                        setPublishedVersion(versionLabel(draft.version));
                       },
                     });
                   });

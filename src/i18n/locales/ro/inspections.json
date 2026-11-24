@@ -15,7 +15,8 @@
       "eyebrowEmpty": "Urmează",
       "emptyTitle": "Nicio inspecție alocată",
       "emptyText": "Când îți este alocată o inspecție, o vezi aici.",
-      "start": "Începe inspecția"
+      "start": "Începe inspecția",
+      "continue": "Continuă inspecția"
     },
     "days": {
       "today": "Azi",
@@ -29,8 +30,6 @@
     "floor": "et. {{floor}}/{{floors}}",
     "number": "#{{number}}",
     "start": "Începe",
-    "startSoon": "Chestionarul de inspecție va fi disponibil în curând.",
-    "soonTag": "În curând",
     "navigate": "Navighează",
     "status": {
       "scheduled": "Programată",
@@ -44,7 +43,11 @@
       "day": "Nu ai inspecții în această zi",
       "week": "Nu ai inspecții în această săptămână",
       "next": "Următoarea: {{when}}, {{address}}."
-    }
+    },
+    "startsFrom": "de la {{time}}",
+    "inProgress": "În lucru · {{answered}}/{{total}}",
+    "continue": "Continuă",
+    "sent": "Trimis · {{time}}"
   },
   "booking": {
     "pageTitle": "Programează inspecția Property Fizic",

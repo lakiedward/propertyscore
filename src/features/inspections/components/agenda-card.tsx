@@ -6,20 +6,21 @@ import { formatDate } from '@/i18n/format';
 import type { AgendaInspection } from '../inspection.types';
 import { directionsUrl } from '../inspection.utils';
 import { AgendaContact } from './agenda-contact';
+import { AgendaStartButton } from './agenda-start-button';
 import { InspectionStatusPill } from './inspection-status-pill';
 import { useAgendaText } from '../hooks/use-agenda-text';
 
 type AgendaCardProps = {
   inspection: AgendaInspection;
   showsDay: boolean;
+  now: Date;
 };
 
-export function AgendaCard({ inspection, showsDay }: AgendaCardProps) {
+export function AgendaCard({ inspection, showsDay, now }: AgendaCardProps) {
   const { t } = useTranslation('inspections');
   const { facts, access } = useAgendaText(inspection);
   const titleId = useId();
-  const soonId = useId();
-  const isDone = inspection.status !== 'inspector_assigned';
+  const isDone = inspection.status !== 'inspector_assigned' && inspection.status !== 'in_progress';
   const time = formatDate(
     inspection.starts_at,
     showsDay
@@ -49,7 +50,17 @@ export function AgendaCard({ inspection, showsDay }: AgendaCardProps) {
             </span>
           </div>
           <span className="shrink-0 whitespace-nowrap">
-            <InspectionStatusPill status={inspection.status} />
+            <InspectionStatusPill
+              status={inspection.status}
+              label={
+                inspection.status === 'in_progress'
+                  ? t('agenda.inProgress', {
+                      answered: inspection.answered_count,
+                      total: inspection.question_count,
+                    })
+                  : undefined
+              }
+            />
           </span>
         </div>
         <div className="flex flex-col gap-1">
@@ -67,24 +78,7 @@ export function AgendaCard({ inspection, showsDay }: AgendaCardProps) {
             {t('agenda.navigate')}
           </a>
         </Button>
-        <Button
-          type="button"
-          size="md"
-          disabled
-          aria-describedby={soonId}
-          className="w-full disabled:border-dashed disabled:border-border-strong disabled:bg-card disabled:text-muted-foreground"
-        >
-          {t('agenda.start')}
-          <span
-            aria-hidden
-            className="rounded-full bg-surface-alt px-2 py-0.5 text-meta font-bold text-brand"
-          >
-            {t('agenda.soonTag')}
-          </span>
-        </Button>
-        <span id={soonId} className="sr-only">
-          {t('agenda.startSoon')}
-        </span>
+        <AgendaStartButton inspection={inspection} look="card" now={now} />
       </div>
     </article>
   );

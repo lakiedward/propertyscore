@@ -37,8 +37,44 @@ describe('AgendaPage', { timeout: 20_000 }, () => {
       'href',
       expect.stringContaining('google.com/maps/dir'),
     );
-    expect(within(card).getByRole('button', { name: ro.agenda.start })).toBeDisabled();
-    expect(screen.getByRole('button', { name: ro.agenda.next.start })).toBeDisabled();
+    expect(
+      within(card).getByRole('button', { name: new RegExp(`^${ro.agenda.start}`, 'u') }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: new RegExp(`^${ro.agenda.next.start}`, 'u') }),
+    ).toBeDisabled();
+  });
+
+  it('opens the inspection once its start window begins and continues one in progress', async () => {
+    vi.setSystemTime(new Date(2026, 10, 24, 9, 0));
+    const startable = buildAgendaInspection({
+      address_text: 'Str. Școlii 12',
+      starts_at: at(24, 9, 30),
+      ends_at: at(24, 11, 30),
+    });
+    const started = buildAgendaInspection({
+      address_text: 'Calea Aradului 52',
+      status: 'in_progress',
+      starts_at: at(24, 13, 0),
+      ends_at: at(24, 15, 0),
+      answered_count: 12,
+      question_count: 44,
+    });
+    server.use(agendaResponse([startable, started]));
+    await renderAppRoute('/field', { auth: signedInAs('inspector') });
+
+    const card = await screen.findByRole('article', { name: 'Str. Școlii 12' });
+    expect(within(card).getByRole('link', { name: ro.agenda.start })).toHaveAttribute(
+      'href',
+      `/field/inspections/${startable.id}`,
+    );
+    const inProgress = screen.getByRole('article', { name: 'Calea Aradului 52' });
+    expect(
+      within(inProgress).getByText(
+        ro.agenda.inProgress.replace('{{answered}}', '12').replace('{{total}}', '44'),
+      ),
+    ).toBeInTheDocument();
+    expect(within(inProgress).getByRole('link', { name: ro.agenda.continue })).toBeInTheDocument();
   });
 
   it('points to the next inspection when the chosen day is empty', async () => {

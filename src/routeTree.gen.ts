@@ -54,6 +54,7 @@ import { Route as SiteListingsListingIdRouteImport } from './routes/_site/listin
 import { Route as AuthenticatedAccountListingsIndexRouteImport } from './routes/_authenticated/account/listings/index'
 import { Route as AuthenticatedAccountListingsListingIdRouteImport } from './routes/_authenticated/account/listings/$listingId'
 import { Route as AuthenticatedAccountListingsNewRouteImport } from './routes/_authenticated/account/listings/new'
+import { Route as AuthenticatedFieldInspectionsInspectionIdRouteImport } from './routes/_authenticated/field/inspections/$inspectionId'
 import { Route as SiteInspectionConfirmationInspectionIdRouteImport } from './routes/_site/inspection/confirmation/$inspectionId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -305,6 +306,12 @@ const AuthenticatedAccountListingsNewRoute =
     path: '/listings/new',
     getParentRoute: () => AuthenticatedAccountRouteRoute,
   } as any)
+const AuthenticatedFieldInspectionsInspectionIdRoute =
+  AuthenticatedFieldInspectionsInspectionIdRouteImport.update({
+    id: '/inspections/$inspectionId',
+    path: '/inspections/$inspectionId',
+    getParentRoute: () => AuthenticatedFieldRouteRoute,
+  } as any)
 const SiteInspectionConfirmationInspectionIdRoute =
   SiteInspectionConfirmationInspectionIdRouteImport.update({
     id: '/inspection/confirmation/$inspectionId',
@@ -354,6 +361,7 @@ export interface FileRoutesByFullPath {
   '/listings/': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/field/inspections/$inspectionId': typeof AuthenticatedFieldInspectionsInspectionIdRoute
   '/inspection/confirmation/$inspectionId': typeof SiteInspectionConfirmationInspectionIdRoute
   '/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
@@ -396,6 +404,7 @@ export interface FileRoutesByTo {
   '/listings': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/field/inspections/$inspectionId': typeof AuthenticatedFieldInspectionsInspectionIdRoute
   '/inspection/confirmation/$inspectionId': typeof SiteInspectionConfirmationInspectionIdRoute
   '/account/listings': typeof AuthenticatedAccountListingsIndexRoute
 }
@@ -445,6 +454,7 @@ export interface FileRoutesById {
   '/_site/listings/': typeof SiteListingsIndexRoute
   '/_authenticated/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/_authenticated/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/_authenticated/field/inspections/$inspectionId': typeof AuthenticatedFieldInspectionsInspectionIdRoute
   '/_site/inspection/confirmation/$inspectionId': typeof SiteInspectionConfirmationInspectionIdRoute
   '/_authenticated/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
@@ -492,6 +502,7 @@ export interface FileRouteTypes {
     | '/listings/'
     | '/account/listings/$listingId'
     | '/account/listings/new'
+    | '/field/inspections/$inspectionId'
     | '/inspection/confirmation/$inspectionId'
     | '/account/listings/'
   fileRoutesByTo: FileRoutesByTo
@@ -534,6 +545,7 @@ export interface FileRouteTypes {
     | '/listings'
     | '/account/listings/$listingId'
     | '/account/listings/new'
+    | '/field/inspections/$inspectionId'
     | '/inspection/confirmation/$inspectionId'
     | '/account/listings'
   id:
@@ -582,6 +594,7 @@ export interface FileRouteTypes {
     | '/_site/listings/'
     | '/_authenticated/account/listings/$listingId'
     | '/_authenticated/account/listings/new'
+    | '/_authenticated/field/inspections/$inspectionId'
     | '/_site/inspection/confirmation/$inspectionId'
     | '/_authenticated/account/listings/'
   fileRoutesById: FileRoutesById
@@ -909,6 +922,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountListingsNewRouteImport
       parentRoute: typeof AuthenticatedAccountRouteRoute
     }
+    '/_authenticated/field/inspections/$inspectionId': {
+      id: '/_authenticated/field/inspections/$inspectionId'
+      path: '/inspections/$inspectionId'
+      fullPath: '/field/inspections/$inspectionId'
+      preLoaderRoute: typeof AuthenticatedFieldInspectionsInspectionIdRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
     '/_site/inspection/confirmation/$inspectionId': {
       id: '/_site/inspection/confirmation/$inspectionId'
       path: '/inspection/confirmation/$inspectionId'
@@ -999,6 +1019,7 @@ interface AuthenticatedFieldRouteRouteChildren {
   AuthenticatedFieldCurrentRoute: typeof AuthenticatedFieldCurrentRoute
   AuthenticatedFieldHistoryRoute: typeof AuthenticatedFieldHistoryRoute
   AuthenticatedFieldIndexRoute: typeof AuthenticatedFieldIndexRoute
+  AuthenticatedFieldInspectionsInspectionIdRoute: typeof AuthenticatedFieldInspectionsInspectionIdRoute
 }
 
 const AuthenticatedFieldRouteRouteChildren: AuthenticatedFieldRouteRouteChildren =
@@ -1007,6 +1028,8 @@ const AuthenticatedFieldRouteRouteChildren: AuthenticatedFieldRouteRouteChildren
     AuthenticatedFieldCurrentRoute: AuthenticatedFieldCurrentRoute,
     AuthenticatedFieldHistoryRoute: AuthenticatedFieldHistoryRoute,
     AuthenticatedFieldIndexRoute: AuthenticatedFieldIndexRoute,
+    AuthenticatedFieldInspectionsInspectionIdRoute:
+      AuthenticatedFieldInspectionsInspectionIdRoute,
   }
 
 const AuthenticatedFieldRouteRouteWithChildren =

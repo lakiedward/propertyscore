@@ -40,8 +40,3 @@ export function moveItem<T>(items: readonly T[], index: number, offset: -1 | 1):
   }
   return next;
 }
-
-export function consentVersionLabel(version: number): string {
-  const tenths = Math.round(version * 10);
-  return `${String(Math.trunc(tenths / 10))}.${String(tenths % 10)}`;
-}

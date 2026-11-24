@@ -1,10 +1,4 @@
-import {
-  consentVersionLabel,
-  moveItem,
-  parseWeight,
-  questionsByCategory,
-  weightSum,
-} from './inspection-form.utils';
+import { moveItem, parseWeight, questionsByCategory, weightSum } from './inspection-form.utils';
 import type { FormCategory, FormQuestion } from './inspection-form.types';
 
 const category = (id: string, position: number): FormCategory => ({
@@ -49,10 +43,5 @@ describe('inspection form utils', () => {
   it('moves an item within the list and stays inside its bounds', () => {
     expect(moveItem(['a', 'b', 'c'], 1, -1)).toEqual(['b', 'a', 'c']);
     expect(moveItem(['a', 'b', 'c'], 2, 1)).toEqual(['a', 'b', 'c']);
-  });
-
-  it('writes a consent version with one decimal', () => {
-    expect(consentVersionLabel(1)).toBe('1.0');
-    expect(consentVersionLabel(1.1)).toBe('1.1');
   });
 });

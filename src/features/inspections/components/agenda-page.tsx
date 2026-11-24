@@ -19,6 +19,7 @@ import {
   nextInspection,
 } from '../inspection.utils';
 import { AgendaCard } from './agenda-card';
+import { AgendaStartButton } from './agenda-start-button';
 import { AgendaContact } from './agenda-contact';
 
 const route = getRouteApi('/_authenticated/field/');
@@ -119,7 +120,12 @@ export function AgendaPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
             {shown.map((inspection) => (
-              <AgendaCard key={inspection.id} inspection={inspection} showsDay={day === 'week'} />
+              <AgendaCard
+                key={inspection.id}
+                inspection={inspection}
+                showsDay={day === 'week'}
+                now={now}
+              />
             ))}
           </div>
         )}
@@ -160,7 +166,6 @@ type NextInspectionCardProps = {
 
 function NextInspectionCard({ inspection, now }: NextInspectionCardProps) {
   const { t } = useTranslation('inspections');
-  const soonId = useId();
   const { access } = useAgendaText(inspection);
   const isToday = inspectionsOn([inspection], 'today', now).length > 0;
   const when = formatDate(
@@ -180,31 +185,13 @@ function NextInspectionCard({ inspection, now }: NextInspectionCardProps) {
       </strong>
       <AgendaContact inspection={inspection} access={access} tone="inverse" />
       <div className="mt-auto flex flex-wrap gap-2.5 pt-1">
-        <Button asChild variant="cta" size="md">
+        <AgendaStartButton inspection={inspection} look="hero" now={now} />
+        <Button asChild variant="inverse" size="md">
           <a href={directionsUrl(inspection)} target="_blank" rel="noreferrer">
             <NavigationIcon aria-hidden />
             {t('agenda.navigate')}
           </a>
         </Button>
-        <Button
-          type="button"
-          variant="outlineInverse"
-          size="md"
-          disabled
-          aria-describedby={soonId}
-          className="disabled:border-dashed disabled:border-on-inverse/35 disabled:bg-transparent disabled:text-on-inverse-muted"
-        >
-          {t('agenda.next.start')}
-          <span
-            aria-hidden
-            className="rounded-full bg-on-inverse/12 px-2 py-0.5 text-meta font-bold text-cta"
-          >
-            {t('agenda.soonTag')}
-          </span>
-        </Button>
-        <span id={soonId} className="sr-only">
-          {t('agenda.startSoon')}
-        </span>
       </div>
     </div>
   );

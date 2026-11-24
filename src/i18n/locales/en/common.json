@@ -120,7 +120,18 @@
       "consent_not_draft": "Only the draft can be changed.",
       "consent_translation_missing": "Fill in the title, text and checkbox in both languages.",
       "consent_empty": "Add at least one section.",
-      "consent_item_not_found": "The section no longer exists. Reload the page."
+      "consent_item_not_found": "The section no longer exists. Reload the page.",
+      "inspection_not_startable": "The inspection can start only on the visit day, at most one hour early.",
+      "consent_incomplete": "Tick every consent section.",
+      "signature_missing": "The signature did not upload. Try again.",
+      "form_not_published": "There is no published form. Tell the office.",
+      "inspection_not_in_progress": "The inspection is not in progress.",
+      "question_not_in_form": "The question is not part of this inspection's form.",
+      "note_too_long": "The note is over 2,000 characters.",
+      "media_missing": "The file did not upload. Try again.",
+      "media_limit_reached": "You reached the maximum number of files for this question.",
+      "owner_name_required": "Write the owner's name.",
+      "inspection_incomplete": "Some questions are unanswered or required media is missing."
     }
   },
   "validation": {

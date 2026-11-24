@@ -15,7 +15,8 @@
       "eyebrowEmpty": "Next",
       "emptyTitle": "No inspection assigned",
       "emptyText": "When an inspection is assigned to you, it shows up here.",
-      "start": "Start the inspection"
+      "start": "Start the inspection",
+      "continue": "Continue the inspection"
     },
     "days": {
       "today": "Today",
@@ -29,8 +30,6 @@
     "floor": "floor {{floor}}/{{floors}}",
     "number": "#{{number}}",
     "start": "Start",
-    "startSoon": "The inspection questionnaire will be available soon.",
-    "soonTag": "Coming soon",
     "navigate": "Directions",
     "status": {
       "scheduled": "Booked",
@@ -44,7 +43,11 @@
       "day": "You have no inspections on this day",
       "week": "You have no inspections this week",
       "next": "Next: {{when}}, {{address}}."
-    }
+    },
+    "startsFrom": "from {{time}}",
+    "inProgress": "In progress · {{answered}}/{{total}}",
+    "continue": "Continue",
+    "sent": "Sent · {{time}}"
   },
   "booking": {
     "pageTitle": "Book a Property Fizic inspection",

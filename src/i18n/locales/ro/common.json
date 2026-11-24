@@ -120,7 +120,18 @@
       "consent_not_draft": "Doar ciorna se poate modifica.",
       "consent_translation_missing": "Completează titlul, textul și bifa în ambele limbi.",
       "consent_empty": "Adaugă cel puțin o secțiune.",
-      "consent_item_not_found": "Secțiunea nu mai există. Reîncarcă pagina."
+      "consent_item_not_found": "Secțiunea nu mai există. Reîncarcă pagina.",
+      "inspection_not_startable": "Inspecția poate începe doar în ziua vizitei, cu cel mult o oră înainte.",
+      "consent_incomplete": "Bifează toate secțiunile consimțământului.",
+      "signature_missing": "Semnătura nu s-a încărcat. Încearcă din nou.",
+      "form_not_published": "Nu există un formular publicat. Anunță biroul.",
+      "inspection_not_in_progress": "Inspecția nu e în lucru.",
+      "question_not_in_form": "Întrebarea nu face parte din formularul inspecției.",
+      "note_too_long": "Nota are peste 2.000 de caractere.",
+      "media_missing": "Fișierul nu s-a încărcat. Încearcă din nou.",
+      "media_limit_reached": "Ai atins numărul maxim de fișiere pentru această întrebare.",
+      "owner_name_required": "Scrie numele proprietarului.",
+      "inspection_incomplete": "Mai sunt întrebări fără răspuns sau media obligatorie lipsă."
     }
   },
   "validation": {

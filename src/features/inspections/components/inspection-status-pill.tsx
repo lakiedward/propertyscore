@@ -37,16 +37,19 @@ const CLIENT_LOOK = {
 type InspectionStatusPillProps = {
   status: InspectionStatus;
   audience?: 'inspector' | 'client';
+  label?: string;
 };
 
 export function InspectionStatusPill({
   status,
   audience = 'inspector',
+  label: labelOverride,
 }: InspectionStatusPillProps) {
   const { t } = useTranslation('inspections');
   const { tone, icon } = (audience === 'client' ? CLIENT_LOOK : INSPECTOR_LOOK)[status];
   const label =
-    audience === 'client' ? t(`appointments.status.${status}`) : t(`agenda.status.${status}`);
+    labelOverride ??
+    (audience === 'client' ? t(`appointments.status.${status}`) : t(`agenda.status.${status}`));
 
   return <StatusPill shape="tag" tone={tone} icon={icon} label={label} />;
 }

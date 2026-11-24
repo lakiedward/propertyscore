@@ -5,7 +5,7 @@ import { StatusPill } from '@/components/feedback/status-pill';
 import { formatDate } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import type { ConsentVersion } from '../inspection-form.types';
-import { consentVersionLabel } from '../inspection-form.utils';
+import { versionLabel } from '@/lib/version-label';
 
 const SHORT_DATE = { day: 'numeric', month: 'short', year: 'numeric' } as const;
 
@@ -36,7 +36,7 @@ export function ConsentVersionList({ versions }: ConsentVersionListProps) {
           >
             <span className="flex items-center justify-between gap-2">
               <strong className="tabular-nums">
-                {t('consent.versionLabel', { version: consentVersionLabel(version.version) })}
+                {t('consent.versionLabel', { version: versionLabel(version.version) })}
               </strong>
               {version.status === 'draft' ? (
                 <StatusPill tone="info" shape="tag" icon={PencilIcon} label={t('status.draft')} />
