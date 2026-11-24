@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { JsonObject, Sql } from '../db/sql.ts';
+import type { JsonObject, Sql, SqlTransaction } from '../db/sql.ts';
 import { errorCode } from '../lib/errors.ts';
 import type { Logger } from '../lib/logger.ts';
 import type { ValhallaClient } from '../routing/valhalla.ts';
@@ -16,6 +16,8 @@ import type { ReportSection } from './report-section.ts';
 
 const CODES_THAT_KEEP_THE_REPORT = new Set(['report_already_ready', 'report_in_progress']);
 
+type ReportDelivery = (transaction: SqlTransaction, reportId: string) => Promise<void>;
+
 export type GenerateReportOptions = {
   sql: Sql;
   reportId: string;
@@ -23,6 +25,7 @@ export type GenerateReportOptions = {
   logger: Logger;
   router?: ValhallaClient | null;
   earthquakes?: EarthquakeCatalog | null;
+  deliver?: ReportDelivery;
 };
 
 const weightsSchema = z.record(z.string(), z.number());
@@ -63,7 +66,15 @@ export async function generateReport(options: GenerateReportOptions): Promise<vo
       if (score !== null && key !== null) exact.set(key, score);
     }
     const scores = await addressScores(sql, started, exact);
-    await completeReport(sql, reportId, started, built, scores);
+    const { deliver } = options;
+    if (deliver) {
+      await sql.begin(async (transaction) => {
+        await completeReport(transaction, reportId, started, built, scores);
+        await deliver(transaction, reportId);
+      });
+    } else {
+      await completeReport(sql, reportId, started, built, scores);
+    }
     logger.info('report ready', {
       report_id: reportId,
       snapshot_id: started.snapshotId,

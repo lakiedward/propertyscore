@@ -26,6 +26,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec supabase link --project-ref "$SUPABASE_PROJECT_ID"
       - run: pnpm exec supabase db push
+      - run: pnpm exec supabase functions deploy --project-ref "$SUPABASE_PROJECT_ID"
 
   site:
     needs: migrate

@@ -11,12 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
+import { Route as ReportRouteRouteImport } from './routes/_report/route'
 import { Route as SiteRouteRouteImport } from './routes/_site/route'
 import { Route as AuthenticatedAccountRouteRouteImport } from './routes/_authenticated/account/route'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
+import { Route as SiteCheckRouteImport } from './routes/_site/check'
 import { Route as SitePublishRouteImport } from './routes/_site/publish'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account/index'
 import { Route as AuthenticatedAccountAppointmentsRouteImport } from './routes/_authenticated/account/appointments'
@@ -48,6 +50,7 @@ import { Route as SiteListingsListingIdRouteImport } from './routes/_site/listin
 import { Route as AuthenticatedAccountListingsIndexRouteImport } from './routes/_authenticated/account/listings/index'
 import { Route as AuthenticatedAccountListingsListingIdRouteImport } from './routes/_authenticated/account/listings/$listingId'
 import { Route as AuthenticatedAccountListingsNewRouteImport } from './routes/_authenticated/account/listings/new'
+import { Route as ReportCheckResultReportIdRouteImport } from './routes/_report/check/result.$reportId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -55,6 +58,10 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 } as any)
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportRouteRoute = ReportRouteRouteImport.update({
+  id: '/_report',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SiteRouteRoute = SiteRouteRouteImport.update({
@@ -85,6 +92,11 @@ const PublicSignUpRoute = PublicSignUpRouteImport.update({
 const SiteIndexRoute = SiteIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => SiteRouteRoute,
+} as any)
+const SiteCheckRoute = SiteCheckRouteImport.update({
+  id: '/check',
+  path: '/check',
   getParentRoute: () => SiteRouteRoute,
 } as any)
 const SitePublishRoute = SitePublishRouteImport.update({
@@ -265,6 +277,12 @@ const AuthenticatedAccountListingsNewRoute =
     path: '/listings/new',
     getParentRoute: () => AuthenticatedAccountRouteRoute,
   } as any)
+const ReportCheckResultReportIdRoute =
+  ReportCheckResultReportIdRouteImport.update({
+    id: '/check/result/$reportId',
+    path: '/check/result/$reportId',
+    getParentRoute: () => ReportRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
@@ -272,6 +290,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/check': typeof SiteCheckRoute
   '/publish': typeof SitePublishRoute
   '/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/account/favorites': typeof AuthenticatedAccountFavoritesRoute
@@ -302,12 +321,14 @@ export interface FileRoutesByFullPath {
   '/listings/': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
   '/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/check': typeof SiteCheckRoute
   '/publish': typeof SitePublishRoute
   '/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
   '/account/favorites': typeof AuthenticatedAccountFavoritesRoute
@@ -338,17 +359,20 @@ export interface FileRoutesByTo {
   '/listings': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
   '/account/listings': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
+  '/_report': typeof ReportRouteRouteWithChildren
   '/_site': typeof SiteRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRouteRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_public/login': typeof PublicLoginRoute
   '/_public/sign-up': typeof PublicSignUpRoute
+  '/_site/check': typeof SiteCheckRoute
   '/_site/publish': typeof SitePublishRoute
   '/_site/': typeof SiteIndexRoute
   '/_authenticated/account/appointments': typeof AuthenticatedAccountAppointmentsRoute
@@ -380,6 +404,7 @@ export interface FileRoutesById {
   '/_site/listings/': typeof SiteListingsIndexRoute
   '/_authenticated/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/_authenticated/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/_report/check/result/$reportId': typeof ReportCheckResultReportIdRoute
   '/_authenticated/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -390,6 +415,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/sign-up'
+    | '/check'
     | '/publish'
     | '/account/appointments'
     | '/account/favorites'
@@ -420,12 +446,14 @@ export interface FileRouteTypes {
     | '/listings/'
     | '/account/listings/$listingId'
     | '/account/listings/new'
+    | '/check/result/$reportId'
     | '/account/listings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/sign-up'
+    | '/check'
     | '/publish'
     | '/account/appointments'
     | '/account/favorites'
@@ -456,16 +484,19 @@ export interface FileRouteTypes {
     | '/listings'
     | '/account/listings/$listingId'
     | '/account/listings/new'
+    | '/check/result/$reportId'
     | '/account/listings'
   id:
     | '__root__'
     | '/_authenticated'
     | '/_public'
+    | '/_report'
     | '/_site'
     | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/_public/login'
     | '/_public/sign-up'
+    | '/_site/check'
     | '/_site/publish'
     | '/_site/'
     | '/_authenticated/account/appointments'
@@ -497,12 +528,14 @@ export interface FileRouteTypes {
     | '/_site/listings/'
     | '/_authenticated/account/listings/$listingId'
     | '/_authenticated/account/listings/new'
+    | '/_report/check/result/$reportId'
     | '/_authenticated/account/listings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
+  ReportRouteRoute: typeof ReportRouteRouteWithChildren
   SiteRouteRoute: typeof SiteRouteRouteWithChildren
 }
 
@@ -520,6 +553,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof PublicRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_report': {
+      id: '/_report'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ReportRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_site': {
@@ -562,6 +602,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof SiteIndexRouteImport
+      parentRoute: typeof SiteRouteRoute
+    }
+    '/_site/check': {
+      id: '/_site/check'
+      path: '/check'
+      fullPath: '/check'
+      preLoaderRoute: typeof SiteCheckRouteImport
       parentRoute: typeof SiteRouteRoute
     }
     '/_site/publish': {
@@ -781,6 +828,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountListingsNewRouteImport
       parentRoute: typeof AuthenticatedAccountRouteRoute
     }
+    '/_report/check/result/$reportId': {
+      id: '/_report/check/result/$reportId'
+      path: '/check/result/$reportId'
+      fullPath: '/check/result/$reportId'
+      preLoaderRoute: typeof ReportCheckResultReportIdRouteImport
+      parentRoute: typeof ReportRouteRoute
+    }
   }
 }
 
@@ -894,7 +948,20 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
   PublicRouteRouteChildren,
 )
 
+interface ReportRouteRouteChildren {
+  ReportCheckResultReportIdRoute: typeof ReportCheckResultReportIdRoute
+}
+
+const ReportRouteRouteChildren: ReportRouteRouteChildren = {
+  ReportCheckResultReportIdRoute: ReportCheckResultReportIdRoute,
+}
+
+const ReportRouteRouteWithChildren = ReportRouteRoute._addFileChildren(
+  ReportRouteRouteChildren,
+)
+
 interface SiteRouteRouteChildren {
+  SiteCheckRoute: typeof SiteCheckRoute
   SitePublishRoute: typeof SitePublishRoute
   SiteIndexRoute: typeof SiteIndexRoute
   SiteListingsListingIdRoute: typeof SiteListingsListingIdRoute
@@ -902,6 +969,7 @@ interface SiteRouteRouteChildren {
 }
 
 const SiteRouteRouteChildren: SiteRouteRouteChildren = {
+  SiteCheckRoute: SiteCheckRoute,
   SitePublishRoute: SitePublishRoute,
   SiteIndexRoute: SiteIndexRoute,
   SiteListingsListingIdRoute: SiteListingsListingIdRoute,
@@ -915,6 +983,7 @@ const SiteRouteRouteWithChildren = SiteRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
+  ReportRouteRoute: ReportRouteRouteWithChildren,
   SiteRouteRoute: SiteRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport

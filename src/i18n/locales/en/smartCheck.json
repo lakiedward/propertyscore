@@ -1,0 +1,1289 @@
+{
+  "check": {
+    "pageTitle": "Smart Check",
+    "title": "Check an address with Smart Check",
+    "eyebrow": "Online report {{price}} · Step {{number}} of {{total}}",
+    "steps": {
+      "label": "Order steps",
+      "item": "{{number}}. {{label}}",
+      "done": "Report",
+      "address": "Address",
+      "confirm": "Confirm",
+      "details": "Details",
+      "payment": "Payment",
+      "completed": "{{label}}, done"
+    },
+    "heading": {
+      "address": {
+        "title": "Where is the home?",
+        "badge": "9 cities covered"
+      },
+      "confirm": {
+        "title": "Is this the home?",
+        "badge": "Check the pin on the map"
+      },
+      "details": {
+        "title": "What you know about the home",
+        "badge": "Optional · takes a minute"
+      },
+      "payment": {
+        "title": "Payment",
+        "badge": "Card payment is coming soon"
+      },
+      "done": {
+        "title": "Preparing the report",
+        "badge": "Usually takes under a minute"
+      }
+    },
+    "address": {
+      "label": "Where is the property?",
+      "placeholder": "Street, number and city",
+      "empty": "We can't find “{{query}}”. Check the spelling or add the city, e.g. “Strada Mărășești 6, Timișoara”.",
+      "searchError": "Address search is not responding right now. Place the pin on the map and type the address yourself.",
+      "locate": "Use my location",
+      "locateError": "We couldn't get your location. Search for the address or tap the map.",
+      "mapLabel": "Map with the home's pin",
+      "mapHint": "Drag the pin or tap the map",
+      "mapError": "The map can't load right now. Reload the page.",
+      "pinLabel": "Your home",
+      "coordinates": "{{lat}}, {{lng}}",
+      "resolving": "Looking up the pin's address…",
+      "noReverse": "We found no address exactly here. Type it yourself.",
+      "manualHint": "You can correct the address yourself, for example the block number. The pin stays where you put it.",
+      "noPin": "Search for the address or tap the map on the home's building.",
+      "required": "Enter the home's address.",
+      "pinRequired": "Place the pin on the map, on the home's building.",
+      "outside": {
+        "title": "This address is not in a covered city",
+        "description": "The online report works in: {{cities}}. We won't ask you to pay for this address."
+      },
+      "continue": "Continue",
+      "addressMissing": "No address yet"
+    },
+    "includes": {
+      "title": "What you get for {{price}}",
+      "items": {
+        "score": "Area score from 9 criteria, each explained",
+        "transit": "Accessibility: lines, frequency and directions, not just distance",
+        "fifteen": "15-minute city: what you can reach on foot, on real streets",
+        "green": "Green space within 500 m and 1 km",
+        "environment": "Safety, noise, air, industrial areas, seismic risk",
+        "market": "Prices, rents and yield in the area",
+        "questions": "What to ask at the viewing",
+        "share": "PDF and share link"
+      },
+      "note": "The score describes the area, not the condition of the home. That is what the physical inspection is for.",
+      "citiesTitle": "Available in 9 cities"
+    },
+    "confirm": {
+      "question": "Is this the home?",
+      "helper": "Check the pin. Distances and scores are measured from here.",
+      "movingQuestion": "Move the pin onto the building",
+      "movingHelper": "Tap or drag on the map. The report uses exactly this point.",
+      "move": "Move the pin",
+      "stopMoving": "Done, pin moved",
+      "continue": "Yes, continue",
+      "back": "Back to the address"
+    },
+    "details": {
+      "intro": "Fill in what you know from the listing or from talking to the seller. You can also continue without these details.",
+      "requiredNote": "The location is the only required information.",
+      "unknown": "I don't know",
+      "size": {
+        "legend": "Rooms and floor area",
+        "rooms": "Rooms",
+        "roomsPlaceholder": "e.g. 3",
+        "area": "Approx. floor area",
+        "areaPlaceholder": "e.g. 84",
+        "areaUnit": "m²"
+      },
+      "floor": {
+        "legend": "Floor",
+        "floor": "Floor",
+        "floorPlaceholder": "e.g. 3",
+        "floorHint": "0 for the ground floor, -1 for a semi-basement",
+        "floors": "out of",
+        "floorsPlaceholder": "e.g. 8",
+        "floorsUnit": "floors"
+      },
+      "elevator": {
+        "legend": "Lift",
+        "yes": "Yes",
+        "no": "No",
+        "unknown": "I don't know"
+      },
+      "year": {
+        "legend": "Year built",
+        "label": "Year",
+        "placeholder": "e.g. 1978"
+      },
+      "why": {
+        "title": "Why we ask",
+        "text": "Your answers don't change the area score. We use them for comparable prices, yield and the viewing questions. In the report they are marked “declared”.",
+        "progress_one": "{{count}} of {{total}} answers filled in",
+        "progress_other": "{{count}} of {{total}} answers filled in"
+      },
+      "back": "Back",
+      "skip": "Skip",
+      "continue": "Continue to payment · {{price}}"
+    },
+    "payment": {
+      "title": "Payment",
+      "signedOut": {
+        "title": "Sign in to order the report",
+        "description": "The report stays in your account, under “Reports”, with a PDF and a share link. The address and details you entered stay here.",
+        "signIn": "Sign in",
+        "signUp": "Create an account"
+      },
+      "unlimited": {
+        "title": "Test account: unlimited Smart Check",
+        "description": "You can generate as many reports as you like, without paying."
+      },
+      "comingSoon": {
+        "title": "Card payment is coming soon",
+        "description": "For now, only test accounts can generate the report. Your order stays here: the address and details are not lost."
+      },
+      "accessError": "We couldn't check your account's access. Reload the page.",
+      "generate": "Generate the report",
+      "generating": "Sending the order…",
+      "changeAddress": "Change the address",
+      "back": "Back to details"
+    },
+    "summary": {
+      "eyebrow": "Your order",
+      "product": "Online report",
+      "includesTitle": "What you get",
+      "items": {
+        "scores": "9 category scores from 0 to 100",
+        "market": "Asking prices and rents in the area, with €/m²",
+        "nearby": "Nearby amenities and walking routes",
+        "questions": "Questions to ask at the viewing",
+        "account": "Access in your account, PDF and share link"
+      },
+      "note": "The report describes the area. It can't see the condition of the home.",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "vat": "VAT included."
+    },
+    "done": {
+      "title": "Preparing the report",
+      "description": "We are calculating the scores for {{address}}. It usually takes under a minute and the page updates by itself.",
+      "queued": "The order is queued and starts in a few seconds.",
+      "failedTitle": "The report could not be generated",
+      "failedDescription": "It costs you nothing. Try again, and if it happens again, write to us.",
+      "retry": "Try again",
+      "loadError": "We can't read the report's status right now. We'll retry automatically.",
+      "myReports": "See my reports",
+      "newCheck": "Check another address",
+      "slow": "This is taking longer than usual. You can close the page: the report appears in My reports when it is ready.",
+      "stopped": "We stopped checking automatically. The report appears in My reports when it is ready."
+    }
+  },
+  "status": {
+    "pending_payment": "Awaiting payment",
+    "queued": "Queued",
+    "generating": "Generating",
+    "ready": "Ready",
+    "failed": "Failed"
+  },
+  "myReports": {
+    "count_one": "{{count}} report",
+    "count_other": "{{count}} reports",
+    "meta": "Report no. {{number}} · {{date}}",
+    "more": "Show more reports",
+    "empty": {
+      "title": "You have no Smart Check reports yet",
+      "description": "Check an address and the report appears here, with a PDF and a share link.",
+      "action": "Check an address"
+    },
+    "kind": "Online report",
+    "score": "{{score}} / 100",
+    "scoreLabel": "Area score {{score}} out of 100",
+    "open": "Open",
+    "note": {
+      "pending_payment": "Waiting for payment.",
+      "queued": "In line. We start in a few seconds.",
+      "generating": "Ready in a few minutes.",
+      "ready": "PDF and share link included.",
+      "failed": "It could not be generated. We are looking into it."
+    }
+  },
+  "report": {
+    "pageTitle": "Smart Check report",
+    "state": {
+      "pending_payment": {
+        "title": "The report is waiting for payment",
+        "description": "We prepare it as soon as the order is confirmed."
+      },
+      "queued": {
+        "title": "The report is next in line",
+        "description": "We start preparing it in a few seconds. The page updates by itself."
+      },
+      "generating": {
+        "title": "Preparing the report",
+        "description": "It usually takes less than a minute. The page updates by itself."
+      },
+      "ready": {
+        "title": "The report cannot be shown",
+        "description": "Try again in a few minutes."
+      },
+      "failed": {
+        "title": "The report could not be generated",
+        "description": "We are looking into it. Try again later or write to us."
+      },
+      "backToReports": "Back to my reports"
+    },
+    "chapters": {
+      "summary": {
+        "title": "In short",
+        "eyebrow": "In short",
+        "badge": "{{scores}} · {{contexts}}",
+        "badgeScores_one": "{{count}} score",
+        "badgeScores_other": "{{count}} scores",
+        "badgeContexts_one": "{{count}} context",
+        "badgeContexts_other": "{{count}} contexts",
+        "lead_one": "We calculated {{count}} score within a radius of up to {{radius}} km, plus {{contexts}} as context.",
+        "lead_other": "We calculated {{count}} scores within a radius of up to {{radius}} km, plus {{contexts}} as context.",
+        "leadNoContext_one": "We calculated {{count}} score within a radius of up to {{radius}} km.",
+        "leadNoContext_other": "We calculated {{count}} scores within a radius of up to {{radius}} km.",
+        "contexts": {
+          "seismic": "seismic risk",
+          "investment": "investment",
+          "both": "seismic risk and investment"
+        },
+        "position": {
+          "unknown": "The area of the address, in {{city}}",
+          "top": "One of the best areas in {{city}}",
+          "above": "An area above the {{city}} average",
+          "average": "An area around the {{city}} average",
+          "below": "An area below the {{city}} average"
+        },
+        "headlineWeak": "{{position}}, with a single weak point: <mark>{{weak}}</mark>",
+        "leadZone": "The area gets {{score}} out of 100, against a city average of {{average}}.",
+        "leadEnd": "Each score has its own chapter.",
+        "good": "What is good",
+        "watch": "What to watch",
+        "cardTitle": {
+          "flat": "{{topic}}: the same across the city",
+          "farAbove": "{{topic}} well above the city",
+          "above": "{{topic}} above the city average",
+          "below": "{{topic}} below the city average",
+          "atAverage": "{{topic}} at the city average"
+        },
+        "standing": {
+          "flat": "A city-level estimate, the same for every area.",
+          "best": "Among the best areas in the city.",
+          "worst": "Among the weakest areas in the city.",
+          "better": "Better than {{percent}}% of the areas in {{city}}."
+        },
+        "cardAverage": "City average: {{average}}.",
+        "openChapter": "Open the chapter",
+        "mapBand": {
+          "eyebrow": "Area map",
+          "title": "Explore the area on the map",
+          "text": "Coloured routes, times on real streets and the layers that counted in the score.",
+          "walk": "places on foot",
+          "transit": "destinations by transit",
+          "layers": "layers",
+          "open": "Open the map"
+        },
+        "scores": {
+          "eyebrow": "All scores · weight in the score next to the name",
+          "title": "All scores, against the whole city",
+          "legendAddress": "address",
+          "legendAverage": "city average",
+          "hint": "Each bar starts at 0 and stops at the score of the address. The black line is the city average.",
+          "groups": {
+            "mostImportant": "Matters most",
+            "environment": "Environment and quiet",
+            "services": "Services"
+          },
+          "weight": "{{weight}}%",
+          "difference": {
+            "flat": "the same across the city",
+            "atAverage": "at the city average",
+            "up": "+{{points}} vs the city",
+            "down": "−{{points}} vs the city"
+          },
+          "rowLabel": "{{name}}: {{score}} out of 100, city average {{average}}. Open the chapter.",
+          "note_one": "The area score ({{score}}) is the weighted mean of the {{count}} score. Seismic risk and investment are context and do not count in the score.",
+          "note_other": "The area score ({{score}}) is the weighted mean of the {{count}} scores. Seismic risk and investment are context and do not count in the score."
+        },
+        "formation": {
+          "eyebrow": "Area score",
+          "aboveAverage": "<b>+{{points}}</b> above the city average",
+          "belowAverage": "<b>−{{points}}</b> below the city average",
+          "lowerShare": "<b>{{percent}}%</b> of areas score lower",
+          "atLeast": "only <b>{{count}}</b> of {{total}} areas score {{from}}+",
+          "histTitle": "Where the area stands in the whole city",
+          "histHint": "Each column is a group of areas with similar scores.",
+          "histLabel": "Score distribution across the {{count}} areas of {{city}}",
+          "histAverage": "city average · {{average}}",
+          "histAddress": "address · {{score}}",
+          "histBar": "{{count}} areas scoring {{from}} to {{to}}",
+          "sumTitle": "How the {{score}} points add up",
+          "lost": "lost",
+          "partLabel": "{{name}}: {{points}} points",
+          "lostLabel": "Points lost: {{points}}"
+        },
+        "explorer": {
+          "title": "Area map",
+          "heading": "What is around the address",
+          "close": "Close the map",
+          "walk": "On foot",
+          "transit": "Transit",
+          "layers": "Layers",
+          "modes": "What the map shows",
+          "walkNote": "Routed on real streets, at {{speed}} km/h.",
+          "transitNote": "Walk to the stop, wait, ride the line.",
+          "layersNote": "Turn a layer on to see what counted in the score.",
+          "footer": "Tap a route: it appears on the map, with its time. Drawn from OpenStreetMap.",
+          "minutes": "{{minutes}} min",
+          "routeLabel": "{{name}}, {{minutes}} minutes",
+          "mapLabel": "Map of the area around the address",
+          "placeKinds": {
+            "shops": "Shop",
+            "food_drink": "Restaurant or café",
+            "services": "Services",
+            "pharmacies": "Pharmacy",
+            "medical": "Medical practice",
+            "schools": "School",
+            "parks": "Park",
+            "sport": "Sport",
+            "culture": "Culture"
+          },
+          "layerNames": {
+            "green": "Green space",
+            "fifteen": "15 minutes on foot",
+            "ring": "500 m radius"
+          },
+          "empty": "We have no routes for this address.",
+          "legendTitle": "On the map",
+          "legendAddress": "Address"
+        }
+      },
+      "safety": {
+        "title": "Safety",
+        "eyebrow": "Safety · {{score}} / 100 · {{band}}",
+        "precision": "Precision: area (cell)",
+        "headline": "Lighting, open shops and people on the street around the address",
+        "lead": "The map shows where it is less safe and where it is safer around the address, by day and by night, and every element we counted: street lamps, shops, all-night stores, police, fire stations, bars, parks, underpasses.",
+        "noData": "We have no safety data for this address.",
+        "map": {
+          "label": "Safety map around the address · OpenStreetMap",
+          "moment": "Time of day",
+          "day": "Day",
+          "night": "Night",
+          "elements": "Map elements",
+          "heat": "Heat map",
+          "legendLess": "less safe",
+          "legendMore": "safer",
+          "distance": "{{distance}}",
+          "source": "The elements on the map come from OpenStreetMap (extract from {{date}}).",
+          "sourceNoDate": "The elements on the map come from OpenStreetMap."
+        },
+        "types": {
+          "lighting": "Lighting",
+          "shop": "Shops",
+          "nonstop": "All-night",
+          "mixed_use": "Buildings with a shop on the ground floor",
+          "police": "Police",
+          "fire_station": "Fire stations",
+          "diplomatic": "Consulates",
+          "bar": "Bars, clubs",
+          "park": "Parks",
+          "park_lit": "Lit parks",
+          "isolated_passage": "Underpasses, railways",
+          "train_station": "Stations",
+          "train_halt": "Halts",
+          "transit_stop": "Stops",
+          "other": "Other element"
+        },
+        "waterfall": {
+          "titleDay": "Why the address scores {{score}} by day",
+          "titleNight": "Why the address scores {{score}} by night",
+          "equation": "<strong>{{start}}</strong> starting point <up>+{{up}}</up> what raises it <down>−{{down}}</down> what lowers it = <strong>{{score}}</strong>",
+          "raises": "What raises the score",
+          "lowers": "What lowers the score",
+          "empty": "Nothing nearby.",
+          "detailBoth": "{{count}} around · nearest at {{distance}}",
+          "detailCount": "{{count}} around",
+          "detailNearest": "nearest at {{distance}}",
+          "far": "<strong>Too far to matter:</strong> {{list}}. We show them on the map, but they do not change the score.",
+          "hint": "Tap a row: the map keeps only its elements."
+        },
+        "score": {
+          "better": "Better than <strong>{{percent}}%</strong> of the areas in {{city}}",
+          "best": "Among the best areas in {{city}}",
+          "worst": "Among the weakest areas in {{city}}",
+          "flat": "In {{city}} every area has the same score, between {{min}} and {{max}}. The score cannot tell addresses apart.",
+          "none": "No comparison with the rest of the city",
+          "you": "You · {{score}}",
+          "average": "Average {{average}}",
+          "range": "City areas: {{min}}–{{max}}",
+          "included": "<strong>Takes into account</strong> lighting, people on the street, open shops, police and fire stations",
+          "excluded": "<strong>Does not take into account</strong> crime: there is no public street-level data"
+        },
+        "help": {
+          "eyebrow": "If you need help",
+          "title": "How far help is",
+          "emergency": "Emergency <strong>112</strong>",
+          "emergencyLabel": "Call 112",
+          "nonstop": "All-night shop",
+          "police": "Police",
+          "fire_station": "Fire station",
+          "h5": "All-night pharmacy",
+          "h4": "Emergency care for adults",
+          "walk": "{{minutes}} on foot",
+          "car": "by car",
+          "minutes": "{{count}} min",
+          "listLabel": "How far emergency services are"
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Walking routing"
+        }
+      },
+      "accessibility": {
+        "title": "{{stops}} and {{lines}} that take you across the whole city",
+        "titleNoStops": "No public transport stop near the address",
+        "stopsPhrase_one": "{{count}} stop within a {{minutes}}-minute walk",
+        "stopsPhrase_other": "{{count}} stops within a {{minutes}}-minute walk",
+        "linesPhrase_one": "{{count}} line",
+        "linesPhrase_other": "{{count}} lines",
+        "eyebrow": "Accessibility · {{score}} / 100 · {{band}}",
+        "badge": "Accuracy: address · public transport",
+        "lead": "The city average is {{average}}. From here, public transport gets you around more easily than from {{percent}}% of the city's zones.",
+        "leadPlain": "The stops around and the trips from here to the city's key places.",
+        "mapLabel": "Map of trips by public transport",
+        "mapChip": "Transport routes",
+        "legendTitle": "On the map",
+        "legendAddress": "Address",
+        "legendVehicle": "On the vehicle",
+        "legendWalk": "Walking to the stop",
+        "minutes": "{{minutes}} min",
+        "min": "min",
+        "routesTitle": "How long it takes to get there, at 8 in the morning",
+        "rowLabel": "{{name}}, {{minutes}} minutes",
+        "walkFaster": "{{minutes}} min on foot, quicker than by line",
+        "walkDistance": "{{distance}} on foot",
+        "fromStop": "from {{stop}} stop",
+        "legs": {
+          "walk": "{{minutes}} min on foot",
+          "wait": "{{minutes}} min waiting",
+          "ride": "{{minutes}} min on the line"
+        },
+        "legKey": {
+          "walk": "on foot",
+          "wait": "waiting",
+          "ride": "on the line"
+        },
+        "sourceTimetable": "Lines, stops and timetable: local public transport, timetable of {{date}}, a working day. Walking routes follow OpenStreetMap streets.",
+        "sourceOsm": "Lines and stops come from OpenStreetMap, without a timetable: waiting time is estimated. Walking routes follow OpenStreetMap streets.",
+        "groupLabel": "Destination type",
+        "groups": {
+          "places": "Key places",
+          "highSchools": "High schools",
+          "faculties": "Faculties"
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "osm": "OpenStreetMap",
+          "gtfs": "Public transport timetable",
+          "walk_routing": "Walking routing"
+        },
+        "scoreHeadline": "Better than <b>{{percent}}%</b> of the city's zones",
+        "scoreYou": "You · {{score}}",
+        "scoreAverage": "Average {{average}}",
+        "scoreRange": "City zones: {{min}}–{{max}}",
+        "measuresIncluded": "<b>Takes into account</b> the stops nearby, how many lines run, how often and how long it takes to reach the city",
+        "measuresExcluded": "<b>Does not take into account</b> crowding on vehicles and delays",
+        "reach": {
+          "eyebrow": "How far you get",
+          "title": "The city, in minutes from your door",
+          "timeLabel": "Within how long",
+          "option": "{{minutes}} min",
+          "ofCity": "of the city",
+          "sentence": "In <b>{{minutes}} minutes</b>, by public transport and on foot, you reach {{scale}}.",
+          "scales": {
+            "all": "almost the whole city",
+            "twoThirds": "more than two thirds of the city",
+            "half": "almost half of the city",
+            "third": "more than a third of the city",
+            "centre": "the centre and nearby neighbourhoods"
+          },
+          "neighbourhoods": "<b>{{reached}} of {{total}}</b> neighbourhoods, leaving at 8 in the morning.",
+          "key": {
+            "under15": "under 15 min",
+            "from15": "15–30 min",
+            "from30": "30–45 min"
+          },
+          "mapLabel": "Map of the city: how far you get by public transport"
+        },
+        "search": {
+          "label": "Search",
+          "highSchools": "Search for a high school",
+          "faculties": "Search for a faculty",
+          "empty": "Nothing found for “{{query}}”.",
+          "hint": "Tap a row to see the trip on the map. On foot where that is faster than the line."
+        }
+      },
+      "fifteenMinute": {
+        "eyebrow": "15 minutes · {{score}} / 100 · {{band}}",
+        "precision": {
+          "routed": "Precision: address · real streets",
+          "estimated": "Precision: address · estimate"
+        },
+        "headline": {
+          "all": "All {{count}} everyday things within {{limit}} minutes on foot",
+          "some": "{{covered}} of {{total}} everyday things within {{limit}} minutes on foot",
+          "none": "What you have within {{limit}} minutes on foot"
+        },
+        "lead": {
+          "average": "The city average is {{average}}.",
+          "better": "Here you have more within reach than in {{percent}}% of {{city}}'s areas."
+        },
+        "noData": "We have no 15-minute places data for this address.",
+        "map": {
+          "label": "Map of places within 15 minutes on foot · OpenStreetMap",
+          "panelLabel": "Map and list",
+          "chip": "{{limit}} minutes on foot",
+          "key": {
+            "title": "On the map",
+            "address": "Address",
+            "zone": "{{limit}} minutes on foot",
+            "places": "Everyday places"
+          },
+          "source": "Places: OpenStreetMap, {{date}}. Walking routes follow streets and paths, at {{speed}} metres a minute.",
+          "sourceNoDate": "Places: OpenStreetMap. Walking routes follow streets and paths, at {{speed}} metres a minute.",
+          "minutes": "{{minutes}} min"
+        },
+        "checklist": {
+          "eyebrow": "Your everyday list",
+          "title": "{{covered}} of {{total}} within {{limit}} minutes on foot",
+          "only": "the only one within {{limit}} min",
+          "count": "{{count}} within {{limit}} min",
+          "farther": "farther than {{limit}} minutes",
+          "min": "min"
+        },
+        "categories": {
+          "supermarket": "Supermarket",
+          "convenience": "Corner shop",
+          "bakery": "Bakery",
+          "greengrocer_market": "Market or greengrocer",
+          "butcher": "Butcher",
+          "drugstore": "Drugstore",
+          "restaurant": "Restaurant",
+          "cafe": "Café",
+          "bank_atm": "Bank or ATM",
+          "post": "Post office or parcel locker",
+          "hairdresser": "Hairdresser or barber",
+          "laundry": "Dry cleaner",
+          "car_service": "Car service",
+          "public_office": "Public office",
+          "pharmacy": "Pharmacy",
+          "doctor": "Family doctor",
+          "dentist": "Dentist",
+          "clinic": "Clinic",
+          "veterinary": "Vet",
+          "kindergarten": "Kindergarten",
+          "school": "School",
+          "high_school": "High school",
+          "park": "Park",
+          "playground": "Playground",
+          "fitness": "Gym",
+          "sports_ground": "Sports ground",
+          "swimming_pool": "Swimming pool",
+          "library": "Library",
+          "cinema_theatre": "Cinema or theatre",
+          "place_of_worship": "Place of worship",
+          "other": "Other service"
+        },
+        "groups": {
+          "shops": "shops",
+          "food_drink": "restaurants and cafés",
+          "services": "banks, post and other services",
+          "pharmacies": "pharmacies",
+          "medical": "doctors and clinics",
+          "schools": "schools and kindergartens",
+          "parks": "parks and playgrounds",
+          "sport": "gyms and sports grounds",
+          "culture": "cinemas, theatres, libraries",
+          "other": "other places"
+        },
+        "tiles": {
+          "eyebrow": "Plenty to choose from",
+          "title": "Not just one place nearby, but several to choose from",
+          "many": "{{ratio}} times more",
+          "rare": "rare in other neighbourhoods",
+          "fewer": "fewer than usual",
+          "same": "about the same as a typical neighbourhood",
+          "typical": "typical neighbourhood: {{count}}",
+          "typicalNone": "typical neighbourhood: none",
+          "fewerItem": "{{label}}, {{count}} (a typical neighbourhood has {{typical}})",
+          "fewerNote": "Fewer than usual: {{list}}."
+        },
+        "score": {
+          "better": "Better than <strong>{{percent}}%</strong> of {{city}}'s areas",
+          "best": "Among the best areas in {{city}}",
+          "worst": "Among the weakest areas in {{city}}",
+          "flat": "In {{city}} every area has the same score, between {{min}} and {{max}}. The score cannot tell addresses apart.",
+          "none": "No comparison with the rest of the city",
+          "you": "You · {{score}}",
+          "average": "Average {{average}}",
+          "range": "City areas: {{min}}–{{max}}",
+          "included": "<strong>Takes into account</strong> shops, health, schools, parks and services within {{limit}} minutes on foot",
+          "excluded": "<strong>Does not take into account</strong> how good each place is"
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Walking routing",
+          "siiir": "SIIIR",
+          "cnas_upu": "CNAS and UPU"
+        },
+        "title": "The 15-minute city"
+      },
+      "green": {
+        "title": "Green spaces",
+        "eyebrow": "Green spaces · {{score}} / 100 · {{band}}",
+        "precision": "Precision: address",
+        "headline_one": "{{count}} large park, at most {{minutes}} min on foot",
+        "headline_other": "{{count}} large parks, at most {{minutes}} min on foot",
+        "headlineNone": "No park within walking distance of the address",
+        "lead": "Together they cover {{total}} ha. The largest, {{name}}, is {{area}} ha.",
+        "share": "{{share}}% of the area within {{radius}} m is green space, against {{average}}% for the city on average.",
+        "shareNoAverage": "{{share}}% of the area within {{radius}} m is green space.",
+        "noData": "We have no green space data for this address.",
+        "map": {
+          "label": "Map of the green spaces around the address · OpenStreetMap"
+        },
+        "parks": {
+          "label": "Parks nearby",
+          "list": "Parks nearby, press one to see it on the map",
+          "unnamed": "Unnamed green space",
+          "unnamedLower": "an unnamed green space",
+          "hectares": "ha",
+          "walk": "{{minutes}} min on foot",
+          "walkApprox": "about {{minutes}} min on foot",
+          "source": "Parks, grass, woods and paths: OpenStreetMap, extract from {{date}}.",
+          "sourceNoDate": "Parks, grass, woods and paths: OpenStreetMap."
+        },
+        "amenities": {
+          "playground": "Playground",
+          "dog_park": "Dog park",
+          "sports": "Sports field"
+        },
+        "score": {
+          "better": "Better than <strong>{{percent}}%</strong> of the areas in {{city}}",
+          "best": "Among the best areas in {{city}}",
+          "worst": "Among the weakest areas in {{city}}",
+          "flat": "In {{city}} every area has the same score, between {{min}} and {{max}}. The score cannot tell addresses apart.",
+          "none": "No comparison with the rest of the city",
+          "you": "You · {{score}}",
+          "average": "Average {{average}}",
+          "range": "City areas: {{min}}–{{max}}",
+          "included": "<strong>Takes into account</strong> how much green is around and how close the large parks are",
+          "excluded": "<strong>Does not take into account</strong> how well kept the parks are or private gardens"
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Walking routing"
+        }
+      },
+      "noise": {
+        "title": "Noise",
+        "eyebrow": "Noise · {{score}} / 100 · {{band}}",
+        "precision": "Precision: estimate from streets",
+        "precisionStreet": "Precision: strategic noise maps",
+        "headline": "About {{band}} at the address, like a {{reference}}",
+        "headlineNone": "Noise around the address",
+        "leadSource": "The nearest noise source is {{name}}, {{distance}} m away.",
+        "leadNone": "We found no major noise sources nearby.",
+        "averageBelow": "The area scores {{score}}, below the city average ({{average}}).",
+        "averageAbove": "The area scores {{score}}, above the city average ({{average}}).",
+        "noData": "We have no noise data for this address.",
+        "map": {
+          "label": "Map of the estimated noise around the address · OpenStreetMap",
+          "below": "below 55 dB",
+          "range": "{{from}}–{{to}}",
+          "above": "over {{from}}",
+          "estimate": "daytime estimate",
+          "lines": {
+            "loud": "major road",
+            "busy": "boulevard, tram",
+            "moderate": "street",
+            "rail": "railway"
+          },
+          "method": "Estimate from the streets, tram lines, railway and buildings in OpenStreetMap, extract from {{date}}.",
+          "methodNoDate": "Estimate from the streets, tram lines, railway and buildings in OpenStreetMap.",
+          "methodStreet": "The value comes from the city's strategic noise maps."
+        },
+        "address": {
+          "eyebrow": "At the address",
+          "day": "daytime, like a {{reference}}",
+          "night": "at night"
+        },
+        "references": {
+          "40": "quiet room",
+          "50": "quiet street",
+          "60": "conversation",
+          "70": "heavy traffic"
+        },
+        "kinds": {
+          "road": "street",
+          "tram": "tram",
+          "rail": "railway",
+          "air": "airport",
+          "industry": "industry",
+          "aggregate": "several sources"
+        },
+        "classes": {
+          "motorway": "motorway",
+          "trunk": "expressway",
+          "primary": "boulevard",
+          "secondary": "busy street",
+          "tertiary": "neighbourhood street",
+          "residential": "quiet street",
+          "tram": "tram",
+          "rail": "railway"
+        },
+        "sources": {
+          "loudest": "What you hear loudest",
+          "none": "We found no major noise sources nearby.",
+          "metres": "m",
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "osm": "OpenStreetMap (streets, tram, railway)"
+        },
+        "score": {
+          "better": "Quieter than <strong>{{percent}}%</strong> of the areas in {{city}}",
+          "best": "Among the quietest areas in {{city}}",
+          "worst": "Among the noisiest areas in {{city}}",
+          "flat": "In {{city}} every area has the same score, between {{min}} and {{max}}. The score cannot tell addresses apart.",
+          "none": "No comparison with the rest of the city",
+          "you": "You · {{score}}",
+          "average": "Average {{average}}",
+          "range": "City areas: {{min}}–{{max}}",
+          "included": "<strong>Takes into account</strong> the surrounding streets, tram and railway",
+          "excluded": "<strong>Does not take into account</strong> windows, insulation or neighbours"
+        },
+        "decibels": "{{value}} dB",
+        "names": {
+          "tram": "Tram lines",
+          "rail": "Railway"
+        }
+      },
+      "airIndustry": {
+        "title": "Air and industry",
+        "eyebrowPart": "{{name}} · {{score}} / 100",
+        "eyebrowPartNoScore": "{{name}} · no data",
+        "badge": "Precision: air at city level, industry at the address",
+        "verdict": {
+          "clean_all_year": "Clean air all year",
+          "winter_peaks": "Good air in summer, heavier in winter",
+          "above_limit_most_year": "Air above the EU limit for most of the year",
+          "default": "Air like the rest of the city"
+        },
+        "headline": {
+          "withNearest": "{{air}}, factories farther than {{distance}}",
+          "noSites": "{{air}}, no factory in the register nearby",
+          "airOnly": "{{air}}",
+          "industryNearest": "Factories farther than {{distance}}",
+          "industryNone": "No factory in the register nearby"
+        },
+        "lead": {
+          "winter": "Fine dust rises in winter, as everywhere in {{city}}.",
+          "nearest": "The nearest industrial site is {{distance}} away."
+        },
+        "months": {
+          "eyebrow": "Fine dust in the air, month by month",
+          "title_one": "{{count}} month out of 12 above the 2030 EU limit",
+          "title_other": "{{count}} months out of 12 above the 2030 EU limit",
+          "titleNone": "No month above the 2030 EU limit",
+          "titleUnknown": "Fine dust in the air over 12 months",
+          "legendPm25": "PM2.5, µg/m³",
+          "legendLimit": "EU limit from 2030",
+          "chartLabel": "Fine dust (PM2.5) in each month of the past year, against the 2030 EU limit",
+          "annual": "Yearly average: {{value}} µg/m³.",
+          "annualCity": "Yearly average: {{value}} µg/m³, against {{average}} for the whole city."
+        },
+        "sites": {
+          "eyebrow": "Industry around",
+          "title": "The nearest sites in the European register",
+          "empty": "No site reported within {{distance}}.",
+          "sectors": {
+            "energy": "energy",
+            "metals": "metals",
+            "minerals": "building materials",
+            "chemicals": "chemicals",
+            "waste_water": "waste and waste water",
+            "paper_wood": "paper and wood",
+            "livestock": "livestock farm",
+            "food": "food industry",
+            "other": "other activity"
+          },
+          "impacts": {
+            "air": "air emissions",
+            "water": "water emissions",
+            "odour": "may cause odours",
+            "seasonal_winter": "mostly in winter"
+          }
+        },
+        "score": {
+          "air": {
+            "kicker": "Air",
+            "included": "<strong>Counts</strong> fine dust in the air, yearly average, at city level",
+            "excluded": "<strong>Does not count</strong> differences from one street to another"
+          },
+          "industry": {
+            "kicker": "Industry",
+            "included": "<strong>Counts</strong> industrial sites in the European register, within 5 km",
+            "excluded": "<strong>Does not count</strong> small workshops that are not in the register"
+          },
+          "cityAverage": "City average: <strong>{{average}}</strong>",
+          "you": "You · {{score}}",
+          "average": "Average {{average}}",
+          "range": "City areas: {{min}}–{{max}}"
+        },
+        "note": {
+          "air": "Air: the European Copernicus model, corrected with the stations in the city, {{period}}.",
+          "airNoPeriod": "Air: the European Copernicus model, corrected with the stations in the city.",
+          "industry": "Industry: the European industrial register, reports from {{year}}."
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> {{sources}}",
+          "weight": "<strong>Weight in the area score:</strong> {{name}} {{weight}}% of 100. Your address brings {{points}} points out of {{weight}}.",
+          "same": "The same address gets the same score whenever you check it.",
+          "cams": "Copernicus CAMS",
+          "eea_stations": "EEA stations",
+          "eea_industrial": "EEA industrial register"
+        }
+      },
+      "seismic": {
+        "title": "Seismic risk",
+        "eyebrow": "Seismic risk · context, not part of the score",
+        "precision": {
+          "address": "Precision: address area",
+          "city": "Precision: city"
+        },
+        "headline": {
+          "withQuakes": "Strongest nearby earthquake: {{magnitude}}, in {{year}}",
+          "withoutQuakes": "Design acceleration is {{value}} g: {{level}} level",
+          "nearModerate": "Earthquakes around here are close, but moderate"
+        },
+        "lead": {
+          "withQuakes_one": "Since {{since}}, {{count}} earthquake of at least {{min}} within {{radius}} km of {{city}}.",
+          "withQuakes_other": "Since {{since}}, {{count}} earthquakes of at least {{min}} within {{radius}} km of {{city}}.",
+          "withoutQuakes": "The value comes from the {{code}} seismic code and shows which earthquake buildings in {{city}} are designed for.",
+          "nearModerate": "{{city}} has its own earthquakes, {{min}}–{{max}} km away, rarely above {{floor}}. Strongest: {{magnitude}}, in {{year}}."
+        },
+        "noData": "We do not have the seismic code value for this address.",
+        "levels": {
+          "low": "Low",
+          "moderate": "Moderate",
+          "high": "High",
+          "very_high": "Very high"
+        },
+        "map": {
+          "label": "Earthquakes around the address since {{since}}",
+          "keyQuake": "earthquake, the bigger the circle, the stronger it was",
+          "keyTop": "the {{count}} strongest, numbered as in the list",
+          "quakeLabel": "Earthquake of magnitude {{magnitude}}",
+          "ring": "{{km}} km"
+        },
+        "list": {
+          "eyebrow": "Since {{since}}",
+          "title": "The strongest earthquakes within {{radius}} km",
+          "label": "The strongest earthquakes",
+          "near": "near {{place}}",
+          "distance": "{{km}} <unit>km</unit>",
+          "rank": "{{rank}}"
+        },
+        "conclusion": {
+          "low": {
+            "title": "In short: low risk",
+            "body": "The seismic code asks for the lowest design acceleration in the country here. How well the building is built and maintained still matters."
+          },
+          "moderate": {
+            "title": "In short: moderate risk, not high",
+            "body": "The area sits in the middle of the seismic code scale. The country's big earthquakes come from Vrancea and arrive here weakened. What matters next is how well the building is built and maintained.",
+            "bodyQuakes": "Since {{since}}, no earthquake nearby has gone past {{max}}. The country's big earthquakes come from Vrancea, about {{vrancea}} km away, and reach here weakened. What matters next is how well the building is built and maintained."
+          },
+          "high": {
+            "title": "In short: high risk",
+            "body": "The area is in the upper part of the seismic code scale. Ask for the year of construction, the technical expertise and whether the building was strengthened."
+          },
+          "very_high": {
+            "title": "In short: very high risk",
+            "body": "The area has the highest design acceleration in the seismic code. Ask for the year of construction, the technical expertise, the seismic risk class and whether the building was strengthened."
+          },
+          "year": "Declared year of construction: {{year}}. Ask which code the building was designed to and whether it has a technical expertise.",
+          "yearCodes": "Declared year of construction: {{year}}. Buildings from this period were designed to {{codes}}. Ask whether it has a technical expertise.",
+          "yearBeforeCode": "Declared year of construction: {{year}}, before Romania's first seismic design code (1963). Ask whether it has a technical expertise and whether it was strengthened."
+        },
+        "source": "Earthquakes: {{catalogue}}, since {{since}}, magnitude of at least {{min}}{{retrieved}}. Map: OpenStreetMap.",
+        "retrieved": ", read on {{date}}",
+        "catalogue": {
+          "both": "the USGS and EMSC catalogues",
+          "usgs": "the USGS catalogue",
+          "emsc": "the EMSC catalogue"
+        },
+        "sourceNames": {
+          "usgs": "U.S. Geological Survey, ComCat catalogue, public domain",
+          "emsc": "EMSC (European-Mediterranean Seismological Centre), CC BY 4.0"
+        },
+        "scale": {
+          "keyword": "Seismic",
+          "pill": "Level: {{level}}",
+          "title": "How {{city}} compares with the other {{count}} cities",
+          "track": "Design acceleration of the cities, between 0.05 g and 0.35 g",
+          "included": "<strong>Takes into account</strong> the design acceleration of the {{code}} seismic code",
+          "excluded": "<strong>Does not take into account</strong> the condition of the building or strengthening",
+          "unit": "g"
+        },
+        "sources": {
+          "title": "Sources and data",
+          "list": "<strong>Sources:</strong> Seismic code {{code}}{{catalogue}}",
+          "weight": "<strong>Weight in the area score:</strong> not part of the score. It is context."
+        },
+        "cities": {
+          "bucuresti": "Bucharest",
+          "cluj-napoca": "Cluj-Napoca",
+          "timisoara": "Timișoara",
+          "iasi": "Iași",
+          "constanta": "Constanța",
+          "craiova": "Craiova",
+          "sibiu": "Sibiu",
+          "oradea": "Oradea",
+          "targu-mures": "Târgu Mureș"
+        }
+      },
+      "investment": {
+        "title": "Investment",
+        "eyebrow": "Investment · context, not part of the score",
+        "badgeCity": "Precision: city",
+        "badgeNoData": "No data yet",
+        "example": "example",
+        "perM2": "€{{value}}/m²",
+        "offers_one": "{{amount}} listing",
+        "offers_other": "{{amount}} listings",
+        "note": "Not part of the zone score. Investment is context for buyers who plan to rent the home out.",
+        "headline": {
+          "city": "In {{city}}, asking prices are around €{{value}} per square metre"
+        },
+        "lead": {
+          "declared": "For {{area}} m², about {{price}}, asking price.",
+          "asking": "Asking prices in listings, not sale prices."
+        },
+        "empty": {
+          "headline": "Prices, rents and yield, once we have market data",
+          "lead": "The asking price per square metre, the rent and the yield against the city appear here once we have data for your city.",
+          "title": "We do not have asking prices for this city yet",
+          "text": "Without figures we do not estimate: it would not be honest."
+        },
+        "price": {
+          "eyebrow": "Asking price per square metre",
+          "titleRange": "Half of the apartments are listed between €{{low}} and €{{high}}/m²",
+          "titleMedian": "Middle asking price: €{{value}}/m²",
+          "cityWide": "{{city}}, whole city",
+          "nearby": "{{name}}, next to the city",
+          "typical": "Typical apartment in listings: {{area}} m², €{{price}}",
+          "legendRange": "typical range",
+          "legendMedian": "middle price"
+        },
+        "home": {
+          "eyebrow": "For your apartment",
+          "declaredArea": "Declared area",
+          "chosenArea": "Chosen area",
+          "area": "{{area}} m²",
+          "sliderLabel": "Apartment area",
+          "price": "Estimated asking price",
+          "approx": "≈ {{value}}",
+          "between": "between {{low}} and {{high}}",
+          "rent": "Estimated rent",
+          "perMonth": "per month"
+        },
+        "yield": {
+          "eyebrow": "Gross yield per year",
+          "title": "A year of rent is {{value}}% of the price",
+          "value": "{{value}}%",
+          "note": "Twelve months of rent divided by the price, before taxes, repairs and months without a tenant."
+        },
+        "history": {
+          "eyebrow_one": "Last month",
+          "eyebrow_other": "Last {{count}} months",
+          "title": {
+            "up": "Since {{month}}, the asking price rose by €{{value}}/m²",
+            "down": "Since {{month}}, the asking price fell by €{{value}}/m²",
+            "flat": "Since {{month}}, the asking price has not changed"
+          },
+          "chartLabel": "Median asking price per square metre, month by month",
+          "forArea": "For {{area}} m², compared with {{month}}",
+          "span_one": "{{percent}} in {{count}} month",
+          "span_other": "{{percent}} in {{count}} months"
+        },
+        "sources": {
+          "eyebrow": "Source of the figures{{date}}",
+          "open": "Open",
+          "note": "These are asking prices in listings, not sale prices.",
+          "exampleNote": "Figures marked “example” are replaced by the first import.",
+          "names": {
+            "apartamente_org": "apartamente.org, apartment prices",
+            "apartamente_org_index": "apartamente.org, monthly index",
+            "imospot_index": "Imospot Index (CC BY 4.0)"
+          },
+          "saleCity": "{{city}} · sale",
+          "saleCityOffers_one": "{{city}} · sale · {{amount}} listing",
+          "saleCityOffers_other": "{{city}} · sale · {{amount}} listings",
+          "rentCity": "{{city}} · rent",
+          "rentCityOffers_one": "{{city}} · rent · {{amount}} listing",
+          "rentCityOffers_other": "{{city}} · rent · {{amount}} listings"
+        }
+      },
+      "closing": {
+        "title": "Before the viewing",
+        "questions": {
+          "eyebrow": "To ask at the viewing",
+          "title_one": "One question for the owner",
+          "title_other": "{{count}} questions for the owner",
+          "progress": "<strong>{{done}}</strong> of {{total}} ticked",
+          "copy": "Copy the list",
+          "copied": "The list of questions was copied.",
+          "copyFailed": "The list could not be copied.",
+          "print": "Print",
+          "listLabel": "Questions for the owner",
+          "check": "Tick question {{number}}",
+          "openChapter": "See the {{topic}} chapter",
+          "topics": {
+            "noise": "Noise",
+            "seismic": "Seismic risk",
+            "apartment": "Apartment"
+          },
+          "items": {
+            "bedroom_facade_side": {
+              "question": "Which way do the bedrooms face: the street or the courtyard?",
+              "why": "Noise differs a lot between the front and the back of the building. The score describes the area, not the façade."
+            },
+            "construction_year": {
+              "question": "What year was the building built, and does it have a technical expertise?",
+              "why": "The year shows which code it was designed to. Without it, we cannot judge the building's risk."
+            },
+            "stairs_without_elevator": {
+              "question": "The building has no elevator: how is climbing the stairs with shopping or a child?",
+              "why": "On the upper floors, every daily trip and any move is felt in full."
+            },
+            "ground_floor_damp_and_security": {
+              "question": "The apartment is on the ground floor: is there damp, and how are the windows and door secured?",
+              "why": "The ground floor is more exposed to damp, street noise and unauthorised entry."
+            },
+            "top_floor_roof_and_insulation": {
+              "question": "The apartment is on the top floor: when was the roof redone and how is it insulated?",
+              "why": "Leaks and summer heat come from the roof and the terrace."
+            }
+          }
+        },
+        "next": {
+          "eyebrow": "Next step",
+          "title": "The report describes the area. Check the apartment too.",
+          "physicalLabel": "Property Fizic",
+          "includedPrefix": "The online report is included",
+          "text": "<strong>An inspector checks the apartment's condition</strong> on site: questions, photos, floor plan and a 360° tour.",
+          "book": "Book the inspection",
+          "another": "Want to check another address? <strong>You get the same kind of report, in a few minutes.</strong>",
+          "anotherAction": "Check another address",
+          "titleGood": "The area looks good. Check the apartment too.",
+          "textGood": "<strong>The area looks good. A single inspector checks the apartment's condition.</strong> On site: questions, photos, floor plan and a 360° tour. The online report is included."
+        },
+        "method": {
+          "eyebrow": "Sources and data",
+          "title": "The same address gets the same score whenever you check it.",
+          "lead": "Where we do not have good data, we tell you.",
+          "snapshot": "Data from {{month}} · {{city}}.",
+          "groups": {
+            "map": "Map and streets",
+            "transit": "Transport",
+            "air": "Air and industry",
+            "services": "Services",
+            "seismic": "Seismic"
+          },
+          "sources": {
+            "osm": "OpenStreetMap",
+            "walk_routing": "Walking routing",
+            "noise": "Noise",
+            "gtfs": "GTFS public transport",
+            "cams": "Copernicus CAMS",
+            "eea_stations": "EEA stations (air quality)",
+            "eea_air_map": "EEA air map",
+            "eea_industrial": "EEA industrial register",
+            "siiir": "SIIIR (education)",
+            "cnas": "CNAS providers",
+            "ms_upu": "Emergency units (UPU/CPU)",
+            "seismic": "Seismic code P100-1/2013",
+            "earthquakes": "USGS and EMSC earthquakes"
+          }
+        }
+      }
+    },
+    "frame": {
+      "hero": {
+        "eyebrow": "Smart Check · report no. {{number}} · {{date}}",
+        "leadNoStrengths": "The scores describe the area around the address.",
+        "leadWeak": "Its weak point is {{weak}}.",
+        "leadNoWeak": "No score is weak.",
+        "meta": "Calculated on data from {{date}} · radius of up to {{radius}} km",
+        "ready": "Report ready",
+        "noDetails": "No details declared",
+        "declaredArea": "Declared floor area: {{area}} m²",
+        "zoneScore": "Area score",
+        "zoneScoreLabel": "Area score {{score}} out of 100",
+        "zoneAverage": "City average {{average}}.",
+        "zoneBest": "Best score {{best}}.",
+        "noScore": "No data",
+        "mapLabel": "Green space around the address · OpenStreetMap",
+        "mapTitle": "Map of the green space around the address",
+        "mapError": "The map could not be loaded.",
+        "leadOneStrength": "The area does best on {{first}}.",
+        "leadTwoStrengths": "The area does best on {{first}} and {{second}}."
+      },
+      "tabs": {
+        "label": "Report chapters",
+        "names": {
+          "summary": "In short",
+          "safety": "Safety",
+          "accessibility": "Accessibility",
+          "fifteenMinute": "15 minutes",
+          "green": "Green",
+          "noise": "Noise",
+          "airIndustry": "Air and industry",
+          "seismic": "Seismic",
+          "investment": "Investment"
+        },
+        "noValue": "–",
+        "seismicValue": "{{value}} g",
+        "investmentValue": "€{{value}}/m²"
+      },
+      "next": {
+        "eyebrow": "Next chapter",
+        "score": "Score {{score}} out of 100 · city average {{average}}",
+        "open": "Open"
+      },
+      "outOf": "/100"
+    },
+    "categories": {
+      "safety": {
+        "name": "Safety",
+        "topic": "Safety",
+        "weakness": "safety",
+        "strength": "safety"
+      },
+      "accessibility": {
+        "name": "Accessibility",
+        "topic": "Public transport",
+        "weakness": "public transport",
+        "strength": "public transport"
+      },
+      "fifteen_minute": {
+        "name": "15 minutes",
+        "topic": "Places within 15 minutes",
+        "weakness": "places within a 15-minute walk",
+        "strength": "places within a 15-minute walk"
+      },
+      "green": {
+        "name": "Green",
+        "topic": "Green space",
+        "weakness": "green space",
+        "strength": "green space"
+      },
+      "noise": {
+        "name": "Noise",
+        "topic": "Noise",
+        "weakness": "noise",
+        "strength": "quiet"
+      },
+      "air": {
+        "name": "Air",
+        "topic": "Air",
+        "weakness": "air",
+        "strength": "air"
+      },
+      "industry": {
+        "name": "Industry",
+        "topic": "Industry",
+        "weakness": "nearby industry",
+        "strength": "distance from industry"
+      },
+      "education": {
+        "name": "Education",
+        "topic": "Schools",
+        "weakness": "schools",
+        "strength": "schools"
+      },
+      "health": {
+        "name": "Health",
+        "topic": "Health services",
+        "weakness": "health services",
+        "strength": "health services"
+      }
+    },
+    "bands": {
+      "low": "Low",
+      "below": "Below average",
+      "mid": "Average",
+      "good": "Good",
+      "top": "Very good"
+    },
+    "pdf": {
+      "download": "Download PDF",
+      "preparing": "Preparing the PDF",
+      "failed": "The PDF could not be downloaded. Please try again.",
+      "missing": "The PDF of this report is not available yet."
+    },
+    "share": {
+      "action": "Share",
+      "title": "Share the report",
+      "description": "The link shows the report without your account. You can revoke it at any time.",
+      "validity": "Valid for",
+      "options": {
+        "7": "7 days",
+        "30": "30 days",
+        "never": "No expiry"
+      },
+      "create": "Create link",
+      "replace": "Create a new link",
+      "replaceNote": "The new link replaces the active one, which will stop working.",
+      "newLink": "New link",
+      "newLinkNote": "The full link is shown only now. Copy it before you close this.",
+      "copy": "Copy link",
+      "copied": "Link copied.",
+      "copyFailed": "We could not copy the link. Select it and copy it by hand.",
+      "active": "Active link",
+      "createdOn": "Created on {{date}}",
+      "expiresOn": "expires on {{date}}",
+      "noExpiry": "no expiry",
+      "revoke": "Revoke",
+      "revoked": "The link was revoked and no longer opens the report.",
+      "none": "No active link.",
+      "createFailed": "We could not create the link. Please try again.",
+      "revokeFailed": "We could not revoke the link. Please try again.",
+      "loadFailed": "We could not load the active link."
+    }
+  }
+}

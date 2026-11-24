@@ -1,7 +1,7 @@
-import type { Sql } from '../db/sql.ts';
+import type { SqlQueries } from '../db/sql.ts';
 import { WorkerError } from '../lib/errors.ts';
 
-export async function readReadyReport(sql: Sql, reportId: string): Promise<unknown> {
+export async function readReadyReport(sql: SqlQueries, reportId: string): Promise<unknown> {
   const [row] = await sql<
     {
       number: string;

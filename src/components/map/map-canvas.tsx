@@ -2,6 +2,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import {
   AttributionControl,
   GeoJSONSource,
+  ImageSource,
   Map as MapLibreMap,
   Marker,
   NavigationControl,
@@ -22,7 +23,14 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { MAP_STYLE_URL, type LngLat, type LngLatBounds } from './map.config';
+import {
+  MAP_STYLE_URL,
+  REPORT_MAP_STYLE_URL,
+  type LngLat,
+  type LngLatBounds,
+  type MapBasemap,
+} from './map.config';
+import { applyReportBasemap } from './report-basemap';
 import { removeLayersAndSource } from './map-layers';
 import { themeColor } from './map.theme';
 import {
@@ -51,10 +59,25 @@ export type MapOverlay = {
   data: MapFeatureCollection;
   isVisible: boolean;
 } & (
-  | { kind: 'line'; colorToken: string; width: number; hasCasing?: boolean }
+  | {
+      kind: 'line';
+      colorToken: string;
+      width: number;
+      hasCasing?: boolean;
+      dash?: readonly number[];
+    }
   | { kind: 'circle'; colorToken: string; radius: number; opacity: number }
   | { kind: 'fill'; colorToken: string; opacity: number; outlineWidth?: number }
 );
+
+export type MapImageOverlay = {
+  id: string;
+  url: string;
+  coordinates: [LngLat, LngLat, LngLat, LngLat];
+  opacity: number;
+  isVisible: boolean;
+  placement?: 'below-labels' | 'below-roads';
+};
 
 export type MapFocus = {
   position: LngLat;
@@ -99,6 +122,7 @@ export type MapMarkerItem = {
   node: ReactNode;
   anchor?: 'bottom' | 'center' | 'left';
   isRaised?: boolean;
+  onDragEnd?: ((position: LngLat) => void) | undefined;
 };
 
 type MapCanvasProps = {
@@ -111,16 +135,20 @@ type MapCanvasProps = {
   focus?: MapFocus | undefined;
   markers: readonly MapMarkerItem[];
   overlays?: readonly MapOverlay[];
+  imageOverlays?: readonly MapImageOverlay[];
   listingTiles?: MapListingTiles | undefined;
   regions?: MapRegions | undefined;
   onError: () => void;
   onPick?: (position: LngLat) => void;
   onViewportChange?: (viewport: MapViewport) => void;
   hidesPointsOfInterest?: boolean;
+  hasLabels?: boolean;
   isScrollZoomEnabled?: boolean;
   hasCooperativeGestures?: boolean;
   isPrintable?: boolean;
   hasNavigationControl?: boolean;
+  basemap?: MapBasemap;
+  isConfinedToBounds?: boolean;
   className?: string;
   ref?: Ref<MapCanvasController>;
 };
@@ -170,16 +198,20 @@ export function MapCanvas({
   focus,
   markers,
   overlays = [],
+  imageOverlays = [],
   listingTiles,
   regions,
   onError,
   onPick,
   onViewportChange,
   hidesPointsOfInterest = false,
+  hasLabels = true,
   isScrollZoomEnabled = false,
   hasCooperativeGestures = false,
   isPrintable = false,
   hasNavigationControl = true,
+  basemap = 'site',
+  isConfinedToBounds = false,
   className,
   ref,
 }: MapCanvasProps) {
@@ -188,6 +220,7 @@ export function MapCanvas({
   const [map, setMap] = useState<MapLibreMap>();
   const [isStyleReady, setIsStyleReady] = useState(false);
   const appliedOverlays = useRef(new Map<string, string>());
+  const appliedImageOverlays = useRef(new Map<string, string>());
   const tileRequest = useRef<{ prefix: string; headers: Readonly<Record<string, string>> }>(
     undefined,
   );
@@ -196,9 +229,11 @@ export function MapCanvas({
     zoom,
     isPrintable,
     hidesPointsOfInterest,
+    hasLabels,
     isScrollZoomEnabled,
     hasCooperativeGestures,
     hasNavigationControl,
+    basemap,
   });
   const labels: MapLabels = {
     zoomIn: t('map.zoomIn'),
@@ -224,7 +259,7 @@ export function MapCanvas({
     try {
       instance = new MapLibreMap({
         container,
-        style: MAP_STYLE_URL,
+        style: initialView.current.basemap === 'report' ? REPORT_MAP_STYLE_URL : MAP_STYLE_URL,
         center: initialView.current.center,
         zoom: initialView.current.zoom,
         attributionControl: false,
@@ -253,16 +288,28 @@ export function MapCanvas({
       return;
     }
     const overlayRegistry = appliedOverlays.current;
+    const imageRegistry = appliedImageOverlays.current;
     if (initialView.current.hasNavigationControl) {
       instance.addControl(new NavigationControl({ showCompass: false }), 'top-right');
     }
     instance.addControl(new AttributionControl({ compact: true }), 'bottom-right');
     instance.on('style.load', () => {
-      if (instance.getLayer('background')) {
-        instance.setPaintProperty('background', 'background-color', themeColor('--background'));
+      if (initialView.current.basemap === 'report') {
+        applyReportBasemap(instance);
+      } else {
+        if (instance.getLayer('background')) {
+          instance.setPaintProperty('background', 'background-color', themeColor('--background'));
+        }
+        if (instance.getLayer('water')) {
+          instance.setPaintProperty('water', 'fill-color', themeColor('--map-water'));
+        }
       }
-      if (instance.getLayer('water')) {
-        instance.setPaintProperty('water', 'fill-color', themeColor('--map-water'));
+      if (!initialView.current.hasLabels) {
+        for (const layer of instance.getStyle().layers) {
+          if (layer.type === 'symbol') {
+            instance.setLayoutProperty(layer.id, 'visibility', 'none');
+          }
+        }
       }
       if (initialView.current.hidesPointsOfInterest) {
         for (const layer of instance.getStyle().layers) {
@@ -272,6 +319,7 @@ export function MapCanvas({
         }
       }
       overlayRegistry.clear();
+      imageRegistry.clear();
       setIsStyleReady(true);
     });
     instance.on('error', () => {
@@ -288,6 +336,7 @@ export function MapCanvas({
       resizeObserver.disconnect();
       instance.remove();
       overlayRegistry.clear();
+      imageRegistry.clear();
       setMap(undefined);
       setIsStyleReady(false);
     };
@@ -330,9 +379,25 @@ export function MapCanvas({
     syncOverlays(map, overlays, appliedOverlays.current);
   }, [map, isStyleReady, overlays]);
 
+  useEffect(() => {
+    if (!map || !isStyleReady) {
+      return;
+    }
+    syncImageOverlays(map, imageOverlays, appliedImageOverlays.current);
+  }, [map, isStyleReady, imageOverlays]);
+
   const fitToBounds = useEffectEvent((target: MapLibreMap) => {
-    if (bounds) {
-      target.fitBounds(bounds, { padding: boundsPadding, maxZoom: 15, duration: 0 });
+    if (!bounds) {
+      return;
+    }
+    if (isConfinedToBounds) {
+      target.setMaxBounds(null);
+      target.setMinZoom(null);
+    }
+    target.fitBounds(bounds, { padding: boundsPadding, maxZoom: 15, duration: 0 });
+    if (isConfinedToBounds) {
+      target.setMinZoom(target.getZoom());
+      target.setMaxBounds(target.getBounds());
     }
   });
   const boundsKey = bounds ? bounds.flat().join(',') : '';
@@ -446,6 +511,7 @@ export function MapCanvas({
               position={marker.position}
               anchor={marker.anchor ?? 'bottom'}
               isRaised={marker.isRaised ?? false}
+              onDragEnd={marker.onDragEnd}
             >
               {marker.node}
             </MapMarker>
@@ -502,6 +568,60 @@ function syncOverlays(
   }
 }
 
+const ROAD_LAYER_PATTERN = /^(building|tunnel|highway|road|bridge|railway|aeroway)/;
+
+function firstLabelLayerId(map: MapLibreMap): string | undefined {
+  return map.getStyle().layers.find((layer) => layer.type === 'symbol')?.id;
+}
+
+function overlayAnchorLayerId(
+  map: MapLibreMap,
+  placement: MapImageOverlay['placement'],
+): string | undefined {
+  if (placement === 'below-roads') {
+    const road = map.getStyle().layers.find((layer) => ROAD_LAYER_PATTERN.test(layer.id));
+    if (road) return road.id;
+  }
+  return firstLabelLayerId(map);
+}
+
+function syncImageOverlays(
+  map: MapLibreMap,
+  overlays: readonly MapImageOverlay[],
+  registry: Map<string, string>,
+) {
+  const nextIds = new Set(overlays.map((overlay) => overlay.id));
+  for (const id of registry.keys()) {
+    if (!nextIds.has(id)) {
+      removeLayersAndSource(map, id, [id]);
+      registry.delete(id);
+    }
+  }
+  for (const overlay of overlays) {
+    const source = map.getSource(overlay.id);
+    if (!source) {
+      map.addSource(overlay.id, {
+        type: 'image',
+        url: overlay.url,
+        coordinates: overlay.coordinates,
+      });
+      map.addLayer(
+        {
+          id: overlay.id,
+          type: 'raster',
+          source: overlay.id,
+          paint: { 'raster-opacity': overlay.opacity, 'raster-fade-duration': 0 },
+        },
+        overlayAnchorLayerId(map, overlay.placement),
+      );
+    } else if (registry.get(overlay.id) !== overlay.url && source instanceof ImageSource) {
+      source.updateImage({ url: overlay.url, coordinates: overlay.coordinates });
+    }
+    registry.set(overlay.id, overlay.url);
+    map.setLayoutProperty(overlay.id, 'visibility', overlay.isVisible ? 'visible' : 'none');
+  }
+}
+
 function addOverlay(map: MapLibreMap, overlay: MapOverlay) {
   map.addSource(overlay.id, { type: 'geojson', data: overlay.data });
   const color = themeColor(overlay.colorToken);
@@ -520,7 +640,11 @@ function addOverlay(map: MapLibreMap, overlay: MapOverlay) {
       type: 'line',
       source: overlay.id,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': color, 'line-width': overlay.width },
+      paint: {
+        'line-color': color,
+        'line-width': overlay.width,
+        ...(overlay.dash ? { 'line-dasharray': [...overlay.dash] } : {}),
+      },
     });
     return;
   }
@@ -558,20 +682,33 @@ type MapMarkerProps = {
   position: LngLat;
   anchor: 'bottom' | 'center' | 'left';
   isRaised: boolean;
+  onDragEnd: ((position: LngLat) => void) | undefined;
   children: ReactNode;
 };
 
-function MapMarker({ map, position, anchor, isRaised, children }: MapMarkerProps) {
+function MapMarker({ map, position, anchor, isRaised, onDragEnd, children }: MapMarkerProps) {
   const [element] = useState(() => document.createElement('div'));
   const [longitude, latitude] = position;
+  const isDraggable = onDragEnd !== undefined;
+  const reportDragEnd = useEffectEvent((next: LngLat) => {
+    onDragEnd?.(next);
+  });
 
   useEffect(() => {
-    const marker = new Marker({ element, anchor }).setLngLat([longitude, latitude]).addTo(map);
+    const marker = new Marker({ element, anchor, draggable: isDraggable })
+      .setLngLat([longitude, latitude])
+      .addTo(map);
     marker.getElement().style.zIndex = isRaised ? RAISED_MARKER_Z_INDEX : '';
+    const handleDragEnd = () => {
+      const { lng, lat } = marker.getLngLat();
+      reportDragEnd([lng, lat]);
+    };
+    marker.on('dragend', handleDragEnd);
     return () => {
+      marker.off('dragend', handleDragEnd);
       marker.remove();
     };
-  }, [map, element, anchor, longitude, latitude, isRaised]);
+  }, [map, element, anchor, longitude, latitude, isRaised, isDraggable]);
 
   return createPortal(children, element);
 }
