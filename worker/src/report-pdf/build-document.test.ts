@@ -46,6 +46,9 @@ describe('buildReportDocument', () => {
     expect(html).toContain('adresă · estimare în linie dreaptă');
     expect(html).toContain('Timpii pe jos sunt estimați din distanța în linie dreaptă');
     expect(html).not.toContain('străzi și alei');
+    const legend = /<div class="key">.*?<\/div>/u.exec(html)?.[0];
+    expect(legend).toContain('Locuri de zi cu zi');
+    expect(legend).not.toContain('15 minute pe jos');
     expect(maps[0]?.layers.map((layer) => layer.kind)).toEqual(['circle']);
   });
 

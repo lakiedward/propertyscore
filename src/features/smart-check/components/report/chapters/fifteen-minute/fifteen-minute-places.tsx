@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { InfoIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatNumber } from '@/i18n/format';
 import { FifteenMinuteKey } from './fifteen-minute-key';
 import { FifteenMinuteChecklist } from './fifteen-minute-checklist';
 import { FifteenMinuteMap } from './fifteen-minute-map';
@@ -54,7 +55,9 @@ export function FifteenMinutePlaces({ report, section, shareToken }: FifteenMinu
     method === null
       ? null
       : method === 'routed' && speed !== null
-        ? t('report.chapters.fifteenMinute.map.method.routedWithSpeed', { speed })
+        ? t('report.chapters.fifteenMinute.map.method.routedWithSpeed', {
+            speed: formatNumber(speed),
+          })
         : t(`report.chapters.fifteenMinute.map.method.${method}`);
 
   return (

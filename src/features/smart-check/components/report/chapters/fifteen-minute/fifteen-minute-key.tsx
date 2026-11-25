@@ -1,10 +1,18 @@
 import { useTranslation } from 'react-i18next';
 import { FAMILIES, FAMILY_STYLES, WALK_LIMIT_MIN } from '../../../../fifteen-minute.utils';
 
-export function FifteenMinuteKey({ hasZone }: { hasZone: boolean }) {
+type FifteenMinuteKeyProps = {
+  hasZone: boolean;
+};
+
+export function FifteenMinuteKey({ hasZone }: FifteenMinuteKeyProps) {
   const { t } = useTranslation('smartCheck');
   return (
-    <div className="pointer-events-none absolute bottom-8 left-2.5 z-3 grid gap-1 rounded-[10px] border border-border bg-card/96 px-3 py-2 text-meta leading-[1.55] text-muted-foreground shadow-report-label w560:bottom-2.5">
+    <div
+      role="group"
+      aria-label={t('report.chapters.fifteenMinute.map.key.title')}
+      className="pointer-events-none absolute bottom-8 left-2.5 z-3 grid gap-1 rounded-[10px] border border-border bg-card/96 px-3 py-2 text-meta leading-[1.55] text-muted-foreground shadow-report-label w560:bottom-2.5"
+    >
       <b className="text-foreground">{t('report.chapters.fifteenMinute.map.key.title')}</b>
       <span className="flex items-center gap-2">
         <i aria-hidden="true" className="size-2.5 rounded-full bg-primary" />

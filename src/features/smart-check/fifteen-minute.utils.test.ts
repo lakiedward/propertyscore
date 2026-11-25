@@ -12,7 +12,7 @@ import {
 
 const section = fifteenMinuteSectionSchema.parse(FREIDORF_REPORT_RESULT.fifteen_minute);
 
-describe('walking time metadata', () => {
+describe('fifteen-minute.utils', () => {
   it('distinguishes a known estimate from an unrecognized or missing method', () => {
     expect(walkingTimeMethod('pedestrian_routing')).toBe('routed');
     expect(walkingTimeMethod('straight_line')).toBe('estimated');
@@ -24,9 +24,7 @@ describe('walking time metadata', () => {
     expect(walkMetersPerMinute(section)).toBe(75);
     expect(walkMetersPerMinute({ ...section, walk_speed_kmh: null })).toBeNull();
   });
-});
 
-describe('compareToTypical', () => {
   it('has no comparison without a typical value', () => {
     expect(compareToTypical(4, null)).toBeNull();
     expect(compareToTypical(4, undefined)).toBeNull();
@@ -41,16 +39,12 @@ describe('compareToTypical', () => {
     expect(compareToTypical(2, 3)).toEqual({ kind: 'fewer' });
     expect(compareToTypical(7, 6)).toEqual({ kind: 'same' });
   });
-});
 
-describe('roundedRatio', () => {
   it('rounds to half steps below ten and to whole numbers from ten', () => {
     expect(roundedRatio(2.26)).toBe(2.5);
     expect(roundedRatio(12.4)).toBe(12);
   });
-});
 
-describe('checklistRows', () => {
   it('lists the nearest places first and marks what is beyond 15 minutes', () => {
     const rows = checklistRows(section);
     expect(rows).toHaveLength(section.total);
@@ -58,9 +52,7 @@ describe('checklistRows', () => {
     expect(rows.filter((row) => row.isReached)).toHaveLength(section.covered);
     expect(rows.at(-1)?.isReached).toBe(false);
   });
-});
 
-describe('choiceTiles', () => {
   it('shows the groups with places, most first', () => {
     const tiles = choiceTiles(section);
     expect(tiles[0]).toMatchObject({ key: 'shops', count: 7, comparison: { kind: 'same' } });
