@@ -346,7 +346,7 @@
           },
           "transitNote": "Mers până la stație, așteptare, drum cu linia.",
           "layersNote": "Pornește un strat ca să vezi ce a contat în scor.",
-          "footer": "Apasă pe un drum: apare pe hartă, cu timpul. Desen din OpenStreetMap.",
+          "footer": "Selectează un traseu ca să-l vezi pe hartă. Timpul apare în listă. Desen din OpenStreetMap.",
           "minutes": "{{minutes}} min",
           "routeLabel": "{{name}}, {{minutes}} minute",
           "mapLabel": "Harta zonei din jurul adresei",

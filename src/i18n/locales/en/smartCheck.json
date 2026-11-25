@@ -339,7 +339,7 @@
           },
           "transitNote": "Walk to the stop, wait, ride the line.",
           "layersNote": "Turn a layer on to see what counted in the score.",
-          "footer": "Tap a route: it appears on the map, with its time. Drawn from OpenStreetMap.",
+          "footer": "Select a route to see it on the map. Its time is listed beside the destination. Drawn from OpenStreetMap.",
           "minutes": "{{minutes}} min",
           "routeLabel": "{{name}}, {{minutes}} minutes",
           "mapLabel": "Map of the area around the address",
