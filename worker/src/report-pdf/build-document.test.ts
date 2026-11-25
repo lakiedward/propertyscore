@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 
 import { describe, expect, it } from 'vitest';
 
+import { CATEGORY_KEYS } from '../scoring/categories.ts';
 import { buildReportDocument } from './build-document.ts';
 import { reportInputSchema, toReportData } from './report-data.ts';
 
@@ -59,6 +60,35 @@ describe('buildReportDocument', () => {
       expect(html).toContain(text);
     }
     expect(html).not.toMatch(/Destinație de test|catalogul USGS și EMSC|preț cerut|Surse și date/);
+  });
+
+  it.each([
+    { count: 0, expected: { ro: '0 scoruri', en: '0 scores' } },
+    { count: 1, expected: { ro: '1 scor', en: '1 score' } },
+    { count: 2, expected: { ro: '2 scoruri', en: '2 scores' } },
+  ])('uses the right score count for $count available scores', async ({ count, expected }) => {
+    const report = toReportData(reportInputSchema.parse(await exampleInput()));
+    const categories = { ...report.categories };
+    for (const key of CATEGORY_KEYS.slice(count)) {
+      categories[key] = { ...categories[key], score: null };
+    }
+    const zone = count === 0 ? { ...report.zone, score: null } : report.zone;
+
+    for (const locale of ['ro', 'en'] as const) {
+      const { html } = await buildReportDocument({ ...report, locale, categories, zone });
+      expect(html).toContain(`${expected[locale]} ·`);
+      if (count > 0) {
+        expect(html).toContain(
+          locale === 'ro' ? `Am calculat ${expected.ro} pe` : `We calculated ${expected.en} within`,
+        );
+      }
+      if (count === 1) {
+        expect(html).toContain(
+          locale === 'ro' ? 'pe singurul scor disponibil.' : 'on the only available score.',
+        );
+        expect(html).not.toMatch(/1 (?:scoruri|scores)\b/u);
+      }
+    }
   });
 
   it('leaves out a section without data and reports one it cannot read', async () => {
