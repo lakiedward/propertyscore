@@ -5,7 +5,7 @@ import { ReportChapterHead } from '@/components/report/report-chapter-head';
 import { scoreBand } from '@/components/report/score-bands';
 import { formatDate, formatList, formatNumber } from '@/i18n/format';
 import { scoredCategories } from '../../../report-summary.utils';
-import { nearestStopsSummary } from '../../../accessibility.utils';
+import { gtfsReferenceDate, nearestStopsSummary } from '../../../accessibility.utils';
 import type { ReportChapterProps } from '../report-chapter-props';
 import { AccessibilityReachCard } from '../accessibility/accessibility-reach-card';
 import { AccessibilityRouteCard } from '../accessibility/accessibility-route-card';
@@ -19,7 +19,18 @@ export function AccessibilityChapter({ report }: ReportChapterProps) {
   const { result } = report;
   const section = result.sections.accessibility;
   const category = result.categories.accessibility;
-  if (category?.score == null || !section) return null;
+  if (category?.score == null || !section) {
+    return (
+      <section aria-labelledby={TITLE_ID}>
+        <ReportChapterHead
+          hue="accessibility"
+          titleId={TITLE_ID}
+          eyebrow={t('report.categories.accessibility.name')}
+          title={t('report.chapters.accessibility.headlineNoData')}
+        />
+      </section>
+    );
+  }
 
   const score = Math.round(category.score);
   const average = category.city_avg === null ? null : Math.round(category.city_avg);
@@ -45,26 +56,28 @@ export function AccessibilityChapter({ report }: ReportChapterProps) {
           percent: Math.round(category.percentile),
         });
 
-  const sourceNote =
-    section.data_quality === 'gtfs' && section.reference_date
-      ? t('report.chapters.accessibility.sourceTimetable', {
-          date: formatDate(section.reference_date),
-        })
-      : t('report.chapters.accessibility.sourceOsm');
+  const referenceDate = gtfsReferenceDate(section);
+  const timetableDate = referenceDate
+    ? formatDate(referenceDate, { ...DATE_FORMAT, timeZone: 'UTC' })
+    : null;
+  const sourceNote = timetableDate
+    ? t('report.chapters.accessibility.sourceTimetable', { date: timetableDate })
+    : t(
+        section.data_quality === 'gtfs'
+          ? 'report.chapters.accessibility.sourceTimetableUndated'
+          : 'report.chapters.accessibility.sourceOsm',
+      );
 
   const scored = scoredCategories(result);
   const item = scored.find((entry) => entry.key === 'accessibility');
   const weightTotal = scored.reduce((sum, entry) => sum + entry.weight, 0) || 1;
   const weight = item ? (item.weight / weightTotal) * 100 : null;
   const sources = SOURCE_KEYS.flatMap((key) => {
-    const date = result.snapshot.source_dates[key];
-    return date
-      ? [
-          `${t(`report.chapters.accessibility.sources.${key}`)} · ${
-            /^\d{4}-\d{2}-\d{2}$/.test(date) ? formatDate(date, DATE_FORMAT) : date
-          }`,
-        ]
-      : [];
+    const date = key === 'gtfs' ? timetableDate : result.snapshot.source_dates[key];
+    if (!date) return [];
+    const formatted =
+      key !== 'gtfs' && /^\d{4}-\d{2}-\d{2}$/.test(date) ? formatDate(date, DATE_FORMAT) : date;
+    return [`${t(`report.chapters.accessibility.sources.${key}`)} · ${formatted}`];
   });
 
   return (

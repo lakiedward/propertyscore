@@ -51,22 +51,22 @@ function weakest(scored: readonly Scored[]): Scored | undefined {
 
 function heroLead(locale: ReportLocale, scored: readonly Scored[]): string {
   const { t, lowerFirst } = reportFormat(locale);
+  if (scored.length === 0) {
+    return t(
+      'Nu avem suficiente date pentru a calcula scorurile acestei adrese.',
+      'There is not enough data to calculate scores for this address.',
+    );
+  }
   const strong = [...scored]
     .sort((left, right) => right.score - right.average - (left.score - left.average))
     .slice(0, 2)
     .map((item) => lowerFirst(categoryTheme(locale, item.key).name));
   const weak = weakest(scored);
-  const lead =
-    strong.length === 0
-      ? t(
-          'Scorurile descriu zona din jurul adresei.',
-          'The scores describe the area around the address.',
-        )
-      : t(
-          'Zona stă cel mai bine la {0}.',
-          "The area's strongest scores are in {0}.",
-          strong.join(t(' și ', ' and ')),
-        );
+  const lead = t(
+    'Zona stă cel mai bine la {0}.',
+    "The area's strongest scores are in {0}.",
+    strong.join(t(' și ', ' and ')),
+  );
   return weak
     ? t(
         '{0} Punctul slab e {1}.',
@@ -74,7 +74,11 @@ function heroLead(locale: ReportLocale, scored: readonly Scored[]): string {
         lead,
         lowerFirst(categoryTheme(locale, weak.key).name),
       )
-    : t('{0} Niciun scor nu e slab.', '{0} No score is low.', lead);
+    : t(
+        '{0} Niciunul dintre scorurile disponibile nu e slab.',
+        '{0} None of the available scores are low.',
+        lead,
+      );
 }
 
 function scoreRing(score: number | null): string {
@@ -90,11 +94,11 @@ function hero(report: ReportData, scored: readonly Scored[], map: MapSpec): stri
       ? t('Fără date', 'No data')
       : localize(report.locale, scoreBand(Math.round(zone.score)).label);
   const average =
-    zone.city_avg === null
+    zone.score === null || zone.city_avg === null
       ? ''
       : t('Media orașului {0}.', 'City average: {0}.', String(Math.round(zone.city_avg)));
   const best =
-    zone.city_max === null || zone.city_max === undefined
+    zone.score === null || zone.city_max === null || zone.city_max === undefined
       ? ''
       : t(' Cel mai bun scor {0}.', ' Best score: {0}.', String(Math.round(zone.city_max)));
   const area = report.sections.investment?.declared.area_m2;
@@ -108,15 +112,28 @@ function hero(report: ReportData, scored: readonly Scored[], map: MapSpec): stri
 
 function headline(report: ReportData, scored: readonly Scored[]): string {
   const { t, lowerFirst } = reportFormat(report.locale);
+  if (scored.length === 0)
+    return t(
+      'Scoruri indisponibile pentru această adresă',
+      'Scores are not available for this address',
+    );
   const weak = weakest(scored);
   const position = esc(zonePosition(report));
   if (!weak) return position;
   return `${t('{0}, cu un punct slab: ', '{0}, with one weak point: ', position)}<span class="hl">${esc(lowerFirst(categoryTheme(report.locale, weak.key).name))}</span>`;
 }
 
+function formattedScoreCount(locale: ReportLocale, count: number): string {
+  return reportFormat(locale).plural(count, ['scor', 'score'], 'scoruri', ['de scoruri', 'scores']);
+}
+
 function summaryHead(report: ReportData, scored: readonly Scored[]): string {
-  const { t } = reportFormat(report.locale);
+  const { t, plural } = reportFormat(report.locale);
   const { zone } = report;
+  const contexts = [
+    report.sections.seismic ? t('riscul seismic', 'seismic risk') : '',
+    report.sections.investment ? t('investiția', 'investment') : '',
+  ].filter(Boolean);
   const zoneLine =
     zone.score === null
       ? ''
@@ -132,7 +149,34 @@ function summaryHead(report: ReportData, scored: readonly Scored[]): string {
                 String(Math.round(zone.city_avg)),
               ),
         );
-  return `<div class="sx-head"><div class="eyebrow"><span>${t('Pe scurt', 'At a glance')}</span><span class="acc" style="--c:#3F6478"><i></i>${t('{0} scoruri · 2 contexte', '{0} scores · 2 context chapters', String(scored.length))}</span></div><h2>${headline(report, scored)}</h2><p class="lead">${t('Am calculat {0} scoruri pe o rază de până la 1,2 km, plus riscul seismic și investiția ca și context.{1} Fiecare scor are capitolul lui.', 'We calculated {0} scores within a radius of up to 1.2 km, with seismic risk and investment as context.{1} Each score has its own chapter.', String(scored.length), zoneLine)}</p></div>`;
+  const contextLine = contexts.length
+    ? t(
+        'Raportul include {0} ca informații de context.',
+        'This report includes {0} for context.',
+        contexts.join(t(' și ', ' and ')),
+      )
+    : '';
+  const scoreCount = formattedScoreCount(report.locale, scored.length);
+  const contextCount = plural(contexts.length, ['context', 'context chapter'], 'contexte', [
+    'de contexte',
+    'context chapters',
+  ]);
+  const lead =
+    scored.length === 0
+      ? contextLine
+      : [
+          t(
+            'Am calculat {0} pe o rază de până la 1,2 km.{1}',
+            'We calculated {0} within a radius of up to 1.2 km.{1}',
+            scoreCount,
+            zoneLine,
+          ),
+          contextLine,
+          t('Fiecare scor are capitolul lui.', 'Each score has its own chapter.'),
+        ]
+          .filter(Boolean)
+          .join(' ');
+  return `<div class="sx-head"><div class="eyebrow"><span>${t('Pe scurt', 'At a glance')}</span><span class="acc" style="--c:#3F6478"><i></i>${scoreCount} · ${contextCount}</span></div><h2>${headline(report, scored)}</h2>${lead ? `<p class="lead">${esc(lead)}</p>` : ''}</div>`;
 }
 
 function standing(locale: ReportLocale, item: Scored, cityName: string): string {
@@ -225,10 +269,29 @@ function allScores(report: ReportData, scored: readonly Scored[]): string {
       ? ''
       : `<div class="glab scC-lab"><span>${esc(localize(report.locale, group.title))}</span></div>${rows.join('')}`;
   });
-  const zone =
-    report.zone.score === null
-      ? ''
-      : `<p class="hint sc-note">${t('Scorul de zonă ({0}) este media ponderată a celor {1} scoruri. Riscul seismic și investiția sunt context și nu intră în scor.', 'The area score ({0}) is the weighted average of the {1} scores. Seismic risk and investment are context and do not count towards the score.', String(Math.round(report.zone.score)), String(scored.length))}</p>`;
+  const zoneScore = report.zone.score;
+  let zone = '';
+  if (zoneScore !== null && scored.length > 0) {
+    const score = String(Math.round(zoneScore));
+    const calculation =
+      scored.length === 1
+        ? t(
+            'Scorul de zonă ({0}) se bazează pe singurul scor disponibil.',
+            'The area score ({0}) is based on the only available score.',
+            score,
+          )
+        : t(
+            'Scorul de zonă ({0}) este media ponderată a celor {1}.',
+            'The area score ({0}) is the weighted average of the {1}.',
+            score,
+            formattedScoreCount(report.locale, scored.length),
+          );
+    const context = t(
+      'Riscul seismic și investiția sunt context și nu intră în scor.',
+      'Seismic risk and investment are context and do not count towards the score.',
+    );
+    zone = `<p class="hint sc-note">${calculation} ${context}</p>`;
+  }
   return `<div class="scsec"><div class="card scC"><div class="sc-h"><div><div class="eyebrow">${t('Toate scorurile · ponderea în scor lângă nume', 'All scores · weights shown next to each name')}</div><h3>${t('Toate scorurile, față de tot orașul', 'All scores compared with the city')}</h3></div><span class="legend"><span><i></i>${t('adresa', 'address')}</span><span><u></u>${t('media orașului', 'city average')}</span></span></div><p class="hint">${t('Fiecare bară pornește de la 0 și se oprește la scorul adresei. Linia neagră e media orașului.', 'Each bar goes from 0 to the address score. The black line shows the city average.')}</p>${axis}${groups.join('')}${zone}</div></div>`;
 }
 
@@ -328,6 +391,10 @@ export function summaryChapter(report: ReportData): ChapterOutput {
     ],
     markers: [addressMarker(center, report.addressText.split(',')[0])],
   };
-  const html = `<article class="chapter cover">${hero(report, scored, heroMap)}<div class="wrap"><div class="sx sC">${summaryHead(report, scored)}${highlights(report, scored)}</div></div></article><article class="chapter"><div class="wrap"><div class="sx sC">${allScores(report, scored)}${formation(report, scored)}</div></div></article>`;
+  const scoresPage =
+    scored.length === 0
+      ? ''
+      : `<article class="chapter"><div class="wrap"><div class="sx sC">${allScores(report, scored)}${formation(report, scored)}</div></div></article>`;
+  const html = `<article class="chapter cover">${hero(report, scored, heroMap)}<div class="wrap"><div class="sx sC">${summaryHead(report, scored)}${highlights(report, scored)}</div></div></article>${scoresPage}`;
   return { html, maps: [heroMap] };
 }

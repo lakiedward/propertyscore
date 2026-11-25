@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import type { ChapterBuilder } from '../chapter.ts';
 import {
   categoryEyebrow,
@@ -8,13 +10,68 @@ import {
   scoreCard,
   sourceDate,
 } from '../components.ts';
-import { esc, walkMinutes, reportFormat, labelFor } from '../format.ts';
+import { esc, reportFormat, labelFor } from '../format.ts';
 import { GREEN_AMENITIES } from '../labels.ts';
-import { addressDot, mapHtml, type MapMarker, type MapSpec } from '../maps.ts';
+import {
+  addressDot,
+  mapHtml,
+  type FeatureCollection,
+  type MapMarker,
+  type MapSpec,
+} from '../maps.ts';
+import type { ReportData } from '../report-data.ts';
 import { categoryTheme } from '../theme.ts';
 
 const LISTED_PARKS = 9;
 const LARGE_PARK_HA = 1;
+const WALK_METRES_PER_MINUTE = 80;
+
+const rings = z.array(z.array(z.tuple([z.number(), z.number()])));
+const polygon = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('Polygon'), coordinates: rings }),
+  z.object({ type: z.literal('MultiPolygon'), coordinates: z.array(rings) }),
+]);
+
+type Park = NonNullable<ReportData['sections']['green']>['parks'][number];
+type Position = Park['center'];
+
+function walkDuration(park: Park): number {
+  return park.walk_seconds === undefined
+    ? park.walk_m / WALK_METRES_PER_MINUTE
+    : park.walk_seconds / 60;
+}
+
+function walkMinutes(park: Park): number {
+  return Math.max(1, Math.round(walkDuration(park)));
+}
+
+function greenMapFit(
+  center: Position,
+  parks: readonly Park[],
+  areas: FeatureCollection,
+): Position[] {
+  const listedIds = new Set(parks.map((park) => park.id));
+  const min: Position = [...center];
+  const max: Position = [...center];
+  const extend = ([lng, lat]: Position) => {
+    min[0] = Math.min(min[0], lng);
+    min[1] = Math.min(min[1], lat);
+    max[0] = Math.max(max[0], lng);
+    max[1] = Math.max(max[1], lat);
+  };
+  for (const park of parks) extend(park.center);
+  for (const feature of areas.features) {
+    const id = feature.properties?.id;
+    if (typeof id !== 'string' || !listedIds.has(id)) continue;
+    const parsed = polygon.safeParse(feature.geometry);
+    if (!parsed.success) continue;
+    const geometry = parsed.data;
+    const points =
+      geometry.type === 'Polygon' ? geometry.coordinates.flat() : geometry.coordinates.flat(2);
+    for (const point of points) extend(point);
+  }
+  return [min, max];
+}
 
 export const greenChapter: ChapterBuilder = (report) => {
   const { t, formatNumber, plural } = reportFormat(report.locale);
@@ -27,16 +84,25 @@ export const greenChapter: ChapterBuilder = (report) => {
       eyebrow: categoryEyebrow(report.locale, 'green', summary, t('Spații verzi', 'Green spaces')),
       color: theme.color,
       title: t(
-        'Parcurile și verdele din jurul adresei',
+        'Parcurile și spațiile verzi din jurul adresei',
         'Parks and green spaces around the address',
+      ),
+      lead: t(
+        'Nu avem date despre spațiile verzi pentru această adresă.',
+        'No green space data is available for this address.',
       ),
     });
     return { html: chapter(head + scoreCard('green', report) + sources), maps: [] };
   }
-  const parks = [...section.parks].sort((left, right) => left.walk_m - right.walk_m);
+  const parks = [...section.parks].sort((left, right) => walkDuration(left) - walkDuration(right));
   const large = parks.filter((park) => park.area_ha >= LARGE_PARK_HA);
   const listed = (large.length > 0 ? large : parks).slice(0, LISTED_PARKS);
   const farthest = listed.at(-1);
+  const hasRoutedTimes = section.parks.some((park) => park.walk_seconds !== undefined);
+  const isWalkEstimated = (park: Park) =>
+    park.walk_seconds === undefined &&
+    (section.distance_method === 'straight_line' || hasRoutedTimes);
+  const hasEstimatedWalk = listed.some(isWalkEstimated);
   const totalHa = listed.reduce((sum, park) => sum + park.area_ha, 0);
   const biggest = [...listed].sort((left, right) => right.area_ha - left.area_ha)[0];
   const share = section.share[String(section.near_radius_m)];
@@ -67,13 +133,17 @@ export const greenChapter: ChapterBuilder = (report) => {
             'No large park within walking distance of the address',
           )
         : t(
-            '{0}, la cel mult {1} minute pe jos',
-            '{0}, within a {1}-minute walk',
+            hasEstimatedWalk
+              ? '{0}, până la circa {1} minute pe jos'
+              : '{0}, la cel mult {1} minute pe jos',
+            hasEstimatedWalk
+              ? '{0}, within about a {1}-minute walk'
+              : '{0}, within a {1}-minute walk',
             plural(listed.length, ['parc mare', 'large park'], 'parcuri mari', [
               'de parcuri mari',
               'large parks',
             ]),
-            String(walkMinutes(farthest.walk_m)),
+            String(walkMinutes(farthest)),
           ),
     lead:
       biggest && listed.length > 0
@@ -91,7 +161,7 @@ export const greenChapter: ChapterBuilder = (report) => {
   const map: MapSpec = {
     id: 'map-green',
     center,
-    fit: [center, ...listed.map((park) => park.center)],
+    fit: greenMapFit(center, listed, section.areas),
     padding: 48,
     layers: [{ kind: 'fill', data: section.areas, color: '#7DA94B', opacity: 0.7 }],
     markers: [
@@ -102,13 +172,12 @@ export const greenChapter: ChapterBuilder = (report) => {
       addressDot(center),
     ],
   };
-  const approximate = section.distance_method === 'straight_line';
   const cards = listed
     .map((park, index) => {
       const chips = park.amenities
         .map((amenity) => `<i>${esc(labelFor(report.locale, GREEN_AMENITIES, amenity))}</i>`)
         .join('');
-      return `<div class="gz-pc"><span class="gz-pc-h"><span class="fqx-n" style="--c:${theme.color}">${String(index + 1)}</span><b>${esc(park.name ?? t('Spațiu verde fără nume', 'Unnamed green space'))}</b></span><span class="gz-pc-s"><b>${formatNumber(park.area_ha, 1)}</b> ha<span>·</span>${t('{0}{1} min pe jos', '{0}{1} min on foot', approximate ? t('circa ', 'about ') : '', String(walkMinutes(park.walk_m)))}</span>${chips ? `<span class="gz-ch">${chips}</span>` : ''}</div>`;
+      return `<div class="gz-pc"><span class="gz-pc-h"><span class="fqx-n" style="--c:${theme.color}">${String(index + 1)}</span><b>${esc(park.name ?? t('Spațiu verde fără nume', 'Unnamed green space'))}</b></span><span class="gz-pc-s"><b>${formatNumber(park.area_ha, 1)}</b> ha<span>·</span>${t('{0}{1} min pe jos', '{0}{1} min on foot', isWalkEstimated(park) ? t('circa ', 'about ') : '', String(walkMinutes(park)))}</span>${chips ? `<span class="gz-ch">${chips}</span>` : ''}</div>`;
     })
     .join('');
   const list =

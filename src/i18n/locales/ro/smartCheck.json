@@ -65,7 +65,7 @@
       "items": {
         "score": "Scor de zonă din 9 criterii, fiecare explicat",
         "transit": "Accesibilitate: linii, frecvență și direcții, nu doar distanța",
-        "fifteen": "Oraș de 15 minute: ce ai pe jos, pe străzi reale",
+        "fifteen": "Oraș de 15 minute: ce ai aproape pe jos",
         "green": "Spații verzi pe 500 m și 1 km",
         "environment": "Siguranță, zgomot, aer, zone industriale, risc seismic",
         "market": "Prețuri, chirii și randament în zonă",
@@ -262,6 +262,8 @@
           "below": "O zonă sub media din {{city}}"
         },
         "headlineWeak": "{{position}}, cu un singur punct slab: <mark>{{weak}}</mark>",
+        "headlineNoScores": "Scoruri indisponibile pentru această adresă",
+        "leadContextOnly": "Raportul include {{contexts}} ca informații de context.",
         "leadZone": "Zona primește {{score}} din 100, față de {{average}} media orașului.",
         "leadEnd": "Fiecare scor are capitolul lui.",
         "good": "Ce e bun",
@@ -284,7 +286,7 @@
         "mapBand": {
           "eyebrow": "Harta zonei",
           "title": "Explorează zona pe hartă",
-          "text": "Trasee colorate, timpi pe străzi reale și straturile care au contat în scor.",
+          "text": "Vezi traseele disponibile și straturile care au contat în scor.",
           "walk": "locuri pe jos",
           "transit": "destinații cu transportul",
           "layers": "straturi",
@@ -338,7 +340,11 @@
           "transit": "Transport",
           "layers": "Straturi",
           "modes": "Ce arată harta",
-          "walkNote": "Rutat pe străzile reale, la {{speed}} km/h.",
+          "walkNote": {
+            "routed": "Traseele afișate urmează rețeaua pietonală.",
+            "estimated": "Timpii din capitolul „15 minute” sunt estimați din distanța în linie dreaptă. Nu sunt trasee pietonale salvate pe această hartă.",
+            "unavailable": "Nu sunt trasee pietonale salvate pe această hartă."
+          },
           "transitNote": "Mers până la stație, așteptare, drum cu linia.",
           "layersNote": "Pornește un strat ca să vezi ce a contat în scor.",
           "footer": "Apasă pe un drum: apare pe hartă, cu timpul. Desen din OpenStreetMap.",
@@ -455,6 +461,7 @@
       "accessibility": {
         "title": "{{stops}} și {{lines}} care te duc în tot orașul",
         "titleNoStops": "Nicio stație de transport public lângă adresă",
+        "headlineNoData": "Datele despre transportul public nu sunt disponibile pentru această adresă",
         "stopsPhrase_one": "{{count}} stație la {{minutes}} minute pe jos",
         "stopsPhrase_few": "{{count}} stații la {{minutes}} minute pe jos",
         "stopsPhrase_other": "{{count}} de stații la {{minutes}} minute pe jos",
@@ -488,8 +495,9 @@
           "wait": "așteptare",
           "ride": "cu linia"
         },
-        "sourceTimetable": "Liniile, stațiile și orarul: transportul public local, orar din {{date}}, o zi lucrătoare. Drumurile pe jos urmează străzile din OpenStreetMap.",
-        "sourceOsm": "Liniile și stațiile vin din OpenStreetMap, fără orar: așteptarea e estimată. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "sourceTimetable": "Liniile, stațiile și orarul vin din datele de transport public (GTFS) pentru {{date}}, o zi lucrătoare. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "sourceTimetableUndated": "Liniile, stațiile și orarul vin din datele de transport public (GTFS). Data orarului nu este disponibilă în raport. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "sourceOsm": "Liniile și stațiile vin din OpenStreetMap. Raportul nu a folosit orarul operatorului, iar timpul de așteptare este estimat. Drumurile pe jos urmează străzile din OpenStreetMap.",
         "groupLabel": "Tipul destinațiilor",
         "groups": {
           "places": "Locuri importante",
@@ -545,7 +553,7 @@
         "eyebrow": "15 minute · {{score}} / 100 · {{band}}",
         "precision": {
           "routed": "Precizie: adresă · pe străzi reale",
-          "estimated": "Precizie: adresă · estimare"
+          "estimated": "Precizie: adresă · estimare în linie dreaptă"
         },
         "headline": {
           "all": "Toate cele {{count}} lucruri de zi cu zi, la cel mult {{limit}} minute pe jos",
@@ -572,8 +580,13 @@
             "zone": "{{limit}} minute pe jos",
             "places": "Locuri de zi cu zi"
           },
-          "source": "Locurile: OpenStreetMap, {{date}}. Drumurile pe jos urmează străzile și aleile, la {{speed}} de metri pe minut.",
-          "sourceNoDate": "Locurile: OpenStreetMap. Drumurile pe jos urmează străzile și aleile, la {{speed}} de metri pe minut.",
+          "source": "Locurile: OpenStreetMap, {{date}}.",
+          "sourceNoDate": "Locurile: OpenStreetMap.",
+          "method": {
+            "routed": "Timpii pe jos sunt calculați pe rețeaua pietonală (străzi și alei).",
+            "routedWithSpeed": "Timpii pe jos sunt calculați pe rețeaua pietonală (străzi și alei), la {{speed}} m/min.",
+            "estimated": "Timpii pe jos sunt estimați din distanța în linie dreaptă, ajustată pentru ocoluri."
+          },
           "minutes": "{{minutes}} min"
         },
         "checklist": {
@@ -672,7 +685,11 @@
         "headline_one": "{{count}} parc mare, la cel mult {{minutes}} min pe jos",
         "headline_few": "{{count}} parcuri mari, la cel mult {{minutes}} min pe jos",
         "headline_other": "{{count}} de parcuri mari, la cel mult {{minutes}} min pe jos",
+        "headlineApprox_one": "{{count}} parc mare, până la circa {{minutes}} min pe jos",
+        "headlineApprox_few": "{{count}} parcuri mari, până la circa {{minutes}} min pe jos",
+        "headlineApprox_other": "{{count}} de parcuri mari, până la circa {{minutes}} min pe jos",
         "headlineNone": "Niciun parc la o plimbare de adresă",
+        "headlineNoData": "Parcurile și spațiile verzi din jurul adresei",
         "lead": "Împreună au {{total}} ha. Cel mai mare, {{name}}, are {{area}} ha.",
         "share": "{{share}}% din suprafața pe {{radius}} m e spațiu verde, față de {{average}}% media orașului.",
         "shareNoAverage": "{{share}}% din suprafața pe {{radius}} m e spațiu verde.",
@@ -804,6 +821,7 @@
       },
       "airIndustry": {
         "title": "Aer și industrie",
+        "headlineNoData": "Datele despre aer și industrie nu sunt disponibile pentru această adresă",
         "eyebrowPart": "{{name}} · {{score}} / 100",
         "eyebrowPartNoScore": "{{name}} · fără date",
         "badge": "Precizie: aer la nivel de oraș, industrie la adresă",
@@ -821,6 +839,8 @@
           "industryNone": "Nicio fabrică în registru aproape"
         },
         "lead": {
+          "noAirData": "Datele despre aer nu sunt disponibile pentru această adresă.",
+          "noIndustryData": "Datele despre industrie nu sunt disponibile pentru această adresă.",
           "winter": "Iarna crește praful din aer, ca peste tot în {{city}}.",
           "nearest": "Cea mai apropiată instalație industrială e la {{distance}}."
         },
@@ -1002,7 +1022,8 @@
         "offers_other": "{{amount}} de oferte",
         "note": "Nu intră în scorul de zonă. Investiția e context pentru cine cumpără ca să închirieze.",
         "headline": {
-          "city": "În {{city}} se cer în jur de {{value}} € pe metru pătrat"
+          "city": "În {{city}} se cer în jur de {{value}} € pe metru pătrat",
+          "radius": "În jurul adresei se cer în jur de {{value}} € pe metru pătrat"
         },
         "lead": {
           "declared": "Pentru {{area}} m², cam {{price}}, preț cerut.",
@@ -1022,7 +1043,8 @@
           "nearby": "{{name}}, lângă oraș",
           "typical": "Apartamentul tipic din anunțuri: {{area}} m², {{price}} €",
           "legendRange": "intervalul tipic",
-          "legendMedian": "prețul din mijloc"
+          "legendMedian": "prețul din mijloc",
+          "radius": "În jurul adresei"
         },
         "home": {
           "eyebrow": "Pentru apartamentul tău",
@@ -1030,28 +1052,40 @@
           "chosenArea": "Suprafața aleasă",
           "area": "{{area}} m²",
           "sliderLabel": "Suprafața apartamentului",
+          "resetArea": "Revino la {{area}} m²",
           "price": "Preț cerut estimat",
           "approx": "≈ {{value}}",
           "between": "între {{low}} și {{high}}",
           "rent": "Chirie estimată",
+          "rentBasis": {
+            "sameRooms": "Mediana chiriilor pentru același număr de camere.",
+            "perM2": "Estimare pe m² pentru această suprafață."
+          },
           "perMonth": "pe lună"
         },
         "yield": {
           "eyebrow": "Randament brut pe an",
           "title": "Chiria pe un an înseamnă {{value}}% din preț",
           "value": "{{value}}%",
-          "note": "Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș."
+          "scope": {
+            "address": "În jurul adresei",
+            "addressSaleCityRent": "Preț în jurul adresei · chirie la nivelul orașului",
+            "citySaleAddressRent": "Preț la nivelul orașului · chirie în jurul adresei",
+            "unknown": "Date de piață"
+          },
+          "note": "Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș.",
+          "legacyTitle": "Randament brut: {{value}}% (baza nu este disponibilă)",
+          "declaredBasis": "Calcul pentru suprafața declarată: 12 × {{rent}} pe lună ÷ {{sale}}.",
+          "basis": "Calcul: 12 × {{rent}} €/m² pe lună ({{rentSource}}, {{rentPeriod}}) ÷ {{sale}} €/m² ({{saleSource}}, {{salePeriod}})."
         },
         "history": {
-          "eyebrow_one": "Ultima lună",
-          "eyebrow_few": "Ultimele {{count}} luni",
-          "eyebrow_other": "Ultimele {{count}} de luni",
+          "eyebrow": "Istoric · {{first}} – {{last}}",
           "title": {
             "up": "Din {{month}}, prețul cerut a urcat cu {{value}} €/m²",
             "down": "Din {{month}}, prețul cerut a scăzut cu {{value}} €/m²",
             "flat": "Din {{month}}, prețul cerut a rămas la fel"
           },
-          "chartLabel": "Prețul cerut mediu pe metru pătrat, lună cu lună",
+          "chartLabel": "Prețul cerut pe metru pătrat în lunile pentru care avem date",
           "forArea": "Pentru {{area}} m², față de {{month}}",
           "span_one": "{{percent}} în {{count}} lună",
           "span_few": "{{percent}} în {{count}} luni",
@@ -1067,15 +1101,18 @@
             "apartamente_org_index": "apartamente.org, indicele lunar",
             "imospot_index": "Indicele Imospot (CC BY 4.0)"
           },
-          "saleCity": "{{city}} · vânzare",
-          "saleCityOffers_one": "{{city}} · vânzare · {{amount}} ofertă",
-          "saleCityOffers_few": "{{city}} · vânzare · {{amount}} oferte",
-          "saleCityOffers_other": "{{city}} · vânzare · {{amount}} de oferte",
-          "rentCity": "{{city}} · închiriere",
-          "rentCityOffers_one": "{{city}} · închiriere · {{amount}} ofertă",
-          "rentCityOffers_few": "{{city}} · închiriere · {{amount}} oferte",
-          "rentCityOffers_other": "{{city}} · închiriere · {{amount}} de oferte"
-        }
+          "roles": {
+            "sale": "{{place}} · vânzare",
+            "rent": "{{place}} · închiriere",
+            "history": "Istoricul prețurilor cerute",
+            "yield_sale": "Prețul folosit pentru randament",
+            "yield_rent": "Chiria folosită pentru randament"
+          }
+        },
+        "badgeRadius": "Precizie: în jurul adresei",
+        "apartments_one": "{{amount}} apartament",
+        "apartments_few": "{{amount}} apartamente",
+        "apartments_other": "{{amount}} de apartamente"
       },
       "closing": {
         "title": "Înainte de vizionare",
@@ -1123,8 +1160,9 @@
       "hero": {
         "eyebrow": "Smart Check · raport nr. {{number}} · {{date}}",
         "leadNoStrengths": "Scorurile descriu zona din jurul adresei.",
+        "leadNoScores": "Nu avem suficiente date pentru a calcula scorurile acestei adrese.",
         "leadWeak": "Punctul slab e {{weak}}.",
-        "leadNoWeak": "Niciun scor nu e slab.",
+        "leadNoWeak": "Niciunul dintre scorurile disponibile nu e slab.",
         "meta": "Calculat pe datele din {{date}} · rază de până la {{radius}} km",
         "ready": "Raport gata",
         "noDetails": "Fără detalii declarate",

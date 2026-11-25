@@ -7,6 +7,7 @@ import {
   footnote,
   iconTile,
   scoreCard,
+  sourceDate,
 } from '../components.ts';
 import { esc, reportFormat, labelFor } from '../format.ts';
 import { DESTINATION_KINDS, TRANSIT_MODES } from '../labels.ts';
@@ -248,7 +249,7 @@ function reachCard(
 }
 
 export const accessibilityChapter: ChapterBuilder = (report) => {
-  const { t, plural, formatDate } = reportFormat(report.locale);
+  const { t, plural } = reportFormat(report.locale);
   const summary = report.categories.accessibility;
   const section = report.sections.accessibility;
   const theme = categoryTheme(report.locale, 'accessibility');
@@ -256,7 +257,10 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
     const head = chapterHead(report.locale, {
       eyebrow: categoryEyebrow(report.locale, 'accessibility', summary),
       color: theme.color,
-      title: t('Transportul public din jurul adresei', 'Public transport around the address'),
+      title: t(
+        'Datele despre transportul public nu sunt disponibile pentru această adresă',
+        'Public transport data is not available for this address',
+      ),
     });
     return {
       html: chapter(
@@ -367,25 +371,28 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
             'Traseele de pe hartă urmează străzile și liniile. Unde traseul lipsește, apare doar destinația.',
             'Routes on the map follow streets and public transport lines. Where a route is missing, only the destination is shown.',
           );
-  const schedule =
-    section.data_quality === 'gtfs' && section.reference_date
+  const timetableDate = sourceDate(report, 'gtfs');
+  const schedule = timetableDate
+    ? t(
+        'Liniile, stațiile și orarul vin din datele de transport public (GTFS) pentru {0}, o zi lucrătoare.',
+        'Routes, stops and timetables use public transport data (GTFS) for {0}, a weekday.',
+        timetableDate,
+      )
+    : section.data_quality === 'gtfs'
       ? t(
-          'Liniile, stațiile și orarul: operatorul de transport, orar din {0}, o zi lucrătoare. {1}',
-          'Routes, stops and timetables: public transport operator, weekday timetable as of {0}. {1}',
-          formatDate(section.reference_date),
-          routesNote,
+          'Liniile, stațiile și orarul vin din datele de transport public (GTFS). Data orarului nu este disponibilă în raport.',
+          'Routes, stops and timetables use public transport data (GTFS). No timetable date is available in the report.',
         )
       : t(
-          'Orașul nu publică orarul în format deschis: stațiile și liniile vin din OpenStreetMap. {0}',
-          'The city does not publish open timetable data: stops and routes are from OpenStreetMap. {0}',
-          routesNote,
+          'Liniile și stațiile vin din OpenStreetMap. Raportul nu a folosit orarul operatorului, iar timpul de așteptare este estimat.',
+          'Routes and stops are from OpenStreetMap. The report did not use the operator timetable, and waiting times are estimated.',
         );
   const trips =
     reachable.length === 0
       ? `<p class="hint">${t('Nu am putut calcula drumurile spre locurile importante.', 'We could not calculate journeys to key destinations.')}</p>`
       : `<div class="acd acp-l">${reachable.map((destination) => tripRow(report.locale, destination)).join('')}</div>`;
   const reach = section.reach ? reachCard(report.locale, section.reach, center) : null;
-  const body = `<section class="acW"><div class="acmap acW-m">${mapHtml(report.locale, map, mapOverlay)}<div class="rleg">${legend}</div></div><div class="acW-l"><div class="acp"><div class="ac-h"><div><h3>${t('Cât faci până acolo, dimineața la 8', 'How long it takes to get there at 8 am')}</h3></div><div class="legkey"><span><i style="background:#52685B"></i>${t('pe jos', 'on foot')}</span><span><i style="background:#C9A44A"></i>${t('așteptare', 'waiting')}</span><span><i style="background:#8A8F99"></i>${t('cu linia', 'in transit')}</span></div></div>${trips}</div></div>${footnote(schedule)}</section>`;
+  const body = `<section class="acW"><div class="acmap acW-m">${mapHtml(report.locale, map, mapOverlay)}<div class="rleg">${legend}</div></div><div class="acW-l"><div class="acp"><div class="ac-h"><div><h3>${t('Cât faci până acolo, dimineața la 8', 'How long it takes to get there at 8 am')}</h3></div><div class="legkey"><span><i style="background:#52685B"></i>${t('pe jos', 'on foot')}</span><span><i style="background:#C9A44A"></i>${t('așteptare', 'waiting')}</span><span><i style="background:#8A8F99"></i>${t('cu linia', 'in transit')}</span></div></div>${trips}</div></div>${footnote(`${schedule} ${routesNote}`)}</section>`;
   return {
     html: chapter(
       `${head}${body}<div class="sfB-rest">${scoreCard('accessibility', report)}${reach?.html ?? ''}${chapterSources(report, ['accessibility'])}</div>`,

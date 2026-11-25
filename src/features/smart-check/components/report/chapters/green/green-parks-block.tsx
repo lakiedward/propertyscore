@@ -2,7 +2,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDate, formatNumber } from '@/i18n/format';
 import { cn } from '@/lib/utils';
-import { GREEN_AMENITIES, parkWalkMinutes, type GreenPark } from '../../../../green.utils';
+import {
+  GREEN_AMENITIES,
+  isParkWalkEstimated,
+  parkWalkMinutes,
+  type GreenPark,
+} from '../../../../green.utils';
 import type { ReadyReport } from '../../../../report.types';
 import { GreenMap } from './green-map';
 
@@ -17,7 +22,7 @@ export function GreenParksBlock({ report, parks }: GreenParksBlockProps) {
   const { t } = useTranslation('smartCheck');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const osmDate = report.result.snapshot.source_dates.osm;
-  const isApproximate = report.result.sections.green?.distance_method === 'straight_line';
+  const green = report.result.sections.green;
 
   return (
     <section aria-label={t('report.chapters.green.parks.label')} className="min-w-0">
@@ -66,10 +71,10 @@ export function GreenParksBlock({ report, parks }: GreenParksBlockProps) {
                   {t('report.chapters.green.parks.hectares')}
                   <span aria-hidden="true">·</span>
                   {t(
-                    isApproximate
+                    isParkWalkEstimated(park, green)
                       ? 'report.chapters.green.parks.walkApprox'
                       : 'report.chapters.green.parks.walk',
-                    { minutes: parkWalkMinutes(park.walk_m) },
+                    { minutes: parkWalkMinutes(park) },
                   )}
                 </span>
                 {amenities.length > 0 ? (

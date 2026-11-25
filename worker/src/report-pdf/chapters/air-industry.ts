@@ -68,12 +68,26 @@ function sitesCard(locale: ReportLocale, industry: Industry): string {
 
 function title(locale: ReportLocale, air: Air | null, industry: Industry | null): string {
   const { t, formatDistance } = reportFormat(locale);
+  if (!air) {
+    if (!industry)
+      return t(
+        'Datele despre aer și industrie nu sunt disponibile pentru această adresă',
+        'Air quality and industry data are not available for this address',
+      );
+    return industry.nearest_m === null
+      ? t('Nicio fabrică în registru aproape', 'No registered industrial facilities nearby')
+      : t(
+          'Fabrici la peste {0}',
+          'Industrial facilities more than {0} away',
+          formatDistance(industry.nearest_m),
+        );
+  }
   const airPart =
-    air?.verdict_code === 'clean_all_year'
+    air.verdict_code === 'clean_all_year'
       ? t('Aer curat tot anul', 'Clean air all year')
-      : air?.verdict_code === 'winter_peaks'
+      : air.verdict_code === 'winter_peaks'
         ? t('Aer bun vara, mai încărcat iarna', 'Cleaner air in summer, more pollution in winter')
-        : air?.verdict_code === 'above_limit_most_year'
+        : air.verdict_code === 'above_limit_most_year'
           ? t(
               'Aer peste limita UE în cea mai mare parte a anului',
               'Air pollution above the EU limit for most of the year',
@@ -109,14 +123,34 @@ export const airIndustryChapter: ChapterBuilder = (report) => {
   const { air, industry } = report.sections;
   const airTheme = CATEGORY_THEME.air;
   const industryTheme = CATEGORY_THEME.industry;
-  const lead = industry?.nearest_m
-    ? t(
-        'Cea mai apropiată instalație industrială e la {0}.',
-        'The closest industrial facility is {0} away.',
-        formatDistance(industry.nearest_m),
-      )
-    : '';
-  const head = `<div class="ch-head" style="--c:${airTheme.color}"><div class="eyebrow">${eyebrowPart(report.locale, t('Aer', 'Air'), report.categories.air.score, airTheme.color)}${eyebrowPart(report.locale, t('Industrie', 'Industry'), report.categories.industry.score, industryTheme.color)}<span class="acc" style="--c:${airTheme.color}"><i></i>${t('Precizie: aer la nivel de oraș, industrie la adresă', 'Precision: citywide air data, address-level industry data')}</span></div><h2>${esc(title(report.locale, air, industry))}</h2>${lead ? `<p class="lead">${esc(lead)}</p>` : ''}</div>`;
+  const lead = [
+    !air && industry
+      ? t(
+          'Datele despre aer nu sunt disponibile pentru această adresă.',
+          'Air quality data is not available for this address.',
+        )
+      : '',
+    air && !industry
+      ? t(
+          'Datele despre industrie nu sunt disponibile pentru această adresă.',
+          'Industry data is not available for this address.',
+        )
+      : '',
+    industry?.nearest_m != null
+      ? t(
+          'Cea mai apropiată instalație industrială e la {0}.',
+          'The closest industrial facility is {0} away.',
+          formatDistance(industry.nearest_m),
+        )
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const precision =
+    air && industry
+      ? `<span class="acc" style="--c:${airTheme.color}"><i></i>${t('Precizie: aer la nivel de oraș, industrie la adresă', 'Precision: citywide air data, address-level industry data')}</span>`
+      : '';
+  const head = `<div class="ch-head" style="--c:${airTheme.color}"><div class="eyebrow">${eyebrowPart(report.locale, t('Aer', 'Air'), report.categories.air.score, airTheme.color)}${eyebrowPart(report.locale, t('Industrie', 'Industry'), report.categories.industry.score, industryTheme.color)}${precision}</div><h2>${esc(title(report.locale, air, industry))}</h2>${lead ? `<p class="lead">${esc(lead)}</p>` : ''}</div>`;
   const cards = `${air ? monthsCard(report.locale, air) : ''}${industry ? sitesCard(report.locale, industry) : ''}`;
   const period = sourceDate(report, 'cams');
   const year = industry?.source.reporting_year;

@@ -2,6 +2,7 @@ import { MapIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { formatNumber } from '@/i18n/format';
 import type { ReadyReport } from '../../../report.types';
 import { ZONE_LAYERS, transitRoutes, walkRoutes } from '../../../zone-map.utils';
 import { ZoneMap } from './zone-map';
@@ -16,9 +17,10 @@ export function SummaryMapBand({ report }: SummaryMapBandProps) {
   const [isExplorerOpen, setIsExplorerOpen] = useState(false);
   const walk = walkRoutes(report.result);
   const transit = transitRoutes(report.result, i18n.resolvedLanguage === 'en' ? 'en' : 'ro');
+  const places = report.result.sections.fifteen_minute?.places ?? [];
 
   const stats = [
-    { key: 'walk', value: walk.length },
+    { key: 'walk', value: new Set(places.map((place) => place.id)).size },
     { key: 'transit', value: transit.length },
     { key: 'layers', value: ZONE_LAYERS.length },
   ] as const;
@@ -55,7 +57,7 @@ export function SummaryMapBand({ report }: SummaryMapBandProps) {
               className="max-w-[11ch] text-caption leading-[1.3] font-semibold text-on-info-faint"
             >
               <b className="block text-[26px] leading-none font-extrabold tracking-[-0.03em] text-cta w760:text-[30px]">
-                {stat.value}
+                {formatNumber(stat.value)}
               </b>
               {t(`report.chapters.summary.mapBand.${stat.key}`)}
             </li>

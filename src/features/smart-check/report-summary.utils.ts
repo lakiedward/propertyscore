@@ -27,7 +27,7 @@ const WALK_MINUTES = 15;
 
 export type ReportContext = 'seismic' | 'investment';
 
-export function walkSpeedKmh(result: ReportResult): number {
+function walkSpeedKmh(result: ReportResult): number {
   return result.sections.fifteen_minute?.walk_speed_kmh ?? DEFAULT_WALK_SPEED_KMH;
 }
 

@@ -1,4 +1,5 @@
 import type { ChapterBuilder } from '../chapter.ts';
+import { sourceDate } from '../components.ts';
 import { esc, reportFormat, type Copy, labelFor, localize } from '../format.ts';
 import { icon, logo, type IconName } from '../icons.ts';
 import { SOURCE_LABELS } from '../labels.ts';
@@ -20,7 +21,7 @@ const SOURCE_GROUPS: readonly { title: Copy; icon: IconName; keys: readonly stri
 ];
 
 export const closingChapter: ChapterBuilder = (report) => {
-  const { t, formatSourceDate, formatMonth } = reportFormat(report.locale);
+  const { t, formatMonth } = reportFormat(report.locale);
   const dates = report.snapshot.sourceDates;
   const grouped = new Set(SOURCE_GROUPS.flatMap((group) => group.keys));
   const others = Object.keys(dates).filter(
@@ -32,11 +33,11 @@ export const closingChapter: ChapterBuilder = (report) => {
   ]
     .map((group) => {
       const rows = group.keys.flatMap((key) => {
-        const value = dates[key];
-        return value === undefined
+        const date = sourceDate(report, key);
+        return date === null
           ? []
           : [
-              `<div class="sr"><span>${esc(labelFor(report.locale, SOURCE_LABELS, key))}</span><span class="dt">${esc(formatSourceDate(value))}</span></div>`,
+              `<div class="sr"><span>${esc(labelFor(report.locale, SOURCE_LABELS, key))}</span><span class="dt">${esc(date)}</span></div>`,
             ];
       });
       return rows.length === 0

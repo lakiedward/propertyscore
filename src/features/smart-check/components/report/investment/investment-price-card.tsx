@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { formatNumber } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import {
+  isCityWide,
   priceIntervals,
   scalePosition,
   type IntervalScale,
@@ -33,10 +34,15 @@ function IntervalRow({ item, scale }: { item: PriceInterval; scale: IntervalScal
           {item.name}
           {item.count === null ? null : (
             <small className="ml-2 text-[12px] font-semibold text-muted-foreground">
-              {t('report.chapters.investment.offers', {
-                count: item.count,
-                amount: formatNumber(item.count),
-              })}
+              {t(
+                item.countKind === 'apartments'
+                  ? 'report.chapters.investment.apartments'
+                  : 'report.chapters.investment.offers',
+                {
+                  count: item.count,
+                  amount: formatNumber(item.count),
+                },
+              )}
             </small>
           )}
         </span>
@@ -86,7 +92,9 @@ function IntervalRow({ item, scale }: { item: PriceInterval; scale: IntervalScal
 export function InvestmentPriceCard({ investment, sale, cityName }: InvestmentPriceCardProps) {
   const { t } = useTranslation('smartCheck');
   const { intervals, scale } = priceIntervals(investment, sale, {
-    city: t('report.chapters.investment.price.cityWide', { city: cityName }),
+    primary: isCityWide(sale.precision)
+      ? t('report.chapters.investment.price.cityWide', { city: cityName })
+      : t('report.chapters.investment.price.radius'),
     nearby: (name) => t('report.chapters.investment.price.nearby', { name }),
   });
   const hasInterval = sale.p25_eur_m2 != null && sale.p75_eur_m2 != null;

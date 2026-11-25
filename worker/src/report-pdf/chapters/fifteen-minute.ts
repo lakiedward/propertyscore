@@ -180,6 +180,29 @@ function subScores(report: ReportData): string {
   return education || health ? `<div class="fqsubs">${education}${health}</div>` : '';
 }
 
+function walkingTimeNote(locale: ReportLocale, section: FifteenMinute): string {
+  const { t, formatNumber } = reportFormat(locale);
+  if (section.distance_method === 'straight_line') {
+    return t(
+      'Timpii pe jos sunt estimați din distanța în linie dreaptă, ajustată pentru ocoluri.',
+      'Walking times are estimated from straight-line distances, adjusted for detours.',
+    );
+  }
+  if (section.distance_method !== 'pedestrian_routing') return '';
+  const speed = section.walk_speed_kmh;
+  if (speed !== null && speed > 0) {
+    return t(
+      'Timpii pe jos sunt calculați pe rețeaua pietonală (străzi și alei), la {0} m/min.',
+      'Walking times are calculated along the pedestrian network (streets and paths), at {0} m/min.',
+      formatNumber((speed * 1000) / 60),
+    );
+  }
+  return t(
+    'Timpii pe jos sunt calculați pe rețeaua pietonală (străzi și alei).',
+    'Walking times are calculated along the pedestrian network (streets and paths).',
+  );
+}
+
 export const fifteenMinuteChapter: ChapterBuilder = (report) => {
   const { t } = reportFormat(report.locale);
   const summary = report.categories.fifteen_minute;
@@ -217,7 +240,9 @@ export const fifteenMinuteChapter: ChapterBuilder = (report) => {
     precision:
       section.distance_method === 'pedestrian_routing'
         ? theme.precision
-        : t('adresă · estimare', 'address · estimate'),
+        : section.distance_method === 'straight_line'
+          ? t('adresă · estimare în linie dreaptă', 'address · straight-line estimate')
+          : undefined,
     title: all
       ? t(
           'Toate cele {0} lucruri de zi cu zi, la cel mult {1} minute pe jos',
@@ -283,13 +308,17 @@ export const fifteenMinuteChapter: ChapterBuilder = (report) => {
     '',
   );
   const walkLimit = t('{0} minute pe jos', '{0}-minute walk', String(WALK_LIMIT_MIN));
-  const overlay = `<span class="mapchip" style="--c:${theme.color}"><i></i>${walkLimit}</span><div class="key"><b>${t('Pe hartă', 'On the map')}</b><span><i style="background:#103F32;border-radius:50%;width:10px;height:10px"></i>${t('Adresa', 'Address')}</span><span><i style="background:rgba(138,53,111,.16);border:1.5px solid rgba(138,53,111,.7)"></i>${walkLimit}</span><span class="fqkd">${dots}${t('Locuri de zi cu zi', 'Everyday places')}</span></div>`;
+  const zoneKey = widest
+    ? `<span><i style="background:rgba(138,53,111,.16);border:1.5px solid rgba(138,53,111,.7)"></i>${walkLimit}</span>`
+    : '';
+  const overlay = `<span class="mapchip" style="--c:${theme.color}"><i></i>${walkLimit}</span><div class="key"><b>${t('Pe hartă', 'On the map')}</b><span><i style="background:#103F32;border-radius:50%;width:10px;height:10px"></i>${t('Adresa', 'Address')}</span>${zoneKey}<span class="fqkd">${dots}${t('Locuri de zi cu zi', 'Everyday places')}</span></div>`;
   const osm = sourceDate(report, 'osm');
-  const note = t(
-    'Locurile: OpenStreetMap{0}. Drumurile pe jos urmează străzile și aleile, la 80 de metri pe minut.',
-    'Places: OpenStreetMap{0}. Walking routes follow streets and paths at 80 metres per minute.',
+  const placesSource = t(
+    'Locurile: OpenStreetMap{0}.',
+    'Places: OpenStreetMap{0}.',
     osm ? `, ${osm}` : '',
   );
+  const note = [placesSource, walkingTimeNote(report.locale, section)].filter(Boolean).join(' ');
   const places15 = `<section class="fqC"><div class="fqmap fqC-m">${mapHtml(report.locale, map, overlay)}</div>${checklist(report.locale, section)}</section>${footnote(note)}`;
   return {
     html: chapter(

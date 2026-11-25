@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  declaredYieldAmounts,
+  investmentSectionSchema,
+  rentEstimateForArea,
+  yieldScope,
+} from '../../report/investment-contract.ts';
+import {
   buildInvestmentReport,
   dedupeListings,
   EMPTY_CITY_SUMMARY,
@@ -130,9 +136,18 @@ describe('buildInvestmentReport', () => {
       estimate_low_eur: 176000,
       estimate_high_eur: 201000,
     });
-    expect(report.rent).toMatchObject({ basis: 'same_rooms', count: 9, median_eur: 620 });
+    expect(report.rent).toMatchObject({
+      basis: 'same_rooms',
+      count: 9,
+      median_eur: 620,
+      median_eur_m2: 7.6,
+    });
     expect(report.yield).toEqual({ gross_pct: 3.9, city_gross_pct: 4.6 });
     expect(report.city.median_sale_eur_m2).toBe(2010);
+    const section = investmentSectionSchema.parse(report);
+    expect(rentEstimateForArea(section, 84)).toEqual({ value: 620, basis: 'sameRooms' });
+    expect(rentEstimateForArea(section, 85)).toEqual({ value: 645, basis: 'perM2' });
+    expect(declaredYieldAmounts(section)).toEqual({ price: 189000, monthly: 620 });
   });
 
   it('widens the radius until enough listings are found', () => {
@@ -143,6 +158,25 @@ describe('buildInvestmentReport', () => {
 
     expect(report.sale).toMatchObject({ radius_m: 1200, count: 21 });
   });
+
+  it.each([
+    ['radius', 'city', 'addressSaleCityRent', false, true],
+    ['city', 'radius', 'citySaleAddressRent', true, false],
+  ] as const)(
+    'calculates yield with %s sale and %s rent when only one local sample exists',
+    (sale, rent, scope, omitSale, omitRent) => {
+      const inputs = designInputs();
+      const report = buildInvestmentReport({
+        ...inputs,
+        sale: omitSale ? [] : inputs.sale,
+        rent: omitRent ? [] : inputs.rent,
+      });
+      expect(report.sale?.precision).toBe(sale);
+      expect(report.rent?.precision).toBe(rent);
+      expect(report.yield.gross_pct).toBeGreaterThan(0);
+      expect(yieldScope(investmentSectionSchema.parse(report))).toBe(scope);
+    },
+  );
 
   it('falls back to the city figures without a histogram when the area is sparse', () => {
     const report = buildInvestmentReport(designInputs({ sale: [], rent: [] }));
