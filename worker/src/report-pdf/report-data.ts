@@ -391,12 +391,17 @@ const summarySchema = z.looseObject({
   categories: z.record(z.enum(CATEGORY_KEYS), categorySummarySchema),
 });
 
+const reportLocaleSchema = z.enum(['ro', 'en']);
+
+export type ReportLocale = z.infer<typeof reportLocaleSchema>;
+
 export const reportInputSchema = z.object({
   number: z.number().int().positive(),
   address_text: z.string().min(1),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   generated_at: z.string().min(1),
+  locale: reportLocaleSchema.default('ro'),
   result: summarySchema,
 });
 
@@ -408,6 +413,7 @@ export type ReportData = {
   latitude: number;
   longitude: number;
   generatedAt: string;
+  locale: ReportLocale;
   city: { slug: string; name: string };
   snapshot: { period: string; sourceDates: Record<string, string> };
   zone: z.infer<typeof summarySchema>['zone'];
@@ -442,6 +448,7 @@ export function toReportData(input: z.infer<typeof reportInputSchema>): ReportDa
     latitude: input.latitude,
     longitude: input.longitude,
     generatedAt: input.generated_at,
+    locale: input.locale,
     city: result.city,
     snapshot: { period: result.snapshot.period, sourceDates: result.snapshot.source_dates },
     zone: result.zone,

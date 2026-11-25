@@ -16,6 +16,7 @@ describe('buildReportDocument', () => {
     const document = await buildReportDocument(report);
 
     expect(report.unreadableSections).toEqual([]);
+    expect(document.html).toContain('<html lang="ro">');
     expect(document.html).toContain(report.addressText);
     expect(document.html).toContain('risc moderat, nu ridicat');
     expect(document.html).toContain('preț cerut');
@@ -25,6 +26,39 @@ describe('buildReportDocument', () => {
     expect(document.allowedHosts).toEqual(['tiles.openfreemap.org']);
     expect(document.assets.has('/assets/maplibre-gl.mjs')).toBe(true);
     expect(document.assets.has('/assets/fonts/manrope-latin-ext.woff2')).toBe(true);
+  });
+
+  it('localizes the English chapters, sources and values from the same report', async () => {
+    const input = reportInputSchema.parse({ ...(await exampleInput()), locale: 'en' });
+    const report = toReportData(input);
+    const accessibility = report.sections.accessibility;
+    if (!accessibility) throw new Error('The example report has no accessibility section');
+    const destinations = accessibility.destinations.map((destination) => ({
+      ...destination,
+      label: { ro: 'Destinație de test', en: 'Example destination' },
+    }));
+    const { html } = await buildReportDocument({
+      ...report,
+      sections: { ...report.sections, accessibility: { ...accessibility, destinations } },
+    });
+
+    expect(html).toContain('<html lang="en">');
+    for (const text of [
+      'generated on 4 Nov 2026',
+      'All scores compared with the city',
+      'Example destination',
+      'Your everyday checklist',
+      '9 large parks',
+      'Estimate based on roads',
+      'Copernicus CAMS',
+      'the USGS and EMSC catalogues',
+      '€123,000',
+      'Gross annual yield',
+      'Data from Nov 2026',
+    ]) {
+      expect(html).toContain(text);
+    }
+    expect(html).not.toMatch(/Destinație de test|catalogul USGS și EMSC|preț cerut|Surse și date/);
   });
 
   it('leaves out a section without data and reports one it cannot read', async () => {

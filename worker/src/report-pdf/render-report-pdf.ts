@@ -6,12 +6,18 @@ import type { Logger } from '../lib/logger.ts';
 import { renderPdf } from '../pdf/render-pdf.ts';
 import type { StoredReportPdfStorage } from '../report-queue/report-pdf-storage.ts';
 import { buildReportDocument } from './build-document.ts';
-import { reportInputSchema, toReportData, type ReportData } from './report-data.ts';
+import {
+  reportInputSchema,
+  toReportData,
+  type ReportData,
+  type ReportLocale,
+} from './report-data.ts';
 import { readReadyReport, readStoredReportPdf } from './report-pdf.db.ts';
 
 export type RenderReportPdfOptions = {
   source: { reportId: string; sql: Sql } | { inputPath: string };
   outputPath: string;
+  locale?: ReportLocale;
   chromiumPath?: string;
   logger: Logger;
 };
@@ -31,16 +37,17 @@ async function readInputFile(path: string): Promise<unknown> {
   }
 }
 
-function parseReportInput(raw: unknown): ReportData {
+function parseReportInput(raw: unknown, locale?: ReportLocale): ReportData {
   const parsed = reportInputSchema.safeParse(raw);
   if (!parsed.success) {
     const fields = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
     throw new WorkerError('report_input_invalid', `The report cannot be read: ${fields}`);
   }
-  return toReportData(parsed.data);
+  return toReportData({ ...parsed.data, locale: locale ?? parsed.data.locale });
 }
 
 export type RenderReportOptions = {
+  locale?: ReportLocale;
   chromiumPath?: string;
   logger: Logger;
 };
@@ -54,7 +61,7 @@ export async function renderReportDocument(
   raw: unknown,
   options: RenderReportOptions,
 ): Promise<{ number: number; pdf: Buffer }> {
-  const report = parseReportInput(raw);
+  const report = parseReportInput(raw, options.locale);
   if (report.unreadableSections.length > 0) {
     options.logger.warn('report sections left out of the pdf', {
       sections: report.unreadableSections.join(','),
@@ -71,6 +78,7 @@ export async function renderReportPdf(options: RenderReportPdfOptions): Promise<
       ? await readReadyReport(source.sql, source.reportId)
       : await readInputFile(source.inputPath);
   const { number, pdf } = await renderReportDocument(raw, {
+    locale: options.locale,
     chromiumPath: options.chromiumPath,
     logger,
   });
@@ -78,7 +86,7 @@ export async function renderReportPdf(options: RenderReportPdfOptions): Promise<
   logger.info('report pdf written', { report_number: number, bytes: pdf.length });
 }
 
-type RefreshReportPdfOptions = RenderReportOptions & {
+type RefreshReportPdfOptions = Omit<RenderReportOptions, 'locale'> & {
   sql: Sql;
   reportId: string;
   storage: StoredReportPdfStorage;

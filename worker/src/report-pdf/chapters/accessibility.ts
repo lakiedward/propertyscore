@@ -8,7 +8,7 @@ import {
   iconTile,
   scoreCard,
 } from '../components.ts';
-import { esc, formatDate, formatDistance, formatNumber, plural } from '../format.ts';
+import { esc, reportFormat, labelFor } from '../format.ts';
 import { DESTINATION_KINDS, TRANSIT_MODES } from '../labels.ts';
 import {
   addressMarker,
@@ -19,8 +19,8 @@ import {
   type MapMarker,
   type MapSpec,
 } from '../maps.ts';
-import type { ReportData } from '../report-data.ts';
-import { CATEGORY_THEME } from '../theme.ts';
+import type { ReportData, ReportLocale } from '../report-data.ts';
+import { categoryTheme } from '../theme.ts';
 
 type Accessibility = NonNullable<ReportData['sections']['accessibility']>;
 type Destination = Accessibility['destinations'][number];
@@ -58,24 +58,38 @@ function lineChip(destination: Destination): string {
   return `<span class="acl" style="--lc:${colour};color:${brightness > LIGHT_LINE_FROM ? '#2A2100' : '#fff'}">${esc(destination.route?.ref ?? '')}</span>`;
 }
 
-function tripDetail(destination: Destination): string {
+function tripDetail(locale: ReportLocale, destination: Destination): string {
+  const { t, formatDistance, plural } = reportFormat(locale);
   if (destination.by_walking) {
     const metres = (destination.walk ?? destination.minutes ?? 0) * WALK_METRES_PER_MINUTE;
-    return `${esc(formatDistance(metres))} pe jos, mai repede decât cu linia`;
+    return t(
+      '{0} pe jos, mai repede decât cu linia',
+      '{0} on foot, faster than taking public transport',
+      esc(formatDistance(metres)),
+    );
   }
-  const mode = TRANSIT_MODES[destination.route?.mode ?? ''] ?? 'transportul public';
+  const mode = labelFor(
+    locale,
+    TRANSIT_MODES,
+    destination.route?.mode ?? '',
+    t('transportul public', 'public transport'),
+  );
   const changes =
     destination.transfers === null || destination.transfers === 0
-      ? 'fără schimbare'
-      : plural(destination.transfers, 'schimbare', 'schimbări', 'de schimbări');
+      ? t('fără schimbare', 'no changes')
+      : plural(destination.transfers, ['schimbare', 'change'], 'schimbări', [
+          'de schimbări',
+          'changes',
+        ]);
   return destination.route?.ref
-    ? `${lineChip(destination)} cu ${esc(mode)}, ${esc(changes)}`
-    : `cu ${esc(mode)}, ${esc(changes)}`;
+    ? t('{0} cu {1}, {2}', '{0} by {1}, {2}', lineChip(destination), esc(mode), esc(changes))
+    : t('cu {0}, {1}', 'by {0}, {1}', esc(mode), esc(changes));
 }
 
-function tripLegs(destination: Destination): string {
+function tripLegs(locale: ReportLocale, destination: Destination): string {
+  const { t } = reportFormat(locale);
   if (destination.by_walking) {
-    return `<div class="legs acleg"><i class="w" style="flex:1">${String(Math.round(destination.minutes ?? 0))} min pe jos</i></div>`;
+    return `<div class="legs acleg"><i class="w" style="flex:1">${t('{0} min pe jos', '{0} min on foot', String(Math.round(destination.minutes ?? 0)))}</i></div>`;
   }
   const legs = [
     { minutes: destination.walk, kind: 'w' },
@@ -90,21 +104,22 @@ function tripLegs(destination: Destination): string {
   return `<div class="legs acleg" style="--c:${kindOf(destination).color}">${legs.join('')}</div>`;
 }
 
-function tripRow(destination: Destination): string {
+function tripRow(locale: ReportLocale, destination: Destination): string {
   const kind = kindOf(destination);
-  return `<div class="acr" style="--c:${kind.color}">${iconTile(kind.icon, kind.color, `color-mix(in srgb,${kind.color} 13%,#fff)`)}<span class="acr-t"><b>${esc(destination.label.ro)}</b><small>${tripDetail(destination)}</small></span><span class="acr-b">${tripLegs(destination)}</span><span class="acr-m"><b>${String(Math.round(destination.minutes ?? 0))}</b> min</span></div>`;
+  return `<div class="acr" style="--c:${kind.color}">${iconTile(kind.icon, kind.color, `color-mix(in srgb,${kind.color} 13%,#fff)`)}<span class="acr-t"><b>${esc(destination.label[locale])}</b><small>${tripDetail(locale, destination)}</small></span><span class="acr-b">${tripLegs(locale, destination)}</span><span class="acr-m"><b>${String(Math.round(destination.minutes ?? 0))}</b> min</span></div>`;
 }
 
 function reachColour(minutes: number): string {
   return REACH_BANDS.find((band) => minutes <= band.minutes)?.color ?? REACH_FALLBACK;
 }
 
-function reachPhrase(sharePct: number): string {
-  if (sharePct >= 75) return 'aproape tot orașul';
-  if (sharePct >= 66) return 'peste două treimi din oraș';
-  if (sharePct >= 45) return 'aproape jumătate din oraș';
-  if (sharePct >= 30) return 'peste o treime din oraș';
-  return 'centru și cartierele vecine';
+function reachPhrase(locale: ReportLocale, sharePct: number): string {
+  const { t } = reportFormat(locale);
+  if (sharePct >= 75) return t('aproape tot orașul', 'almost the whole city');
+  if (sharePct >= 66) return t('peste două treimi din oraș', 'over two thirds of the city');
+  if (sharePct >= 45) return t('aproape jumătate din oraș', 'almost half the city');
+  if (sharePct >= 30) return t('peste o treime din oraș', 'over a third of the city');
+  return t('centru și cartierele vecine', 'the centre and nearby neighbourhoods');
 }
 
 function ringPositions(geometry: unknown): [number, number][] {
@@ -179,7 +194,12 @@ function labelledPlaces(
   return chosen;
 }
 
-function reachCard(reach: Reach, center: [number, number]): { html: string; map: MapSpec } {
+function reachCard(
+  locale: ReportLocale,
+  reach: Reach,
+  center: [number, number],
+): { html: string; map: MapSpec } {
+  const { t, formatNumber } = reportFormat(locale);
   const shown = [...reach.isochrones].sort((left, right) => right.minutes - left.minutes);
   const outermost = shown[0];
   const frame = outermost ? ringPositions(outermost.geometry) : [];
@@ -213,7 +233,7 @@ function reachCard(reach: Reach, center: [number, number]): { html: string; map:
   };
   const key = REACH_BANDS.map(
     (band, index) =>
-      `<span><i style="background:${band.color}"></i>${index === 0 ? `sub ${String(band.minutes)} min` : `${String(REACH_BANDS[index - 1]?.minutes ?? 0)}–${String(band.minutes)} min`}</span>`,
+      `<span><i style="background:${band.color}"></i>${index === 0 ? t('sub {0} min', 'under {0} min', String(band.minutes)) : `${String(REACH_BANDS[index - 1]?.minutes ?? 0)}–${String(band.minutes)} min`}</span>`,
   ).join('');
   const segment = REACH_BANDS.map(
     (band) =>
@@ -222,20 +242,21 @@ function reachCard(reach: Reach, center: [number, number]): { html: string; map:
   const neighbourhoodsLine =
     reach.neighbourhoods_total === 0
       ? ''
-      : `<p class="acn-n"><b>${String(reach.neighbourhoods_reached)} din ${String(reach.neighbourhoods_total)}</b> cartiere, plecând la 8 dimineața.</p>`;
-  const html = `<section class="card ac acn acnA"><div class="ac-h"><div><div class="eyebrow">Cât de departe ajungi</div><h3>Orașul, în minute de la ușa ta</h3></div><div class="seg acnseg">${segment}</div></div><div class="acnA-g"><div class="acnA-t"><div class="acn-big"><b>${formatNumber(reach.share_pct)}%</b><span>din oraș</span></div><p class="acn-s">În <b>${String(reach.minutes)} de minute</b>, cu transportul public și pe jos, ajungi în ${reachPhrase(reach.share_pct)}.</p>${neighbourhoodsLine}<div class="acn-key">${key}</div></div><div class="acnA-m">${mapHtml(map)}</div></div></section>`;
+      : `<p class="acn-n"><b>${t('{0} din {1}', '{0} of {1}', String(reach.neighbourhoods_reached), String(reach.neighbourhoods_total))}</b>${t(' cartiere, plecând la 8 dimineața.', ' neighbourhoods, leaving at 8 am.')}</p>`;
+  const html = `<section class="card ac acn acnA"><div class="ac-h"><div><div class="eyebrow">${t('Cât de departe ajungi', 'How far you can get')}</div><h3>${t('Orașul, în minute de la ușa ta', 'The city, in minutes from your door')}</h3></div><div class="seg acnseg">${segment}</div></div><div class="acnA-g"><div class="acnA-t"><div class="acn-big"><b>${formatNumber(reach.share_pct)}%</b><span>${t('din oraș', 'of the city')}</span></div><p class="acn-s">${t('În ', 'In ')}<b>${t('{0} de minute', '{0} minutes', String(reach.minutes))}</b>${t(', cu transportul public și pe jos, ajungi în {0}.', ' you can reach {0} by public transport and on foot.', reachPhrase(locale, reach.share_pct))}</p>${neighbourhoodsLine}<div class="acn-key">${key}</div></div><div class="acnA-m">${mapHtml(locale, map)}</div></div></section>`;
   return { html, map };
 }
 
 export const accessibilityChapter: ChapterBuilder = (report) => {
+  const { t, plural, formatDate } = reportFormat(report.locale);
   const summary = report.categories.accessibility;
   const section = report.sections.accessibility;
-  const theme = CATEGORY_THEME.accessibility;
+  const theme = categoryTheme(report.locale, 'accessibility');
   if (!section) {
-    const head = chapterHead({
-      eyebrow: categoryEyebrow('accessibility', summary),
+    const head = chapterHead(report.locale, {
+      eyebrow: categoryEyebrow(report.locale, 'accessibility', summary),
       color: theme.color,
-      title: 'Transportul public din jurul adresei',
+      title: t('Transportul public din jurul adresei', 'Public transport around the address'),
     });
     return {
       html: chapter(
@@ -249,16 +270,32 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
   const better =
     summary.percentile === null
       ? ''
-      : ` De aici ajungi cu transportul public mai ușor decât din ${String(Math.round(summary.percentile))}% din zonele din ${report.city.name}.`;
-  const head = chapterHead({
-    eyebrow: categoryEyebrow('accessibility', summary),
+      : t(
+          ' De aici ajungi cu transportul public mai ușor decât din {0}% din zonele din {1}.',
+          ' Public transport is more convenient here than in {0}% of areas in {1}.',
+          String(Math.round(summary.percentile)),
+          report.city.name,
+        );
+  const head = chapterHead(report.locale, {
+    eyebrow: categoryEyebrow(report.locale, 'accessibility', summary),
     color: theme.color,
     precision: theme.precision,
-    title: `${plural(nearStops, 'stație', 'stații', 'de stații')} la ${String(NEAR_STOP_MIN)} minute și ${plural(lineCount, 'linie', 'linii', 'de linii')} care te duc în tot orașul`,
+    title: t(
+      '{0} la {1} minute și {2} care te duc în tot orașul',
+      '{0} within {1} minutes and {2} taking you across the city',
+      plural(nearStops, ['stație', 'stop'], 'stații', ['de stații', 'stops']),
+      String(NEAR_STOP_MIN),
+      plural(lineCount, ['linie', 'route'], 'linii', ['de linii', 'routes']),
+    ),
     lead:
       summary.city_avg === null
         ? undefined
-        : `Media orașului e ${String(Math.round(summary.city_avg))}.${better}`,
+        : t(
+            'Media orașului e {0}.{1}',
+            'City average: {0}.{1}',
+            String(Math.round(summary.city_avg)),
+            better,
+          ),
   });
   const center: [number, number] = [report.longitude, report.latitude];
   const reachable = section.destinations
@@ -307,30 +344,48 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
       addressMarker(center, report.addressText.split(',')[0]),
     ],
   };
-  const mapOverlay = `<span class="mapchip" style="--c:#0F766E"><i></i>Trasee transport</span><div class="key"><b>Pe hartă</b><span><i style="background:#103F32;border-radius:50%;width:10px;height:10px"></i>Adresa</span><span><i style="background:#0F766E;height:4px;border-radius:2px"></i>Cu vehiculul</span><span><i style="background:transparent;border-top:3px dotted #0F766E;height:0;border-radius:0"></i>Pe jos</span><span><i style="background:#52685B;border-radius:50%;width:8px;height:8px"></i>Stații din jur</span></div>`;
+  const mapOverlay = `<span class="mapchip" style="--c:#0F766E"><i></i>${t('Trasee transport', 'Public transport routes')}</span><div class="key"><b>${t('Pe hartă', 'On the map')}</b><span><i style="background:#103F32;border-radius:50%;width:10px;height:10px"></i>${t('Adresa', 'Address')}</span><span><i style="background:#0F766E;height:4px;border-radius:2px"></i>${t('Cu vehiculul', 'By public transport')}</span><span><i style="background:transparent;border-top:3px dotted #0F766E;height:0;border-radius:0"></i>${t('Pe jos', 'On foot')}</span><span><i style="background:#52685B;border-radius:50%;width:8px;height:8px"></i>${t('Stații din jur', 'Nearby stops')}</span></div>`;
   const legend = reachable
     .map(
       (destination) =>
-        `<span style="--c:${kindOf(destination).color}"><i></i>${esc(destination.label.ro)} <b>${String(Math.round(destination.minutes ?? 0))} min</b></span>`,
+        `<span style="--c:${kindOf(destination).color}"><i></i>${esc(destination.label[report.locale])} <b>${String(Math.round(destination.minutes ?? 0))} min</b></span>`,
     )
     .join('');
   const unrouted = reachable.filter((destination) => destination.path.length === 0).length;
   const routesNote =
     unrouted === 0
-      ? 'Traseele de pe hartă urmează străzile și liniile, de la adresă la destinație.'
+      ? t(
+          'Traseele de pe hartă urmează străzile și liniile, de la adresă la destinație.',
+          'Routes on the map follow streets and public transport lines from the address to the destination.',
+        )
       : unrouted === reachable.length
-        ? 'Traseele pe străzi nu sunt disponibile pentru această adresă: harta arată doar destinațiile.'
-        : 'Traseele de pe hartă urmează străzile și liniile. Unde traseul lipsește, apare doar destinația.';
+        ? t(
+            'Traseele pe străzi nu sunt disponibile pentru această adresă: harta arată doar destinațiile.',
+            'Street routes are not available for this address: the map only shows destinations.',
+          )
+        : t(
+            'Traseele de pe hartă urmează străzile și liniile. Unde traseul lipsește, apare doar destinația.',
+            'Routes on the map follow streets and public transport lines. Where a route is missing, only the destination is shown.',
+          );
   const schedule =
     section.data_quality === 'gtfs' && section.reference_date
-      ? `Liniile, stațiile și orarul: operatorul de transport, orar din ${formatDate(section.reference_date)}, o zi lucrătoare. ${routesNote}`
-      : `Orașul nu publică orarul în format deschis: stațiile și liniile vin din OpenStreetMap. ${routesNote}`;
+      ? t(
+          'Liniile, stațiile și orarul: operatorul de transport, orar din {0}, o zi lucrătoare. {1}',
+          'Routes, stops and timetables: public transport operator, weekday timetable as of {0}. {1}',
+          formatDate(section.reference_date),
+          routesNote,
+        )
+      : t(
+          'Orașul nu publică orarul în format deschis: stațiile și liniile vin din OpenStreetMap. {0}',
+          'The city does not publish open timetable data: stops and routes are from OpenStreetMap. {0}',
+          routesNote,
+        );
   const trips =
     reachable.length === 0
-      ? '<p class="hint">Nu am putut calcula drumurile spre locurile importante.</p>'
-      : `<div class="acd acp-l">${reachable.map(tripRow).join('')}</div>`;
-  const reach = section.reach ? reachCard(section.reach, center) : null;
-  const body = `<section class="acW"><div class="acmap acW-m">${mapHtml(map, mapOverlay)}<div class="rleg">${legend}</div></div><div class="acW-l"><div class="acp"><div class="ac-h"><div><h3>Cât faci până acolo, dimineața la 8</h3></div><div class="legkey"><span><i style="background:#52685B"></i>pe jos</span><span><i style="background:#C9A44A"></i>așteptare</span><span><i style="background:#8A8F99"></i>cu linia</span></div></div>${trips}</div></div>${footnote(schedule)}</section>`;
+      ? `<p class="hint">${t('Nu am putut calcula drumurile spre locurile importante.', 'We could not calculate journeys to key destinations.')}</p>`
+      : `<div class="acd acp-l">${reachable.map((destination) => tripRow(report.locale, destination)).join('')}</div>`;
+  const reach = section.reach ? reachCard(report.locale, section.reach, center) : null;
+  const body = `<section class="acW"><div class="acmap acW-m">${mapHtml(report.locale, map, mapOverlay)}<div class="rleg">${legend}</div></div><div class="acW-l"><div class="acp"><div class="ac-h"><div><h3>${t('Cât faci până acolo, dimineața la 8', 'How long it takes to get there at 8 am')}</h3></div><div class="legkey"><span><i style="background:#52685B"></i>${t('pe jos', 'on foot')}</span><span><i style="background:#C9A44A"></i>${t('așteptare', 'waiting')}</span><span><i style="background:#8A8F99"></i>${t('cu linia', 'in transit')}</span></div></div>${trips}</div></div>${footnote(schedule)}</section>`;
   return {
     html: chapter(
       `${head}${body}<div class="sfB-rest">${scoreCard('accessibility', report)}${reach?.html ?? ''}${chapterSources(report, ['accessibility'])}</div>`,

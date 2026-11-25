@@ -1,4 +1,5 @@
-import { esc } from './format.ts';
+import { esc, reportFormat } from './format.ts';
+import type { ReportLocale } from './report-data.ts';
 
 type Position = [number, number];
 
@@ -119,8 +120,15 @@ export function addressDot(position: Position): MapMarker {
   return { position, html: '<span class="adot"></span>' };
 }
 
-export function mapHtml(spec: MapSpec, overlays = '', className = ''): string {
-  return `<div class="map ${className}"><div class="map-canvas" id="${esc(spec.id)}"></div>${overlays}<div class="attr">© OpenStreetMap contributors</div></div>`;
+export function mapHtml(
+  locale: ReportLocale,
+  spec: MapSpec,
+  overlays = '',
+  className = '',
+): string {
+  const { t } = reportFormat(locale);
+  const attribution = t('© Contribuitorii OpenStreetMap', '© OpenStreetMap contributors');
+  return `<div class="map ${className}"><div class="map-canvas" id="${esc(spec.id)}"></div>${overlays}<div class="attr">${attribution}</div></div>`;
 }
 
 export function mapSpecsScript(specs: readonly MapSpec[]): string {
