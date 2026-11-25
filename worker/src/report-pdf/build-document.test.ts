@@ -262,12 +262,15 @@ describe('buildReportDocument', () => {
 
       expect(report.unreadableSections).not.toContain('accessibility');
       expect(html).not.toContain('25 nov. 2026');
+      const english = (await buildReportDocument({ ...report, locale: 'en' })).html;
+      expect(english).not.toContain('25 Nov 2026');
       if (displayedDate) {
         expect(html).toContain(`Orare transport public (GTFS) · ${displayedDate}`);
         expect(html).toContain(
           `Orare transport public (GTFS)</span><span class="dt">${displayedDate}`,
         );
         expect(html).toContain(`(GTFS) pentru ${displayedDate}, o zi lucrătoare.`);
+        expect(english).toContain('(GTFS) for 3 Nov 2026, a weekday.');
       } else {
         expect(html).toContain(
           quality === 'osm_only'
@@ -276,8 +279,16 @@ describe('buildReportDocument', () => {
         );
         expect(html).not.toContain('Orare transport public (GTFS)');
         expect(html).not.toContain(date);
+        expect(english).toContain(
+          quality === 'osm_only'
+            ? 'The report did not use the operator timetable, and waiting times are estimated.'
+            : 'No timetable date is available in the report.',
+        );
+        expect(english).not.toContain('Public transport timetables (GTFS)');
+        expect(english).not.toContain(quality === 'osm_only' ? '3 Nov 2026' : date);
       }
       expect(html).toContain('OpenStreetMap · 1 nov. 2026');
+      expect(english).toContain('OpenStreetMap · 1 Nov 2026');
     },
   );
 
