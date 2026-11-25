@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(38);
+select plan(42);
 
 insert into auth.users (id, email) values
   ('ec000000-0000-4000-8000-000000000001', 'route-owner@example.test'),
@@ -25,7 +25,7 @@ select 'ec000000-0000-4000-8000-000000000004', 'ec000000-0000-4000-8000-00000000
       "categories": [
         {"key": "pharmacy", "t1_min": 14}, {"key": "supermarket", "t1_min": 7},
         {"key": "restaurant", "t1_min": 19}, {"key": "bank", "t1_min": 9},
-        {"key": "cafe", "t1_min": 11}
+        {"key": "cafe", "t1_min": 11}, {"key": "library", "t1_min": 13}
       ],
       "places": [
         {"id": "farther", "category": "pharmacy", "minutes": 15},
@@ -33,7 +33,8 @@ select 'ec000000-0000-4000-8000-000000000004', 'ec000000-0000-4000-8000-00000000
         {"id": "tied", "category": "pharmacy", "minutes": 14},
         {"id": "shop", "category": "supermarket", "minutes": 7},
         {"id": "food", "category": "restaurant", "minutes": 19},
-        {"id": "coffee", "category": "cafe", "minutes": 11}
+        {"id": "coffee", "category": "cafe", "minutes": 11},
+        {"id": "books", "category": "library", "minutes": 13}
       ],
       "routes": [{"place_id": "shop", "polyline6": "??AA"}]
     }
@@ -156,16 +157,31 @@ from private.claim_next_saved_report_walk_route();
 set local role anon;
 select is(public.request_saved_report_walk_route('ec000000-0000-4000-8000-000000000005', 'cafe', :'other_token'),
   '{"status":"pending"}'::jsonb, 'The third attempt stays pending while its lease is live');
+select is(public.request_saved_report_walk_route('ec000000-0000-4000-8000-000000000005', 'library', :'other_token'),
+  '{"status":"pending"}'::jsonb, 'Another eligible destination can queue alongside a live third attempt');
 reset role;
-update private.saved_report_walk_routes set claim_expires_at = now() - interval '1 second'
+update private.saved_report_walk_routes
+set claim_expires_at = now() - interval '1 second', requested_at = now() - interval '3 minutes'
 where id = :'exhausted_id';
-select is_empty('select * from private.claim_next_saved_report_walk_route()', 'An expired third lease is not reclaimable');
+update private.saved_report_walk_routes set requested_at = now() - interval '2 minutes'
+where place_id = 'books';
+select id as next_job, claim_token as next_claim from private.claim_next_saved_report_walk_route() \gset
+select is((select place_id from private.saved_report_walk_routes where id = :'next_job'),
+  'books', 'The same claim skips the exhausted job and returns the delayed valid job');
+select results_eq(
+  $$ select completed_at is not null, claim_token is null, claim_expires_at is null, polyline6 is null
+     from private.saved_report_walk_routes where place_id = 'coffee' $$,
+  $$ values (true, true, true, true) $$,
+  'An abandoned third lease is settled as a terminal failure without geometry'
+);
+select is(private.complete_saved_report_walk_route(:'next_job', :'next_claim', '??CC'),
+  true, 'The next valid job can complete normally');
+select is_empty('select * from private.claim_next_saved_report_walk_route()', 'The exhausted job leaves the queue');
 set local role anon;
 select is(public.request_saved_report_walk_route('ec000000-0000-4000-8000-000000000005', 'cafe', :'other_token'),
   '{"status":"unavailable"}'::jsonb, 'Polling a job with no attempts left is unavailable');
 reset role;
-update private.saved_report_walk_routes
-set claim_token = null, claim_expires_at = null, completed_at = now() - interval '10 minutes'
+update private.saved_report_walk_routes set completed_at = now() - interval '10 minutes'
 where id = :'exhausted_id';
 set local role anon;
 select is(public.request_saved_report_walk_route('ec000000-0000-4000-8000-000000000005', 'cafe', :'other_token'),

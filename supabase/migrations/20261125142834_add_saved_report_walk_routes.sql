@@ -21,7 +21,7 @@ revoke all on private.saved_report_walk_routes from public, anon, authenticated;
 
 create index saved_report_walk_routes_pending_idx
   on private.saved_report_walk_routes (requested_at, id)
-  where completed_at is null and attempt_count < 3;
+  where completed_at is null;
 
 create trigger saved_report_walk_routes_set_updated_at
   before update on private.saved_report_walk_routes
@@ -125,35 +125,54 @@ grant execute on function public.request_saved_report_walk_route(uuid, text, tex
 
 create function private.claim_next_saved_report_walk_route()
 returns table (id uuid, claim_token uuid, origin jsonb, destination jsonb, speed jsonb)
-language sql
+language plpgsql
 set search_path = ''
 as $$
-  with next_route as (
-    select q.id
+declare
+  v_id uuid;
+  v_attempt_count smallint;
+begin
+  loop
+    select q.id, q.attempt_count into v_id, v_attempt_count
     from private.saved_report_walk_routes q
     join public.online_reports r on r.id = q.report_id
-    where q.completed_at is null and q.attempt_count < 3 and r.status = 'ready'
+    where q.completed_at is null and r.status = 'ready'
       and (q.claim_expires_at is null or q.claim_expires_at <= now())
     order by q.requested_at, q.id
     limit 1
-    for update of q skip locked
-  ), claimed as (
-    update private.saved_report_walk_routes q
-    set claim_token = gen_random_uuid(), claim_expires_at = now() + interval '30 seconds',
-      attempt_count = q.attempt_count + 1
-    from next_route n
-    where q.id = n.id
-    returning q.id, q.claim_token, q.report_id, q.place_id
-  )
-  select q.id, q.claim_token,
-    jsonb_build_object('lng', r.longitude, 'lat', r.latitude),
-    jsonb_path_query_first(
-      r.result, '$.fifteen_minute.places[*] ? (@.id == $place_id)',
-      jsonb_build_object('place_id', q.place_id), true
-    ),
-    r.result #> '{fifteen_minute,walk_speed_kmh}'
-  from claimed q
-  join public.online_reports r on r.id = q.report_id;
+    for update of q skip locked;
+
+    if not found then
+      return;
+    end if;
+
+    if v_attempt_count >= 3 then
+      update private.saved_report_walk_routes q
+      set completed_at = now(), claim_token = null, claim_expires_at = null
+      where q.id = v_id;
+      continue;
+    end if;
+
+    return query
+    with claimed as (
+      update private.saved_report_walk_routes q
+      set claim_token = gen_random_uuid(), claim_expires_at = now() + interval '30 seconds',
+        attempt_count = q.attempt_count + 1
+      where q.id = v_id
+      returning q.id, q.claim_token, q.report_id, q.place_id
+    )
+    select q.id, q.claim_token,
+      jsonb_build_object('lng', r.longitude, 'lat', r.latitude),
+      jsonb_path_query_first(
+        r.result, '$.fifteen_minute.places[*] ? (@.id == $place_id)',
+        jsonb_build_object('place_id', q.place_id), true
+      ),
+      r.result #> '{fifteen_minute,walk_speed_kmh}'
+    from claimed q
+    join public.online_reports r on r.id = q.report_id;
+    return;
+  end loop;
+end;
 $$;
 
 revoke execute on function private.claim_next_saved_report_walk_route()
