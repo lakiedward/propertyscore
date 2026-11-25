@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { formatNumber, formatPrice } from '@/i18n/format';
-import { AREA_MAX, AREA_MIN } from '../../../investment.utils';
+import { AREA_MAX, AREA_MIN, type rentEstimateForArea } from '../../../investment.utils';
 import { ExamplePill } from './example-pill';
 import { InvestmentCard } from './investment-card';
 
@@ -10,10 +11,11 @@ type InvestmentHomeCardProps = {
   startArea: number;
   isDeclared: boolean;
   onAreaChange: (area: number) => void;
+  onResetArea?: () => void;
   price: number;
   low: number | null;
   high: number | null;
-  rent: number | null;
+  rent: ReturnType<typeof rentEstimateForArea>;
   isRentExample: boolean;
 };
 
@@ -22,6 +24,7 @@ export function InvestmentHomeCard({
   startArea,
   isDeclared,
   onAreaChange,
+  onResetArea,
   price,
   low,
   high,
@@ -60,6 +63,18 @@ export function InvestmentHomeCard({
         <span>{t('report.chapters.investment.home.area', { area: min })}</span>
         <span>{t('report.chapters.investment.home.area', { area: max })}</span>
       </p>
+      {onResetArea ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="mt-1"
+          disabled={isDeclared}
+          onClick={onResetArea}
+        >
+          {t('report.chapters.investment.home.resetArea', { area: formatNumber(startArea) })}
+        </Button>
+      ) : null}
       <div aria-live="polite" className="mt-4 rounded-icon bg-primary px-5 py-4 text-on-inverse">
         <p className="text-[13.5px] font-bold">{t('report.chapters.investment.home.price')}</p>
         <p className="mt-1 text-[clamp(30px,3.4vw,40px)] leading-none font-extrabold tracking-[-0.03em] tabular-nums">
@@ -81,11 +96,18 @@ export function InvestmentHomeCard({
             {isRentExample ? <ExamplePill /> : null}
           </p>
           <p className="mt-1 text-[22px] font-extrabold tracking-[-0.02em] tabular-nums">
-            {t('report.chapters.investment.home.approx', { value: formatPrice(rent, 'EUR') })}{' '}
+            {t('report.chapters.investment.home.approx', {
+              value: formatPrice(rent.value, 'EUR'),
+            })}{' '}
             <span className="text-[14px] font-bold text-muted-foreground">
               {t('report.chapters.investment.home.perMonth')}
             </span>
           </p>
+          {rent.basis ? (
+            <p className="mt-1 text-[12.5px] text-muted-foreground">
+              {t(`report.chapters.investment.home.rentBasis.${rent.basis}`)}
+            </p>
+          ) : null}
         </div>
       )}
     </InvestmentCard>

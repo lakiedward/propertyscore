@@ -34,6 +34,28 @@ describe('report contract with the site', () => {
     expect(html).toContain('circa 480 €');
   });
 
+  it('prints the actual same-room rent and total-price yield calculation for 84 m²', async () => {
+    const report = toReportData(await freidorfReport());
+    const section = report.sections.investment;
+    if (!section) throw new Error('Missing Investment fixture');
+    section.declared = { area_m2: 84 };
+    section.sale = { precision: 'radius', median_eur_m2: 2250, estimate_eur: 189000 };
+    section.rent = {
+      precision: 'radius',
+      basis: 'same_rooms',
+      median_eur: 620,
+      median_eur_m2: 7.6,
+    };
+    section.yield = { gross_pct: 3.9 };
+
+    const html = investmentChapter(report)?.html;
+    expect(html).toContain('circa 620 €');
+    expect(html).not.toContain('circa 640 €');
+    expect(html).toContain('Mediana chiriilor pentru același număr de camere.');
+    expect(html).toContain('Calcul pentru suprafața declarată: 12 × 620 € pe lună ÷ 189.000 €.');
+    expect(html).toContain('3,9%');
+  });
+
   it('renders radius precision and excludes rent without a home estimate or area basis', async () => {
     const report = toReportData(await freidorfReport());
     const section = report.sections.investment;

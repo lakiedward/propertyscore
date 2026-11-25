@@ -6,10 +6,11 @@ import {
 import type { ReportResult } from './report.types';
 
 export {
+  declaredYieldAmounts,
   estimateForArea,
   investmentSources,
   isCityWide,
-  rentForArea,
+  rentEstimateForArea,
   yieldScope,
   type InvestmentYieldBasis,
 } from '../../../worker/src/report/investment-contract.ts';

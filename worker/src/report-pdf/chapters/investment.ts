@@ -1,9 +1,10 @@
 import {
+  declaredYieldAmounts,
   estimateForArea,
   historyRange,
   investmentSources,
   isCityWide,
-  rentForArea,
+  rentEstimateForArea,
   sampleKind,
   yieldScope,
   type MarketCountKind,
@@ -120,12 +121,18 @@ function homeCard(section: Investment, sale: Sale): string {
     low !== null && high !== null
       ? `<small>între ${formatNumber(low)} și ${formatEuro(high)}</small>`
       : '';
-  const rentValue = rentForArea(section, area);
-  const rent =
-    rentValue === null
+  const rent = rentEstimateForArea(section, area);
+  const rentBasis = rent?.basis
+    ? {
+        sameRooms: 'Mediana chiriilor pentru același număr de camere.',
+        perM2: 'Estimare pe m² pentru această suprafață.',
+      }[rent.basis]
+    : '';
+  const rentHtml =
+    rent === null
       ? ''
-      : `<div class="inv-big g"><span>Chirie cerută estimată${section.rent?.is_example ? ` ${EXAMPLE}` : ''}</span><b>circa ${formatEuro(rentValue)} <i>pe lună</i></b></div>`;
-  return `<section class="card ac invE">${eyebrow('Pentru apartamentul tău')}<div class="inv-sl"><div class="inv-sl-h"><span>Suprafața declarată</span><b>${DECIMAL.format(area)} m²</b></div></div><div class="inv-big"><span>Preț cerut estimat</span><b>circa ${formatEuro(price)}</b>${bounds}</div>${rent}</section>`;
+      : `<div class="inv-big g"><span>Chirie cerută estimată${section.rent?.is_example ? ` ${EXAMPLE}` : ''}</span><b>circa ${formatEuro(rent.value)} <i>pe lună</i></b>${rentBasis ? `<small>${rentBasis}</small>` : ''}</div>`;
+  return `<section class="card ac invE">${eyebrow('Pentru apartamentul tău')}<div class="inv-sl"><div class="inv-sl-h"><span>Suprafața declarată</span><b>${DECIMAL.format(area)} m²</b></div></div><div class="inv-big"><span>Preț cerut estimat</span><b>circa ${formatEuro(price)}</b>${bounds}</div>${rentHtml}</section>`;
 }
 
 function sourceName(code: string): string {
@@ -137,6 +144,7 @@ function yieldCard(cityName: string, section: Investment, sale: Sale): string {
   if (value === null) return '';
   const width = Math.min(100, (value / YIELD_SCALE_PCT) * 100).toFixed(1);
   const basis = section.yield.basis;
+  const declaredAmounts = declaredYieldAmounts(section);
   const scopeLabel = {
     city: cityName,
     address: RADIUS_LABEL,
@@ -151,7 +159,9 @@ function yieldCard(cityName: string, section: Investment, sale: Sale): string {
       : `Chiria pe un an înseamnă ${percent} din preț`;
   const calculation = basis
     ? `<p class="hint">Calcul: 12 × ${DECIMAL.format(basis.rent_eur_m2)} €/m² pe lună (${esc(sourceName(basis.rent_source.source))}, ${esc(formatMonth(basis.rent_source.period))}) ÷ ${DECIMAL.format(basis.sale_eur_m2)} €/m² (${esc(sourceName(basis.sale_source.source))}, ${esc(formatMonth(basis.sale_source.period))}).</p>`
-    : '';
+    : declaredAmounts
+      ? `<p class="hint">Calcul pentru suprafața declarată: 12 × ${formatEuro(declaredAmounts.monthly)} pe lună ÷ ${formatEuro(declaredAmounts.price)}.</p>`
+      : '';
   return `<section class="card ac invY"><div class="ac-h"><div>${eyebrow('Randament brut pe an')}<h3>${title}</h3></div></div><div class="inv-yb z"><span>${esc(scopeLabel)}${section.yield.is_example ? ` ${EXAMPLE}` : ''}</span><div><i style="width:${width}%"></i></div><b>${percent}</b></div>${calculation}<p class="fqx-foot">${icon('info')}<span>Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș.</span></p></section>`;
 }
 

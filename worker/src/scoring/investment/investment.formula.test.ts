@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { investmentSectionSchema, yieldScope } from '../../report/investment-contract.ts';
+import {
+  declaredYieldAmounts,
+  investmentSectionSchema,
+  rentEstimateForArea,
+  yieldScope,
+} from '../../report/investment-contract.ts';
 import {
   buildInvestmentReport,
   dedupeListings,
@@ -131,9 +136,18 @@ describe('buildInvestmentReport', () => {
       estimate_low_eur: 176000,
       estimate_high_eur: 201000,
     });
-    expect(report.rent).toMatchObject({ basis: 'same_rooms', count: 9, median_eur: 620 });
+    expect(report.rent).toMatchObject({
+      basis: 'same_rooms',
+      count: 9,
+      median_eur: 620,
+      median_eur_m2: 7.6,
+    });
     expect(report.yield).toEqual({ gross_pct: 3.9, city_gross_pct: 4.6 });
     expect(report.city.median_sale_eur_m2).toBe(2010);
+    const section = investmentSectionSchema.parse(report);
+    expect(rentEstimateForArea(section, 84)).toEqual({ value: 620, basis: 'sameRooms' });
+    expect(rentEstimateForArea(section, 85)).toEqual({ value: 645, basis: 'perM2' });
+    expect(declaredYieldAmounts(section)).toEqual({ price: 189000, monthly: 620 });
   });
 
   it('widens the radius until enough listings are found', () => {

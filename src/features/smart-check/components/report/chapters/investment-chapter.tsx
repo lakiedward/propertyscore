@@ -4,11 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { ReportChapterHead } from '@/components/report/report-chapter-head';
 import { formatNumber, formatPrice } from '@/i18n/format';
 import {
+  declaredYieldAmounts,
   estimateForArea,
   historyChange,
   initialArea,
   isCityWide,
-  rentForArea,
+  rentEstimateForArea,
   yieldScope,
 } from '../../../investment.utils';
 import { InvestmentHistoryCard } from '../investment/investment-history-card';
@@ -64,7 +65,7 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
   const startArea = initialArea(investment, sale);
   const area = chosenArea ?? startArea;
   const estimate = estimateForArea(investment, sale, area);
-  const rent = rentForArea(investment, area);
+  const rent = rentEstimateForArea(investment, area);
   const grossPct = investment.yield.gross_pct;
   const scope = yieldScope(investment);
   const change = historyChange(investment.history?.months ?? []);
@@ -111,6 +112,7 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
             startArea={startArea}
             isDeclared={declaredArea !== null && declaredArea === area}
             onAreaChange={setChosenArea}
+            onResetArea={declaredArea === null ? undefined : () => setChosenArea(null)}
             price={estimate.price}
             low={estimate.low}
             high={estimate.high}
@@ -125,6 +127,7 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
               grossPct={grossPct}
               isExample={investment.yield.is_example === true}
               basis={investment.yield.basis}
+              declaredAmounts={declaredYieldAmounts(investment)}
               hasUnknownBasis={sale.precision === 'city_statistics' && !investment.yield.is_example}
             />
           )}
