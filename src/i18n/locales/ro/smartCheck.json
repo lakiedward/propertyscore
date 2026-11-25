@@ -118,7 +118,7 @@
       },
       "why": {
         "title": "De ce te întrebăm",
-        "text": "Răspunsurile nu schimbă scorul zonei. Le folosim pentru prețurile comparabile, și randament. În raport apar marcate „declarat”.",
+        "text": "Răspunsurile nu schimbă scorul zonei. Le folosim pentru prețurile comparabile și randament. În raport apar marcate „declarat”.",
         "progress_one": "{{count}} din {{total}} răspunsuri completate",
         "progress_few": "{{count}} din {{total}} răspunsuri completate",
         "progress_other": "{{count}} din {{total}} de răspunsuri completate"
