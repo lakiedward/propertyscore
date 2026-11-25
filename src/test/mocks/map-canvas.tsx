@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import type { MapOverlay } from '@/components/map/map-canvas';
 import { mapCanvasStubControl } from './map-canvas-control';
 
 type LngLat = [number, number];
@@ -7,6 +8,7 @@ type MapCanvasStubProps = {
   label: string;
   onError: () => void;
   markers?: readonly { id: string; node: ReactNode }[];
+  overlays?: readonly MapOverlay[];
   onViewportChange?: (viewport: { bounds: [LngLat, LngLat]; zoom: number }) => void;
   listingTiles?: {
     pinLabel: (price: number, currency: string) => string;
@@ -24,6 +26,7 @@ export function MapCanvas({
   label,
   onError,
   markers = [],
+  overlays = [],
   onViewportChange,
   listingTiles,
 }: MapCanvasStubProps) {
@@ -60,6 +63,11 @@ export function MapCanvas({
       {markers.map((marker) => (
         <span key={marker.id}>{marker.node}</span>
       ))}
+      {overlays.map((overlay) =>
+        overlay.kind === 'line' && overlay.isVisible && overlay.data.features.length > 0 ? (
+          <div key={overlay.id} role="img" aria-label={overlay.id} />
+        ) : null,
+      )}
     </div>
   );
 }

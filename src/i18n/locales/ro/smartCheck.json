@@ -560,6 +560,11 @@
         "map": {
           "label": "Harta locurilor la 15 minute pe jos · OpenStreetMap",
           "panelLabel": "Harta și lista",
+          "routeStatus": {
+            "pending": "Se caută traseul pietonal…",
+            "ready": "Traseu după rețeaua pietonală disponibilă. Timpul afișat rămâne cel din raportul salvat.",
+            "unavailable": "Traseul pietonal nu a putut fi afișat. Timpul afișat rămâne cel din raportul salvat."
+          },
           "chip": "{{limit}} minute pe jos",
           "key": {
             "title": "Pe hartă",

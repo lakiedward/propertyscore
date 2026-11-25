@@ -317,6 +317,9 @@ isOneToOne: false
 "reorder_listing_photos":
 { Args: { "p_listing_id": string,"p_photo_ids": (string)[] }; Returns: undefined
                            },
+"request_saved_report_walk_route":
+{ Args: { "p_category_key": string,"p_report_id": string,"p_token"?: string }; Returns: Json
+                           },
 "resolve_report_share_link":
 { Args: { "p_report_id": string,"p_token": string }; Returns: {
               "address_text": string,"created_at": string,"declared_area_m2": number,"declared_building_floors": number,"declared_construction_year": number,"declared_floor": number,"declared_rooms": number,"generated_at": string,"id": string,"latitude": number,"longitude": number,"number": number,"overall_score": number,"result": Json,"status": Database["public"]['Enums']["online_report_status"]

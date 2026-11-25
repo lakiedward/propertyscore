@@ -76,3 +76,42 @@ export function toMyReportRow({
 export function toSharedReportRow(row: ReportRow) {
   return Object.fromEntries(Object.entries(row).filter(([column]) => column !== 'pdf_path'));
 }
+
+export const SAVED_WALK_POLYLINE = '_alsT_ouceAAn@';
+
+export function buildSavedWalkReport() {
+  const distribution = { score: 63, percentile: 65, city_avg: 46, histogram: [] };
+  const walking = {
+    status: 'scored',
+    covered: 2,
+    total: 3,
+    distance_method: 'pedestrian_routing',
+    walk_speed_kmh: 4.5,
+    groups: [],
+    categories: [
+      { key: 'pharmacy', t1_min: 14, n15: 1, status: 'ok' },
+      { key: 'supermarket', t1_min: 7, n15: 1, status: 'ok' },
+      { key: 'restaurant', t1_min: 19, n15: 0, status: 'missing' },
+    ],
+    places: [
+      { id: 'pharmacy-1', category: 'pharmacy', lng: 20.01, lat: 45.01, minutes: 14, name: null },
+      { id: 'shop-1', category: 'supermarket', lng: 20.02, lat: 45.02, minutes: 7, name: null },
+    ],
+    isochrones: [],
+    routes: [{ place_id: 'shop-1', minutes: 7, distance_m: 500, polyline6: SAVED_WALK_POLYLINE }],
+  };
+  return buildReportRow({
+    address_text: 'Test Address 10',
+    latitude: 45,
+    longitude: 20,
+    pdf_path: null,
+    overall_score: 52,
+    result: {
+      city: { slug: 'test-city', name: 'Test City' },
+      snapshot: { period: '2026-10-01', source_dates: {} },
+      zone: distribution,
+      categories: { fifteen_minute: { ...distribution, weight: 1 } },
+      fifteen_minute: walking,
+    },
+  });
+}

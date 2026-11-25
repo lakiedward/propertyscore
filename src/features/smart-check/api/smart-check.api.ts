@@ -4,6 +4,7 @@ import type {
 } from '../../../../supabase/functions/_shared/types';
 import { z } from 'zod';
 import { AppError, type AppErrorReason } from '@/lib/errors';
+import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase/client';
 import type { Tables } from '@/lib/supabase/database.types';
 import { toAppError } from '@/lib/supabase/errors';
@@ -81,6 +82,51 @@ export async function getSharedReport(id: string, token: string) {
   if (error) throw toAppError(error);
   if (!data) throw new AppError('not_found', 'Shared report link is not valid');
   return toReport({ ...data, pdf_path: null });
+}
+
+const savedWalkRouteSchema = z.discriminatedUnion('status', [
+  z.object({ status: z.literal('pending') }),
+  z.object({ status: z.literal('unavailable') }),
+  z.object({
+    status: z.literal('ready'),
+    polyline6: z
+      .string()
+      .min(4)
+      .max(32768)
+      .regex(/^[?-~]+$/u),
+  }),
+]);
+
+function throwSavedWalkRouteError(message: string): never {
+  const error = new AppError('unknown', message);
+  logger.error(error);
+  throw error;
+}
+
+export async function requestSavedWalkRoute(
+  reportId: string,
+  category: string,
+  shareToken: string | undefined,
+  signal: AbortSignal,
+) {
+  const { data, error } = await supabase
+    .rpc('request_saved_report_walk_route', {
+      p_report_id: reportId,
+      p_category_key: category,
+      ...(shareToken === undefined ? {} : { p_token: shareToken }),
+    })
+    .abortSignal(signal);
+  if (error) {
+    const appError = toAppError(error);
+    if (appError.code === 'unknown' && !signal.aborted) {
+      throwSavedWalkRouteError('Saved walk route request failed');
+    }
+    throw appError;
+  }
+  if (data === null) return { status: 'unavailable' } as const;
+  const parsed = savedWalkRouteSchema.safeParse(data);
+  if (!parsed.success) throwSavedWalkRouteError('Saved walk route response is invalid');
+  return parsed.data;
 }
 
 export async function listMyReports(page = 0) {

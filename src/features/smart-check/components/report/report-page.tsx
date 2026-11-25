@@ -62,6 +62,7 @@ export function ReportPage({ reportId, shareToken }: ReportPageProps) {
         />
         <ReportChapters
           report={report}
+          shareToken={shareToken}
           chapter={chapter}
           panelId={PANEL_ID}
           onOpenChapter={handleSelect}

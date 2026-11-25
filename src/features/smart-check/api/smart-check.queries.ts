@@ -1,6 +1,7 @@
 import {
   infiniteQueryOptions,
   queryOptions,
+  skipToken,
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
@@ -15,6 +16,7 @@ import {
   getSharedReportPdfUrl,
   hasUnlimitedSmartCheck,
   listMyReports,
+  requestSavedWalkRoute,
   revokeShareLink,
 } from './smart-check.api';
 import { getReportPdfUrl } from './smart-check.storage';
@@ -22,6 +24,7 @@ import { getReportPdfUrl } from './smart-check.storage';
 const GENERATING_REFRESH_MS = 5_000;
 const GEOCODING_STALE_MS = 24 * 60 * 60 * 1000;
 const GEOCODING_RETRIES = 1;
+const SAVED_WALK_ROUTE_REFRESH_MS = 1_500;
 const IN_PROGRESS_STATUSES = new Set(['queued', 'generating']);
 
 export const smartCheckQueries = {
@@ -54,6 +57,24 @@ export const smartCheckQueries = {
     queryOptions({
       queryKey: [...smartCheckQueries.reports(), 'shared', id, token],
       queryFn: () => getSharedReport(id, token),
+    }),
+  savedWalkRoute: (id: string, category: string | null, shareToken?: string) =>
+    queryOptions({
+      queryKey: [...smartCheckQueries.reports(), 'saved-walk-route', id, category, shareToken],
+      queryFn:
+        category === null
+          ? skipToken
+          : ({ signal }) => requestSavedWalkRoute(id, category, shareToken, signal),
+      staleTime: (query) =>
+        shareToken === undefined && query.state.data?.status === 'ready' ? Infinity : 0,
+      ...(shareToken === undefined ? {} : { gcTime: 0 }),
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: false,
+      refetchInterval: (query) =>
+        query.state.status === 'success' && query.state.data?.status === 'pending'
+          ? SAVED_WALK_ROUTE_REFRESH_MS
+          : false,
     }),
   shareLink: (reportId: string) =>
     queryOptions({

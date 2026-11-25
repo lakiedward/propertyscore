@@ -11,7 +11,7 @@ import { FifteenMinuteChoiceCard } from './fifteen-minute/fifteen-minute-choice-
 import { FifteenMinutePlaces } from './fifteen-minute/fifteen-minute-places';
 
 const TITLE_ID = 'report-chapter-fifteen-minute';
-export function FifteenMinuteChapter({ report }: ReportChapterProps) {
+export function FifteenMinuteChapter({ report, shareToken }: ReportChapterProps) {
   const { t } = useTranslation('smartCheck');
   const { result } = report;
   const summary = result.categories.fifteen_minute;
@@ -120,7 +120,12 @@ export function FifteenMinuteChapter({ report }: ReportChapterProps) {
       />
       {section ? (
         <>
-          <FifteenMinutePlaces report={report} section={section} />
+          <FifteenMinutePlaces
+            key={report.id}
+            report={report}
+            section={section}
+            shareToken={shareToken}
+          />
           <FifteenMinuteChoiceCard section={section} />
         </>
       ) : (
