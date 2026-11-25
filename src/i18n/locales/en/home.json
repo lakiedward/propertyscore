@@ -53,7 +53,7 @@
     "servicesLabel": "The two PropertyScore services",
     "smartCheck": {
       "text": "<strong>Safety score, average asking rents and prices.</strong> Six chapters about the area, amenities and walking routes, with sources and missing data explained.",
-      "action": "See the online example"
+      "action": "Check an address"
     },
     "physical": {
       "included": "included in the price · the {{price}} online report",

@@ -75,7 +75,7 @@ export function PricingSection() {
             }
             features={t('pricing.physical.features', { returnObjects: true })}
             cta={t('pricing.physical.cta')}
-            ctaHash={HOME_SECTION.physical}
+            ctaDestination={{ to: '/', hash: HOME_SECTION.physical }}
             secondary={t('pricing.physical.secondary')}
             secondaryHash={HOME_SECTION.deliverables}
           />
@@ -99,7 +99,7 @@ export function PricingSection() {
             }
             features={t('pricing.smartCheck.features', { returnObjects: true })}
             cta={t('pricing.smartCheck.cta')}
-            ctaHash={HOME_SECTION.smartCheck}
+            ctaDestination={{ to: '/check' }}
             secondary={t('pricing.smartCheck.secondary')}
             secondaryHash={HOME_SECTION.deliverables}
           />

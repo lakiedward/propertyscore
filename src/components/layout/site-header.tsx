@@ -138,7 +138,7 @@ export function SiteHeader({ account, menuLanguageSwitcher, isOnHero = false }: 
               size="nav"
               className={cn(isOnHero ? 'border-card' : 'border-info')}
             >
-              <Link to="/" hash={HOME_SECTION.smartCheck} aria-label={t('site.header.smartCheck')}>
+              <Link to="/check" aria-label={t('site.header.smartCheck')}>
                 <BrandMark product="smartcheck" tone={isOnHero ? 'color' : 'inverse'} size={18} />
                 <Logo
                   product="smartcheck"

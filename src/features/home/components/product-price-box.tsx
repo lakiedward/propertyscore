@@ -2,7 +2,7 @@ import { cva } from 'class-variance-authority';
 import type { ReactNode } from 'react';
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
-import type { HomeSectionId } from '@/components/layout/site-navigation';
+import type { HomeServiceDestination } from '@/components/layout/site-navigation';
 import { PillLink } from '@/components/navigation/pill-link';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
@@ -47,7 +47,7 @@ type ProductPriceBoxProps = {
   currency: Currency;
   footer: ReactNode;
   ctaLabel: string;
-  ctaHash: HomeSectionId;
+  ctaDestination: HomeServiceDestination;
 };
 
 export function ProductPriceBox({
@@ -58,7 +58,7 @@ export function ProductPriceBox({
   currency,
   footer,
   ctaLabel,
-  ctaHash,
+  ctaDestination,
 }: ProductPriceBoxProps) {
   return (
     <div role="group" aria-label={label} className={boxVariants({ product })}>
@@ -77,7 +77,7 @@ export function ProductPriceBox({
       </div>
       <div className={footerVariants({ product })}>
         <span className={footerTextVariants({ product })}>{footer}</span>
-        <PillLink to="/" hash={ctaHash} tone={CTA_TONE[product]} size="sm">
+        <PillLink {...ctaDestination} tone={CTA_TONE[product]} size="sm">
           {ctaLabel}
         </PillLink>
       </div>
