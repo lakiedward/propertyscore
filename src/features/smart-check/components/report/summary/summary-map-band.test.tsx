@@ -85,6 +85,43 @@ describe('SummaryMapBand', () => {
       }
     });
 
+    it('keeps route details outside the map before and after selection', async () => {
+      const report = buildSavedWalkReport('pedestrian_routing', {
+        walkingPolylines: [ONE_POINT_WALK_POLYLINE, SAVED_WALK_POLYLINE],
+      });
+      const { user, copy, teaser } = await renderMapBand(report, locale);
+      const name = copy.explorer.placeKinds.shops;
+      const duration = copy.explorer.minutes.replace('{{minutes}}', '8');
+      const routeLabel = copy.explorer.routeLabel
+        .replace('{{name}}', name)
+        .replace('{{minutes}}', '8');
+
+      await user.click(teaser.getByRole('button', { name: copy.mapBand.open }));
+      const explorer = within(await screen.findByRole('dialog'));
+      const map = within(await explorer.findByRole('region', { name: copy.explorer.mapLabel }));
+      const unselectedRoute = explorer.getByRole('button', { name: routeLabel, pressed: false });
+      expect(map.queryByText(report.address_text)).not.toBeInTheDocument();
+      expect(map.queryByText(duration)).not.toBeInTheDocument();
+      expect(explorer.getByText(report.address_text)).toBeVisible();
+      expect(within(unselectedRoute).getByText(name)).toBeVisible();
+      expect(within(unselectedRoute).getByText(duration)).toBeVisible();
+      expect(map.getByRole('img', { name: 'zone-route-shop-2' })).toBeInTheDocument();
+
+      await user.click(unselectedRoute);
+
+      expect(map.queryByText(report.address_text)).not.toBeInTheDocument();
+      expect(map.queryByText(duration)).not.toBeInTheDocument();
+      expect(explorer.getByText(report.address_text)).toBeVisible();
+      const selectedRoute = explorer.getByRole('button', { name: routeLabel, pressed: true });
+      expect(within(selectedRoute).getByText(name)).toBeVisible();
+      expect(within(selectedRoute).getByText(duration)).toBeVisible();
+      expect(map.getByRole('img', { name: 'zone-route-shop-2' })).toBeInTheDocument();
+
+      await user.click(selectedRoute);
+      expect(map.queryByText(report.address_text)).not.toBeInTheDocument();
+      expect(map.queryByText(duration)).not.toBeInTheDocument();
+    });
+
     it.each([
       { scenario: 'zero points', lines: [[]], hasRoute: false },
       {
