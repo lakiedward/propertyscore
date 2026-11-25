@@ -10,6 +10,11 @@ import { ClosingMethod } from './closing/closing-method';
 
 vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 
+const copy = ro.report.chapters.accessibility;
+const scoreEyebrow = copy.eyebrow
+  .replace('{{score}}', '28')
+  .replace('{{band}}', ro.report.bands.low);
+
 function readyReport(raw = FREIDORF_REPORT_RESULT): ReadyReport {
   const row = buildReportRow();
   const result = parseReportResult(raw);
@@ -26,7 +31,7 @@ describe('AccessibilityChapter', () => {
     expect(await screen.findByRole('heading', { level: 2 })).toHaveTextContent(
       /4 stații la 5 minute pe jos și 3 linii/,
     );
-    expect(screen.getByText(/Accesibilitate · 28 \/ 100 · Scăzut/)).toBeInTheDocument();
+    expect(screen.getByText(scoreEyebrow)).toBeInTheDocument();
     expect(screen.getByText(/Mai bine decât/)).toHaveTextContent('63%');
   });
 
@@ -74,41 +79,52 @@ describe('AccessibilityChapter', () => {
   });
 
   it.each([
-    { date: 'not-a-date', displayedDate: null },
-    { date: '2026-02-30', displayedDate: null },
-    { date: '2026-11-03', displayedDate: '3 nov. 2026' },
-  ])('only cites a valid local GTFS reference date ($date)', async ({ date, displayedDate }) => {
-    const accessibility = FREIDORF_REPORT_RESULT.accessibility;
-    if (!accessibility || typeof accessibility !== 'object') {
-      throw new Error('The Freidorf fixture has no accessibility section');
-    }
-    const report = readyReport({
-      ...FREIDORF_REPORT_RESULT,
-      accessibility: { ...accessibility, data_quality: 'gtfs', reference_date: date },
-      snapshot: { period: '2026-11-01', source_dates: { gtfs: '2026-11-25' } },
-    });
-    await renderWithProviders(
-      <>
-        <AccessibilityChapter report={report} onOpenChapter={vi.fn()} />
-        <ClosingMethod report={report} />
-      </>,
-    );
+    { quality: 'gtfs', date: 'not-a-date', displayedDate: null },
+    { quality: 'gtfs', date: '2026-02-30', displayedDate: null },
+    { quality: 'gtfs', date: '2026-11-03', displayedDate: '3 nov. 2026' },
+    { quality: 'osm_only', date: '2026-11-03', displayedDate: null },
+  ])(
+    'cites only the timetable used ($quality, $date)',
+    async ({ quality, date, displayedDate }) => {
+      const accessibility = FREIDORF_REPORT_RESULT.accessibility;
+      if (!accessibility || typeof accessibility !== 'object') {
+        throw new Error('The Freidorf fixture has no accessibility section');
+      }
+      const report = readyReport({
+        ...FREIDORF_REPORT_RESULT,
+        accessibility: { ...accessibility, data_quality: quality, reference_date: date },
+        snapshot: { period: '2026-11-01', source_dates: { gtfs: '2026-11-25', osm: '2026-11-01' } },
+      });
+      await renderWithProviders(
+        <>
+          <AccessibilityChapter report={report} onOpenChapter={vi.fn()} />
+          <ClosingMethod report={report} />
+        </>,
+      );
 
-    const copy = ro.report.chapters.accessibility;
-    const closingSource = ro.report.chapters.closing.method.sources.gtfs;
-    expect(screen.getByText(/Accesibilitate · 28 \/ 100/)).toBeInTheDocument();
-    expect(screen.queryByText(/25 nov\.? 2026/)).not.toBeInTheDocument();
-    if (displayedDate) {
+      const closingSource = ro.report.chapters.closing.method.sources.gtfs;
+      const isGtfsSource = (text: string) => text.includes(`${copy.sources.gtfs} ·`);
+      expect(screen.getByText(scoreEyebrow)).toBeInTheDocument();
       expect(
-        screen.getByText(copy.sourceTimetable.replace('{{date}}', displayedDate)),
-      ).toBeVisible();
-      expect(screen.getByText(`${copy.sources.gtfs} · ${displayedDate}`)).toBeInTheDocument();
-      expect(screen.getByText(closingSource)).toBeVisible();
-      expect(screen.getByText(displayedDate.replace('.', ''))).toBeVisible();
-    } else {
-      expect(screen.getByText(copy.sourceTimetableUndated)).toBeVisible();
-      expect(screen.queryByText(/Orar transport public ·/)).not.toBeInTheDocument();
-      expect(screen.queryByText(closingSource)).not.toBeInTheDocument();
-    }
-  });
+        screen.getByText((text) => text.includes(`${copy.sources.osm} ·`)),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/25 nov\.? 2026/)).not.toBeInTheDocument();
+      if (displayedDate) {
+        expect(
+          screen.getByText(copy.sourceTimetable.replace('{{date}}', displayedDate)),
+        ).toBeVisible();
+        expect(
+          screen.getByText((text) => text.includes(`${copy.sources.gtfs} · ${displayedDate}`)),
+        ).toBeInTheDocument();
+        expect(screen.getByText(closingSource)).toBeVisible();
+        expect(screen.getByText(displayedDate.replace('.', ''))).toBeVisible();
+      } else {
+        expect(
+          screen.getByText(quality === 'osm_only' ? copy.sourceOsm : copy.sourceTimetableUndated),
+        ).toBeVisible();
+        expect(screen.queryByText(isGtfsSource)).not.toBeInTheDocument();
+        expect(screen.queryByText(closingSource)).not.toBeInTheDocument();
+      }
+    },
+  );
 });
