@@ -10,6 +10,7 @@ import {
   formatSourceDate,
   nearestPlace,
   walkMetersPerMinute,
+  walkingTimeMethod,
   type FifteenMinuteSection,
 } from '../../../../fifteen-minute.utils';
 import type { ReadyReport } from '../../../../report.types';
@@ -42,13 +43,19 @@ export function FifteenMinutePlaces({ report, section, shareToken }: FifteenMinu
     frozenRoute?.polyline6 ??
     (savedRoute.data?.status === 'ready' ? savedRoute.data.polyline6 : null);
   const osmDate = report.result.snapshot.source_dates.osm;
+  const method = walkingTimeMethod(section.distance_method);
   const speed = walkMetersPerMinute(section);
-  const note = osmDate
+  const source = osmDate
     ? t('report.chapters.fifteenMinute.map.source', {
         date: formatSourceDate(osmDate),
-        speed,
       })
-    : t('report.chapters.fifteenMinute.map.sourceNoDate', { speed });
+    : t('report.chapters.fifteenMinute.map.sourceNoDate');
+  const note =
+    method === null
+      ? null
+      : method === 'routed' && speed !== null
+        ? t('report.chapters.fifteenMinute.map.method.routedWithSpeed', { speed })
+        : t(`report.chapters.fifteenMinute.map.method.${method}`);
 
   return (
     <div>
@@ -67,7 +74,7 @@ export function FifteenMinutePlaces({ report, section, shareToken }: FifteenMinu
             <i aria-hidden="true" className="size-2 rounded-full bg-report-fifteen-minute" />
             {t('report.chapters.fifteenMinute.map.chip', { limit: WALK_LIMIT_MIN })}
           </span>
-          <FifteenMinuteKey />
+          <FifteenMinuteKey hasZone={section.isochrones.length > 0} />
         </div>
         <aside className="max-h-none overflow-auto px-3.5 pt-4.5 pb-3.5 w560:px-5.5 w560:pt-5.5 w1059:max-h-[700px]">
           <FifteenMinuteChecklist
@@ -89,7 +96,7 @@ export function FifteenMinutePlaces({ report, section, shareToken }: FifteenMinu
       </p>
       <p className="mt-2.5 flex gap-2 text-meta leading-[1.45] text-muted-foreground">
         <InfoIcon aria-hidden className="mt-0.5 size-3.75 shrink-0" />
-        <span>{note}</span>
+        <span>{[source, note].filter(Boolean).join(' ')}</span>
       </p>
     </div>
   );

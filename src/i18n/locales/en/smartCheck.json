@@ -65,7 +65,7 @@
       "items": {
         "score": "Area score from 9 criteria, each explained",
         "transit": "Accessibility: lines, frequency and directions, not just distance",
-        "fifteen": "15-minute city: what you can reach on foot, on real streets",
+        "fifteen": "15-minute city: what’s nearby on foot",
         "green": "Green space within 500 m and 1 km",
         "environment": "Safety, noise, air, industrial areas, seismic risk",
         "market": "Prices, rents and yield in the area",
@@ -278,7 +278,7 @@
         "mapBand": {
           "eyebrow": "Area map",
           "title": "Explore the area on the map",
-          "text": "Coloured routes, times on real streets and the layers that counted in the score.",
+          "text": "See the available routes and the layers that contributed to the score.",
           "walk": "places on foot",
           "transit": "destinations by transit",
           "layers": "layers",
@@ -331,7 +331,11 @@
           "transit": "Transit",
           "layers": "Layers",
           "modes": "What the map shows",
-          "walkNote": "Routed on real streets, at {{speed}} km/h.",
+          "walkNote": {
+            "routed": "The routes shown follow the pedestrian network.",
+            "estimated": "Walking times in the 15-minute chapter are based on straight-line distances. No saved walking routes are shown on this map.",
+            "unavailable": "No saved walking routes are shown on this map."
+          },
           "transitNote": "Walk to the stop, wait, ride the line.",
           "layersNote": "Turn a layer on to see what counted in the score.",
           "footer": "Tap a route: it appears on the map, with its time. Drawn from OpenStreetMap.",
@@ -536,7 +540,7 @@
         "eyebrow": "15 minutes · {{score}} / 100 · {{band}}",
         "precision": {
           "routed": "Precision: address · real streets",
-          "estimated": "Precision: address · estimate"
+          "estimated": "Precision: address · straight-line estimate"
         },
         "headline": {
           "all": "All {{count}} everyday things within {{limit}} minutes on foot",
@@ -563,8 +567,13 @@
             "zone": "{{limit}} minutes on foot",
             "places": "Everyday places"
           },
-          "source": "Places: OpenStreetMap, {{date}}. Walking routes follow streets and paths, at {{speed}} metres a minute.",
-          "sourceNoDate": "Places: OpenStreetMap. Walking routes follow streets and paths, at {{speed}} metres a minute.",
+          "source": "Places: OpenStreetMap, {{date}}.",
+          "sourceNoDate": "Places: OpenStreetMap.",
+          "method": {
+            "routed": "Walking times are calculated along the pedestrian network (streets and paths).",
+            "routedWithSpeed": "Walking times are calculated along the pedestrian network (streets and paths), at {{speed}} m/min.",
+            "estimated": "Walking times are estimated from straight-line distances, adjusted for detours."
+          },
           "minutes": "{{minutes}} min"
         },
         "checklist": {

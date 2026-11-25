@@ -136,6 +136,7 @@ const fifteenMinuteSchema = z.object({
   covered: z.number(),
   total: z.number(),
   distance_method: z.string(),
+  walk_speed_kmh: z.number().nullable().default(null),
   groups: z.array(
     z.object({ key: z.string(), n15: z.number(), typical_n15: z.number().nullable().optional() }),
   ),

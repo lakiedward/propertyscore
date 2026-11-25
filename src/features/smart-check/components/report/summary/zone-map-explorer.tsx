@@ -6,9 +6,8 @@ import { REPORT_HUES } from '@/components/report/report-hues';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { formatNumber } from '@/i18n/format';
 import { cn } from '@/lib/utils';
-import { walkSpeedKmh } from '../../../report-summary.utils';
+import { walkingTimeMethod } from '../../../fifteen-minute.utils';
 import type { ReadyReport } from '../../../report.types';
 import { ZONE_LAYERS, type ZoneLayer, type ZoneRoute } from '../../../zone-map.utils';
 import { ZoneMap } from './zone-map';
@@ -49,6 +48,9 @@ export function ZoneMapExplorer({
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [layers, setLayers] = useState<readonly ZoneLayer[]>([]);
   const routes = mode === 'transit' ? transit : walk;
+  const walkMethod = walkingTimeMethod(report.result.sections.fifteen_minute?.distance_method);
+  const walkNote =
+    walk.length > 0 ? 'routed' : walkMethod === 'estimated' ? 'estimated' : 'unavailable';
 
   const toggleLayer = (layer: ZoneLayer) => {
     setLayers((current) =>
@@ -123,11 +125,7 @@ export function ZoneMapExplorer({
             <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pt-1.5 pb-2.5">
               <p className="px-1.5 pt-2 pb-1.5 text-caption leading-compact text-muted-foreground">
                 {mode === 'walk'
-                  ? t('report.chapters.summary.explorer.walkNote', {
-                      speed: formatNumber(walkSpeedKmh(report.result), {
-                        maximumFractionDigits: 1,
-                      }),
-                    })
+                  ? t(`report.chapters.summary.explorer.walkNote.${walkNote}`)
                   : t(`report.chapters.summary.explorer.${mode}Note`)}
               </p>
               {mode === 'layers' ? (
@@ -168,11 +166,7 @@ export function ZoneMapExplorer({
                     );
                   })}
                 </ul>
-              ) : routes.length === 0 ? (
-                <p className="px-1.5 py-2 text-small text-muted-foreground">
-                  {t('report.chapters.summary.explorer.empty')}
-                </p>
-              ) : (
+              ) : routes.length > 0 ? (
                 <ul>
                   {routes.map((route) => {
                     const isSelected = selectedRouteId === route.id;
@@ -211,12 +205,18 @@ export function ZoneMapExplorer({
                     );
                   })}
                 </ul>
-              )}
+              ) : mode === 'transit' ? (
+                <p className="px-1.5 py-2 text-small text-muted-foreground">
+                  {t('report.chapters.summary.explorer.empty')}
+                </p>
+              ) : null}
             </div>
-            <p className="flex items-start gap-2 border-t border-border-subtle px-4 py-2.75 text-[12.5px] leading-[1.4] text-muted-foreground">
-              <InfoIcon aria-hidden className="mt-px size-4 flex-none" />
-              {t('report.chapters.summary.explorer.footer')}
-            </p>
+            {mode !== 'layers' && routes.length > 0 ? (
+              <p className="flex items-start gap-2 border-t border-border-subtle px-4 py-2.75 text-[12.5px] leading-[1.4] text-muted-foreground">
+                <InfoIcon aria-hidden className="mt-px size-4 flex-none" />
+                {t('report.chapters.summary.explorer.footer')}
+              </p>
+            ) : null}
           </div>
           <div className="relative order-first min-h-0 min-w-0 bg-report-map-land w960:order-none">
             {isOpen ? (

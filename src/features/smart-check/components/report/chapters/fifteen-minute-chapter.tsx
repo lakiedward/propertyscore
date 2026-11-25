@@ -4,7 +4,7 @@ import { ChapterSources } from '@/components/report/chapter-sources';
 import { ReportChapterHead } from '@/components/report/report-chapter-head';
 import { scoreBand } from '@/components/report/score-bands';
 import { formatList, formatNumber } from '@/i18n/format';
-import { WALK_LIMIT_MIN, formatSourceDate } from '../../../fifteen-minute.utils';
+import { WALK_LIMIT_MIN, formatSourceDate, walkingTimeMethod } from '../../../fifteen-minute.utils';
 import { scoredCategories, standing } from '../../../report-summary.utils';
 import type { ReportChapterProps } from '../report-chapter-props';
 import { FifteenMinuteChoiceCard } from './fifteen-minute/fifteen-minute-choice-card';
@@ -16,6 +16,7 @@ export function FifteenMinuteChapter({ report, shareToken }: ReportChapterProps)
   const { result } = report;
   const summary = result.categories.fifteen_minute;
   const section = result.sections.fifteen_minute;
+  const method = walkingTimeMethod(section?.distance_method);
   const scored = scoredCategories(result);
   const item = scored.find((entry) => entry.key === 'fifteen_minute');
   const band = item ? scoreBand(item.score) : null;
@@ -109,11 +110,7 @@ export function FifteenMinuteChapter({ report, shareToken }: ReportChapterProps)
               })
             : t('report.categories.fifteen_minute.name')
         }
-        badge={t(
-          section?.distance_method === 'pedestrian_routing'
-            ? 'report.chapters.fifteenMinute.precision.routed'
-            : 'report.chapters.fifteenMinute.precision.estimated',
-        )}
+        badge={method === null ? undefined : t(`report.chapters.fifteenMinute.precision.${method}`)}
         isEyebrowColored
         title={title}
         lead={lead}
