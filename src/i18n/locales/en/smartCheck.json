@@ -662,6 +662,8 @@
         "precision": "Precision: address",
         "headline_one": "{{count}} large park, at most {{minutes}} min on foot",
         "headline_other": "{{count}} large parks, at most {{minutes}} min on foot",
+        "headlineApprox_one": "{{count}} large park, up to about {{minutes}} min on foot",
+        "headlineApprox_other": "{{count}} large parks, up to about {{minutes}} min on foot",
         "headlineNone": "No park within walking distance of the address",
         "lead": "Together they cover {{total}} ha. The largest, {{name}}, is {{area}} ha.",
         "share": "{{share}}% of the area within {{radius}} m is green space, against {{average}}% for the city on average.",

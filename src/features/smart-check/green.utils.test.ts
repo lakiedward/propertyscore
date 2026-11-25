@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { FREIDORF_REPORT_RESULT } from '@/test/factories/smart-check-report';
-import { areasOf, framingBounds, listedParks, parkWalkMinutes, parksSummary } from './green.utils';
+import {
+  areasOf,
+  framingBounds,
+  isParkWalkEstimated,
+  listedParks,
+  parkWalkMinutes,
+  parksSummary,
+} from './green.utils';
 import { parseReportResult } from './report.utils';
 
 const section = parseReportResult(FREIDORF_REPORT_RESULT)?.sections.green;
@@ -15,6 +22,18 @@ describe('parkWalkMinutes', () => {
 
   it('prefers actual routing time over an estimate from metres', () => {
     expect(parkWalkMinutes({ walk_m: 1200, walk_seconds: 240 })).toBe(4);
+  });
+});
+
+describe('isParkWalkEstimated', () => {
+  it('uses the chapter method for legacy reports with no routed time per park', () => {
+    const park = section.parks[0];
+    if (!park) throw new Error('fixture has no green park');
+    const legacy = { ...section, parks: [park] };
+    expect(isParkWalkEstimated(park, { ...legacy, distance_method: 'straight_line' })).toBe(true);
+    expect(isParkWalkEstimated(park, { ...legacy, distance_method: 'pedestrian_routing' })).toBe(
+      false,
+    );
   });
 });
 

@@ -2,7 +2,12 @@ import { useTranslation } from 'react-i18next';
 import { ReportChapterHead } from '@/components/report/report-chapter-head';
 import { scoreBand } from '@/components/report/score-bands';
 import { formatNumber } from '@/i18n/format';
-import { listedParks, parkWalkMinutes, parksSummary } from '../../../green.utils';
+import {
+  isParkWalkEstimated,
+  listedParks,
+  parkWalkMinutes,
+  parksSummary,
+} from '../../../green.utils';
 import { scoredCategories } from '../../../report-summary.utils';
 import type { ReportChapterProps } from '../report-chapter-props';
 import { GreenParksBlock } from './green/green-parks-block';
@@ -62,10 +67,12 @@ export function GreenChapter({ report }: ReportChapterProps) {
         isEyebrowColored
         title={
           farthest
-            ? t('report.chapters.green.headline', {
-                count: parks.length,
-                minutes: parkWalkMinutes(farthest),
-              })
+            ? t(
+                isParkWalkEstimated(farthest, section)
+                  ? 'report.chapters.green.headlineApprox'
+                  : 'report.chapters.green.headline',
+                { count: parks.length, minutes: parkWalkMinutes(farthest) },
+              )
             : t('report.chapters.green.headlineNone')
         }
         lead={lead()}

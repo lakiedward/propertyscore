@@ -89,7 +89,14 @@ export const greenChapter: ChapterBuilder = (report) => {
   const parks = [...section.parks].sort((left, right) => walkDuration(left) - walkDuration(right));
   const large = parks.filter((park) => park.area_ha >= LARGE_PARK_HA);
   const listed = (large.length > 0 ? large : parks).slice(0, LISTED_PARKS);
-  const farthest = listed.at(-1);
+  const farthest = listed.reduce<Park | undefined>(
+    (far, park) => (!far || walkDuration(park) > walkDuration(far) ? park : far),
+    undefined,
+  );
+  const hasRoutedTimes = section.parks.some((park) => park.walk_seconds !== undefined);
+  const isWalkEstimated = (park: Park) =>
+    park.walk_seconds === undefined &&
+    (section.distance_method === 'straight_line' || hasRoutedTimes);
   const totalHa = listed.reduce((sum, park) => sum + park.area_ha, 0);
   const biggest = [...listed].sort((left, right) => right.area_ha - left.area_ha)[0];
   const share = section.share[String(section.near_radius_m)];
@@ -104,7 +111,7 @@ export const greenChapter: ChapterBuilder = (report) => {
     title:
       listed.length === 0 || !farthest
         ? 'Niciun parc mare la o plimbare de adresă'
-        : `${plural(listed.length, 'parc mare', 'parcuri mari', 'de parcuri mari')}, la cel mult ${String(walkMinutes(farthest))} minute pe jos`,
+        : `${plural(listed.length, 'parc mare', 'parcuri mari', 'de parcuri mari')}, ${isWalkEstimated(farthest) ? 'până la circa' : 'la cel mult'} ${String(walkMinutes(farthest))} minute pe jos`,
     lead:
       biggest && listed.length > 0
         ? `Împreună au ${formatNumber(totalHa)} ha. Cel mai mare, ${biggest.name ?? 'un spațiu verde fără nume'}, are ${formatNumber(biggest.area_ha, 1)} ha.${shareText}`
@@ -125,13 +132,12 @@ export const greenChapter: ChapterBuilder = (report) => {
       addressDot(center),
     ],
   };
-  const approximate = section.distance_method === 'straight_line';
   const cards = listed
     .map((park, index) => {
       const chips = park.amenities
         .map((amenity) => `<i>${esc(GREEN_AMENITIES[amenity] ?? amenity)}</i>`)
         .join('');
-      return `<div class="gz-pc"><span class="gz-pc-h"><span class="fqx-n" style="--c:${theme.color}">${String(index + 1)}</span><b>${esc(park.name ?? 'Spațiu verde fără nume')}</b></span><span class="gz-pc-s"><b>${formatNumber(park.area_ha, 1)}</b> ha<span>·</span>${approximate ? 'circa ' : ''}${String(walkMinutes(park))} min pe jos</span>${chips ? `<span class="gz-ch">${chips}</span>` : ''}</div>`;
+      return `<div class="gz-pc"><span class="gz-pc-h"><span class="fqx-n" style="--c:${theme.color}">${String(index + 1)}</span><b>${esc(park.name ?? 'Spațiu verde fără nume')}</b></span><span class="gz-pc-s"><b>${formatNumber(park.area_ha, 1)}</b> ha<span>·</span>${isWalkEstimated(park) ? 'circa ' : ''}${String(walkMinutes(park))} min pe jos</span>${chips ? `<span class="gz-ch">${chips}</span>` : ''}</div>`;
     })
     .join('');
   const list =

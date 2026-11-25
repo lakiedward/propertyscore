@@ -23,6 +23,14 @@ export function parkWalkMinutes(park: Pick<GreenPark, 'walk_m' | 'walk_seconds'>
   return Math.max(1, Math.round(walkDuration(park)));
 }
 
+export function isParkWalkEstimated(park: GreenPark, section: Green | null): boolean {
+  if (park.walk_seconds !== undefined || !section) return false;
+  return (
+    section.distance_method === 'straight_line' ||
+    section.parks.some((candidate) => candidate.walk_seconds !== undefined)
+  );
+}
+
 export function listedParks(section: Green): GreenPark[] {
   const byWalkDuration = [...section.parks].sort(
     (left, right) => walkDuration(left) - walkDuration(right),
