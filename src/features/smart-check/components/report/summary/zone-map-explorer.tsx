@@ -64,20 +64,20 @@ export function ZoneMapExplorer({
         showCloseButton={false}
         className="top-0 left-0 flex h-svh max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none bg-card p-0 text-foreground ring-0 sm:max-w-none"
       >
-        <div className="flex h-16 flex-none items-center justify-between gap-3 border-b border-border-subtle pr-4 pl-5">
+        <div className="flex min-h-16 flex-none items-center justify-between gap-3 border-b border-border-subtle py-2 pr-4 pl-5">
           <div className="flex min-w-0 items-center gap-2.5">
             <BrandMark product="smartcheck" size={28} />
             <DialogTitle className="text-[17px] font-extrabold">
               {t('report.chapters.summary.explorer.title')}
             </DialogTitle>
-            <DialogDescription className="hidden truncate text-small text-muted-foreground w960:block">
+            <DialogDescription className="text-small wrap-anywhere text-muted-foreground">
               {report.address_text}
             </DialogDescription>
           </div>
           <Button
             variant="outline"
             size="icon"
-            className="size-11 rounded-thumb border-border text-brand"
+            className="size-11 shrink-0 rounded-thumb border-border text-brand"
             aria-label={t('report.chapters.summary.explorer.close')}
             onClick={() => {
               onOpenChange(false);
@@ -194,7 +194,7 @@ export function ZoneMapExplorer({
                           )}
                         >
                           <i aria-hidden="true" className={cn('size-3 rounded-full', hue.fill)} />
-                          <span className="truncate">{name}</span>
+                          <span className={isSelected ? 'wrap-anywhere' : 'truncate'}>{name}</span>
                           <b className={cn('text-body tabular-nums', hue.text)}>
                             {t('report.chapters.summary.explorer.minutes', {
                               minutes: route.minutes,

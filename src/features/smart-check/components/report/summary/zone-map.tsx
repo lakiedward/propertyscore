@@ -106,17 +106,21 @@ export function ZoneMap({
 
   const routeMarkers: MapMarkerItem[] = routes.flatMap((route) => {
     const end = routeEnd(route);
-    if (!end || (selectedRouteId !== null && selectedRouteId !== route.id)) return [];
+    const isSelected = selectedRouteId === route.id;
+    if (!end || (selectedRouteId !== null && !isSelected)) return [];
     return [
       {
         id: `zone-label-${route.id}`,
         position: end,
-        anchor: 'left',
-        isRaised: selectedRouteId === route.id,
+        anchor: isSelected ? 'center' : 'left',
+        isRaised: isSelected,
         node: (
           <span
             aria-hidden="true"
-            className="pointer-events-none -ml-1.5 flex items-center gap-1.5"
+            className={cn(
+              'pointer-events-none flex items-center gap-1.5',
+              !isSelected && '-ml-1.5',
+            )}
           >
             <i
               className={cn(
@@ -124,14 +128,16 @@ export function ZoneMap({
                 REPORT_HUES[route.hue].fill,
               )}
             />
-            <span
-              className={cn(
-                'rounded-full border-2 border-card px-2 py-0.5 text-meta font-extrabold whitespace-nowrap text-on-inverse shadow-report-label',
-                REPORT_HUES[route.hue].fill,
-              )}
-            >
-              {t('report.chapters.summary.explorer.minutes', { minutes: route.minutes })}
-            </span>
+            {!isSelected ? (
+              <span
+                className={cn(
+                  'rounded-full border-2 border-card px-2 py-0.5 text-meta font-extrabold whitespace-nowrap text-on-inverse shadow-report-label',
+                  REPORT_HUES[route.hue].fill,
+                )}
+              >
+                {t('report.chapters.summary.explorer.minutes', { minutes: route.minutes })}
+              </span>
+            ) : null}
           </span>
         ),
       },
@@ -145,7 +151,11 @@ export function ZoneMap({
       position: center,
       anchor: 'bottom',
       isRaised: true,
-      node: <AddressPin label={addressLabel(report.address_text)} />,
+      node: (
+        <AddressPin
+          label={selectedRouteId === null ? addressLabel(report.address_text) : undefined}
+        />
+      ),
     },
   ];
 
