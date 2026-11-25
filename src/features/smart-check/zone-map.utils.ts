@@ -1,5 +1,5 @@
 import type { LngLat } from '@/components/map/map.config';
-import { decodePolyline6 } from '@/components/report/report-map.utils';
+import { decodePolyline6, isDrawableLine } from '@/components/report/report-map.utils';
 import type { ReportHue } from '@/components/report/report-hues';
 import type { ReportResult } from './report.types';
 
@@ -61,6 +61,8 @@ export function walkRoutes(result: ReportResult): ZoneRoute[] {
     if (!place || route.minutes <= 0 || !isPlaceGroup(group)) continue;
     const current = nearest.get(group);
     if (current && current.minutes <= route.minutes) continue;
+    const line = decodePolyline6(route.polyline6);
+    if (!isDrawableLine(line)) continue;
     nearest.set(group, {
       id: route.place_id,
       mode: 'walk',
@@ -68,7 +70,7 @@ export function walkRoutes(result: ReportResult): ZoneRoute[] {
       group,
       hue: PLACE_GROUP_HUES[group],
       minutes: route.minutes,
-      lines: [decodePolyline6(route.polyline6)],
+      lines: [line],
     });
   }
   return [...nearest.values()]
@@ -80,23 +82,22 @@ export function transitRoutes(result: ReportResult, language: 'ro' | 'en'): Zone
   const section = result.sections.accessibility;
   if (!section) return [];
   return section.destinations
-    .flatMap((destination) =>
-      destination.minutes === null || destination.path.length === 0
-        ? []
-        : [
-            {
-              id: destination.id,
-              mode: 'transit' as const,
-              name: destination.label[language],
-              group: null,
-              hue: 'noise' as const,
-              minutes: destination.minutes,
-              lines: destination.path.map((leg) =>
-                leg.coordinates.map(([longitude, latitude]): LngLat => [longitude, latitude]),
-              ),
-            },
-          ],
-    )
+    .flatMap((destination): ZoneRoute[] => {
+      if (destination.minutes === null) return [];
+      const lines = destination.path.map((leg) => leg.coordinates).filter(isDrawableLine);
+      if (lines.length === 0) return [];
+      return [
+        {
+          id: destination.id,
+          mode: 'transit',
+          name: destination.label[language],
+          group: null,
+          hue: 'noise',
+          minutes: destination.minutes,
+          lines,
+        },
+      ];
+    })
     .sort((left, right) => left.minutes - right.minutes);
 }
 
