@@ -19,7 +19,11 @@ import { smartCheckQueries, useCreateOnlineReport } from '../api/smart-check.que
 import type { CheckOrder } from '../smart-check.schemas';
 import { CheckOrderSummary } from './check-order-summary';
 
-const ADDRESS_REASONS = new Set(['address_invalid', 'location_invalid', 'outside_coverage']);
+const ADDRESS_REASONS = new Set([
+  'address_invalid',
+  'location_invalid',
+  'smartCheckOutsideCoverage',
+]);
 
 type CheckPaymentStepProps = {
   order: CheckOrder;

@@ -26,11 +26,11 @@ export const resources = {
 const BUNDLED_NAMESPACES = ['common', 'auth'] as const;
 export const FEATURE_NAMESPACES = [
   'home',
+  'smartCheck',
   'listings',
   'publish',
   'moderation',
   'myListings',
-  'smartCheck',
 ] as const;
 export type FeatureNamespace = (typeof FEATURE_NAMESPACES)[number];
 

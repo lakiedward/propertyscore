@@ -83,6 +83,12 @@ describe('toAppError', () => {
     expect(toAppError(postgrestError('P0001', 'report_not_found')).reason).toBe(undefined);
   });
 
+  it('does not assign the SmartCheck coverage reason to other RPC calls', () => {
+    const error = toAppError(postgrestError('P0001', 'outside_coverage'));
+
+    expect(error.reason).not.toBe('smartCheckOutsideCoverage');
+  });
+
   it('maps an unknown PostgREST code to unknown', () => {
     expect(toAppError(postgrestError('XX000')).code).toBe('unknown');
   });

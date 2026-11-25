@@ -16,6 +16,11 @@ export type AppErrorReason =
   | 'invalid_password'
   | 'email_mismatch'
   | 'last_admin'
+  | 'address_invalid'
+  | 'location_invalid'
+  | 'smartCheckOutsideCoverage'
+  | 'no_ready_snapshot'
+  | 'payment_required'
   | 'listing_not_found'
   | 'listing_already_pending'
   | 'listing_blocked'
@@ -29,12 +34,7 @@ export type AppErrorReason =
   | 'decision_message_too_long'
   | 'listing_floor_above_building'
   | 'value_out_of_range'
-  | 'favorite_limit_reached'
-  | 'address_invalid'
-  | 'location_invalid'
-  | 'outside_coverage'
-  | 'no_ready_snapshot'
-  | 'payment_required';
+  | 'favorite_limit_reached';
 
 type AppErrorOptions = {
   cause?: unknown;

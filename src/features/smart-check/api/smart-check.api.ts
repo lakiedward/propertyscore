@@ -3,7 +3,7 @@ import type {
   SharedReportPdfResponse,
 } from '../../../../supabase/functions/_shared/types';
 import { z } from 'zod';
-import { AppError } from '@/lib/errors';
+import { AppError, type AppErrorReason } from '@/lib/errors';
 import { supabase } from '@/lib/supabase/client';
 import type { Tables } from '@/lib/supabase/database.types';
 import { toAppError } from '@/lib/supabase/errors';
@@ -20,6 +20,14 @@ const MY_REPORT_COLUMNS =
   'id, number, status, address_text, overall_score, pdf_path, created_at, generated_at' as const;
 
 const reportIdSchema = z.uuid();
+
+const CREATE_REPORT_REASONS = new Map<string, AppErrorReason>([
+  ['address_invalid', 'address_invalid'],
+  ['location_invalid', 'location_invalid'],
+  ['outside_coverage', 'smartCheckOutsideCoverage'],
+  ['no_ready_snapshot', 'no_ready_snapshot'],
+  ['payment_required', 'payment_required'],
+]);
 
 type ReportRow = Pick<
   Tables<'online_reports'>,
@@ -110,7 +118,7 @@ export async function createOnlineReport(order: CheckOrder) {
     p_declared_has_elevator: order.elevator === undefined ? undefined : order.elevator === 'yes',
     p_declared_construction_year: order.year,
   });
-  if (error) throw toAppError(error);
+  if (error) throw toAppError(error, CREATE_REPORT_REASONS);
   return data;
 }
 
