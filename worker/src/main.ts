@@ -67,11 +67,6 @@ function reportStorage(env: Env, command: 'serve-reports' | 'refresh-report-pdf'
   });
 }
 
-function storedReportRenderer(env: Env, logger: Logger) {
-  return async (raw: unknown) =>
-    (await renderReportDocument(raw, { chromiumPath: env.CHROMIUM_PATH, logger })).pdf;
-}
-
 async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<void> {
   const storage = reportStorage(env, 'serve-reports');
   const work = createWorkSignal();
@@ -90,7 +85,8 @@ async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<voi
           sections: REPORT_SECTIONS,
           router: reportRouter(env),
           earthquakes: createEarthquakeCatalog(),
-          renderReport: storedReportRenderer(env, logger),
+          renderReport: async (raw) =>
+            (await renderReportDocument(raw, { chromiumPath: env.CHROMIUM_PATH, logger })).pdf,
           storage,
           logger,
         }),
@@ -158,7 +154,7 @@ async function runCommand(
         sql,
         reportId: command.reportId,
         storage: reportStorage(env, command.command),
-        renderReport: storedReportRenderer(env, logger),
+        chromiumPath: env.CHROMIUM_PATH,
         logger,
       });
       return;

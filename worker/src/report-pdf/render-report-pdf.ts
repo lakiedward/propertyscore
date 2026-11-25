@@ -4,7 +4,7 @@ import type { Sql } from '../db/sql.ts';
 import { WorkerError } from '../lib/errors.ts';
 import type { Logger } from '../lib/logger.ts';
 import { renderPdf } from '../pdf/render-pdf.ts';
-import type { ReportPdfStorage } from '../report-queue/report-pdf-storage.ts';
+import type { StoredReportPdfStorage } from '../report-queue/report-pdf-storage.ts';
 import { buildReportDocument } from './build-document.ts';
 import { reportInputSchema, toReportData, type ReportData } from './report-data.ts';
 import { readReadyReport, readStoredReportPdf } from './report-pdf.db.ts';
@@ -45,6 +45,11 @@ export type RenderReportOptions = {
   logger: Logger;
 };
 
+async function renderReportData(report: ReportData, chromiumPath?: string): Promise<Buffer> {
+  const document = await buildReportDocument(report);
+  return renderPdf(document, { executablePath: chromiumPath });
+}
+
 export async function renderReportDocument(
   raw: unknown,
   options: RenderReportOptions,
@@ -55,8 +60,7 @@ export async function renderReportDocument(
       sections: report.unreadableSections.join(','),
     });
   }
-  const document = await buildReportDocument(report);
-  const pdf = await renderPdf(document, { executablePath: options.chromiumPath });
+  const pdf = await renderReportData(report, options.chromiumPath);
   return { number: report.number, pdf };
 }
 
@@ -74,18 +78,24 @@ export async function renderReportPdf(options: RenderReportPdfOptions): Promise<
   logger.info('report pdf written', { report_number: number, bytes: pdf.length });
 }
 
-type RefreshReportPdfOptions = {
+type RefreshReportPdfOptions = RenderReportOptions & {
   sql: Sql;
   reportId: string;
-  storage: ReportPdfStorage;
-  renderReport: (raw: unknown) => Promise<Buffer>;
-  logger: Logger;
+  storage: StoredReportPdfStorage;
+  renderReport?: typeof renderReportData;
 };
 
 export async function refreshReportPdf(options: RefreshReportPdfOptions): Promise<void> {
-  const { sql, reportId, storage, renderReport, logger } = options;
+  const { sql, reportId, storage, chromiumPath, renderReport = renderReportData, logger } = options;
   const { path, input } = await readStoredReportPdf(sql, reportId);
-  const pdf = await renderReport(input);
-  await storage.upload(path, pdf);
+  const report = parseReportInput(input);
+  if (report.unreadableSections.length > 0) {
+    throw new WorkerError(
+      'report_sections_invalid',
+      `The stored PDF cannot be replaced: ${report.unreadableSections.join(',')}`,
+    );
+  }
+  const pdf = await renderReport(report, chromiumPath);
+  await storage.replace(path, pdf);
   logger.info('stored report pdf refreshed', { report_id: reportId, bytes: pdf.length });
 }

@@ -357,10 +357,6 @@ const investmentSchema = z.object({
   sources: z.array(marketSource).default([]),
 });
 
-const questionsSchema = z.object({
-  codes: z.array(z.string()),
-});
-
 const SECTION_SCHEMAS = {
   safety: safetySchema,
   accessibility: accessibilitySchema,
@@ -373,7 +369,6 @@ const SECTION_SCHEMAS = {
   health: healthSchema,
   seismic: seismicSchema,
   investment: investmentSchema,
-  questions: questionsSchema,
 } as const;
 
 type SectionKey = keyof typeof SECTION_SCHEMAS;
@@ -463,7 +458,6 @@ export function toReportData(input: z.infer<typeof reportInputSchema>): ReportDa
       health: section('health'),
       seismic: section('seismic'),
       investment: section('investment'),
-      questions: section('questions'),
     },
     unreadableSections,
   };

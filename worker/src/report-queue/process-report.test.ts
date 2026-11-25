@@ -6,8 +6,9 @@ import { createLogger } from '../lib/logger.ts';
 import { generateReport } from '../report/generate-report.ts';
 import type { ReportSection } from '../report/report-section.ts';
 import { refreshReportPdf } from '../report-pdf/render-report-pdf.ts';
+import { reportInputSchema, type ReportData } from '../report-pdf/report-data.ts';
 import { processReport } from './process-report.ts';
-import type { ReportPdfStorage } from './report-pdf-storage.ts';
+import type { ReportPdfStorage, StoredReportPdfStorage } from './report-pdf-storage.ts';
 import { claimNextReport, REPORT_QUEUE_CHANNEL } from './report-queue.db.ts';
 
 const silentLogger = createLogger('error', () => undefined);
@@ -166,16 +167,22 @@ describe.skipIf(!databaseUrl)('processReport against the local database', () => 
     expect(await claimNextReport(sql)).toBeNull();
   });
 
-  it('replaces the PDF at its existing path without changing the saved report', async () => {
+  it('replaces the PDF from the saved result even when a section has no data', async () => {
     const reportId = await orderReport('Adresă sintetică pentru PDF, Sibiu');
     expect(await claimNextReport(sql)).toBe(reportId);
     const originalPdf = Buffer.from('%PDF-1.7 original');
     const updatedPdf = Buffer.from('%PDF-1.7 updated');
-    const storage = { upload: vi.fn<ReportPdfStorage['upload']>().mockResolvedValue(undefined) };
+    const storage = {
+      upload: vi.fn<ReportPdfStorage['upload']>().mockResolvedValue(undefined),
+      replace: vi.fn<StoredReportPdfStorage['replace']>().mockResolvedValue(undefined),
+    };
     await processReport({
       sql,
       reportId,
-      sections: [greenSection],
+      sections: [
+        { key: 'green', build: () => Promise.resolve({ schema_version: 1, status: 'no_data' }) },
+        { key: 'questions', build: () => Promise.resolve({ schema_version: 1, status: 'legacy' }) },
+      ],
       renderReport: () => Promise.resolve(originalPdf),
       storage,
       logger: silentLogger,
@@ -183,17 +190,44 @@ describe.skipIf(!databaseUrl)('processReport against the local database', () => 
     const saved = await readReport(reportId);
     const path = `${OWNER_ID}/${reportId}.pdf`;
     expect(saved).toMatchObject({ status: 'ready', pdf_path: path });
+    expect(storage.upload).toHaveBeenCalledExactlyOnceWith(path, originalPdf);
 
-    const renderReport = vi.fn(() => Promise.resolve(updatedPdf));
+    const renderReport = vi.fn<(_: ReportData) => Promise<Buffer>>(() =>
+      Promise.resolve(updatedPdf),
+    );
     await refreshReportPdf({ sql, reportId, storage, renderReport, logger: silentLogger });
 
-    expect(renderReport).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ result: saved?.result }),
-    );
-    expect(storage.upload.mock.calls).toEqual([
-      [path, originalPdf],
-      [path, updatedPdf],
-    ]);
+    const summary = reportInputSchema.shape.result.parse(saved?.result);
+    const rendered = renderReport.mock.calls[0]?.[0];
+    expect(renderReport).toHaveBeenCalledTimes(1);
+    expect(rendered?.zone).toEqual(summary.zone);
+    expect(rendered?.categories).toEqual(summary.categories);
+    expect(rendered?.sections.green).toBeNull();
+    expect(storage.replace).toHaveBeenCalledExactlyOnceWith(path, updatedPdf);
+    expect(await readReport(reportId)).toEqual(saved);
+  });
+
+  it('does not replace an existing PDF when a rendered section of its result is unreadable', async () => {
+    const reportId = await orderReport('Adresă sintetică cu date invalide, Sibiu');
+    expect(await claimNextReport(sql)).toBe(reportId);
+    const { storage: generationStorage } = recordingStorage();
+    await processReport({
+      sql,
+      reportId,
+      sections: [greenSection],
+      renderReport: () => Promise.resolve(Buffer.from('%PDF-1.7 old')),
+      storage: generationStorage,
+      logger: silentLogger,
+    });
+    const saved = await readReport(reportId);
+    const storage = { replace: vi.fn<StoredReportPdfStorage['replace']>() };
+    const renderReport = vi.fn(() => Promise.resolve(Buffer.from('%PDF-1.7')));
+
+    await expect(
+      refreshReportPdf({ sql, reportId, storage, renderReport, logger: silentLogger }),
+    ).rejects.toMatchObject({ code: 'report_sections_invalid' });
+    expect(renderReport).not.toHaveBeenCalled();
+    expect(storage.replace).not.toHaveBeenCalled();
     expect(await readReport(reportId)).toEqual(saved);
   });
 
@@ -201,14 +235,14 @@ describe.skipIf(!databaseUrl)('processReport against the local database', () => 
     const reportId = await orderReport('Adresă sintetică fără PDF, Sibiu');
     expect(await claimNextReport(sql)).toBe(reportId);
     await generateReport({ sql, reportId, sections: [greenSection], logger: silentLogger });
-    const storage = { upload: vi.fn<ReportPdfStorage['upload']>().mockResolvedValue(undefined) };
+    const storage = { replace: vi.fn<StoredReportPdfStorage['replace']>() };
     const renderReport = vi.fn(() => Promise.resolve(Buffer.from('%PDF-1.7')));
 
     await expect(
       refreshReportPdf({ sql, reportId, storage, renderReport, logger: silentLogger }),
     ).rejects.toMatchObject({ code: 'report_pdf_not_stored' });
     expect(renderReport).not.toHaveBeenCalled();
-    expect(storage.upload).not.toHaveBeenCalled();
+    expect(storage.replace).not.toHaveBeenCalled();
   });
 
   it('marks the report failed with the PDF code and keeps nothing of the result when the PDF cannot be made', async () => {
