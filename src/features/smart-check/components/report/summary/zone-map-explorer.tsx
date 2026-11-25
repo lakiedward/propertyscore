@@ -6,9 +6,8 @@ import { REPORT_HUES } from '@/components/report/report-hues';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { formatNumber } from '@/i18n/format';
 import { cn } from '@/lib/utils';
-import { walkSpeedKmh } from '../../../report-summary.utils';
+import { walkingTimeMethod } from '../../../fifteen-minute.utils';
 import type { ReadyReport } from '../../../report.types';
 import { ZONE_LAYERS, type ZoneLayer, type ZoneRoute } from '../../../zone-map.utils';
 import { ZoneMap } from './zone-map';
@@ -49,6 +48,9 @@ export function ZoneMapExplorer({
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [layers, setLayers] = useState<readonly ZoneLayer[]>([]);
   const routes = mode === 'transit' ? transit : walk;
+  const walkMethod = walkingTimeMethod(report.result.sections.fifteen_minute?.distance_method);
+  const walkNote =
+    walk.length > 0 ? 'routed' : walkMethod === 'estimated' ? 'estimated' : 'unavailable';
 
   const toggleLayer = (layer: ZoneLayer) => {
     setLayers((current) =>
@@ -62,20 +64,20 @@ export function ZoneMapExplorer({
         showCloseButton={false}
         className="top-0 left-0 flex h-svh max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none bg-card p-0 text-foreground ring-0 sm:max-w-none"
       >
-        <div className="flex h-16 flex-none items-center justify-between gap-3 border-b border-border-subtle pr-4 pl-5">
+        <div className="flex min-h-16 flex-none items-center justify-between gap-3 border-b border-border-subtle py-2 pr-4 pl-5">
           <div className="flex min-w-0 items-center gap-2.5">
             <BrandMark product="smartcheck" size={28} />
             <DialogTitle className="text-[17px] font-extrabold">
               {t('report.chapters.summary.explorer.title')}
             </DialogTitle>
-            <DialogDescription className="hidden truncate text-small text-muted-foreground w960:block">
+            <DialogDescription className="text-small wrap-anywhere text-muted-foreground">
               {report.address_text}
             </DialogDescription>
           </div>
           <Button
             variant="outline"
             size="icon"
-            className="size-11 rounded-thumb border-border text-brand"
+            className="size-11 shrink-0 rounded-thumb border-border text-brand"
             aria-label={t('report.chapters.summary.explorer.close')}
             onClick={() => {
               onOpenChange(false);
@@ -123,11 +125,7 @@ export function ZoneMapExplorer({
             <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pt-1.5 pb-2.5">
               <p className="px-1.5 pt-2 pb-1.5 text-caption leading-compact text-muted-foreground">
                 {mode === 'walk'
-                  ? t('report.chapters.summary.explorer.walkNote', {
-                      speed: formatNumber(walkSpeedKmh(report.result), {
-                        maximumFractionDigits: 1,
-                      }),
-                    })
+                  ? t(`report.chapters.summary.explorer.walkNote.${walkNote}`)
                   : t(`report.chapters.summary.explorer.${mode}Note`)}
               </p>
               {mode === 'layers' ? (
@@ -168,11 +166,7 @@ export function ZoneMapExplorer({
                     );
                   })}
                 </ul>
-              ) : routes.length === 0 ? (
-                <p className="px-1.5 py-2 text-small text-muted-foreground">
-                  {t('report.chapters.summary.explorer.empty')}
-                </p>
-              ) : (
+              ) : routes.length > 0 ? (
                 <ul>
                   {routes.map((route) => {
                     const isSelected = selectedRouteId === route.id;
@@ -200,7 +194,7 @@ export function ZoneMapExplorer({
                           )}
                         >
                           <i aria-hidden="true" className={cn('size-3 rounded-full', hue.fill)} />
-                          <span className="truncate">{name}</span>
+                          <span className={isSelected ? 'wrap-anywhere' : 'truncate'}>{name}</span>
                           <b className={cn('text-body tabular-nums', hue.text)}>
                             {t('report.chapters.summary.explorer.minutes', {
                               minutes: route.minutes,
@@ -211,12 +205,18 @@ export function ZoneMapExplorer({
                     );
                   })}
                 </ul>
-              )}
+              ) : mode === 'transit' ? (
+                <p className="px-1.5 py-2 text-small text-muted-foreground">
+                  {t('report.chapters.summary.explorer.empty')}
+                </p>
+              ) : null}
             </div>
-            <p className="flex items-start gap-2 border-t border-border-subtle px-4 py-2.75 text-[12.5px] leading-[1.4] text-muted-foreground">
-              <InfoIcon aria-hidden className="mt-px size-4 flex-none" />
-              {t('report.chapters.summary.explorer.footer')}
-            </p>
+            {mode !== 'layers' && routes.length > 0 ? (
+              <p className="flex items-start gap-2 border-t border-border-subtle px-4 py-2.75 text-[12.5px] leading-[1.4] text-muted-foreground">
+                <InfoIcon aria-hidden className="mt-px size-4 flex-none" />
+                {t('report.chapters.summary.explorer.footer')}
+              </p>
+            ) : null}
           </div>
           <div className="relative order-first min-h-0 min-w-0 bg-report-map-land w960:order-none">
             {isOpen ? (

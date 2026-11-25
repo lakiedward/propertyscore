@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/i18n/format';
+import { gtfsReferenceDate } from '../../../../accessibility.utils';
 import type { ReadyReport } from '../../../../report.types';
 
 const DATE_FORMAT = { day: 'numeric', month: 'short', year: 'numeric' } as const;
@@ -73,7 +74,13 @@ type ClosingMethodProps = {
 export function ClosingMethod({ report }: ClosingMethodProps) {
   const { t } = useTranslation('smartCheck');
   const dates = report.result.snapshot.source_dates;
-  const formatted = (source: SourceKey) => {
+  const formatted = (source: SourceKey): Row[] => {
+    if (source === 'gtfs') {
+      const date = gtfsReferenceDate(report.result.sections.accessibility);
+      return date
+        ? [{ source, date: withoutDots(formatDate(date, { ...DATE_FORMAT, timeZone: 'UTC' })) }]
+        : [];
+    }
     const value = dates[source];
     if (value === undefined) return [];
     return [{ source, date: formatSourceDate(value) }];

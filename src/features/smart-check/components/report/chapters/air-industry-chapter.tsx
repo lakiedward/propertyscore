@@ -28,7 +28,18 @@ export function AirIndustryChapter({ report }: ReportChapterProps) {
   const { result } = report;
   const { air, industry } = result.sections;
   const dates = result.snapshot.source_dates;
-  if (!air && !industry) return null;
+  if (!air && !industry) {
+    return (
+      <section aria-labelledby={TITLE_ID}>
+        <ReportChapterHead
+          hue="air"
+          titleId={TITLE_ID}
+          eyebrow={t('report.chapters.airIndustry.title')}
+          title={t('report.chapters.airIndustry.headlineNoData')}
+        />
+      </section>
+    );
+  }
 
   const nearest = industry?.nearest_m ?? null;
   const distance = nearest === null ? null : formatDistanceM(nearest);
@@ -47,6 +58,8 @@ export function AirIndustryChapter({ report }: ReportChapterProps) {
       : t('report.chapters.airIndustry.headline.withNearest', { air: airTitle, distance });
   })();
   const lead = [
+    air ? null : t('report.chapters.airIndustry.lead.noAirData'),
+    industry ? null : t('report.chapters.airIndustry.lead.noIndustryData'),
     air && hasWinterPeak(air)
       ? t('report.chapters.airIndustry.lead.winter', { city: result.city.name })
       : null,
@@ -122,16 +135,14 @@ export function AirIndustryChapter({ report }: ReportChapterProps) {
             {eyebrowPart('industry')}
           </span>
         }
-        badge={t('report.chapters.airIndustry.badge')}
+        badge={air && industry ? t('report.chapters.airIndustry.badge') : undefined}
         title={title}
         lead={lead || undefined}
       />
-      {air || industry ? (
-        <div className="grid min-w-0 gap-4 w960:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-          {air ? <AirMonthsCard air={air} /> : null}
-          {industry ? <IndustrySitesCard industry={industry} /> : null}
-        </div>
-      ) : null}
+      <div className="grid min-w-0 gap-4 w960:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        {air ? <AirMonthsCard air={air} /> : null}
+        {industry ? <IndustrySitesCard industry={industry} /> : null}
+      </div>
       {note ? (
         <p className="flex gap-2 text-[12.5px] leading-[1.45] text-muted-foreground">
           <InfoIcon aria-hidden="true" className="mt-0.5 size-3.75 shrink-0" />

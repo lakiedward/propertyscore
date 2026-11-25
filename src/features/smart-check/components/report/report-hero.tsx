@@ -53,6 +53,8 @@ export function ReportHero({ report, shareToken }: ReportHeroProps) {
   const weakLead = weak
     ? t('report.frame.hero.leadWeak', { weak: t(`report.categories.${weak.key}.weakness`) })
     : t('report.frame.hero.leadNoWeak');
+  const lead =
+    scored.length === 0 ? t('report.frame.hero.leadNoScores') : `${strengthsLead} ${weakLead}`;
 
   const overlays: MapOverlay[] = [
     {
@@ -100,7 +102,7 @@ export function ReportHero({ report, shareToken }: ReportHeroProps) {
             {report.address_text}
           </h1>
           <p className="max-w-[34em] text-lead-sm text-on-info-soft w560:text-lead w560:leading-copy">
-            {strengthsLead} {weakLead}
+            {lead}
           </p>
           <p className="inline-flex items-center gap-2 text-small text-on-info-soft">
             <DatabaseIcon aria-hidden className="size-4 shrink-0" />

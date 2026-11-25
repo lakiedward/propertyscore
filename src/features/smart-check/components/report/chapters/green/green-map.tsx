@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MapMarkerItem, MapOverlay } from '@/components/map/map-canvas';
 import { AddressPin } from '@/components/report/address-pin';
@@ -17,39 +16,36 @@ type GreenMapProps = {
 export function GreenMap({ report, parks, selectedId }: GreenMapProps) {
   const { t } = useTranslation('smartCheck');
   const center = reportCenter(report);
-  const [longitude, latitude] = center;
   const section = report.result.sections.green;
 
-  const bounds = useMemo(
-    () => framingBounds([[longitude, latitude], ...parks.map((park) => park.center)]),
-    [longitude, latitude, parks],
-  );
-
-  const overlays = useMemo<MapOverlay[]>(() => {
-    if (!section) return [];
-    const all = areasOf(
-      section,
-      parks.map((park) => park.id),
-    );
-    return [
-      {
-        id: 'green-areas',
-        kind: 'fill',
-        data: all,
-        colorToken: '--ps-leaf-300',
-        opacity: 0.75,
-        isVisible: true,
-      },
-      {
-        id: 'green-selected',
-        kind: 'fill',
-        data: areasOf(section, selectedId === null ? [] : [selectedId]),
-        colorToken: '--ps-leaf-800',
-        opacity: 0.55,
-        isVisible: selectedId !== null,
-      },
-    ];
-  }, [section, parks, selectedId]);
+  const areas = section
+    ? areasOf(
+        section,
+        parks.map((park) => park.id),
+      )
+    : undefined;
+  const bounds = framingBounds([center, ...parks.map((park) => park.center)], areas);
+  const overlays: MapOverlay[] =
+    section && areas
+      ? [
+          {
+            id: 'green-areas',
+            kind: 'fill',
+            data: areas,
+            colorToken: '--ps-leaf-300',
+            opacity: 0.75,
+            isVisible: true,
+          },
+          {
+            id: 'green-selected',
+            kind: 'fill',
+            data: areasOf(section, selectedId === null ? [] : [selectedId]),
+            colorToken: '--ps-leaf-800',
+            opacity: 0.55,
+            isVisible: selectedId !== null,
+          },
+        ]
+      : [];
 
   const markers: MapMarkerItem[] = [
     ...parks.map((park, index) => ({

@@ -1,28 +1,22 @@
 import { ArrowRightIcon, InfoIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDate, formatNumber } from '@/i18n/format';
+import { investmentSources } from '../../../investment.utils';
 import type { ReportResult } from '../../../report.types';
 import { InvestmentCard } from './investment-card';
+import { marketPeriod, marketSourceName } from './market-source-format';
 
 type Investment = NonNullable<ReportResult['sections']['investment']>;
 
 type InvestmentSourcesCardProps = {
   investment: Investment;
-  cityName: string;
+  marketName: string;
   hasExample: boolean;
 };
 
-function monthYear(period: string): string {
-  return formatDate(`${period.slice(0, 7)}-01`, {
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  });
-}
-
 export function InvestmentSourcesCard({
   investment,
-  cityName,
+  marketName,
   hasExample,
 }: InvestmentSourcesCardProps) {
   const { t } = useTranslation('smartCheck');
@@ -30,61 +24,48 @@ export function InvestmentSourcesCard({
     ? ` · ${formatDate(investment.reference_date, { day: 'numeric', month: 'short', year: 'numeric' })}`
     : '';
 
-  const sourceName = (source: string): string => {
-    if (source === 'apartamente_org') {
-      return t('report.chapters.investment.sources.names.apartamente_org');
-    }
-    if (source === 'apartamente_org_index') {
-      return t('report.chapters.investment.sources.names.apartamente_org_index');
-    }
-    if (source === 'imospot_index')
-      return t('report.chapters.investment.sources.names.imospot_index');
-    return source;
-  };
-
-  const detail = (source: string): string | null => {
-    if (source === 'imospot_index') {
-      const count = investment.sale?.count;
-      return count == null
-        ? t('report.chapters.investment.sources.saleCity', { city: cityName })
-        : t('report.chapters.investment.sources.saleCityOffers', {
-            city: cityName,
-            count,
-            amount: formatNumber(count),
-          });
-    }
-    if (source === 'apartamente_org' || source === 'apartamente_org_index') {
-      const count = investment.rent?.count;
-      return count == null
-        ? t('report.chapters.investment.sources.rentCity', { city: cityName })
-        : t('report.chapters.investment.sources.rentCityOffers', {
-            city: cityName,
-            count,
-            amount: formatNumber(count),
-          });
-    }
-    return null;
-  };
-
   return (
     <InvestmentCard eyebrow={t('report.chapters.investment.sources.eyebrow', { date: reference })}>
       <ul className="mt-3 divide-y divide-border border-t border-border">
-        {investment.sources.map((source) => {
+        {investmentSources(investment).map(({ source, details }) => {
+          const period = marketPeriod(source.period);
           const when = source.observed_on
             ? formatDate(source.observed_on, { day: 'numeric', month: 'short', year: 'numeric' })
-            : monthYear(source.period);
-          const name = sourceName(source.source);
-          const sub = detail(source.source);
+            : null;
+          const name = marketSourceName(t, source.source);
+          const descriptions = details.map(({ role, place, count, countKind }) => {
+            const label = t(`report.chapters.investment.sources.roles.${role}`, {
+              place: place ?? marketName,
+            });
+            if (count === null) return label;
+            const amount = t(
+              countKind === 'apartments'
+                ? 'report.chapters.investment.apartments'
+                : 'report.chapters.investment.offers',
+              {
+                count,
+                amount: formatNumber(count),
+              },
+            );
+            return `${label} · ${amount}`;
+          });
+          if (!descriptions.length && source.label) descriptions.push(source.label);
           return (
-            <li key={`${source.source}-${source.url}`} className="flex items-center gap-3 py-3.5">
+            <li
+              key={JSON.stringify([source.source, source.period, source.url])}
+              className="flex items-center gap-3 py-3.5"
+            >
               <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full bg-primary" />
               <span className="min-w-0 flex-1">
                 <b className="block text-[15px] leading-snug font-extrabold">
-                  {name}, {when}
+                  {name}, {period}
+                  {when ? ` · ${when}` : null}
                 </b>
-                {sub === null ? null : (
-                  <small className="text-[13px] text-muted-foreground">{sub}</small>
-                )}
+                {descriptions.map((detail) => (
+                  <small key={detail} className="block text-[13px] text-muted-foreground">
+                    {detail}
+                  </small>
+                ))}
               </span>
               {source.url === null ? null : (
                 <a

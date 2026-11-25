@@ -106,33 +106,22 @@ export function ZoneMap({
 
   const routeMarkers: MapMarkerItem[] = routes.flatMap((route) => {
     const end = routeEnd(route);
-    if (!end || (selectedRouteId !== null && selectedRouteId !== route.id)) return [];
+    const isSelected = selectedRouteId === route.id;
+    if (!end || (selectedRouteId !== null && !isSelected)) return [];
     return [
       {
         id: `zone-label-${route.id}`,
         position: end,
-        anchor: 'left',
-        isRaised: selectedRouteId === route.id,
+        anchor: 'center',
+        isRaised: isSelected,
         node: (
           <span
             aria-hidden="true"
-            className="pointer-events-none -ml-1.5 flex items-center gap-1.5"
-          >
-            <i
-              className={cn(
-                'size-3 rounded-full border-2 border-card shadow-report-label',
-                REPORT_HUES[route.hue].fill,
-              )}
-            />
-            <span
-              className={cn(
-                'rounded-full border-2 border-card px-2 py-0.5 text-meta font-extrabold whitespace-nowrap text-on-inverse shadow-report-label',
-                REPORT_HUES[route.hue].fill,
-              )}
-            >
-              {t('report.chapters.summary.explorer.minutes', { minutes: route.minutes })}
-            </span>
-          </span>
+            className={cn(
+              'pointer-events-none block size-3 rounded-full border-2 border-card shadow-report-label',
+              REPORT_HUES[route.hue].fill,
+            )}
+          />
         ),
       },
     ];
@@ -145,7 +134,9 @@ export function ZoneMap({
       position: center,
       anchor: 'bottom',
       isRaised: true,
-      node: <AddressPin label={addressLabel(report.address_text)} />,
+      node: (
+        <AddressPin label={routes.length === 0 ? addressLabel(report.address_text) : undefined} />
+      ),
     },
   ];
 

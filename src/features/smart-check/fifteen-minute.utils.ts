@@ -24,7 +24,6 @@ type Place = FifteenMinuteSection['places'][number];
 export const WALK_LIMIT_MIN = 15;
 const TILE_COUNT = 8;
 const MORE_THAN_TYPICAL = 1.5;
-const DEFAULT_WALK_SPEED_KMH = 4.5;
 const MIN_MAP_RADIUS_M = 700;
 const SMOOTHING_ROUNDS = 3;
 
@@ -62,8 +61,17 @@ export function categoryFamily(section: FifteenMinuteSection, categoryKey: strin
   return (group ? GROUP_META[group]?.family : undefined) ?? 'services';
 }
 
-export function walkMetersPerMinute(section: FifteenMinuteSection): number {
-  return Math.round(((section.walk_speed_kmh ?? DEFAULT_WALK_SPEED_KMH) * 1000) / 60);
+export function walkingTimeMethod(
+  distanceMethod: string | undefined,
+): 'routed' | 'estimated' | null {
+  if (distanceMethod === 'pedestrian_routing') return 'routed';
+  if (distanceMethod === 'straight_line') return 'estimated';
+  return null;
+}
+
+export function walkMetersPerMinute(section: FifteenMinuteSection): number | null {
+  const speed = section.walk_speed_kmh;
+  return speed !== null && speed > 0 ? Math.round((speed * 1000) / 60) : null;
 }
 
 export type ChecklistRow = {

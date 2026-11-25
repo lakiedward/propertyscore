@@ -59,4 +59,20 @@ describe('AirIndustryChapter', () => {
     expect(await screen.findByText(en.report.chapters.airIndustry.badge)).toBeInTheDocument();
     expect(screen.getByText('8 months out of 12 above the 2030 EU limit')).toBeInTheDocument();
   });
+
+  it('shows the available industry result and discloses missing air data', async () => {
+    const report = readyReport();
+    report.result.sections.air = null;
+    delete report.result.categories.air;
+
+    await renderWithProviders(<AirIndustryChapter report={report} onOpenChapter={vi.fn()} />, {
+      locale: 'en',
+    });
+
+    expect(await screen.findByRole('heading', { level: 2 })).toHaveTextContent(/factories/i);
+    expect(
+      screen.getByText(new RegExp(en.report.chapters.airIndustry.lead.noAirData)),
+    ).toBeVisible();
+    expect(screen.queryByText(en.report.chapters.airIndustry.badge)).not.toBeInTheDocument();
+  });
 });

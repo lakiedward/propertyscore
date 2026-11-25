@@ -65,7 +65,7 @@
       "items": {
         "score": "Area score from 9 criteria, each explained",
         "transit": "Accessibility: lines, frequency and directions, not just distance",
-        "fifteen": "15-minute city: what you can reach on foot, on real streets",
+        "fifteen": "15-minute city: what’s nearby on foot",
         "green": "Green space within 500 m and 1 km",
         "environment": "Safety, noise, air, industrial areas, seismic risk",
         "market": "Prices, rents and yield in the area",
@@ -256,6 +256,8 @@
           "below": "An area below the {{city}} average"
         },
         "headlineWeak": "{{position}}, with a single weak point: <mark>{{weak}}</mark>",
+        "headlineNoScores": "Scores are unavailable for this address",
+        "leadContextOnly": "The report includes {{contexts}} as context.",
         "leadZone": "The area gets {{score}} out of 100, against a city average of {{average}}.",
         "leadEnd": "Each score has its own chapter.",
         "good": "What is good",
@@ -278,7 +280,8 @@
         "mapBand": {
           "eyebrow": "Area map",
           "title": "Explore the area on the map",
-          "text": "Coloured routes, times on real streets and the layers that counted in the score.",
+          "textWithRoutes": "Explore routes to destinations and the available map layers.",
+          "textWithoutRoutes": "Find the address on the map and explore the available layers.",
           "walk": "places on foot",
           "transit": "destinations by transit",
           "layers": "layers",
@@ -331,10 +334,14 @@
           "transit": "Transit",
           "layers": "Layers",
           "modes": "What the map shows",
-          "walkNote": "Routed on real streets, at {{speed}} km/h.",
+          "walkNote": {
+            "routed": "The routes shown follow the pedestrian network.",
+            "estimated": "Walking times in the 15-minute chapter are based on straight-line distances. No saved walking routes are shown on this map.",
+            "unavailable": "No saved walking routes are shown on this map."
+          },
           "transitNote": "Walk to the stop, wait, ride the line.",
           "layersNote": "Turn a layer on to see what counted in the score.",
-          "footer": "Tap a route: it appears on the map, with its time. Drawn from OpenStreetMap.",
+          "footer": "Select a route to see it on the map. Its time is listed beside the destination. Drawn from OpenStreetMap.",
           "minutes": "{{minutes}} min",
           "routeLabel": "{{name}}, {{minutes}} minutes",
           "mapLabel": "Map of the area around the address",
@@ -448,6 +455,7 @@
       "accessibility": {
         "title": "{{stops}} and {{lines}} that take you across the whole city",
         "titleNoStops": "No public transport stop near the address",
+        "headlineNoData": "Public transport data is unavailable for this address",
         "stopsPhrase_one": "{{count}} stop within a {{minutes}}-minute walk",
         "stopsPhrase_other": "{{count}} stops within a {{minutes}}-minute walk",
         "linesPhrase_one": "{{count}} line",
@@ -479,8 +487,9 @@
           "wait": "waiting",
           "ride": "on the line"
         },
-        "sourceTimetable": "Lines, stops and timetable: local public transport, timetable of {{date}}, a working day. Walking routes follow OpenStreetMap streets.",
-        "sourceOsm": "Lines and stops come from OpenStreetMap, without a timetable: waiting time is estimated. Walking routes follow OpenStreetMap streets.",
+        "sourceTimetable": "Lines, stops and timetables come from public transport data (GTFS) for {{date}}, a working day. Walking routes follow OpenStreetMap streets.",
+        "sourceTimetableUndated": "Lines, stops and timetables come from public transport data (GTFS). The timetable date is not available in this report. Walking routes follow OpenStreetMap streets.",
+        "sourceOsm": "Lines and stops come from OpenStreetMap. This report did not use the operator’s timetable, so waiting times are estimated. Walking routes follow OpenStreetMap streets.",
         "groupLabel": "Destination type",
         "groups": {
           "places": "Key places",
@@ -536,7 +545,7 @@
         "eyebrow": "15 minutes · {{score}} / 100 · {{band}}",
         "precision": {
           "routed": "Precision: address · real streets",
-          "estimated": "Precision: address · estimate"
+          "estimated": "Precision: address · straight-line estimate"
         },
         "headline": {
           "all": "All {{count}} everyday things within {{limit}} minutes on foot",
@@ -563,8 +572,13 @@
             "zone": "{{limit}} minutes on foot",
             "places": "Everyday places"
           },
-          "source": "Places: OpenStreetMap, {{date}}. Walking routes follow streets and paths, at {{speed}} metres a minute.",
-          "sourceNoDate": "Places: OpenStreetMap. Walking routes follow streets and paths, at {{speed}} metres a minute.",
+          "source": "Places: OpenStreetMap, {{date}}.",
+          "sourceNoDate": "Places: OpenStreetMap.",
+          "method": {
+            "routed": "Walking times are calculated along the pedestrian network (streets and paths).",
+            "routedWithSpeed": "Walking times are calculated along the pedestrian network (streets and paths), at {{speed}} m/min.",
+            "estimated": "Walking times are estimated from straight-line distances, adjusted for detours."
+          },
           "minutes": "{{minutes}} min"
         },
         "checklist": {
@@ -662,7 +676,10 @@
         "precision": "Precision: address",
         "headline_one": "{{count}} large park, at most {{minutes}} min on foot",
         "headline_other": "{{count}} large parks, at most {{minutes}} min on foot",
+        "headlineApprox_one": "{{count}} large park, up to about {{minutes}} min on foot",
+        "headlineApprox_other": "{{count}} large parks, up to about {{minutes}} min on foot",
         "headlineNone": "No park within walking distance of the address",
+        "headlineNoData": "Parks and green spaces around the address",
         "lead": "Together they cover {{total}} ha. The largest, {{name}}, is {{area}} ha.",
         "share": "{{share}}% of the area within {{radius}} m is green space, against {{average}}% for the city on average.",
         "shareNoAverage": "{{share}}% of the area within {{radius}} m is green space.",
@@ -794,6 +811,7 @@
       },
       "airIndustry": {
         "title": "Air and industry",
+        "headlineNoData": "Air and industry data is unavailable for this address",
         "eyebrowPart": "{{name}} · {{score}} / 100",
         "eyebrowPartNoScore": "{{name}} · no data",
         "badge": "Precision: air at city level, industry at the address",
@@ -811,6 +829,8 @@
           "industryNone": "No factory in the register nearby"
         },
         "lead": {
+          "noAirData": "Air quality data is unavailable for this address.",
+          "noIndustryData": "Industry data is unavailable for this address.",
           "winter": "Fine dust rises in winter, as everywhere in {{city}}.",
           "nearest": "The nearest industrial site is {{distance}} away."
         },
@@ -989,7 +1009,8 @@
         "offers_other": "{{amount}} listings",
         "note": "Not part of the zone score. Investment is context for buyers who plan to rent the home out.",
         "headline": {
-          "city": "In {{city}}, asking prices are around €{{value}} per square metre"
+          "city": "In {{city}}, asking prices are around €{{value}} per square metre",
+          "radius": "Around the address, asking prices are about €{{value}} per square metre"
         },
         "lead": {
           "declared": "For {{area}} m², about {{price}}, asking price.",
@@ -1009,7 +1030,8 @@
           "nearby": "{{name}}, next to the city",
           "typical": "Typical apartment in listings: {{area}} m², €{{price}}",
           "legendRange": "typical range",
-          "legendMedian": "middle price"
+          "legendMedian": "middle price",
+          "radius": "Around the address"
         },
         "home": {
           "eyebrow": "For your apartment",
@@ -1017,27 +1039,40 @@
           "chosenArea": "Chosen area",
           "area": "{{area}} m²",
           "sliderLabel": "Apartment area",
+          "resetArea": "Reset to {{area}} m²",
           "price": "Estimated asking price",
           "approx": "≈ {{value}}",
           "between": "between {{low}} and {{high}}",
           "rent": "Estimated rent",
+          "rentBasis": {
+            "sameRooms": "Median rent for homes with the same room count.",
+            "perM2": "Per-square-metre estimate for this area."
+          },
           "perMonth": "per month"
         },
         "yield": {
           "eyebrow": "Gross yield per year",
           "title": "A year of rent is {{value}}% of the price",
           "value": "{{value}}%",
-          "note": "Twelve months of rent divided by the price, before taxes, repairs and months without a tenant."
+          "scope": {
+            "address": "Around the address",
+            "addressSaleCityRent": "Sale price around the address · citywide rent",
+            "citySaleAddressRent": "Citywide sale price · rent around the address",
+            "unknown": "Market data"
+          },
+          "note": "Twelve months of rent divided by the price, before taxes, repairs and months without a tenant.",
+          "legacyTitle": "Gross yield: {{value}}% (calculation basis unavailable)",
+          "declaredBasis": "Calculation for the declared area: 12 × {{rent}} per month ÷ {{sale}}.",
+          "basis": "Calculation: 12 × €{{rent}}/m² per month ({{rentSource}}, {{rentPeriod}}) ÷ €{{sale}}/m² ({{saleSource}}, {{salePeriod}})."
         },
         "history": {
-          "eyebrow_one": "Last month",
-          "eyebrow_other": "Last {{count}} months",
+          "eyebrow": "History · {{first}} – {{last}}",
           "title": {
             "up": "Since {{month}}, the asking price rose by €{{value}}/m²",
             "down": "Since {{month}}, the asking price fell by €{{value}}/m²",
             "flat": "Since {{month}}, the asking price has not changed"
           },
-          "chartLabel": "Median asking price per square metre, month by month",
+          "chartLabel": "Asking price per square metre in months with data",
           "forArea": "For {{area}} m², compared with {{month}}",
           "span_one": "{{percent}} in {{count}} month",
           "span_other": "{{percent}} in {{count}} months"
@@ -1052,13 +1087,17 @@
             "apartamente_org_index": "apartamente.org, monthly index",
             "imospot_index": "Imospot Index (CC BY 4.0)"
           },
-          "saleCity": "{{city}} · sale",
-          "saleCityOffers_one": "{{city}} · sale · {{amount}} listing",
-          "saleCityOffers_other": "{{city}} · sale · {{amount}} listings",
-          "rentCity": "{{city}} · rent",
-          "rentCityOffers_one": "{{city}} · rent · {{amount}} listing",
-          "rentCityOffers_other": "{{city}} · rent · {{amount}} listings"
-        }
+          "roles": {
+            "sale": "{{place}} · sale",
+            "rent": "{{place}} · rent",
+            "history": "Asking-price history",
+            "yield_sale": "Sale price used for yield",
+            "yield_rent": "Rent used for yield"
+          }
+        },
+        "badgeRadius": "Precision: around the address",
+        "apartments_one": "{{amount}} apartment",
+        "apartments_other": "{{amount}} apartments"
       },
       "closing": {
         "title": "Before the viewing",
@@ -1106,8 +1145,9 @@
       "hero": {
         "eyebrow": "Smart Check · report no. {{number}} · {{date}}",
         "leadNoStrengths": "The scores describe the area around the address.",
+        "leadNoScores": "We do not have enough data to calculate scores for this address.",
         "leadWeak": "Its weak point is {{weak}}.",
-        "leadNoWeak": "No score is weak.",
+        "leadNoWeak": "None of the available scores are weak.",
         "meta": "Calculated on data from {{date}} · radius of up to {{radius}} km",
         "ready": "Report ready",
         "noDetails": "No details declared",

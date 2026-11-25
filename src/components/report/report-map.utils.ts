@@ -33,16 +33,18 @@ export function boundsAround(center: LngLat, radiusM: number): LngLatBounds {
   ];
 }
 
+export function isDrawableLine(line: readonly LngLat[]): boolean {
+  return line.length > 1;
+}
+
 export function lineCollection(lines: readonly (readonly LngLat[])[]): MapFeatureCollection {
   return {
     type: 'FeatureCollection',
-    features: lines
-      .filter((line) => line.length > 1)
-      .map((line) => ({
-        type: 'Feature',
-        properties: {},
-        geometry: { type: 'LineString', coordinates: [...line] },
-      })),
+    features: lines.filter(isDrawableLine).map((line) => ({
+      type: 'Feature',
+      properties: {},
+      geometry: { type: 'LineString', coordinates: [...line] },
+    })),
   };
 }
 

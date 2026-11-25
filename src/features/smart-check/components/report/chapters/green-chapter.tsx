@@ -2,7 +2,12 @@ import { useTranslation } from 'react-i18next';
 import { ReportChapterHead } from '@/components/report/report-chapter-head';
 import { scoreBand } from '@/components/report/score-bands';
 import { formatNumber } from '@/i18n/format';
-import { listedParks, parkWalkMinutes, parksSummary } from '../../../green.utils';
+import {
+  isParkWalkEstimated,
+  listedParks,
+  parkWalkMinutes,
+  parksSummary,
+} from '../../../green.utils';
 import { scoredCategories } from '../../../report-summary.utils';
 import type { ReportChapterProps } from '../report-chapter-props';
 import { GreenParksBlock } from './green/green-parks-block';
@@ -18,6 +23,7 @@ export function GreenChapter({ report }: ReportChapterProps) {
   const band = item ? scoreBand(item.score) : null;
   const parks = section ? listedParks(section) : [];
   const { farthest, biggest, totalHa } = parksSummary(parks);
+  const hasEstimatedWalk = parks.some((park) => isParkWalkEstimated(park, section));
   const share = section?.share[String(section.near_radius_m)];
 
   const shareText =
@@ -58,25 +64,29 @@ export function GreenChapter({ report }: ReportChapterProps) {
               })
             : t('report.categories.green.name')
         }
-        badge={t('report.chapters.green.precision')}
+        badge={section ? t('report.chapters.green.precision') : undefined}
         isEyebrowColored
         title={
-          farthest
-            ? t('report.chapters.green.headline', {
-                count: parks.length,
-                minutes: parkWalkMinutes(farthest.walk_m),
-              })
-            : t('report.chapters.green.headlineNone')
+          !section
+            ? t('report.chapters.green.headlineNoData')
+            : farthest
+              ? t(
+                  hasEstimatedWalk
+                    ? 'report.chapters.green.headlineApprox'
+                    : 'report.chapters.green.headline',
+                  { count: parks.length, minutes: parkWalkMinutes(farthest) },
+                )
+              : t('report.chapters.green.headlineNone')
         }
         lead={lead()}
       />
-      {section && parks.length > 0 ? (
-        <GreenParksBlock report={report} parks={parks} />
-      ) : (
+      {!section ? (
         <p className="rounded-icon border border-border bg-card p-5 text-muted-foreground">
           {t('report.chapters.green.noData')}
         </p>
-      )}
+      ) : parks.length > 0 ? (
+        <GreenParksBlock report={report} parks={parks} />
+      ) : null}
       <ChapterScoreBlock
         report={report}
         chapter="green"

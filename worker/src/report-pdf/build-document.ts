@@ -46,7 +46,7 @@ export async function buildReportDocument(report: ReportData): Promise<PdfDocume
     maps.length === 0
       ? ''
       : `${mapSpecsScript(maps)}<script type="module" src="${MAP_CLIENT_PATH}"></script>`;
-  const html = `<!doctype html><html lang="ro"><head><meta charset="utf-8"><title>Smart Check · ${esc(report.addressText)}</title><link rel="stylesheet" href="${MAP_STYLES_PATH}"><style>${fontFaceCss()}\n${styles}</style></head><body>${chapters.map((chapter) => chapter.html).join('')}${mapScripts}</body></html>`;
+  const html = `<!doctype html><html lang="${report.locale}"><head><meta charset="utf-8"><title>Smart Check · ${esc(report.addressText)}</title><link rel="stylesheet" href="${MAP_STYLES_PATH}"><style>${fontFaceCss()}\n${styles}</style></head><body>${chapters.map((chapter) => chapter.html).join('')}${mapScripts}</body></html>`;
   const assets = new Map<string, PdfAsset>([
     ...fonts,
     ...mapLibrary,

@@ -19,6 +19,7 @@ import {
 
 const PARKS_RADIUS_M = 1500;
 const PARK_LIMIT = 6;
+const WALK_METRES_PER_MINUTE = 80;
 
 const COMPONENT_KEYS = ['c1', 'c2', 'c3', 'c4', 'c5'] as const;
 
@@ -38,9 +39,11 @@ const scoredInputsSchema = z.object({
 const noDataInputsSchema = z.object({ reason: z.string() });
 
 const surroundingsSchema = z.object({
+  score_park_ids: z.array(z.string()).optional(),
   parks: z.array(
     z.object({
       id: z.string(),
+      part_ids: z.array(z.string()).optional(),
       name: z.string().nullable(),
       kind: z.string(),
       area_ha: z.number(),
@@ -137,14 +140,9 @@ async function walkToParks(
   router: ValhallaClient,
   snapshotId: string,
   position: Position,
-  parks: readonly SurroundingPark[],
+  parkIds: readonly string[],
 ): Promise<Map<string, Leg | null>> {
-  const entrances = await readParkEntrances(
-    sql,
-    snapshotId,
-    position,
-    parks.map((park) => park.id),
-  );
+  const entrances = await readParkEntrances(sql, snapshotId, position, parkIds);
   const [cell] = await walkCellCandidates(router, [
     { cell_id: 'address', lng: position.longitude, lat: position.latitude, candidates: entrances },
   ]);
@@ -207,14 +205,23 @@ export function walkedParks(
   walkDetourFactor: number,
 ) {
   return parks
-    .map(({ distance_m, ...park }) => {
-      const leg = legs.get(park.id);
+    .map(({ distance_m, part_ids, ...park }) => {
+      const leg = (part_ids ?? [park.id]).reduce<Leg | null>((fastest, partId) => {
+        const candidate = legs.get(partId);
+        if (!candidate) return fastest;
+        return !fastest || candidate.seconds < fastest.seconds ? candidate : fastest;
+      }, null);
       return {
         ...park,
         walk_m: Math.round(leg ? leg.meters : distance_m * walkDetourFactor),
+        ...(leg ? { walk_seconds: leg.seconds } : {}),
       };
     })
-    .sort((a, b) => a.walk_m - b.walk_m);
+    .sort((a, b) => {
+      const left = a.walk_seconds ?? (a.walk_m * 60) / WALK_METRES_PER_MINUTE;
+      const right = b.walk_seconds ?? (b.walk_m * 60) / WALK_METRES_PER_MINUTE;
+      return left - right || a.walk_m - b.walk_m;
+    });
 }
 
 function componentValue(
@@ -274,9 +281,16 @@ export const greenReportSection: ReportSection = {
       Math.max(radii.wide, PARKS_RADIUS_M),
       greenParams.small_min_ha,
     );
-    const legs = router
-      ? await walkToParks(sql, router, snapshotId, position, surroundings.parks)
-      : new Map<string, Leg | null>();
+    const listedParkIds = surroundings.parks.map((park) => park.id);
+    const scoreParkIds = new Set(surroundings.score_park_ids ?? listedParkIds);
+    const listedPartIds = new Set(surroundings.parks.flatMap((park) => park.part_ids ?? [park.id]));
+    const additionalIds = [...listedPartIds].filter((id) => !scoreParkIds.has(id));
+    const [scoreLegs, additionalLegs] = router
+      ? await Promise.all([
+          walkToParks(sql, router, snapshotId, position, [...scoreParkIds]),
+          walkToParks(sql, router, snapshotId, position, additionalIds),
+        ])
+      : [new Map<string, Leg | null>(), new Map<string, Leg | null>()];
     const measure = await measureAddress(sql, {
       snapshotId,
       cityId: cell.city_id,
@@ -286,9 +300,14 @@ export const greenReportSection: ReportSection = {
     const address = scoreGreenCell(
       measure,
       greenParams,
-      addressWalks(measure, legs, greenParams.walk_detour_factor),
+      addressWalks(measure, scoreLegs, greenParams.walk_detour_factor),
     );
-    const distanceMethod: DistanceMethod = [...legs.values()].some(Boolean)
+    const parks = walkedParks(
+      surroundings.parks,
+      new Map([...scoreLegs, ...additionalLegs]),
+      greenParams.walk_detour_factor,
+    );
+    const distanceMethod: DistanceMethod = parks.some((park) => park.walk_seconds !== undefined)
       ? 'pedestrian_routing'
       : 'straight_line';
 
@@ -319,7 +338,7 @@ export const greenReportSection: ReportSection = {
         points: inputs.data.components[key] ?? null,
         weight: greenParams.weights[key],
       })),
-      parks: walkedParks(surroundings.parks, legs, greenParams.walk_detour_factor),
+      parks,
       areas: surroundings.areas as JsonObject,
     };
     return section;
