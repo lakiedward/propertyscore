@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(30);
+select plan(31);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -278,8 +278,14 @@ select results_eq(
       count(*) filter (where feature #>> '{properties,id}' = described #>> '{parks,1,id}')
     from multipart_surroundings, jsonb_array_elements(described #> '{areas,features}') as feature
   $$,
-  $$ values (2::bigint, 1::bigint) $$,
-  'Both nearby parts have the listed park ID on the map without changing the other park'
+  $$ values (3::bigint, 1::bigint) $$,
+  'All parts have the listed park ID on the map, including the part beyond the map radius'
+);
+
+select is(
+  (select jsonb_array_length(described #> '{parks,0,part_ids}') from multipart_surroundings),
+  3,
+  'The worker receives all fragment IDs for walking to the listed park'
 );
 
 select results_eq(

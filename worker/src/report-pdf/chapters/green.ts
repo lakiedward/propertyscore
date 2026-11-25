@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import type { ChapterBuilder } from '../chapter.ts';
 import {
   categoryEyebrow,
@@ -8,13 +10,68 @@ import {
   scoreCard,
   sourceDate,
 } from '../components.ts';
-import { esc, formatNumber, plural, walkMinutes } from '../format.ts';
+import { esc, formatNumber, plural } from '../format.ts';
 import { GREEN_AMENITIES } from '../labels.ts';
-import { addressDot, mapHtml, type MapMarker, type MapSpec } from '../maps.ts';
+import {
+  addressDot,
+  mapHtml,
+  type FeatureCollection,
+  type MapMarker,
+  type MapSpec,
+} from '../maps.ts';
+import type { ReportData } from '../report-data.ts';
 import { CATEGORY_THEME } from '../theme.ts';
 
 const LISTED_PARKS = 9;
 const LARGE_PARK_HA = 1;
+const WALK_METRES_PER_MINUTE = 80;
+
+const rings = z.array(z.array(z.tuple([z.number(), z.number()])));
+const polygon = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('Polygon'), coordinates: rings }),
+  z.object({ type: z.literal('MultiPolygon'), coordinates: z.array(rings) }),
+]);
+
+type Park = NonNullable<ReportData['sections']['green']>['parks'][number];
+type Position = Park['center'];
+
+function walkDuration(park: Park): number {
+  return park.walk_seconds === undefined
+    ? park.walk_m / WALK_METRES_PER_MINUTE
+    : park.walk_seconds / 60;
+}
+
+function walkMinutes(park: Park): number {
+  return Math.max(1, Math.round(walkDuration(park)));
+}
+
+function greenMapFit(
+  center: Position,
+  parks: readonly Park[],
+  areas: FeatureCollection,
+): Position[] {
+  const listedIds = new Set(parks.map((park) => park.id));
+  const min: Position = [...center];
+  const max: Position = [...center];
+  const extend = ([lng, lat]: Position) => {
+    min[0] = Math.min(min[0], lng);
+    min[1] = Math.min(min[1], lat);
+    max[0] = Math.max(max[0], lng);
+    max[1] = Math.max(max[1], lat);
+  };
+  for (const park of parks) extend(park.center);
+  for (const feature of areas.features) {
+    const id = feature.properties?.id;
+    if (typeof id !== 'string' || !listedIds.has(id)) continue;
+    const parsed = polygon.safeParse(feature.geometry);
+    if (!parsed.success) continue;
+    const geometry = parsed.data;
+    const points =
+      geometry.type === 'Polygon' ? geometry.coordinates.flat() : geometry.coordinates.flat(2);
+    for (const point of points) extend(point);
+  }
+  return [min, max];
+}
 
 export const greenChapter: ChapterBuilder = (report) => {
   const summary = report.categories.green;
@@ -29,7 +86,7 @@ export const greenChapter: ChapterBuilder = (report) => {
     });
     return { html: chapter(head + scoreCard('green', report) + sources), maps: [] };
   }
-  const parks = [...section.parks].sort((left, right) => left.walk_m - right.walk_m);
+  const parks = [...section.parks].sort((left, right) => walkDuration(left) - walkDuration(right));
   const large = parks.filter((park) => park.area_ha >= LARGE_PARK_HA);
   const listed = (large.length > 0 ? large : parks).slice(0, LISTED_PARKS);
   const farthest = listed.at(-1);
@@ -47,7 +104,7 @@ export const greenChapter: ChapterBuilder = (report) => {
     title:
       listed.length === 0 || !farthest
         ? 'Niciun parc mare la o plimbare de adresă'
-        : `${plural(listed.length, 'parc mare', 'parcuri mari', 'de parcuri mari')}, la cel mult ${String(walkMinutes(farthest.walk_m))} minute pe jos`,
+        : `${plural(listed.length, 'parc mare', 'parcuri mari', 'de parcuri mari')}, la cel mult ${String(walkMinutes(farthest))} minute pe jos`,
     lead:
       biggest && listed.length > 0
         ? `Împreună au ${formatNumber(totalHa)} ha. Cel mai mare, ${biggest.name ?? 'un spațiu verde fără nume'}, are ${formatNumber(biggest.area_ha, 1)} ha.${shareText}`
@@ -57,7 +114,7 @@ export const greenChapter: ChapterBuilder = (report) => {
   const map: MapSpec = {
     id: 'map-green',
     center,
-    fit: [center, ...listed.map((park) => park.center)],
+    fit: greenMapFit(center, listed, section.areas),
     padding: 48,
     layers: [{ kind: 'fill', data: section.areas, color: '#7DA94B', opacity: 0.7 }],
     markers: [
@@ -74,7 +131,7 @@ export const greenChapter: ChapterBuilder = (report) => {
       const chips = park.amenities
         .map((amenity) => `<i>${esc(GREEN_AMENITIES[amenity] ?? amenity)}</i>`)
         .join('');
-      return `<div class="gz-pc"><span class="gz-pc-h"><span class="fqx-n" style="--c:${theme.color}">${String(index + 1)}</span><b>${esc(park.name ?? 'Spațiu verde fără nume')}</b></span><span class="gz-pc-s"><b>${formatNumber(park.area_ha, 1)}</b> ha<span>·</span>${approximate ? 'circa ' : ''}${String(walkMinutes(park.walk_m))} min pe jos</span>${chips ? `<span class="gz-ch">${chips}</span>` : ''}</div>`;
+      return `<div class="gz-pc"><span class="gz-pc-h"><span class="fqx-n" style="--c:${theme.color}">${String(index + 1)}</span><b>${esc(park.name ?? 'Spațiu verde fără nume')}</b></span><span class="gz-pc-s"><b>${formatNumber(park.area_ha, 1)}</b> ha<span>·</span>${approximate ? 'circa ' : ''}${String(walkMinutes(park))} min pe jos</span>${chips ? `<span class="gz-ch">${chips}</span>` : ''}</div>`;
     })
     .join('');
   const list =

@@ -20,22 +20,28 @@ export function GreenMap({ report, parks, selectedId }: GreenMapProps) {
   const [longitude, latitude] = center;
   const section = report.result.sections.green;
 
+  const areas = useMemo(
+    () =>
+      section
+        ? areasOf(
+            section,
+            parks.map((park) => park.id),
+          )
+        : undefined,
+    [section, parks],
+  );
   const bounds = useMemo(
-    () => framingBounds([[longitude, latitude], ...parks.map((park) => park.center)]),
-    [longitude, latitude, parks],
+    () => framingBounds([[longitude, latitude], ...parks.map((park) => park.center)], areas),
+    [longitude, latitude, parks, areas],
   );
 
   const overlays = useMemo<MapOverlay[]>(() => {
-    if (!section) return [];
-    const all = areasOf(
-      section,
-      parks.map((park) => park.id),
-    );
+    if (!section || !areas) return [];
     return [
       {
         id: 'green-areas',
         kind: 'fill',
-        data: all,
+        data: areas,
         colorToken: '--ps-leaf-300',
         opacity: 0.75,
         isVisible: true,
@@ -49,7 +55,7 @@ export function GreenMap({ report, parks, selectedId }: GreenMapProps) {
         isVisible: selectedId !== null,
       },
     ];
-  }, [section, parks, selectedId]);
+  }, [section, areas, selectedId]);
 
   const markers: MapMarkerItem[] = [
     ...parks.map((park, index) => ({

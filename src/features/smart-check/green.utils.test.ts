@@ -8,9 +8,13 @@ if (!section) throw new Error('fixture has no green section');
 
 describe('parkWalkMinutes', () => {
   it('walks 80 metres a minute and never returns less than one', () => {
-    expect(parkWalkMinutes(155)).toBe(2);
-    expect(parkWalkMinutes(1535)).toBe(19);
-    expect(parkWalkMinutes(10)).toBe(1);
+    expect(parkWalkMinutes({ walk_m: 155 })).toBe(2);
+    expect(parkWalkMinutes({ walk_m: 1535 })).toBe(19);
+    expect(parkWalkMinutes({ walk_m: 10 })).toBe(1);
+  });
+
+  it('prefers actual routing time over an estimate from metres', () => {
+    expect(parkWalkMinutes({ walk_m: 1200, walk_seconds: 240 })).toBe(4);
   });
 });
 
@@ -24,6 +28,15 @@ describe('listedParks', () => {
   it('falls back to every park when none is large', () => {
     const small = { ...section, parks: section.parks.filter((park) => park.area_ha < 1) };
     expect(listedParks(small)).toHaveLength(small.parks.length);
+  });
+
+  it('orders parks and takes the farthest by routed time when available', () => {
+    const [near, far] = listedParks(section);
+    if (!near || !far) throw new Error('fixture has too few parks');
+    const routedFar = { ...far, walk_seconds: 240 };
+    const parks = listedParks({ ...section, parks: [near, routedFar] });
+    expect(parks).toEqual([routedFar, near]);
+    expect(parksSummary(parks).farthest).toBe(near);
   });
 });
 
@@ -59,5 +72,50 @@ describe('framingBounds', () => {
     expect(south).toBeLessThan(45.7);
     expect(east).toBeGreaterThan(21.2);
     expect(north).toBeGreaterThan(45.8);
+  });
+
+  it('includes the outlying polygon of a displayed multipart park, not an unlisted park', () => {
+    const [park] = listedParks(section);
+    if (!park) throw new Error('fixture has no listed park');
+    const distant = [
+      [21.3, 45.9],
+      [21.4, 45.9],
+      [21.4, 46],
+      [21.3, 45.9],
+    ];
+    const unlisted = [
+      [22.3, 46.9],
+      [22.4, 46.9],
+      [22.4, 47],
+      [22.3, 46.9],
+    ];
+    const collection = areasOf(
+      {
+        ...section,
+        areas: {
+          ...section.areas,
+          features: [
+            ...section.areas.features,
+            {
+              type: 'Feature',
+              properties: { id: park.id },
+              geometry: { type: 'MultiPolygon', coordinates: [[distant]] },
+            },
+            {
+              type: 'Feature',
+              properties: { id: 'unlisted' },
+              geometry: { type: 'Polygon', coordinates: [unlisted] },
+            },
+          ],
+        },
+      },
+      [park.id],
+    );
+
+    const [, [east, north]] = framingBounds([park.center], collection);
+    expect(east).toBeGreaterThan(21.4);
+    expect(east).toBeLessThan(22.3);
+    expect(north).toBeGreaterThan(46);
+    expect(north).toBeLessThan(46.9);
   });
 });

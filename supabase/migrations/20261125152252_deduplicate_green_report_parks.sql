@@ -59,6 +59,7 @@ begin
     select
       rp.relation_id,
       (array_agg(rp.id order by n.distance_m nulls last, rp.id))[1] as id,
+      array_agg(rp.id order by n.distance_m nulls last, rp.id) as part_ids,
       sum(rp.area_ha) as area_ha,
       array(
         select distinct amenity
@@ -74,6 +75,7 @@ begin
   ),
   listed as (
     select n.id, n.name, n.kind, n.distance_m,
+      coalesce(p.part_ids, array[n.id]) as part_ids,
       coalesce(p.area_ha, n.area_ha) as area_ha,
       coalesce(p.amenities, n.amenities) as amenities
     from nearby n
@@ -91,30 +93,39 @@ begin
     order by n.distance_m, n.id
     limit p_park_limit
   ),
-  clipped as (
-    select
-      ga.id,
-      coalesce(p.id, ga.id) as park_id,
-      extensions.st_transform(
-        extensions.st_simplifypreservetopology(
-          extensions.st_collectionextract(
-            extensions.st_intersection(ga.shape, extensions.st_buffer(v_point, p_map_radius_m, 32)),
-            3
-          ),
-          4
-        ),
-        4326
+  multipart_map_parts as (
+    select ga.id, p.id as park_id, ga.shape
+    from listed p
+    cross join lateral unnest(p.part_ids) as part (id)
+    join private.green_areas ga on ga.id = part.id
+    where cardinality(p.part_ids) > 1
+  ),
+  map_parts as (
+    select id, park_id, shape as geom from multipart_map_parts
+    union all
+    select ga.id, ga.id as park_id,
+      extensions.st_collectionextract(
+        extensions.st_intersection(ga.shape, extensions.st_buffer(v_point, p_map_radius_m, 32)),
+        3
       ) as geom
     from private.green_areas ga
-    left join relation_parts rp on rp.id = ga.id
-    left join relation_parks p on p.relation_id = rp.relation_id
     where ga.snapshot_id = p_snapshot_id
       and extensions.st_dwithin(ga.shape, v_point, p_map_radius_m)
+      and not exists (select 1 from multipart_map_parts mp where mp.id = ga.id)
+  ),
+  simplified_parts as (
+    select id, park_id,
+      extensions.st_transform(
+        extensions.st_simplifypreservetopology(geom, 4),
+        4326
+      ) as geom
+    from map_parts
   )
   select jsonb_build_object(
     'parks', (
       select coalesce(jsonb_agg(jsonb_build_object(
         'id', p.id,
+        'part_ids', to_jsonb(p.part_ids),
         'name', p.name,
         'kind', p.kind,
         'area_ha', p.area_ha,
@@ -135,11 +146,11 @@ begin
       'features', (
         select coalesce(jsonb_agg(jsonb_build_object(
           'type', 'Feature',
-          'properties', jsonb_build_object('id', clipped.park_id),
-          'geometry', extensions.st_asgeojson(clipped.geom, 6)::jsonb
-        ) order by clipped.id), '[]'::jsonb)
-        from clipped
-        where not extensions.st_isempty(clipped.geom)
+          'properties', jsonb_build_object('id', park_id),
+          'geometry', extensions.st_asgeojson(geom, 6)::jsonb
+        ) order by id), '[]'::jsonb)
+        from simplified_parts
+        where not extensions.st_isempty(geom)
       )
     )
   ) into v_described;
