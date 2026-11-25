@@ -3,7 +3,8 @@ import { z } from 'zod';
 import type { JsonObject, Sql } from '../../db/sql.ts';
 import { sectionParams } from '../../report/cell-category.ts';
 import type { ReportSection } from '../../report/report-section.ts';
-import { WorkerError } from '../../lib/errors.ts';
+import { errorCode, WorkerError } from '../../lib/errors.ts';
+import type { Logger } from '../../lib/logger.ts';
 import type { Leg, LngLat, ValhallaClient } from '../../routing/valhalla.ts';
 import { type DistanceMethod, legsFromOrigin } from '../../routing/walk-access.ts';
 import {
@@ -395,8 +396,9 @@ async function buildFifteenMinuteReport(options: {
   snapshotId: string;
   origin: LngLat;
   params: FifteenMinuteParams;
+  logger: Logger;
 }): Promise<FifteenMinuteReport> {
-  const { sql, router, snapshotId, origin, params } = options;
+  const { sql, router, snapshotId, origin, params, logger } = options;
   const cell = await readReportCell(sql, snapshotId, origin);
   const [coveredKeys, candidates] = await Promise.all([
     readCoveredKeys(sql, snapshotId, cell.cityId, params),
@@ -425,17 +427,24 @@ async function buildFifteenMinuteReport(options: {
   const routes = [];
   if (router) {
     for (const place of routeTargets(assembled)) {
-      const route = await router.route({
-        origin,
-        destination: { lng: place.lng, lat: place.lat },
-        walkSpeedKmh: params.walk_speed_kmh,
-      });
-      if (route) {
+      try {
+        const route = await router.route({
+          origin,
+          destination: { lng: place.lng, lat: place.lat },
+          walkSpeedKmh: params.walk_speed_kmh,
+        });
+        if (route === null) continue;
         routes.push({
           place_id: place.id,
           minutes: Math.round(route.seconds / 60),
           distance_m: route.meters,
           polyline6: route.polyline6,
+        });
+      } catch (error) {
+        logger.warn('walking route geometry skipped', {
+          snapshot_id: snapshotId,
+          category: place.category,
+          code: errorCode(error),
         });
       }
     }
@@ -446,13 +455,14 @@ async function buildFifteenMinuteReport(options: {
 
 export const fifteenMinuteReportSection: ReportSection = {
   key: 'fifteen_minute',
-  build: async ({ sql, router, snapshotId, latitude, longitude, params }) => {
+  build: async ({ sql, router, snapshotId, latitude, longitude, params, logger }) => {
     const report = await buildFifteenMinuteReport({
       sql,
       router: router ?? null,
       snapshotId,
       origin: { lng: longitude, lat: latitude },
       params: parseFifteenMinuteParams(sectionParams(params, 'fifteen_minute')),
+      logger,
     });
     const { isochrones, ...rest } = report;
     const section: JsonObject = {
