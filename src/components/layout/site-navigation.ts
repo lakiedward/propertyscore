@@ -14,9 +14,6 @@ export type HomeSectionId = (typeof HOME_SECTION)[keyof typeof HOME_SECTION];
 
 export type HomeServiceDestination = { to: '/'; hash: HomeSectionId } | { to: '/check' };
 
-export type HomePriceAction =
-  { ctaHash: HomeSectionId; ctaTo?: never } | { ctaHash?: never; ctaTo: '/check' };
-
 const HOME_SECTION_LINKS = [
   { id: 'smart-check', labelKey: 'site.sections.smartCheck' },
   { id: 'physical', labelKey: 'site.sections.physical' },

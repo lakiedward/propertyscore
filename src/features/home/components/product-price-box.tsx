@@ -2,12 +2,15 @@ import { cva } from 'class-variance-authority';
 import type { ReactNode } from 'react';
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
-import type { HomePriceAction } from '@/components/layout/site-navigation';
+import type { HomeSectionId } from '@/components/layout/site-navigation';
 import { PillLink } from '@/components/navigation/pill-link';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
+import type { PriceLinkProps } from './smart-check-price-link';
 
 type Product = 'physical' | 'smartcheck';
+
+const DefaultActionLink = PillLink;
 
 const boxVariants = cva('w-full overflow-hidden rounded-xl text-on-inverse', {
   variants: { product: { physical: 'bg-primary', smartcheck: 'bg-info' } },
@@ -39,7 +42,7 @@ const CTA_TONE = { physical: 'cta', smartcheck: 'inverse' } as const satisfies R
   'cta' | 'inverse'
 >;
 
-type ProductPriceBoxProps = {
+type SectionProductPriceBoxProps = {
   product: Product;
   label: string;
   kind: string;
@@ -47,7 +50,10 @@ type ProductPriceBoxProps = {
   currency: Currency;
   footer: ReactNode;
   ctaLabel: string;
-} & HomePriceAction;
+  ctaHash: HomeSectionId;
+};
+
+type ProductPriceBoxProps = PriceLinkProps<SectionProductPriceBoxProps>;
 
 export function ProductPriceBox({
   product,
@@ -58,7 +64,7 @@ export function ProductPriceBox({
   footer,
   ctaLabel,
   ctaHash,
-  ctaTo,
+  actionLink: PillLink = DefaultActionLink,
 }: ProductPriceBoxProps) {
   return (
     <div role="group" aria-label={label} className={boxVariants({ product })}>
@@ -77,7 +83,7 @@ export function ProductPriceBox({
       </div>
       <div className={footerVariants({ product })}>
         <span className={footerTextVariants({ product })}>{footer}</span>
-        <PillLink to={ctaTo ?? '/'} hash={ctaHash} tone={CTA_TONE[product]} size="sm">
+        <PillLink to="/" hash={ctaHash} tone={CTA_TONE[product]} size="sm">
           {ctaLabel}
         </PillLink>
       </div>

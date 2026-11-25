@@ -1,13 +1,16 @@
 import { cva } from 'class-variance-authority';
 import { CheckIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { HomePriceAction, HomeSectionId } from '@/components/layout/site-navigation';
+import type { HomeSectionId } from '@/components/layout/site-navigation';
 import { PillLink } from '@/components/navigation/pill-link';
 import { TextLink } from '@/components/navigation/text-link';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
+import type { PriceLinkProps } from './smart-check-price-link';
 
 type PriceCardTone = 'physical' | 'smartcheck';
+
+const DefaultActionLink = PillLink;
 
 const priceCardVariants = cva('flex flex-col gap-4.5 rounded-2xl p-6 text-on-inverse w520:p-10', {
   variants: { tone: { physical: 'bg-primary shadow-price', smartcheck: 'bg-info' } },
@@ -18,7 +21,7 @@ const CTA_TONE = { physical: 'cta', smartcheck: 'inverse' } as const satisfies R
   'cta' | 'inverse'
 >;
 
-type PriceCardProps = {
+type SectionPriceCardProps = {
   tone: PriceCardTone;
   brand: ReactNode;
   amount: number;
@@ -27,9 +30,12 @@ type PriceCardProps = {
   badge: ReactNode;
   features: readonly { title: string; text: string }[];
   cta: string;
+  ctaHash: HomeSectionId;
   secondary: string;
   secondaryHash: HomeSectionId;
-} & HomePriceAction;
+};
+
+type PriceCardProps = PriceLinkProps<SectionPriceCardProps>;
 
 export function PriceCard({
   tone,
@@ -41,7 +47,7 @@ export function PriceCard({
   features,
   cta,
   ctaHash,
-  ctaTo,
+  actionLink: PillLink = DefaultActionLink,
   secondary,
   secondaryHash,
 }: PriceCardProps) {
@@ -70,7 +76,7 @@ export function PriceCard({
         ))}
       </ul>
       <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-2">
-        <PillLink to={ctaTo ?? '/'} hash={ctaHash} tone={CTA_TONE[tone]}>
+        <PillLink to="/" hash={ctaHash} tone={CTA_TONE[tone]}>
           {cta}
         </PillLink>
         <TextLink to="/" hash={secondaryHash} tone="inverse">
