@@ -69,7 +69,7 @@ const safetySchema = z.object({
 const accessibilitySchema = z.object({
   status: z.literal('scored'),
   data_quality: z.enum(['gtfs', 'osm_only']),
-  reference_date: z.string().nullable(),
+  reference_date: z.iso.date().nullable().catch(null),
   stops: z.array(
     z.object({
       id: z.string(),

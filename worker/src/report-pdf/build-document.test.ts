@@ -42,6 +42,41 @@ describe('buildReportDocument', () => {
     });
   });
 
+  it.each([
+    { date: 'not-a-date', displayedDate: null },
+    { date: '2026-02-30', displayedDate: null },
+    { date: '2026-11-03', displayedDate: '3 nov. 2026' },
+  ])('only cites a valid local GTFS reference date ($date)', async ({ date, displayedDate }) => {
+    const input = reportInputSchema.parse(await exampleInput());
+    const accessibility = input.result.accessibility;
+    if (!accessibility || typeof accessibility !== 'object') {
+      throw new Error('The example report has no accessibility section');
+    }
+    const report = toReportData({
+      ...input,
+      result: {
+        ...input.result,
+        accessibility: { ...accessibility, data_quality: 'gtfs', reference_date: date },
+        snapshot: { ...input.result.snapshot, source_dates: { gtfs: '2026-11-25' } },
+      },
+    });
+    const { html } = await buildReportDocument(report);
+
+    expect(report.unreadableSections).not.toContain('accessibility');
+    expect(html).not.toContain('25 nov. 2026');
+    if (displayedDate) {
+      expect(html).toContain(`Orare transport public (GTFS) · ${displayedDate}`);
+      expect(html).toContain(
+        `Orare transport public (GTFS)</span><span class="dt">${displayedDate}`,
+      );
+      expect(html).toContain(`(GTFS) pentru ${displayedDate}, o zi lucrătoare.`);
+    } else {
+      expect(html).toContain('Data orarului nu este disponibilă în raport.');
+      expect(html).not.toContain('Orare transport public (GTFS)');
+      expect(html).not.toContain(date);
+    }
+  });
+
   it('draws the city reach card and leaves out the neighbourhoods line when the city has none', async () => {
     const input = reportInputSchema.parse(await exampleInput());
     const withPlaces = toReportData(input);

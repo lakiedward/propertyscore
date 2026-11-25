@@ -6,12 +6,13 @@ import { renderWithProviders } from '@/test/render';
 import type { ReadyReport } from '../../../report.types';
 import { parseReportResult } from '../../../report.utils';
 import { AccessibilityChapter } from './accessibility-chapter';
+import { ClosingMethod } from './closing/closing-method';
 
 vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 
-function readyReport(): ReadyReport {
+function readyReport(raw = FREIDORF_REPORT_RESULT): ReadyReport {
   const row = buildReportRow();
-  const result = parseReportResult(FREIDORF_REPORT_RESULT);
+  const result = parseReportResult(raw);
   if (!result) throw new Error('The Freidorf fixture no longer parses');
   return { ...row, status: 'ready', result };
 }
@@ -70,5 +71,44 @@ describe('AccessibilityChapter', () => {
     expect(
       screen.getByRole('button', { name: /Timișoara North Station, 39 minutes/ }),
     ).toBeInTheDocument();
+  });
+
+  it.each([
+    { date: 'not-a-date', displayedDate: null },
+    { date: '2026-02-30', displayedDate: null },
+    { date: '2026-11-03', displayedDate: '3 nov. 2026' },
+  ])('only cites a valid local GTFS reference date ($date)', async ({ date, displayedDate }) => {
+    const accessibility = FREIDORF_REPORT_RESULT.accessibility;
+    if (!accessibility || typeof accessibility !== 'object') {
+      throw new Error('The Freidorf fixture has no accessibility section');
+    }
+    const report = readyReport({
+      ...FREIDORF_REPORT_RESULT,
+      accessibility: { ...accessibility, data_quality: 'gtfs', reference_date: date },
+      snapshot: { period: '2026-11-01', source_dates: { gtfs: '2026-11-25' } },
+    });
+    await renderWithProviders(
+      <>
+        <AccessibilityChapter report={report} onOpenChapter={vi.fn()} />
+        <ClosingMethod report={report} />
+      </>,
+    );
+
+    const copy = ro.report.chapters.accessibility;
+    const closingSource = ro.report.chapters.closing.method.sources.gtfs;
+    expect(screen.getByText(/Accesibilitate · 28 \/ 100/)).toBeInTheDocument();
+    expect(screen.queryByText(/25 nov\.? 2026/)).not.toBeInTheDocument();
+    if (displayedDate) {
+      expect(
+        screen.getByText(copy.sourceTimetable.replace('{{date}}', displayedDate)),
+      ).toBeVisible();
+      expect(screen.getByText(`${copy.sources.gtfs} · ${displayedDate}`)).toBeInTheDocument();
+      expect(screen.getByText(closingSource)).toBeVisible();
+      expect(screen.getByText(displayedDate.replace('.', ''))).toBeVisible();
+    } else {
+      expect(screen.getByText(copy.sourceTimetableUndated)).toBeVisible();
+      expect(screen.queryByText(/Orar transport public ·/)).not.toBeInTheDocument();
+      expect(screen.queryByText(closingSource)).not.toBeInTheDocument();
+    }
   });
 });
