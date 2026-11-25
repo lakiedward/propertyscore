@@ -48,7 +48,7 @@ export function MyReportCard({ report }: MyReportCardProps) {
   return (
     <article
       aria-labelledby={titleId}
-      className="grid overflow-hidden rounded-xl border border-card bg-card shadow-card-soft sm:grid-cols-[240px_minmax(0,1fr)]"
+      className="grid overflow-hidden rounded-xl border border-card bg-card shadow-card-soft sm:grid-cols-[200px_minmax(0,1fr)]"
     >
       <ReportVisual report={report} />
       <div className="flex min-w-0 flex-col gap-2.5 px-5 py-4 sm:px-5">
@@ -120,7 +120,7 @@ function ReportVisual({ report }: MyReportCardProps) {
     report.status === 'ready' && report.overall_score !== null ? report.overall_score : null;
 
   return (
-    <div className="relative flex min-h-36 items-center justify-center bg-report-hero px-4 pt-11 pb-5 text-on-inverse">
+    <div className="relative flex min-h-40 items-center justify-center bg-report-hero px-4 pt-12 pb-5 text-on-inverse">
       <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-card px-2.5 py-1.25 text-meta font-extrabold text-report-hero">
         <ChartNoAxesColumnIcon aria-hidden className="size-3.5" />
         {t('myReports.kind')}
@@ -141,7 +141,7 @@ function ReportVisual({ report }: MyReportCardProps) {
           value={score}
           label={t('myReports.scoreLabel', { score })}
           caption={t('report.frame.outOf')}
-          className="size-30"
+          className="size-26"
         />
       )}
     </div>
