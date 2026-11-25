@@ -9,6 +9,7 @@ import { refreshReportPdf } from '../report-pdf/render-report-pdf.ts';
 import { reportInputSchema, type ReportData } from '../report-pdf/report-data.ts';
 import { processReport } from './process-report.ts';
 import type { ReportPdfStorage, StoredReportPdfStorage } from './report-pdf-storage.ts';
+import { processNextReportPdfVariant } from './report-pdf-variants.ts';
 import { claimNextReport, REPORT_QUEUE_CHANNEL } from './report-queue.db.ts';
 
 const silentLogger = createLogger('error', () => undefined);
@@ -165,6 +166,31 @@ describe.skipIf(!databaseUrl)('processReport against the local database', () => 
       result: { green: { city: 'sibiu' } },
     });
     expect(await claimNextReport(sql)).toBeNull();
+
+    const saved = await readReport(reportId);
+    expect(await processNextReportPdfVariant(sql, renderReport, storage, silentLogger)).toBe(true);
+    expect(renderReport).toHaveBeenLastCalledWith(
+      expect.objectContaining({ result: saved?.result }),
+      'en',
+    );
+    expect(uploads).toEqual([
+      { path: expectedPath, bytes: 15 },
+      { path: `${OWNER_ID}/${reportId}-en.pdf`, bytes: 15 },
+    ]);
+
+    await sql`delete from private.online_report_pdf_variants where report_id = ${reportId}`;
+    for (const locale of ['ro', 'en'] as const) {
+      await sql`select public.request_online_report_pdf_variant(${reportId}, ${locale}, ${OWNER_ID})`;
+      expect(await processNextReportPdfVariant(sql, renderReport, storage, silentLogger)).toBe(
+        true,
+      );
+      expect(renderReport).toHaveBeenLastCalledWith(
+        expect.objectContaining({ result: saved?.result }),
+        locale,
+      );
+      expect(uploads.at(-1)?.path).toBe(`${OWNER_ID}/${reportId}-${locale}.pdf`);
+    }
+    expect(await readReport(reportId)).toEqual(saved);
   });
 
   it('replaces the PDF from the saved result even when a section has no data', async () => {

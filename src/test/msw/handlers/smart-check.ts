@@ -12,7 +12,10 @@ export const SEEDED_SHARE_TOKEN = 'a'.repeat(48);
 
 export const CREATED_SHARE_TOKEN = 'b'.repeat(48);
 
-export const SIGNED_PDF_URL = 'https://files.example.test/smartcheck.pdf';
+export const SIGNED_PDF_URL = {
+  ro: 'https://files.example.test/smartcheck-ro.pdf',
+  en: 'https://files.example.test/smartcheck-en.pdf',
+};
 
 function isSharedRequest(body: unknown, reportKey: string, tokenKey: string) {
   if (typeof body !== 'object' || body === null) return false;
@@ -48,13 +51,19 @@ export const smartCheckHandlers = [
     supabaseUrl('/rest/v1/rpc/revoke_report_share_link'),
     () => new HttpResponse(null, { status: 204 }),
   ),
-  http.post(supabaseUrl('/storage/v1/object/sign/online-report-pdfs/*'), () =>
-    HttpResponse.json({ signedURL: '/object/sign/online-report-pdfs/report.pdf?token=signed' }),
-  ),
   http.post(supabaseUrl('/functions/v1/shared-report-pdf'), async ({ request }) => {
     const body: unknown = await request.json();
-    return isSharedRequest(body, 'reportId', 'token')
-      ? HttpResponse.json({ url: SIGNED_PDF_URL })
-      : HttpResponse.json({ error: 'not_found' }, { status: 404 });
+    if (typeof body === 'object' && body !== null) {
+      const fields = new Map<string, unknown>(Object.entries(body));
+      const locale = fields.get('locale');
+      const isOwnerRequest = fields.get('reportId') === SEEDED_REPORT.id && !fields.has('token');
+      if (
+        (locale === 'ro' || locale === 'en') &&
+        (isOwnerRequest || isSharedRequest(body, 'reportId', 'token'))
+      ) {
+        return HttpResponse.json({ status: 'ready', url: SIGNED_PDF_URL[locale] });
+      }
+    }
+    return HttpResponse.json({ error: 'not_found' }, { status: 404 });
   }),
 ];

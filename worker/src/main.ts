@@ -15,6 +15,10 @@ import {
 } from './report-pdf/render-report-pdf.ts';
 import { processReport } from './report-queue/process-report.ts';
 import { createReportPdfStorage } from './report-queue/report-pdf-storage.ts';
+import {
+  processNextReportPdfVariant,
+  type RenderReport,
+} from './report-queue/report-pdf-variants.ts';
 import { claimNextReport, REPORT_QUEUE_CHANNEL } from './report-queue/report-queue.db.ts';
 import { serveSavedReportWalkRoutes } from './report-queue/saved-report-walk-routes.ts';
 import { serveReports } from './report-queue/serve-reports.ts';
@@ -70,6 +74,8 @@ function reportStorage(env: Env, command: 'serve-reports' | 'refresh-report-pdf'
 
 async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<void> {
   const storage = reportStorage(env, 'serve-reports');
+  const renderReport: RenderReport = async (raw, locale) =>
+    (await renderReportDocument(raw, { chromiumPath: env.CHROMIUM_PATH, logger, locale })).pdf;
   const work = createWorkSignal();
   const shutdown = stopOnSignals(logger);
   const stop = shutdown.signal;
@@ -89,12 +95,23 @@ async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<voi
           sections: REPORT_SECTIONS,
           router,
           earthquakes: createEarthquakeCatalog(),
-          renderReport: async (raw) =>
-            (await renderReportDocument(raw, { chromiumPath: env.CHROMIUM_PATH, logger })).pdf,
+          renderReport,
           storage,
           logger,
         }),
-      waitForWork: work.wait,
+      waitForWork: async (timeoutMs, signal) => {
+        try {
+          if (
+            !signal.aborted &&
+            (await processNextReportPdfVariant(sql, renderReport, storage, logger))
+          ) {
+            return;
+          }
+        } catch (error) {
+          logger.error('localized report pdf queue unreachable', { code: errorCode(error) });
+        }
+        await work.wait(timeoutMs, signal);
+      },
       stop,
       logger,
     });

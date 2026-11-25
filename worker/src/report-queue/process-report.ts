@@ -8,13 +8,12 @@ import type { ValhallaClient } from '../routing/valhalla.ts';
 import type { EarthquakeCatalog } from '../scoring/seismic/earthquake-catalog.ts';
 import { startLeaseRenewal } from './lease-renewal.ts';
 import type { ReportPdfStorage } from './report-pdf-storage.ts';
+import { registerNewReportPdf, type RenderReport } from './report-pdf-variants.ts';
 import { attachReportPdf, extendReportClaim, reportPdfPath } from './report-queue.db.ts';
 
 const LEASE_RENEWAL_MS = 5 * 60_000;
 
 const PDF_ATTEMPTS = 2;
-
-type RenderReport = (raw: unknown) => Promise<Buffer>;
 
 export type ProcessReportOptions = {
   sql: Sql;
@@ -74,6 +73,7 @@ export async function processReport(options: ProcessReportOptions): Promise<void
           return pdf.length;
         });
         await attachReportPdf(transaction, reportId, path);
+        await registerNewReportPdf(transaction, reportId, path);
         logger.info('report pdf stored', { report_id: reportId, bytes });
       },
     });

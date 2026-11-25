@@ -1,6 +1,6 @@
 import type {
-  SharedReportPdfRequest,
-  SharedReportPdfResponse,
+  ReportPdfRequest,
+  ReportPdfResponse,
 } from '../../../../supabase/functions/_shared/types';
 import { z } from 'zod';
 import { AppError, type AppErrorReason } from '@/lib/errors';
@@ -170,9 +170,13 @@ export async function createOnlineReport(order: CheckOrder) {
 
 const SHARE_LINK_COLUMNS = 'id, expires_at, created_at' as const;
 
-const sharedReportPdfResponseSchema = z.object({
-  url: z.url(),
-}) satisfies z.ZodType<SharedReportPdfResponse>;
+const PDF_POLL_MS = 3_000;
+const PDF_WAIT_MS = 3 * 60_000;
+const reportPdfResponseSchema = z.discriminatedUnion('status', [
+  z.object({ status: z.literal('ready'), url: z.url() }),
+  z.object({ status: z.literal('pending') }),
+  z.object({ status: z.literal('unavailable') }),
+]) satisfies z.ZodType<ReportPdfResponse>;
 
 export async function getActiveShareLink(reportId: string) {
   const { data, error } = await supabase
@@ -208,14 +212,22 @@ export async function revokeShareLink(reportId: string) {
   if (error) throw toAppError(error);
 }
 
-export async function getSharedReportPdfUrl(reportId: string, token: string) {
-  const body: SharedReportPdfRequest = { reportId, token };
-  const response = await supabase.functions.invoke<unknown>('shared-report-pdf', { body });
-  const error: unknown = response.error;
-  if (error) throw toAppError(error);
-  const parsed = sharedReportPdfResponseSchema.safeParse(response.data);
-  if (!parsed.success) {
-    throw new AppError('unknown', 'Shared report PDF response does not match its schema');
+export async function getReportPdfUrl(body: ReportPdfRequest) {
+  const signal = AbortSignal.timeout(PDF_WAIT_MS);
+  while (!signal.aborted) {
+    const response = await supabase.functions.invoke<unknown>('shared-report-pdf', {
+      body,
+      signal,
+    });
+    const error: unknown = response.error;
+    if (error) throw toAppError(error);
+    const parsed = reportPdfResponseSchema.safeParse(response.data);
+    if (!parsed.success) {
+      throw new AppError('unknown', 'Report PDF response does not match its schema');
+    }
+    if (parsed.data.status === 'ready') return parsed.data.url;
+    if (parsed.data.status === 'unavailable') break;
+    await new Promise<void>((resolve) => window.setTimeout(resolve, PDF_POLL_MS));
   }
-  return parsed.data.url;
+  throw new AppError('unknown', 'Report PDF preparation did not complete');
 }

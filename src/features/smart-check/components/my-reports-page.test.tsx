@@ -5,7 +5,11 @@ import roCommon from '@/i18n/locales/ro/common.json';
 import ro from '@/i18n/locales/ro/smartCheck.json';
 import { signedInAs } from '@/test/factories/auth';
 import { buildReportRow, toMyReportRow } from '@/test/factories/smart-check-report';
-import { CREATED_SHARE_TOKEN, SEEDED_REPORT } from '@/test/msw/handlers/smart-check';
+import {
+  CREATED_SHARE_TOKEN,
+  SEEDED_REPORT,
+  SIGNED_PDF_URL,
+} from '@/test/msw/handlers/smart-check';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
@@ -31,19 +35,22 @@ describe('MyReportsPage', { timeout: 20_000 }, () => {
       'href',
       `/check/result/${SEEDED_REPORT.id}`,
     );
-    expect(within(card).getByRole('button', { name: ro.report.pdf.download })).toBeInTheDocument();
+    expect(
+      within(card).getByRole('button', { name: ro.report.pdf.download.ro }),
+    ).toBeInTheDocument();
+    expect(
+      within(card).getByRole('button', { name: ro.report.pdf.download.en }),
+    ).toBeInTheDocument();
     expect(within(card).getByRole('button', { name: ro.report.share.action })).toBeInTheDocument();
   });
 
   it('downloads the PDF through a signed link', async () => {
     const { user } = await renderAppRoute('/account/reports', { auth: signedInAs() });
 
-    await user.click(await screen.findByRole('button', { name: ro.report.pdf.download }));
+    await user.click(await screen.findByRole('button', { name: ro.report.pdf.download.en }));
 
     await vi.waitFor(() => {
-      expect(startDownload).toHaveBeenCalledWith(
-        expect.stringMatching(/\/storage\/v1\/object\/sign\/online-report-pdfs\/.+token=signed/u),
-      );
+      expect(startDownload).toHaveBeenCalledWith(SIGNED_PDF_URL.en);
     });
   });
 
@@ -63,7 +70,9 @@ describe('MyReportsPage', { timeout: 20_000 }, () => {
     const queuedCard = reportCard(queued.address_text);
     expect(within(queuedCard).getByText(ro.status.queued)).toBeInTheDocument();
     expect(within(queuedCard).getByText(ro.myReports.note.queued)).toBeInTheDocument();
-    expect(within(queuedCard).queryByRole('button', { name: ro.report.pdf.download })).toBeNull();
+    expect(
+      within(queuedCard).queryByRole('button', { name: ro.report.pdf.download.ro }),
+    ).toBeNull();
     const failedCard = reportCard(failed.address_text);
     expect(within(failedCard).getByText(ro.status.failed)).toBeInTheDocument();
     expect(within(failedCard).queryByRole('button', { name: ro.report.share.action })).toBeNull();
