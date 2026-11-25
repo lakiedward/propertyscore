@@ -1,7 +1,12 @@
 import { screen, within } from '@testing-library/react';
 import en from '@/i18n/locales/en/smartCheck.json';
 import ro from '@/i18n/locales/ro/smartCheck.json';
-import { buildSavedWalkReport } from '@/test/factories/smart-check-report';
+import {
+  buildSavedWalkReport,
+  ONE_POINT_WALK_POLYLINE,
+  SAVED_WALK_POLYLINE,
+  TRANSIT_MAP_POINTS,
+} from '@/test/factories/smart-check-report';
 import { renderWithProviders } from '@/test/render';
 import { parseReportResult } from '../../../report.utils';
 import { SummaryMapBand } from './summary-map-band';
@@ -10,45 +15,105 @@ vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 
 const summaries = { ro: ro.report.chapters.summary, en: en.report.chapters.summary };
 
-describe('SummaryMapBand', () => {
-  it.each([
-    { locale: 'ro', hasRoutes: false },
-    { locale: 'en', hasRoutes: false },
-    { locale: 'ro', hasRoutes: true },
-    { locale: 'en', hasRoutes: true },
-  ] as const)(
-    'describes the map in $locale with saved routes: $hasRoutes',
-    async ({ locale, hasRoutes }) => {
-      const report = buildSavedWalkReport(hasRoutes ? 'pedestrian_routing' : 'straight_line');
-      const result = parseReportResult(report.result);
-      if (!result) throw new Error('The walking report fixture no longer parses');
-      const { user } = await renderWithProviders(
-        <SummaryMapBand report={{ ...report, result, status: 'ready' }} />,
-        { locale },
-      );
-      const copy = summaries[locale];
-      const teaser = within(await screen.findByRole('region', { name: copy.mapBand.title }));
+async function renderMapBand(
+  report: ReturnType<typeof buildSavedWalkReport>,
+  locale: keyof typeof summaries,
+) {
+  const result = parseReportResult(report.result);
+  if (!result || result.unreadableSections.length > 0) {
+    throw new Error('The map report fixture no longer parses');
+  }
+  const { user } = await renderWithProviders(
+    <SummaryMapBand report={{ ...report, result, status: 'ready' }} />,
+    { locale },
+  );
+  const copy = summaries[locale];
+  const teaser = within(await screen.findByRole('region', { name: copy.mapBand.title }));
+  return { user, copy, teaser };
+}
 
-      expect(within(teaser.getByText(copy.mapBand.walk)).getByText('2')).toBeInTheDocument();
+describe('SummaryMapBand', () => {
+  describe.each(['ro', 'en'] as const)('%s', (locale) => {
+    it.each([
+      { scenario: 'no saved route', polylines: undefined, note: 'estimated', route: null },
+      { scenario: 'zero points', polylines: [''], note: 'unavailable', route: null },
+      {
+        scenario: 'one point',
+        polylines: [ONE_POINT_WALK_POLYLINE],
+        note: 'unavailable',
+        route: null,
+      },
+      {
+        scenario: 'a valid line',
+        polylines: [SAVED_WALK_POLYLINE],
+        note: 'routed',
+        route: 'zone-route-shop-1',
+      },
+      {
+        scenario: 'a nearer invalid route and a farther valid route in the same group',
+        polylines: [ONE_POINT_WALK_POLYLINE, SAVED_WALK_POLYLINE],
+        note: 'routed',
+        route: 'zone-route-shop-2',
+      },
+    ] as const)('describes walking geometry with $scenario', async ({ polylines, note, route }) => {
+      const report = buildSavedWalkReport(
+        polylines === undefined ? 'straight_line' : 'pedestrian_routing',
+        { walkingPolylines: polylines },
+      );
+      const { user, copy, teaser } = await renderMapBand(report, locale);
+      const hasRoute = route !== null;
+
       expect(
-        teaser.getByText(hasRoutes ? copy.mapBand.textWithRoutes : copy.mapBand.textWithoutRoutes),
+        within(teaser.getByText(copy.mapBand.walk)).getByText(polylines?.length === 2 ? '3' : '2'),
       ).toBeInTheDocument();
       expect(
-        teaser.queryByText(
-          hasRoutes ? copy.mapBand.textWithoutRoutes : copy.mapBand.textWithRoutes,
-        ),
+        teaser.getByText(hasRoute ? copy.mapBand.textWithRoutes : copy.mapBand.textWithoutRoutes),
+      ).toBeInTheDocument();
+      expect(
+        teaser.queryByText(hasRoute ? copy.mapBand.textWithoutRoutes : copy.mapBand.textWithRoutes),
       ).not.toBeInTheDocument();
 
       await user.click(teaser.getByRole('button', { name: copy.mapBand.open }));
       const explorer = within(await screen.findByRole('dialog'));
+      expect(explorer.getByText(copy.explorer.walkNote[note])).toBeInTheDocument();
 
-      if (hasRoutes) {
-        expect(explorer.getByText(copy.explorer.walkNote.routed)).toBeInTheDocument();
-        expect(explorer.getByRole('img', { name: 'zone-route-shop-1' })).toBeInTheDocument();
+      expect(explorer.queryAllByRole('img', { name: /^zone-route-/ })).toHaveLength(
+        hasRoute ? 1 : 0,
+      );
+      if (route) {
+        expect(explorer.getByRole('img', { name: route })).toBeInTheDocument();
+      }
+    });
+
+    it.each([
+      { scenario: 'zero points', lines: [[]], hasRoute: false },
+      {
+        scenario: 'separate single-point legs',
+        lines: TRANSIT_MAP_POINTS.map((point) => [point]),
+        hasRoute: false,
+      },
+      {
+        scenario: 'a valid leg followed by an empty leg',
+        lines: [TRANSIT_MAP_POINTS, []],
+        hasRoute: true,
+      },
+    ])('describes transit geometry with $scenario', async ({ lines, hasRoute }) => {
+      const report = buildSavedWalkReport('straight_line', { transitLines: lines });
+      const { user, copy, teaser } = await renderMapBand(report, locale);
+
+      expect(
+        teaser.getByText(hasRoute ? copy.mapBand.textWithRoutes : copy.mapBand.textWithoutRoutes),
+      ).toBeInTheDocument();
+
+      await user.click(teaser.getByRole('button', { name: copy.mapBand.open }));
+      const explorer = within(await screen.findByRole('dialog'));
+      await user.click(explorer.getByRole('radio', { name: copy.explorer.transit }));
+      if (hasRoute) {
+        expect(explorer.getByRole('img', { name: 'zone-route-station-1' })).toBeInTheDocument();
       } else {
-        expect(explorer.getByText(copy.explorer.walkNote.estimated)).toBeInTheDocument();
+        expect(explorer.getByText(copy.explorer.empty)).toBeInTheDocument();
         expect(explorer.queryByRole('img', { name: /^zone-route-/ })).not.toBeInTheDocument();
       }
-    },
-  );
+    });
+  });
 });
