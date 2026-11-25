@@ -41,8 +41,8 @@ describe('smart-check.api', () => {
     await expect(
       createOnlineReport({
         address: SEEDED_REPORT.address_text,
-        latitude: SEEDED_REPORT.latitude,
-        longitude: SEEDED_REPORT.longitude,
+        latitude: 45.72912,
+        longitude: 21.18007,
         locale: 'ro',
       }),
     ).rejects.toMatchObject({ code: 'validation', reason });
