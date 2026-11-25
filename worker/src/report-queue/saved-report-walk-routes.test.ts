@@ -36,8 +36,7 @@ describe.skipIf(!databaseUrl)('saved report walking route worker', () => {
             "categories": [{"key": "park", "t1_min": 14}, {"key": "pharmacy", "t1_min": 12}],
             "places": [
               {"id": "open", "category": "park", "lng": 20.01, "lat": 45.01, "minutes": 14},
-              {"id": "unreachable", "category": "pharmacy", "lng": 20.02, "lat": 45.02, "minutes": 12},
-              {"id": "expired", "lng": 20.03, "lat": 45.03, "minutes": 13}
+              {"id": "unreachable", "category": "pharmacy", "lng": 20.02, "lat": 45.02, "minutes": 12}
             ]
           }
         }', now()
@@ -52,7 +51,7 @@ describe.skipIf(!databaseUrl)('saved report walking route worker', () => {
     await sql.end({ timeout: 5 });
   });
 
-  it('routes to frozen points and stores only the shape; skips expired requests', async () => {
+  it('drains delayed jobs without holding a lock across routing and stores only the shape', async () => {
     await sql.begin(async (transaction) => {
       await transaction`set local role authenticated`;
       await transaction`
@@ -65,23 +64,26 @@ describe.skipIf(!databaseUrl)('saved report walking route worker', () => {
       expect(requested).toEqual({ park: { status: 'pending' }, pharmacy: { status: 'pending' } });
     });
     await sql`
-      update private.saved_report_walk_routes set requested_at = now() - interval '2 seconds'
+      update private.saved_report_walk_routes set requested_at = now() - interval '6 minutes'
       where report_id = ${reportId} and place_id = 'open'
-    `;
-    await sql`
-      insert into private.saved_report_walk_routes (report_id, place_id, requested_at)
-      values (${reportId}, 'expired', now() - interval '2 minutes')
     `;
     const before = await sql`
       select result, overall_score, pdf_path, updated_at from public.online_reports where id = ${reportId}
     `;
     const fetch = vi
       .fn<typeof globalThis.fetch>()
-      .mockResolvedValueOnce(
-        Response.json({
+      .mockImplementationOnce(async () => {
+        const [claimed] = await sql`
+          select claim_token, completed_at from private.saved_report_walk_routes
+          where report_id = ${reportId} and place_id = 'open'
+          for update nowait
+        `;
+        expect(claimed?.claim_token).toEqual(expect.any(String));
+        expect(claimed?.completed_at).toBeNull();
+        return Response.json({
           trip: { summary: { length: 0.12, time: 120 }, legs: [{ shape: '??AA' }] },
-        }),
-      )
+        });
+      })
       .mockResolvedValueOnce(Response.json({ error_code: 442 }, { status: 400 }));
     const { route } = createValhallaClient('http://valhalla.test', { fetch });
 
@@ -114,7 +116,6 @@ describe.skipIf(!databaseUrl)('saved report walking route worker', () => {
     ).toMatchObject([
       { place_id: 'unreachable', polyline6: null, completed: true },
       { place_id: 'open', polyline6: '??AA', completed: true },
-      { place_id: 'expired', polyline6: null, completed: false },
     ]);
     expect(
       await sql`

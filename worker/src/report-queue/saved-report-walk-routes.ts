@@ -31,51 +31,33 @@ export async function processSavedReportWalkRoute(
   route: ValhallaClient['route'],
   logger: Logger,
 ): Promise<boolean> {
-  return sql.begin(async (transaction) => {
-    const [job] = await transaction<
-      { id: string; origin: unknown; destination: unknown; speed: unknown }[]
-    >`
-      select q.id,
-        jsonb_build_object('lng', r.longitude, 'lat', r.latitude) as origin,
-        jsonb_path_query_first(
-          r.result, '$.fifteen_minute.places[*] ? (@.id == $place_id)',
-          jsonb_build_object('place_id', q.place_id), true
-        ) as destination,
-        r.result #> '{fifteen_minute,walk_speed_kmh}' as speed
-      from private.saved_report_walk_routes q
-      join public.online_reports r on r.id = q.report_id
-      where q.completed_at is null and q.requested_at > now() - interval '1 minute'
-        and r.status = 'ready'
-      order by q.requested_at
-      limit 1
-      for update of q skip locked
-    `;
-    if (!job) return false;
+  const [job] = await sql<
+    { id: string; claim_token: string; origin: unknown; destination: unknown; speed: unknown }[]
+  >`select * from private.claim_next_saved_report_walk_route()`;
+  if (!job) return false;
 
-    const points = routePointsSchema.safeParse({
-      origin: job.origin,
-      destination: job.destination,
-      walkSpeedKmh: job.speed,
-    });
-    let polyline6: string | null = null;
-    if (points.success) {
-      try {
-        const result = await route({
-          ...points.data,
-          signal: AbortSignal.timeout(ROUTE_TIMEOUT_MS),
-        });
-        polyline6 = polylineSchema.safeParse(result?.polyline6).data ?? null;
-      } catch (error) {
-        logger.warn('saved report walk route unavailable', { code: errorCode(error) });
-      }
-    }
-    await transaction`
-      update private.saved_report_walk_routes
-      set completed_at = now(), polyline6 = ${polyline6}
-      where id = ${job.id}
-    `;
-    return true;
+  const points = routePointsSchema.safeParse({
+    origin: job.origin,
+    destination: job.destination,
+    walkSpeedKmh: job.speed,
   });
+  let polyline6: string | null = null;
+  if (points.success) {
+    try {
+      const result = await route({
+        ...points.data,
+        signal: AbortSignal.timeout(ROUTE_TIMEOUT_MS),
+      });
+      polyline6 = polylineSchema.safeParse(result?.polyline6).data ?? null;
+    } catch (error) {
+      logger.warn('saved report walk route unavailable', { code: errorCode(error) });
+    }
+  }
+  const [result] = await sql<{ completed: boolean }[]>`
+    select private.complete_saved_report_walk_route(${job.id}, ${job.claim_token}, ${polyline6}) as completed
+  `;
+  if (!result?.completed) logger.warn('saved report walk route claim lost', { job_id: job.id });
+  return true;
 }
 
 export async function serveSavedReportWalkRoutes(

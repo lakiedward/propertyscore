@@ -4,6 +4,7 @@ import type {
 } from '../../../../supabase/functions/_shared/types';
 import { z } from 'zod';
 import { AppError, type AppErrorReason } from '@/lib/errors';
+import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase/client';
 import type { Tables } from '@/lib/supabase/database.types';
 import { toAppError } from '@/lib/supabase/errors';
@@ -86,7 +87,14 @@ export async function getSharedReport(id: string, token: string) {
 const savedWalkRouteSchema = z.discriminatedUnion('status', [
   z.object({ status: z.literal('pending') }),
   z.object({ status: z.literal('unavailable') }),
-  z.object({ status: z.literal('ready'), polyline6: z.string().min(4) }),
+  z.object({
+    status: z.literal('ready'),
+    polyline6: z
+      .string()
+      .min(4)
+      .max(32768)
+      .regex(/^[?-~]+$/u),
+  }),
 ]);
 
 export async function requestSavedWalkRoute(
@@ -105,7 +113,11 @@ export async function requestSavedWalkRoute(
   if (error) throw toAppError(error);
   if (data === null) return { status: 'unavailable' } as const;
   const parsed = savedWalkRouteSchema.safeParse(data);
-  if (!parsed.success) throw new AppError('unknown', 'Saved walk route response is invalid');
+  if (!parsed.success) {
+    const invalidResponse = new AppError('unknown', 'Saved walk route response is invalid');
+    logger.error(invalidResponse);
+    throw invalidResponse;
+  }
   return parsed.data;
 }
 

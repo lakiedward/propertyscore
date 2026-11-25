@@ -1,6 +1,8 @@
 import { screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import ro from '@/i18n/locales/ro/smartCheck.json';
+import { AppError } from '@/lib/errors';
+import { logger } from '@/lib/logger';
 import { signedInAs } from '@/test/factories/auth';
 import {
   buildSavedWalkReport,
@@ -79,5 +81,33 @@ describe('saved report walking routes', { timeout: 20_000 }, () => {
     expect(requests).toEqual([
       { p_report_id: report.id, p_category_key: 'pharmacy', p_token: SEEDED_SHARE_TOKEN },
     ]);
+  });
+
+  it('reports a malformed response without logging the payload or share credential', async () => {
+    const report = buildSavedWalkReport();
+    const logError = vi.spyOn(logger, 'error').mockImplementation(() => undefined);
+    try {
+      server.use(
+        http.post(supabaseUrl('/rest/v1/rpc/resolve_report_share_link'), () =>
+          HttpResponse.json([toSharedReportRow(report)]),
+        ),
+        http.post(routeRpc, () =>
+          HttpResponse.json({ status: 'ready', polyline6: SEEDED_SHARE_TOKEN + '!' }),
+        ),
+      );
+      const { user } = await renderAppRoute(
+        `/check/result/${report.id}?chapter=fifteenMinute&share=${SEEDED_SHARE_TOKEN}`,
+      );
+      const missing = await screen.findByRole('button', { name: /Farmacie/ });
+      await user.click(missing);
+      expect(await screen.findByText(routeStatuses.unavailable)).toBeInTheDocument();
+      expect(screen.queryByRole('img', { name: 'fifteen-route' })).not.toBeInTheDocument();
+      expect(missing).toHaveTextContent(/14 min/);
+      expect(logError).toHaveBeenCalledExactlyOnceWith(
+        new AppError('unknown', 'Saved walk route response is invalid'),
+      );
+    } finally {
+      logError.mockRestore();
+    }
   });
 });
