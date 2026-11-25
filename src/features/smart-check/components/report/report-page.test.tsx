@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import en from '@/i18n/locales/en/smartCheck.json';
+import roCommon from '@/i18n/locales/ro/common.json';
 import ro from '@/i18n/locales/ro/smartCheck.json';
 import { signedInAs, signedOut } from '@/test/factories/auth';
 import { buildProfile } from '@/test/factories/profile';
@@ -105,21 +106,25 @@ describe('ReportPage', { timeout: 20_000 }, () => {
     ).toBeVisible();
   });
 
-  it('lets the owner download the PDF and open the share dialog', async () => {
+  it('lets the owner download either PDF and open the share dialog', async () => {
     const { user } = await renderAppRoute(`/check/result/${SEEDED_REPORT.id}`, {
       auth: signedInAs(),
     });
 
-    await user.click(await screen.findByRole('button', { name: ro.report.pdf.download }));
+    await user.click(await screen.findByRole('button', { name: ro.report.pdf.download.ro }));
     await vi.waitFor(() => {
-      expect(startDownload).toHaveBeenCalledWith(expect.stringContaining('token=signed'));
+      expect(startDownload).toHaveBeenCalledWith(SIGNED_PDF_URL.ro);
+    });
+    await user.click(screen.getByRole('button', { name: ro.report.pdf.download.en }));
+    await vi.waitFor(() => {
+      expect(startDownload).toHaveBeenCalledWith(SIGNED_PDF_URL.en);
     });
 
     await user.click(screen.getByRole('button', { name: ro.report.share.action }));
     expect(await screen.findByRole('dialog', { name: ro.report.share.title })).toBeInTheDocument();
   });
 
-  it('opens a shared report without an account, with its PDF and without sharing', async () => {
+  it('changes the web language and downloads both PDFs without an account', async () => {
     const { user } = await renderAppRoute(
       `/check/result/${SEEDED_REPORT.id}?share=${SEEDED_SHARE_TOKEN}`,
       { auth: signedOut },
@@ -130,9 +135,23 @@ describe('ReportPage', { timeout: 20_000 }, () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: ro.report.share.action })).toBeNull();
 
-    await user.click(screen.getByRole('button', { name: ro.report.pdf.download }));
+    const language = screen.getByRole('radiogroup', { name: ro.report.language });
+    await user.click(within(language).getByRole('radio', { name: roCommon.language.en }));
+    expect(
+      await screen.findByRole('tab', {
+        name: new RegExp(en.report.frame.tabs.names.summary),
+        selected: true,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(SEEDED_REPORT.address_text);
+
+    await user.click(screen.getByRole('button', { name: en.report.pdf.download.ro }));
     await vi.waitFor(() => {
-      expect(startDownload).toHaveBeenCalledWith(SIGNED_PDF_URL);
+      expect(startDownload).toHaveBeenCalledWith(SIGNED_PDF_URL.ro);
+    });
+    await user.click(screen.getByRole('button', { name: en.report.pdf.download.en }));
+    await vi.waitFor(() => {
+      expect(startDownload).toHaveBeenCalledWith(SIGNED_PDF_URL.en);
     });
   });
 

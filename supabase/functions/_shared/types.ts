@@ -1,11 +1,11 @@
-export type SharedReportPdfRequest = {
+export type ReportPdfRequest = {
   reportId: string;
-  token: string;
+  locale: 'ro' | 'en';
+  token?: string;
 };
 
-export type SharedReportPdfResponse = {
-  url: string;
-};
+export type ReportPdfResponse =
+  { status: 'ready'; downloadPath: string } | { status: 'pending' } | { status: 'unavailable' };
 
 export type EdgeFunctionError = {
   error: string;

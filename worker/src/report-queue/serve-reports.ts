@@ -6,6 +6,7 @@ const POLL_INTERVAL_MS = 10_000;
 export type ServeReportsOptions = {
   claim: () => Promise<string | null>;
   process: (reportId: string) => Promise<void>;
+  processPdfVariant: () => Promise<boolean>;
   waitForWork: (timeoutMs: number, stop: AbortSignal) => Promise<void>;
   stop: AbortSignal;
   logger: Logger;
@@ -18,19 +19,17 @@ export async function serveReports(options: ServeReportsOptions): Promise<ServeR
   const { logger, stop } = options;
   const pollIntervalMs = options.pollIntervalMs ?? POLL_INTERVAL_MS;
   const result: ServeReportsResult = { completed: 0, failed: 0 };
-  while (!stop.aborted) {
-    let reportId: string | null;
+  const isRunning = () => !stop.aborted;
+
+  async function processNextReport(): Promise<boolean> {
+    let reportId: string | null = null;
     try {
       reportId = await options.claim();
     } catch (error) {
       logger.error('report queue unreachable', { code: errorCode(error) });
-      await options.waitForWork(pollIntervalMs, stop);
-      continue;
     }
-    if (reportId === null) {
-      await options.waitForWork(pollIntervalMs, stop);
-      continue;
-    }
+    if (reportId === null) return false;
+
     const startedAt = Date.now();
     logger.info('report claimed', { report_id: reportId });
     try {
@@ -44,6 +43,25 @@ export async function serveReports(options: ServeReportsOptions): Promise<ServeR
         code: errorCode(error),
         error: error instanceof Error ? error.message : String(error),
       });
+    }
+    return true;
+  }
+
+  async function processNextPdfVariant(): Promise<boolean> {
+    try {
+      return await options.processPdfVariant();
+    } catch (error) {
+      logger.error('localized report pdf queue unreachable', { code: errorCode(error) });
+      return false;
+    }
+  }
+
+  while (isRunning()) {
+    const reportProcessed = await processNextReport();
+    if (!isRunning()) break;
+    const variantProcessed = await processNextPdfVariant();
+    if (!reportProcessed && !variantProcessed && isRunning()) {
+      await options.waitForWork(pollIntervalMs, stop);
     }
   }
   return result;

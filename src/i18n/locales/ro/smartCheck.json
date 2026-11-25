@@ -1266,9 +1266,16 @@
       "good": "Bun",
       "top": "Foarte bun"
     },
+    "language": "Limba raportului",
     "pdf": {
-      "download": "Descarcă PDF",
-      "preparing": "Se pregătește PDF-ul",
+      "download": {
+        "ro": "Descarcă PDF (RO)",
+        "en": "Descarcă PDF (EN)"
+      },
+      "preparing": {
+        "ro": "Se pregătește PDF-ul (RO)",
+        "en": "Se pregătește PDF-ul (EN)"
+      },
       "failed": "PDF-ul nu s-a putut descărca. Încearcă din nou.",
       "missing": "PDF-ul acestui raport nu este disponibil încă."
     },

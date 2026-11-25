@@ -3,48 +3,52 @@ import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { SUPPORTED_LOCALES, type Locale } from '@/i18n/i18n';
 import { isAppError } from '@/lib/errors';
-import { useReportPdfUrl, type ReportPdfRequest } from '../api/smart-check.queries';
+import { useReportPdfUrl } from '../api/smart-check.queries';
 import { startDownload } from '../report-pdf.utils';
 
-type ReportPdfSource =
-  ReportPdfRequest | { pdfPath: null; reportNumber: number; reportId?: never; shareToken?: never };
-
-type ReportPdfButtonProps = Pick<
+type ReportPdfButtonsProps = Pick<
   ComponentProps<typeof Button>,
   'variant' | 'size' | 'className'
 > & {
-  source: ReportPdfSource;
+  reportId: string;
+  shareToken?: string;
   iconClassName?: string;
 };
 
-export function ReportPdfButton({ source, iconClassName, ...buttonProps }: ReportPdfButtonProps) {
+export function ReportPdfButtons(props: ReportPdfButtonsProps) {
+  return SUPPORTED_LOCALES.map((locale) => (
+    <ReportPdfButton key={locale} {...props} locale={locale} />
+  ));
+}
+
+function ReportPdfButton({
+  reportId,
+  shareToken,
+  locale,
+  iconClassName,
+  ...buttonProps
+}: ReportPdfButtonsProps & { locale: Locale }) {
   const { t } = useTranslation('smartCheck');
   const pdfUrl = useReportPdfUrl();
 
   const handleDownload = () => {
-    const request =
-      source.shareToken !== undefined
-        ? { reportId: source.reportId, shareToken: source.shareToken }
-        : source.pdfPath === null
-          ? null
-          : { pdfPath: source.pdfPath, reportNumber: source.reportNumber };
-    if (!request) {
-      toast.info(t('report.pdf.missing'));
-      return;
-    }
-    pdfUrl.mutate(request, {
-      onSuccess: (url) => {
-        startDownload(url);
+    pdfUrl.mutate(
+      { reportId, token: shareToken, locale },
+      {
+        onSuccess: (url) => {
+          startDownload(url);
+        },
+        onError: (error) => {
+          if (isAppError(error) && error.code === 'not_found') {
+            toast.info(t('report.pdf.missing'));
+            return;
+          }
+          toast.error(t('report.pdf.failed'));
+        },
       },
-      onError: (error) => {
-        if (isAppError(error) && error.code === 'not_found') {
-          toast.info(t('report.pdf.missing'));
-          return;
-        }
-        toast.error(t('report.pdf.failed'));
-      },
-    });
+    );
   };
 
   return (
@@ -56,7 +60,7 @@ export function ReportPdfButton({ source, iconClassName, ...buttonProps }: Repor
       onClick={handleDownload}
     >
       <FileDownIcon aria-hidden className={iconClassName} />
-      {pdfUrl.isPending ? t('report.pdf.preparing') : t('report.pdf.download')}
+      {pdfUrl.isPending ? t(`report.pdf.preparing.${locale}`) : t(`report.pdf.download.${locale}`)}
     </Button>
   );
 }

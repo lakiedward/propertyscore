@@ -20,7 +20,7 @@ import type { Enums } from '@/lib/supabase/database.types';
 import { cn } from '@/lib/utils';
 import type { listMyReports } from '../api/smart-check.api';
 import { REPORT_STATUS_TONE } from '../report-status.utils';
-import { ReportPdfButton } from './report-pdf-button';
+import { ReportPdfButtons } from './report-pdf-button';
 import { ShareReportDialog } from './share-report-dialog';
 
 type MyReport = Awaited<ReturnType<typeof listMyReports>>['items'][number];
@@ -84,11 +84,7 @@ export function MyReportCard({ report }: MyReportCardProps) {
           </Button>
           {isReady ? (
             <>
-              <ReportPdfButton
-                variant="secondary"
-                size="sm"
-                source={{ pdfPath: report.pdf_path, reportNumber: report.number }}
-              />
+              <ReportPdfButtons variant="secondary" size="sm" reportId={report.id} />
               <Button
                 type="button"
                 variant="ghost"

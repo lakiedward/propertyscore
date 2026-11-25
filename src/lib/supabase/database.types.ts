@@ -317,6 +317,9 @@ isOneToOne: false
 "reorder_listing_photos":
 { Args: { "p_listing_id": string,"p_photo_ids": (string)[] }; Returns: undefined
                            },
+"request_online_report_pdf_variant":
+{ Args: { "p_locale": string,"p_owner_id"?: string,"p_report_id": string,"p_token"?: string }; Returns: Json
+                           },
 "request_saved_report_walk_route":
 { Args: { "p_category_key": string,"p_report_id": string,"p_token"?: string }; Returns: Json
                            },

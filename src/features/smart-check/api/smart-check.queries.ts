@@ -12,14 +12,13 @@ import {
   createShareLink,
   getActiveShareLink,
   getReport,
+  getReportPdfUrl,
   getSharedReport,
-  getSharedReportPdfUrl,
   hasUnlimitedSmartCheck,
   listMyReports,
   requestSavedWalkRoute,
   revokeShareLink,
 } from './smart-check.api';
-import { getReportPdfUrl } from './smart-check.storage';
 
 const GENERATING_REFRESH_MS = 5_000;
 const GEOCODING_STALE_MS = 24 * 60 * 60 * 1000;
@@ -111,16 +110,9 @@ export function useCreateOnlineReport() {
   });
 }
 
-export type ReportPdfRequest =
-  | { pdfPath: string; reportNumber: number; reportId?: never; shareToken?: never }
-  | { reportId: string; shareToken: string; pdfPath?: never; reportNumber?: never };
-
 export function useReportPdfUrl() {
   return useMutation({
-    mutationFn: (source: ReportPdfRequest) =>
-      source.shareToken === undefined
-        ? getReportPdfUrl(source.pdfPath, source.reportNumber)
-        : getSharedReportPdfUrl(source.reportId, source.shareToken),
+    mutationFn: getReportPdfUrl,
     meta: { silent: true },
   });
 }

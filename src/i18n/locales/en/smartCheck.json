@@ -1250,9 +1250,16 @@
       "good": "Good",
       "top": "Very good"
     },
+    "language": "Report language",
     "pdf": {
-      "download": "Download PDF",
-      "preparing": "Preparing the PDF",
+      "download": {
+        "ro": "Download PDF (RO)",
+        "en": "Download PDF (EN)"
+      },
+      "preparing": {
+        "ro": "Preparing the PDF (RO)",
+        "en": "Preparing the PDF (EN)"
+      },
       "failed": "The PDF could not be downloaded. Please try again.",
       "missing": "The PDF of this report is not available yet."
     },
