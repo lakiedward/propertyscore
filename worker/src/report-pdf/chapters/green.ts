@@ -97,7 +97,14 @@ export const greenChapter: ChapterBuilder = (report) => {
   const parks = [...section.parks].sort((left, right) => walkDuration(left) - walkDuration(right));
   const large = parks.filter((park) => park.area_ha >= LARGE_PARK_HA);
   const listed = (large.length > 0 ? large : parks).slice(0, LISTED_PARKS);
-  const farthest = listed.at(-1);
+  const farthest = listed.reduce<Park | undefined>(
+    (far, park) => (!far || walkDuration(park) > walkDuration(far) ? park : far),
+    undefined,
+  );
+  const hasRoutedTimes = section.parks.some((park) => park.walk_seconds !== undefined);
+  const isWalkEstimated = (park: Park) =>
+    park.walk_seconds === undefined &&
+    (section.distance_method === 'straight_line' || hasRoutedTimes);
   const totalHa = listed.reduce((sum, park) => sum + park.area_ha, 0);
   const biggest = [...listed].sort((left, right) => right.area_ha - left.area_ha)[0];
   const share = section.share[String(section.near_radius_m)];
@@ -128,8 +135,12 @@ export const greenChapter: ChapterBuilder = (report) => {
             'No large park within walking distance of the address',
           )
         : t(
-            '{0}, la cel mult {1} minute pe jos',
-            '{0}, within a {1}-minute walk',
+            isWalkEstimated(farthest)
+              ? '{0}, până la circa {1} minute pe jos'
+              : '{0}, la cel mult {1} minute pe jos',
+            isWalkEstimated(farthest)
+              ? '{0}, within about a {1}-minute walk'
+              : '{0}, within a {1}-minute walk',
             plural(listed.length, ['parc mare', 'large park'], 'parcuri mari', [
               'de parcuri mari',
               'large parks',
@@ -163,13 +174,12 @@ export const greenChapter: ChapterBuilder = (report) => {
       addressDot(center),
     ],
   };
-  const approximate = section.distance_method === 'straight_line';
   const cards = listed
     .map((park, index) => {
       const chips = park.amenities
         .map((amenity) => `<i>${esc(labelFor(report.locale, GREEN_AMENITIES, amenity))}</i>`)
         .join('');
-      return `<div class="gz-pc"><span class="gz-pc-h"><span class="fqx-n" style="--c:${theme.color}">${String(index + 1)}</span><b>${esc(park.name ?? t('Spațiu verde fără nume', 'Unnamed green space'))}</b></span><span class="gz-pc-s"><b>${formatNumber(park.area_ha, 1)}</b> ha<span>·</span>${t('{0}{1} min pe jos', '{0}{1} min on foot', approximate ? t('circa ', 'about ') : '', String(walkMinutes(park)))}</span>${chips ? `<span class="gz-ch">${chips}</span>` : ''}</div>`;
+      return `<div class="gz-pc"><span class="gz-pc-h"><span class="fqx-n" style="--c:${theme.color}">${String(index + 1)}</span><b>${esc(park.name ?? t('Spațiu verde fără nume', 'Unnamed green space'))}</b></span><span class="gz-pc-s"><b>${formatNumber(park.area_ha, 1)}</b> ha<span>·</span>${t('{0}{1} min pe jos', '{0}{1} min on foot', isWalkEstimated(park) ? t('circa ', 'about ') : '', String(walkMinutes(park)))}</span>${chips ? `<span class="gz-ch">${chips}</span>` : ''}</div>`;
     })
     .join('');
   const list =

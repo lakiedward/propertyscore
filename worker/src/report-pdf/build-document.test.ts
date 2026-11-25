@@ -344,6 +344,30 @@ describe('buildReportDocument', () => {
     expect(chapter.html).toContain('4 min pe jos');
   });
 
+  it('labels only the estimated Green card and its headline when walks are mixed', async () => {
+    const report = toReportData(reportInputSchema.parse(await exampleInput()));
+    const section = report.sections.green;
+    const park = section?.parks[0];
+    if (!section || !park) throw new Error('fixture has no green park');
+    report.sections.green = {
+      ...section,
+      distance_method: 'pedestrian_routing',
+      parks: [
+        { ...park, name: 'Routed', area_ha: 2, walk_m: 1200, walk_seconds: 240 },
+        { ...park, id: 'estimated', name: 'Estimated', area_ha: 2, walk_m: 800 },
+      ],
+    };
+
+    const chapter = greenChapter(report);
+    expect(chapter?.html).toContain('până la circa 10 minute pe jos');
+    expect(chapter?.html).toContain('<span>·</span>circa 10 min pe jos');
+    expect(chapter?.html).toContain('<span>·</span>4 min pe jos');
+    const english = greenChapter({ ...report, locale: 'en' });
+    expect(english?.html).toContain('within about a 10-minute walk');
+    expect(english?.html).toContain('<span>·</span>about 10 min on foot');
+    expect(english?.html).toContain('<span>·</span>4 min on foot');
+  });
+
   it('draws the city reach card and leaves out the neighbourhoods line when the city has none', async () => {
     const input = reportInputSchema.parse(await exampleInput());
     const withPlaces = toReportData(input);
