@@ -22,7 +22,7 @@ import { CheckOrderSummary } from './check-order-summary';
 const ADDRESS_REASONS = new Set([
   'address_invalid',
   'location_invalid',
-  'smartcheck_outside_coverage',
+  'smartCheckOutsideCoverage',
 ]);
 
 type CheckPaymentStepProps = {

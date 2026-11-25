@@ -1,6 +1,8 @@
 import { http, HttpResponse } from 'msw';
+import { translateError } from '@/i18n/error-message';
+import ro from '@/i18n/locales/ro/common.json';
 import { isAppError } from '@/lib/errors';
-import { buildReportRow } from '@/test/factories/smart-check-report';
+import { buildCheckOrder, buildReportRow } from '@/test/factories/smart-check-report';
 import { postgrestErrorResponse } from '@/test/msw/postgrest-error';
 import { SEEDED_REPORT, SEEDED_SHARE_TOKEN } from '@/test/msw/handlers/smart-check';
 import { server } from '@/test/msw/server';
@@ -26,26 +28,22 @@ function reportResponse(row: ReturnType<typeof buildReportRow>) {
 
 describe('smart-check.api', () => {
   it.each([
-    ['outside_coverage', 'smartcheck_outside_coverage'],
+    ['outside_coverage', 'smartCheckOutsideCoverage'],
     ['address_invalid', 'address_invalid'],
     ['location_invalid', 'location_invalid'],
     ['no_ready_snapshot', 'no_ready_snapshot'],
     ['payment_required', 'payment_required'],
-  ])('maps report order errors %s to %s', async (message, reason) => {
+  ] as const)('maps report order errors %s to %s', async (message, reason) => {
     server.use(
       http.post(supabaseUrl('/rest/v1/rpc/create_online_report'), () =>
         postgrestErrorResponse('P0001', message, 400),
       ),
     );
 
-    await expect(
-      createOnlineReport({
-        address: SEEDED_REPORT.address_text,
-        latitude: 45.72912,
-        longitude: 21.18007,
-        locale: 'ro',
-      }),
-    ).rejects.toMatchObject({ code: 'validation', reason });
+    const error = await caught(createOnlineReport(buildCheckOrder()));
+
+    expect(error).toMatchObject({ code: 'validation', reason });
+    expect(translateError(error)).toBe(ro.errors.reasons[reason]);
   });
 
   it('reads a ready report and parses its result', async () => {

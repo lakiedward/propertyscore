@@ -18,7 +18,7 @@ export type AppErrorReason =
   | 'last_admin'
   | 'address_invalid'
   | 'location_invalid'
-  | 'smartcheck_outside_coverage'
+  | 'smartCheckOutsideCoverage'
   | 'no_ready_snapshot'
   | 'payment_required'
   | 'listing_not_found'

@@ -76,7 +76,7 @@
       "last_admin": "Ești singurul administrator. Numește alt administrator înainte să îți ștergi contul.",
       "address_invalid": "Scrie adresa locuinței (între 3 și 300 de caractere).",
       "location_invalid": "Pune pinul pe hartă, pe clădirea locuinței.",
-      "smartcheck_outside_coverage": "Adresa nu este în zona acoperită de raportul online. Alege o adresă din cele 9 orașe.",
+      "smartCheckOutsideCoverage": "Adresa nu este în zona acoperită de raportul online. Alege o adresă din cele 9 orașe.",
       "no_ready_snapshot": "Datele pentru raport se actualizează acum. Încearcă din nou peste câteva minute.",
       "payment_required": "Plata cu cardul vine în curând. Deocamdată raportul se poate genera doar din conturile de test.",
       "listing_not_found": "Nu am găsit anunțul.",

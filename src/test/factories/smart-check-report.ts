@@ -26,6 +26,16 @@ let sequence = 0;
 
 const OWNER_ID = 'a0000000-0000-4000-8000-000000000001';
 
+const FREIDORF_ADDRESS = {
+  address: 'Freidorf, Timișoara',
+  latitude: 45.72912,
+  longitude: 21.18007,
+};
+
+export function buildCheckOrder() {
+  return { ...FREIDORF_ADDRESS, locale: 'ro' as const };
+}
+
 export function buildReportRow(overrides: Partial<ReportRow> = {}): ReportRow {
   sequence += 1;
   const id = `d1000000-0000-4000-8000-${String(sequence).padStart(12, '0')}`;
@@ -33,9 +43,9 @@ export function buildReportRow(overrides: Partial<ReportRow> = {}): ReportRow {
     id,
     number: sequence,
     status: 'ready',
-    address_text: 'Freidorf, Timișoara',
-    latitude: 45.72912,
-    longitude: 21.18007,
+    address_text: FREIDORF_ADDRESS.address,
+    latitude: FREIDORF_ADDRESS.latitude,
+    longitude: FREIDORF_ADDRESS.longitude,
     declared_rooms: null,
     declared_area_m2: null,
     declared_floor: null,

@@ -24,7 +24,7 @@ const reportIdSchema = z.uuid();
 const CREATE_REPORT_REASONS = new Map<string, AppErrorReason>([
   ['address_invalid', 'address_invalid'],
   ['location_invalid', 'location_invalid'],
-  ['outside_coverage', 'smartcheck_outside_coverage'],
+  ['outside_coverage', 'smartCheckOutsideCoverage'],
   ['no_ready_snapshot', 'no_ready_snapshot'],
   ['payment_required', 'payment_required'],
 ]);
