@@ -1767,9 +1767,6 @@ svg.i {
 .bB-pc.one {
   grid-template-columns: 1fr;
 }
-.bB-pc.one .inc {
-  display: none;
-}
 
 .sfB-rest > .scv {
   grid-column: 1/-1;
