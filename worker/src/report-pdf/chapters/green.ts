@@ -89,14 +89,12 @@ export const greenChapter: ChapterBuilder = (report) => {
   const parks = [...section.parks].sort((left, right) => walkDuration(left) - walkDuration(right));
   const large = parks.filter((park) => park.area_ha >= LARGE_PARK_HA);
   const listed = (large.length > 0 ? large : parks).slice(0, LISTED_PARKS);
-  const farthest = listed.reduce<Park | undefined>(
-    (far, park) => (!far || walkDuration(park) > walkDuration(far) ? park : far),
-    undefined,
-  );
+  const farthest = listed.at(-1);
   const hasRoutedTimes = section.parks.some((park) => park.walk_seconds !== undefined);
   const isWalkEstimated = (park: Park) =>
     park.walk_seconds === undefined &&
     (section.distance_method === 'straight_line' || hasRoutedTimes);
+  const hasEstimatedWalk = listed.some(isWalkEstimated);
   const totalHa = listed.reduce((sum, park) => sum + park.area_ha, 0);
   const biggest = [...listed].sort((left, right) => right.area_ha - left.area_ha)[0];
   const share = section.share[String(section.near_radius_m)];
@@ -111,7 +109,7 @@ export const greenChapter: ChapterBuilder = (report) => {
     title:
       listed.length === 0 || !farthest
         ? 'Niciun parc mare la o plimbare de adresă'
-        : `${plural(listed.length, 'parc mare', 'parcuri mari', 'de parcuri mari')}, ${isWalkEstimated(farthest) ? 'până la circa' : 'la cel mult'} ${String(walkMinutes(farthest))} minute pe jos`,
+        : `${plural(listed.length, 'parc mare', 'parcuri mari', 'de parcuri mari')}, ${hasEstimatedWalk ? 'până la circa' : 'la cel mult'} ${String(walkMinutes(farthest))} minute pe jos`,
     lead:
       biggest && listed.length > 0
         ? `Împreună au ${formatNumber(totalHa)} ha. Cel mai mare, ${biggest.name ?? 'un spațiu verde fără nume'}, are ${formatNumber(biggest.area_ha, 1)} ha.${shareText}`

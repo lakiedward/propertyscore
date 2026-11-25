@@ -7,6 +7,12 @@ import { renderAppRoute, renderWithProviders } from '@/test/render';
 import { parseReportResult } from '../../../report.utils';
 import { GreenChapter } from './green-chapter';
 
+const walkCases = [
+  { scenario: 'longer estimate', routedMinutes: 4, secondMinutes: 10, estimated: true },
+  { scenario: 'shorter estimate', routedMinutes: 10, secondMinutes: 8, estimated: true },
+  { scenario: 'all routed', routedMinutes: 4, secondMinutes: 10, estimated: false },
+];
+
 vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 
 describe('GreenChapter', { timeout: 20_000 }, () => {
@@ -40,22 +46,57 @@ describe('GreenChapter', { timeout: 20_000 }, () => {
     expect(screen.getByText(/Tu · 32/)).toBeInTheDocument();
   });
 
-  it.each([
-    { locale: 'ro', labels: ro.report.chapters.green.parks },
-    { locale: 'en', labels: en.report.chapters.green.parks },
-  ] as const)(
-    'labels only the estimated walk and its headline in $locale',
-    async ({ locale, labels }) => {
+  it.each(
+    (
+      [
+        {
+          locale: 'ro',
+          labels: ro.report.chapters.green.parks,
+          exactHeadline: ro.report.chapters.green.headline_few,
+          estimatedHeadline: ro.report.chapters.green.headlineApprox_few,
+        },
+        {
+          locale: 'en',
+          labels: en.report.chapters.green.parks,
+          exactHeadline: en.report.chapters.green.headline_other,
+          estimatedHeadline: en.report.chapters.green.headlineApprox_other,
+        },
+      ] as const
+    ).flatMap((language) => walkCases.map((walkCase) => ({ ...language, ...walkCase }))),
+  )(
+    'labels the Green walk and headline for $scenario in $locale',
+    async ({
+      locale,
+      labels,
+      exactHeadline,
+      estimatedHeadline,
+      routedMinutes,
+      secondMinutes,
+      estimated,
+    }) => {
       const result = parseReportResult(SEEDED_REPORT.result);
       const section = result?.sections.green;
       const park = section?.parks[0];
       if (!result || !section || !park) throw new Error('fixture has no green park');
-      const routed = { ...park, name: 'Routed', area_ha: 2, walk_m: 1200, walk_seconds: 240 };
-      const estimated = { ...park, id: 'estimated', name: 'Estimated', area_ha: 2, walk_m: 800 };
+      const routed = {
+        ...park,
+        name: 'Routed park',
+        area_ha: 2,
+        walk_m: 1200,
+        walk_seconds: routedMinutes * 60,
+      };
+      const second = {
+        ...park,
+        id: 'second',
+        name: 'Second park',
+        area_ha: 2,
+        walk_m: secondMinutes * 80,
+        walk_seconds: estimated ? undefined : secondMinutes * 60,
+      };
       result.sections.green = {
         ...section,
         distance_method: 'pedestrian_routing',
-        parks: [routed, estimated],
+        parks: [routed, second],
       };
 
       await renderWithProviders(
@@ -66,13 +107,21 @@ describe('GreenChapter', { timeout: 20_000 }, () => {
         { locale },
       );
 
-      const estimatedText = labels.walkApprox.replace('{{minutes}}', '10');
-      const routedCard = await screen.findByRole('button', { name: /Routed/ });
-      expect(routedCard).toHaveTextContent(labels.walk.replace('{{minutes}}', '4'));
-      expect(routedCard).not.toHaveTextContent(labels.walkApprox.replace('{{minutes}}', '4'));
-      const estimatedCard = screen.getByRole('button', { name: /Estimated/ });
-      expect(estimatedCard).toHaveTextContent(estimatedText);
-      expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(estimatedText);
+      const routedCard = await screen.findByRole('button', { name: /Routed park/ });
+      const secondCard = screen.getByRole('button', { name: /Second park/ });
+      expect(routedCard).toHaveTextContent(
+        labels.walk.replace('{{minutes}}', String(routedMinutes)),
+      );
+      expect(routedCard).not.toHaveTextContent(
+        labels.walkApprox.replace('{{minutes}}', String(routedMinutes)),
+      );
+      expect(secondCard).toHaveTextContent(
+        (estimated ? labels.walkApprox : labels.walk).replace('{{minutes}}', String(secondMinutes)),
+      );
+      const headline = estimated ? estimatedHeadline : exactHeadline;
+      expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
+        headline.replace('{{count}}', '2').replace('{{minutes}}', '10'),
+      );
     },
   );
 });

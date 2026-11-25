@@ -95,25 +95,42 @@ describe('buildReportDocument', () => {
     expect(chapter.html).toContain('4 min pe jos');
   });
 
-  it('labels only the estimated Green card and its headline when walks are mixed', async () => {
-    const report = toReportData(reportInputSchema.parse(await exampleInput()));
-    const section = report.sections.green;
-    const park = section?.parks[0];
-    if (!section || !park) throw new Error('fixture has no green park');
-    report.sections.green = {
-      ...section,
-      distance_method: 'pedestrian_routing',
-      parks: [
-        { ...park, name: 'Routed', area_ha: 2, walk_m: 1200, walk_seconds: 240 },
-        { ...park, id: 'estimated', name: 'Estimated', area_ha: 2, walk_m: 800 },
-      ],
-    };
+  it.each([
+    { scenario: 'longer estimate', routedMinutes: 4, secondMinutes: 10, estimated: true },
+    { scenario: 'shorter estimate', routedMinutes: 10, secondMinutes: 8, estimated: true },
+    { scenario: 'all routed', routedMinutes: 4, secondMinutes: 10, estimated: false },
+  ])(
+    'labels the Green walk and headline for $scenario',
+    async ({ routedMinutes, secondMinutes, estimated }) => {
+      const report = toReportData(reportInputSchema.parse(await exampleInput()));
+      const section = report.sections.green;
+      const park = section?.parks[0];
+      if (!section || !park) throw new Error('fixture has no green park');
+      report.sections.green = {
+        ...section,
+        distance_method: 'pedestrian_routing',
+        parks: [
+          { ...park, name: 'Routed', area_ha: 2, walk_m: 1200, walk_seconds: routedMinutes * 60 },
+          {
+            ...park,
+            id: 'second',
+            name: 'Second park',
+            area_ha: 2,
+            walk_m: secondMinutes * 80,
+            walk_seconds: estimated ? undefined : secondMinutes * 60,
+          },
+        ],
+      };
 
-    const chapter = greenChapter(report);
-    expect(chapter?.html).toContain('până la circa 10 minute pe jos');
-    expect(chapter?.html).toContain('<span>·</span>circa 10 min pe jos');
-    expect(chapter?.html).toContain('<span>·</span>4 min pe jos');
-  });
+      const chapter = greenChapter(report);
+      const limit = estimated ? 'până la circa' : 'la cel mult';
+      expect(chapter?.html).toContain(`<h2>2 parcuri mari, ${limit} 10 minute pe jos</h2>`);
+      expect(chapter?.html).toContain(
+        `<span>·</span>${estimated ? 'circa ' : ''}${String(secondMinutes)} min pe jos`,
+      );
+      expect(chapter?.html).toContain(`<span>·</span>${String(routedMinutes)} min pe jos`);
+    },
+  );
 
   it('draws the city reach card and leaves out the neighbourhoods line when the city has none', async () => {
     const input = reportInputSchema.parse(await exampleInput());
