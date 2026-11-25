@@ -96,7 +96,7 @@ describe('buildReportDocument', () => {
           ...missingSections,
           investment: { status: 'no_data' },
           categories,
-          zone: noScore,
+          zone: { ...noScore, city_avg: 48, city_max: 87 },
         },
       }),
     );
@@ -113,6 +113,8 @@ describe('buildReportDocument', () => {
     expect(html).not.toContain('Calitatea aerului');
     expect(html).not.toContain('Niciunul dintre scorurile disponibile nu e slab');
     expect(html).not.toContain('Toate scorurile, față de tot orașul');
+    expect(html).not.toContain('Media orașului 48.');
+    expect(html).not.toContain('Cel mai bun scor 87.');
   });
 
   it('treats a score of zero as a weak result, not as missing data', async () => {
