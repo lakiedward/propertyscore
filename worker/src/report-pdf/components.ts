@@ -90,6 +90,12 @@ export function footnote(text: string): string {
 }
 
 export function sourceDate(report: ReportData, key: string): string | null {
+  if (key === 'gtfs') {
+    const section = report.sections.accessibility;
+    return section?.data_quality === 'gtfs' && section.reference_date
+      ? formatSourceDate(section.reference_date)
+      : null;
+  }
   const value = report.snapshot.sourceDates[key];
   return value === undefined ? null : formatSourceDate(value);
 }

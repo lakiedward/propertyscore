@@ -7,8 +7,9 @@ import {
   footnote,
   iconTile,
   scoreCard,
+  sourceDate,
 } from '../components.ts';
-import { esc, formatDate, formatDistance, formatNumber, plural } from '../format.ts';
+import { esc, formatDistance, formatNumber, plural } from '../format.ts';
 import { DESTINATION_KINDS, TRANSIT_MODES } from '../labels.ts';
 import {
   addressMarker,
@@ -321,16 +322,18 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
       : unrouted === reachable.length
         ? 'Traseele pe străzi nu sunt disponibile pentru această adresă: harta arată doar destinațiile.'
         : 'Traseele de pe hartă urmează străzile și liniile. Unde traseul lipsește, apare doar destinația.';
-  const schedule =
-    section.data_quality === 'gtfs' && section.reference_date
-      ? `Liniile, stațiile și orarul: operatorul de transport, orar din ${formatDate(section.reference_date)}, o zi lucrătoare. ${routesNote}`
-      : `Orașul nu publică orarul în format deschis: stațiile și liniile vin din OpenStreetMap. ${routesNote}`;
+  const timetableDate = sourceDate(report, 'gtfs');
+  const schedule = timetableDate
+    ? `Liniile, stațiile și orarul vin din datele de transport public (GTFS) pentru ${timetableDate}, o zi lucrătoare.`
+    : section.data_quality === 'gtfs'
+      ? 'Liniile, stațiile și orarul vin din datele de transport public (GTFS). Data orarului nu este disponibilă în raport.'
+      : 'Liniile și stațiile vin din OpenStreetMap. Raportul nu a folosit orarul operatorului, iar timpul de așteptare este estimat.';
   const trips =
     reachable.length === 0
       ? '<p class="hint">Nu am putut calcula drumurile spre locurile importante.</p>'
       : `<div class="acd acp-l">${reachable.map(tripRow).join('')}</div>`;
   const reach = section.reach ? reachCard(section.reach, center) : null;
-  const body = `<section class="acW"><div class="acmap acW-m">${mapHtml(map, mapOverlay)}<div class="rleg">${legend}</div></div><div class="acW-l"><div class="acp"><div class="ac-h"><div><h3>Cât faci până acolo, dimineața la 8</h3></div><div class="legkey"><span><i style="background:#52685B"></i>pe jos</span><span><i style="background:#C9A44A"></i>așteptare</span><span><i style="background:#8A8F99"></i>cu linia</span></div></div>${trips}</div></div>${footnote(schedule)}</section>`;
+  const body = `<section class="acW"><div class="acmap acW-m">${mapHtml(map, mapOverlay)}<div class="rleg">${legend}</div></div><div class="acW-l"><div class="acp"><div class="ac-h"><div><h3>Cât faci până acolo, dimineața la 8</h3></div><div class="legkey"><span><i style="background:#52685B"></i>pe jos</span><span><i style="background:#C9A44A"></i>așteptare</span><span><i style="background:#8A8F99"></i>cu linia</span></div></div>${trips}</div></div>${footnote(`${schedule} ${routesNote}`)}</section>`;
   return {
     html: chapter(
       `${head}${body}<div class="sfB-rest">${scoreCard('accessibility', report)}${reach?.html ?? ''}${chapterSources(report, ['accessibility'])}</div>`,

@@ -479,8 +479,9 @@
           "wait": "waiting",
           "ride": "on the line"
         },
-        "sourceTimetable": "Lines, stops and timetable: local public transport, timetable of {{date}}, a working day. Walking routes follow OpenStreetMap streets.",
-        "sourceOsm": "Lines and stops come from OpenStreetMap, without a timetable: waiting time is estimated. Walking routes follow OpenStreetMap streets.",
+        "sourceTimetable": "Lines, stops and timetables come from public transport data (GTFS) for {{date}}, a working day. Walking routes follow OpenStreetMap streets.",
+        "sourceTimetableUndated": "Lines, stops and timetables come from public transport data (GTFS). The timetable date is not available in this report. Walking routes follow OpenStreetMap streets.",
+        "sourceOsm": "Lines and stops come from OpenStreetMap. This report did not use the operator’s timetable, so waiting times are estimated. Walking routes follow OpenStreetMap streets.",
         "groupLabel": "Destination type",
         "groups": {
           "places": "Key places",

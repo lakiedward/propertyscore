@@ -1,5 +1,6 @@
 import type { ChapterBuilder } from '../chapter.ts';
-import { esc, formatMonth, formatSourceDate } from '../format.ts';
+import { sourceDate } from '../components.ts';
+import { esc, formatMonth } from '../format.ts';
 import { icon, logo, type IconName } from '../icons.ts';
 import { SOURCE_LABELS } from '../labels.ts';
 
@@ -24,11 +25,11 @@ export const closingChapter: ChapterBuilder = (report) => {
   const groups = [...SOURCE_GROUPS, { title: 'Altele', icon: 'info' as const, keys: others }]
     .map((group) => {
       const rows = group.keys.flatMap((key) => {
-        const value = dates[key];
-        return value === undefined
+        const date = sourceDate(report, key);
+        return date === null
           ? []
           : [
-              `<div class="sr"><span>${esc(SOURCE_LABELS[key] ?? key)}</span><span class="dt">${esc(formatSourceDate(value))}</span></div>`,
+              `<div class="sr"><span>${esc(SOURCE_LABELS[key] ?? key)}</span><span class="dt">${esc(date)}</span></div>`,
             ];
       });
       return rows.length === 0

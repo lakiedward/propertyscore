@@ -3,6 +3,10 @@ import type { AccessibilitySection } from './sections/accessibility.types';
 
 type Destination = AccessibilitySection['destinations'][number];
 
+export function gtfsReferenceDate(section: AccessibilitySection | null | undefined): string | null {
+  return section?.data_quality === 'gtfs' ? section.reference_date : null;
+}
+
 type RouteSwatch = {
   token: string;
   fill: string;

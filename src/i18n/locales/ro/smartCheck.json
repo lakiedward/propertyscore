@@ -488,8 +488,9 @@
           "wait": "așteptare",
           "ride": "cu linia"
         },
-        "sourceTimetable": "Liniile, stațiile și orarul: transportul public local, orar din {{date}}, o zi lucrătoare. Drumurile pe jos urmează străzile din OpenStreetMap.",
-        "sourceOsm": "Liniile și stațiile vin din OpenStreetMap, fără orar: așteptarea e estimată. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "sourceTimetable": "Liniile, stațiile și orarul vin din datele de transport public (GTFS) pentru {{date}}, o zi lucrătoare. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "sourceTimetableUndated": "Liniile, stațiile și orarul vin din datele de transport public (GTFS). Data orarului nu este disponibilă în raport. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "sourceOsm": "Liniile și stațiile vin din OpenStreetMap. Raportul nu a folosit orarul operatorului, iar timpul de așteptare este estimat. Drumurile pe jos urmează străzile din OpenStreetMap.",
         "groupLabel": "Tipul destinațiilor",
         "groups": {
           "places": "Locuri importante",
