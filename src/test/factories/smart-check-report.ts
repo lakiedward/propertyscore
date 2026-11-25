@@ -89,9 +89,9 @@ export function buildSavedWalkReport(distanceMethod = 'pedestrian_routing') {
     walk_speed_kmh: 4.5,
     groups: [],
     categories: [
-      { key: 'pharmacy', t1_min: 14, n15: 1, status: 'ok' },
-      { key: 'supermarket', t1_min: 7, n15: 1, status: 'ok' },
-      { key: 'restaurant', t1_min: 19, n15: 0, status: 'missing' },
+      { key: 'pharmacy', group: 'pharmacies', t1_min: 14, n15: 1, status: 'ok' },
+      { key: 'supermarket', group: 'shops', t1_min: 7, n15: 1, status: 'ok' },
+      { key: 'restaurant', group: 'food_drink', t1_min: 19, n15: 0, status: 'missing' },
     ],
     places: [
       { id: 'pharmacy-1', category: 'pharmacy', lng: 20.01, lat: 45.01, minutes: 14, name: null },

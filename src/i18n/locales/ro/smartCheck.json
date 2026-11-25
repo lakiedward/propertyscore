@@ -286,7 +286,8 @@
         "mapBand": {
           "eyebrow": "Harta zonei",
           "title": "Explorează zona pe hartă",
-          "text": "Vezi traseele disponibile și straturile care au contat în scor.",
+          "textWithRoutes": "Explorează traseele către destinații și straturile disponibile pe hartă.",
+          "textWithoutRoutes": "Vezi adresa pe hartă și explorează straturile disponibile.",
           "walk": "locuri pe jos",
           "transit": "destinații cu transportul",
           "layers": "straturi",

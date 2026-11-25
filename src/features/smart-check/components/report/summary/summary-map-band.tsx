@@ -17,6 +17,7 @@ export function SummaryMapBand({ report }: SummaryMapBandProps) {
   const [isExplorerOpen, setIsExplorerOpen] = useState(false);
   const walk = walkRoutes(report.result);
   const transit = transitRoutes(report.result, i18n.resolvedLanguage === 'en' ? 'en' : 'ro');
+  const hasRoutes = walk.length > 0 || transit.length > 0;
   const places = report.result.sections.fifteen_minute?.places ?? [];
 
   const stats = [
@@ -48,7 +49,9 @@ export function SummaryMapBand({ report }: SummaryMapBandProps) {
           {t('report.chapters.summary.mapBand.title')}
         </h2>
         <p className="mt-2.5 text-body leading-normal text-on-info-muted">
-          {t('report.chapters.summary.mapBand.text')}
+          {hasRoutes
+            ? t('report.chapters.summary.mapBand.textWithRoutes')
+            : t('report.chapters.summary.mapBand.textWithoutRoutes')}
         </p>
         <ul className="mt-4.5 mb-5.5 flex gap-4 w760:gap-5.5">
           {stats.map((stat) => (
