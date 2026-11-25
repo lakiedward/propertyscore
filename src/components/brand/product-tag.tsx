@@ -23,7 +23,9 @@ export function ProductTag({ product, className }: ProductTagProps) {
 
   return (
     <Badge className={cn(productTagVariants({ product }), className)}>
-      <BrandMark product={product} size={20} />
+      <span>
+        <BrandMark product={product} size={20} />
+      </span>
       {t(`brand.${product}`)}
     </Badge>
   );
