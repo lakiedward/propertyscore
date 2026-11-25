@@ -19,7 +19,18 @@ export function AccessibilityChapter({ report }: ReportChapterProps) {
   const { result } = report;
   const section = result.sections.accessibility;
   const category = result.categories.accessibility;
-  if (category?.score == null || !section) return null;
+  if (category?.score == null || !section) {
+    return (
+      <section aria-labelledby={TITLE_ID}>
+        <ReportChapterHead
+          hue="accessibility"
+          titleId={TITLE_ID}
+          eyebrow={t('report.categories.accessibility.name')}
+          title={t('report.chapters.accessibility.headlineNoData')}
+        />
+      </section>
+    );
+  }
 
   const score = Math.round(category.score);
   const average = category.city_avg === null ? null : Math.round(category.city_avg);

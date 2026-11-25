@@ -25,7 +25,8 @@ export const greenChapter: ChapterBuilder = (report) => {
     const head = chapterHead({
       eyebrow: categoryEyebrow('green', summary, 'Spații verzi'),
       color: theme.color,
-      title: 'Parcurile și verdele din jurul adresei',
+      title: 'Parcurile și spațiile verzi din jurul adresei',
+      lead: 'Nu avem date despre spațiile verzi pentru această adresă.',
     });
     return { html: chapter(head + scoreCard('green', report) + sources), maps: [] };
   }

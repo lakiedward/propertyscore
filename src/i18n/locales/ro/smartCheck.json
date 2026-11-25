@@ -262,6 +262,8 @@
           "below": "O zonă sub media din {{city}}"
         },
         "headlineWeak": "{{position}}, cu un singur punct slab: <mark>{{weak}}</mark>",
+        "headlineNoScores": "Scoruri indisponibile pentru această adresă",
+        "leadContextOnly": "Raportul include {{contexts}} ca informații de context.",
         "leadZone": "Zona primește {{score}} din 100, față de {{average}} media orașului.",
         "leadEnd": "Fiecare scor are capitolul lui.",
         "good": "Ce e bun",
@@ -459,6 +461,7 @@
       "accessibility": {
         "title": "{{stops}} și {{lines}} care te duc în tot orașul",
         "titleNoStops": "Nicio stație de transport public lângă adresă",
+        "headlineNoData": "Datele despre transportul public nu sunt disponibile pentru această adresă",
         "stopsPhrase_one": "{{count}} stație la {{minutes}} minute pe jos",
         "stopsPhrase_few": "{{count}} stații la {{minutes}} minute pe jos",
         "stopsPhrase_other": "{{count}} de stații la {{minutes}} minute pe jos",
@@ -683,6 +686,7 @@
         "headline_few": "{{count}} parcuri mari, la cel mult {{minutes}} min pe jos",
         "headline_other": "{{count}} de parcuri mari, la cel mult {{minutes}} min pe jos",
         "headlineNone": "Niciun parc la o plimbare de adresă",
+        "headlineNoData": "Parcurile și spațiile verzi din jurul adresei",
         "lead": "Împreună au {{total}} ha. Cel mai mare, {{name}}, are {{area}} ha.",
         "share": "{{share}}% din suprafața pe {{radius}} m e spațiu verde, față de {{average}}% media orașului.",
         "shareNoAverage": "{{share}}% din suprafața pe {{radius}} m e spațiu verde.",
@@ -814,6 +818,7 @@
       },
       "airIndustry": {
         "title": "Aer și industrie",
+        "headlineNoData": "Datele despre aer și industrie nu sunt disponibile pentru această adresă",
         "eyebrowPart": "{{name}} · {{score}} / 100",
         "eyebrowPartNoScore": "{{name}} · fără date",
         "badge": "Precizie: aer la nivel de oraș, industrie la adresă",
@@ -831,6 +836,8 @@
           "industryNone": "Nicio fabrică în registru aproape"
         },
         "lead": {
+          "noAirData": "Datele despre aer nu sunt disponibile pentru această adresă.",
+          "noIndustryData": "Datele despre industrie nu sunt disponibile pentru această adresă.",
           "winter": "Iarna crește praful din aer, ca peste tot în {{city}}.",
           "nearest": "Cea mai apropiată instalație industrială e la {{distance}}."
         },
@@ -1144,8 +1151,9 @@
       "hero": {
         "eyebrow": "Smart Check · raport nr. {{number}} · {{date}}",
         "leadNoStrengths": "Scorurile descriu zona din jurul adresei.",
+        "leadNoScores": "Nu avem suficiente date pentru a calcula scorurile acestei adrese.",
         "leadWeak": "Punctul slab e {{weak}}.",
-        "leadNoWeak": "Niciun scor nu e slab.",
+        "leadNoWeak": "Niciunul dintre scorurile disponibile nu e slab.",
         "meta": "Calculat pe datele din {{date}} · rază de până la {{radius}} km",
         "ready": "Raport gata",
         "noDetails": "Fără detalii declarate",
