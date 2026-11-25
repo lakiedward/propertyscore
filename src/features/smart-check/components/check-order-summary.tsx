@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/i18n/format';
 import { CHECK_PRICE_RON } from '../check.utils';
 
-const SUMMARY_ITEMS = ['scores', 'market', 'nearby', 'questions', 'account'] as const;
+const SUMMARY_ITEMS = ['scores', 'market', 'nearby', 'account'] as const;
 
 type CheckOrderSummaryProps = {
   address: string;

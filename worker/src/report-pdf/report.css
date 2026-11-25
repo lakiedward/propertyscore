@@ -1407,67 +1407,6 @@ svg.i {
 .bB-meth {
   padding: 4px 2px;
 }
-.bB-ask {
-  padding: 28px;
-  border-radius: var(--r-hero);
-  background: var(--slate50);
-  border: 1px solid var(--slate100);
-}
-.bB-ask h2 {
-  margin: 4px 0 0;
-}
-.bB-qs {
-  list-style: none;
-  margin: 20px 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
-  gap: 12px;
-}
-.bB-q {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 18px;
-  border-radius: 14px;
-  background: #fff;
-  border: 1px solid var(--border);
-  box-shadow: inset 0 3px 0 var(--cc);
-  min-width: 0;
-}
-.bB-q > b {
-  font-size: 15.5px;
-  line-height: 1.35;
-}
-.bB-q small {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.45;
-}
-.ck {
-  flex: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--forest);
-  color: var(--lime);
-  font-weight: 800;
-  font-size: 14px;
-}
-.chap {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  margin-top: auto;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--cb);
-  color: var(--cc);
-  font-weight: 800;
-  font-size: 12.5px;
-}
 .bB-st {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -3523,7 +3462,6 @@ body {
 .how,
 .sfhon,
 .bB-s,
-.bB-ask,
 .bB-next,
 .bB-meth,
 .pcard,
