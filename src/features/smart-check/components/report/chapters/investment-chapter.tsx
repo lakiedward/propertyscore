@@ -52,13 +52,16 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
   const { t } = useTranslation('smartCheck');
   const { result } = report;
   const investment = result.sections.investment;
-  const sale = investment?.sale && isCityWide(investment.sale.precision) ? investment.sale : null;
+  const sale = investment?.sale;
   const [chosenArea, setChosenArea] = useState<number | null>(null);
 
   if (!investment || !sale) return <EmptyChapter />;
 
   const cityName = result.city.name;
-  const area = chosenArea ?? initialArea(investment, sale);
+  const cityWide = isCityWide(sale.precision);
+  const marketName = cityWide ? cityName : t('report.chapters.investment.price.radius');
+  const startArea = initialArea(investment, sale);
+  const area = chosenArea ?? startArea;
   const estimate = estimateForArea(investment, sale, area);
   const rent = rentForArea(investment, area);
   const grossPct = investment.yield.gross_pct;
@@ -75,11 +78,20 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
         hue="context"
         titleId={TITLE_ID}
         eyebrow={t('report.chapters.investment.eyebrow')}
-        badge={t('report.chapters.investment.badgeCity')}
-        title={t('report.chapters.investment.headline.city', {
-          city: cityName,
-          value: formatNumber(Math.round(sale.median_eur_m2)),
-        })}
+        badge={t(
+          cityWide
+            ? 'report.chapters.investment.badgeCity'
+            : 'report.chapters.investment.badgeRadius',
+        )}
+        title={t(
+          cityWide
+            ? 'report.chapters.investment.headline.city'
+            : 'report.chapters.investment.headline.radius',
+          {
+            city: cityName,
+            value: formatNumber(Math.round(sale.median_eur_m2)),
+          },
+        )}
         lead={
           declaredArea !== null && declaredEstimate !== null
             ? t('report.chapters.investment.lead.declared', {
@@ -94,6 +106,7 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
         <div className="grid min-w-0 content-start gap-4">
           <InvestmentHomeCard
             area={area}
+            startArea={startArea}
             isDeclared={declaredArea !== null && declaredArea === area}
             onAreaChange={setChosenArea}
             price={estimate.price}
@@ -104,15 +117,21 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
           />
           {grossPct === null ? null : (
             <InvestmentYieldCard
-              cityName={cityName}
+              marketName={marketName}
               grossPct={grossPct}
               isExample={investment.yield.is_example === true}
+              basis={investment.yield.basis}
+              hasUnknownBasis={sale.precision === 'city_statistics' && !investment.yield.is_example}
             />
           )}
         </div>
       </div>
       {change ? <InvestmentHistoryCard change={change} area={area} /> : null}
-      <InvestmentSourcesCard investment={investment} cityName={cityName} hasExample={hasExample} />
+      <InvestmentSourcesCard
+        investment={investment}
+        marketName={marketName}
+        hasExample={hasExample}
+      />
     </section>
   );
 }

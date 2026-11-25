@@ -79,13 +79,13 @@ export function toSharedReportRow(row: ReportRow) {
 
 export const SAVED_WALK_POLYLINE = '_alsT_ouceAAn@';
 
-export function buildSavedWalkReport() {
+export function buildSavedWalkReport(distanceMethod = 'pedestrian_routing') {
   const distribution = { score: 63, percentile: 65, city_avg: 46, histogram: [] };
   const walking = {
     status: 'scored',
     covered: 2,
     total: 3,
-    distance_method: 'pedestrian_routing',
+    distance_method: distanceMethod,
     walk_speed_kmh: 4.5,
     groups: [],
     categories: [
@@ -98,7 +98,10 @@ export function buildSavedWalkReport() {
       { id: 'shop-1', category: 'supermarket', lng: 20.02, lat: 45.02, minutes: 7, name: null },
     ],
     isochrones: [],
-    routes: [{ place_id: 'shop-1', minutes: 7, distance_m: 500, polyline6: SAVED_WALK_POLYLINE }],
+    routes:
+      distanceMethod === 'pedestrian_routing'
+        ? [{ place_id: 'shop-1', minutes: 7, distance_m: 500, polyline6: SAVED_WALK_POLYLINE }]
+        : [],
   };
   return buildReportRow({
     address_text: 'Test Address 10',

@@ -6,9 +6,25 @@ import {
   compareToTypical,
   fewerThanTypical,
   roundedRatio,
+  walkingTimeMethod,
+  walkMetersPerMinute,
 } from './fifteen-minute.utils';
 
 const section = fifteenMinuteSectionSchema.parse(FREIDORF_REPORT_RESULT.fifteen_minute);
+
+describe('walking time metadata', () => {
+  it('distinguishes a known estimate from an unrecognized or missing method', () => {
+    expect(walkingTimeMethod('pedestrian_routing')).toBe('routed');
+    expect(walkingTimeMethod('straight_line')).toBe('estimated');
+    expect(walkingTimeMethod('unknown')).toBeNull();
+    expect(walkingTimeMethod(undefined)).toBeNull();
+  });
+
+  it('reports only a speed carried by the report', () => {
+    expect(walkMetersPerMinute(section)).toBe(75);
+    expect(walkMetersPerMinute({ ...section, walk_speed_kmh: null })).toBeNull();
+  });
+});
 
 describe('compareToTypical', () => {
   it('has no comparison without a typical value', () => {

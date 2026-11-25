@@ -128,6 +128,7 @@ describe('assessCityStatistics', () => {
       property_type: 'apartment',
       price_kind: 'asking',
       count: 952,
+      count_kind: 'listings',
       median_eur_m2: 1984,
       p25_eur_m2: 1748,
       p75_eur_m2: 2318,
@@ -153,6 +154,7 @@ describe('assessCityStatistics', () => {
       property_type: 'apartment',
       price_kind: 'asking',
       count: 4210,
+      count_kind: 'listings',
       basis: 'per_m2',
       median_eur: 500,
       median_eur_m2: 9.52,
@@ -165,6 +167,33 @@ describe('assessCityStatistics', () => {
       },
     });
     expect(market?.grossYieldPct).toBe(5.8);
+  });
+
+  it('keeps both actual yield inputs when the headline uses a different sale source', () => {
+    const source = 'apartamente_org_index';
+    const sourceUrl = 'https://apartamente.org/raport-piata/2026-11.csv';
+    const market = assess({
+      statistics: [
+        IMOSPOT_SALE,
+        statistic({ source, sourceUrl, medianEurM2: 1872.4, apartmentCount: 125 }),
+        statistic({
+          source,
+          sourceUrl,
+          transaction: 'rent',
+          medianEurM2: 7.02,
+          apartmentCount: 35,
+        }),
+      ],
+    });
+    expect(market?.sale.median_eur_m2).toBe(1984);
+    expect(market?.rent?.count_kind).toBe('apartments');
+    expect(market?.grossYieldPct).toBe(4.5);
+    expect(market?.yieldBasis).toEqual({
+      sale_eur_m2: 1872.4,
+      rent_eur_m2: 7.02,
+      sale_source: { source, period: '2026-11-01', observed_on: null, url: sourceUrl },
+      rent_source: { source, period: '2026-11-01', observed_on: null, url: sourceUrl },
+    });
   });
 
   it('lists the localities next to the city, the busiest first', () => {

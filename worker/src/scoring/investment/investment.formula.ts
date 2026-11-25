@@ -1,3 +1,4 @@
+import type { InvestmentYieldBasis } from '../../report/investment-contract.ts';
 import {
   assessCityAverages,
   type CityAverage,
@@ -139,7 +140,7 @@ export type InvestmentReport = {
   };
   sale: SaleBlock | CityStatisticsSaleBlock | CityAverageSaleBlock | null;
   rent: RentBlock | CityStatisticsRentBlock | CityAverageRentBlock | null;
-  yield: { gross_pct: number | null; city_gross_pct: number | null };
+  yield: { gross_pct: number | null; city_gross_pct: number | null; basis?: InvestmentYieldBasis };
   city: {
     sale_count: number;
     rent_count: number;
@@ -599,7 +600,11 @@ function cityStatisticsReport(
     reference_date: market.referenceDate,
     sale: market.sale,
     rent: market.rent,
-    yield: { gross_pct: market.grossYieldPct, city_gross_pct: null },
+    yield: {
+      gross_pct: market.grossYieldPct,
+      city_gross_pct: null,
+      ...(market.yieldBasis ? { basis: market.yieldBasis } : {}),
+    },
     nearby: market.nearby,
     history: market.history,
     sources: [

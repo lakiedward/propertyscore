@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 
 import { buildReportDocument } from './build-document.ts';
+import { fifteenMinuteChapter } from './chapters/fifteen-minute.ts';
 import { reportInputSchema, toReportData } from './report-data.ts';
 
 async function exampleInput(): Promise<Record<string, unknown>> {
@@ -25,6 +26,41 @@ describe('buildReportDocument', () => {
     expect(document.allowedHosts).toEqual(['tiles.openfreemap.org']);
     expect(document.assets.has('/assets/maplibre-gl.mjs')).toBe(true);
     expect(document.assets.has('/assets/fonts/manrope-latin-ext.woff2')).toBe(true);
+  });
+
+  it('labels saved straight-line times without drawing a walking zone', async () => {
+    const input = reportInputSchema.parse(await exampleInput());
+    const walking = input.result.fifteen_minute as Record<string, unknown>;
+    const report = toReportData({
+      ...input,
+      result: {
+        ...input.result,
+        fifteen_minute: { ...walking, distance_method: 'straight_line', isochrones: [] },
+      },
+    });
+    const chapter = fifteenMinuteChapter(report);
+    if (!chapter) throw new Error('The example report has no 15-minute chapter');
+    const { html, maps } = chapter;
+
+    expect(html).toContain('adresă · estimare în linie dreaptă');
+    expect(html).toContain('Timpii pe jos sunt estimați din distanța în linie dreaptă');
+    expect(html).not.toContain('străzi și alei');
+    expect(maps[0]?.layers.map((layer) => layer.kind)).toEqual(['circle']);
+  });
+
+  it('explains routed times and only states the walking pace when saved', async () => {
+    const input = reportInputSchema.parse(await exampleInput());
+    const walking = input.result.fifteen_minute as Record<string, unknown>;
+    const makeChapter = (speed: number | undefined) =>
+      fifteenMinuteChapter(
+        toReportData({
+          ...input,
+          result: { ...input.result, fifteen_minute: { ...walking, walk_speed_kmh: speed } },
+        }),
+      );
+
+    expect(makeChapter(4.5)?.html).toContain('străzi și alei), la 75 m/min.');
+    expect(makeChapter(undefined)?.html).toContain('străzi și alei).');
   });
 
   it('leaves out a section without data and reports one it cannot read', async () => {

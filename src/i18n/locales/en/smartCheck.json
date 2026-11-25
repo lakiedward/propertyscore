@@ -65,7 +65,7 @@
       "items": {
         "score": "Area score from 9 criteria, each explained",
         "transit": "Accessibility: lines, frequency and directions, not just distance",
-        "fifteen": "15-minute city: what you can reach on foot, on real streets",
+        "fifteen": "15-minute city: what’s nearby on foot",
         "green": "Green space within 500 m and 1 km",
         "environment": "Safety, noise, air, industrial areas, seismic risk",
         "market": "Prices, rents and yield in the area",
@@ -278,7 +278,7 @@
         "mapBand": {
           "eyebrow": "Area map",
           "title": "Explore the area on the map",
-          "text": "Coloured routes, times on real streets and the layers that counted in the score.",
+          "text": "See the available routes and the layers that contributed to the score.",
           "walk": "places on foot",
           "transit": "destinations by transit",
           "layers": "layers",
@@ -331,7 +331,11 @@
           "transit": "Transit",
           "layers": "Layers",
           "modes": "What the map shows",
-          "walkNote": "Routed on real streets, at {{speed}} km/h.",
+          "walkNote": {
+            "routed": "The routes shown follow the pedestrian network.",
+            "estimated": "Walking times in the 15-minute chapter are based on straight-line distances. No saved walking routes are shown on this map.",
+            "unavailable": "No saved walking routes are shown on this map."
+          },
           "transitNote": "Walk to the stop, wait, ride the line.",
           "layersNote": "Turn a layer on to see what counted in the score.",
           "footer": "Tap a route: it appears on the map, with its time. Drawn from OpenStreetMap.",
@@ -537,7 +541,7 @@
         "eyebrow": "15 minutes · {{score}} / 100 · {{band}}",
         "precision": {
           "routed": "Precision: address · real streets",
-          "estimated": "Precision: address · estimate"
+          "estimated": "Precision: address · straight-line estimate"
         },
         "headline": {
           "all": "All {{count}} everyday things within {{limit}} minutes on foot",
@@ -564,8 +568,13 @@
             "zone": "{{limit}} minutes on foot",
             "places": "Everyday places"
           },
-          "source": "Places: OpenStreetMap, {{date}}. Walking routes follow streets and paths, at {{speed}} metres a minute.",
-          "sourceNoDate": "Places: OpenStreetMap. Walking routes follow streets and paths, at {{speed}} metres a minute.",
+          "source": "Places: OpenStreetMap, {{date}}.",
+          "sourceNoDate": "Places: OpenStreetMap.",
+          "method": {
+            "routed": "Walking times are calculated along the pedestrian network (streets and paths).",
+            "routedWithSpeed": "Walking times are calculated along the pedestrian network (streets and paths), at {{speed}} m/min.",
+            "estimated": "Walking times are estimated from straight-line distances, adjusted for detours."
+          },
           "minutes": "{{minutes}} min"
         },
         "checklist": {
@@ -990,7 +999,8 @@
         "offers_other": "{{amount}} listings",
         "note": "Not part of the zone score. Investment is context for buyers who plan to rent the home out.",
         "headline": {
-          "city": "In {{city}}, asking prices are around €{{value}} per square metre"
+          "city": "In {{city}}, asking prices are around €{{value}} per square metre",
+          "radius": "Around the address, asking prices are about €{{value}} per square metre"
         },
         "lead": {
           "declared": "For {{area}} m², about {{price}}, asking price.",
@@ -1010,7 +1020,8 @@
           "nearby": "{{name}}, next to the city",
           "typical": "Typical apartment in listings: {{area}} m², €{{price}}",
           "legendRange": "typical range",
-          "legendMedian": "middle price"
+          "legendMedian": "middle price",
+          "radius": "Around the address"
         },
         "home": {
           "eyebrow": "For your apartment",
@@ -1028,17 +1039,18 @@
           "eyebrow": "Gross yield per year",
           "title": "A year of rent is {{value}}% of the price",
           "value": "{{value}}%",
-          "note": "Twelve months of rent divided by the price, before taxes, repairs and months without a tenant."
+          "note": "Twelve months of rent divided by the price, before taxes, repairs and months without a tenant.",
+          "legacyTitle": "Gross yield: {{value}}% (calculation basis unavailable)",
+          "basis": "Calculation: 12 × €{{rent}}/m² per month ({{rentSource}}, {{rentPeriod}}) ÷ €{{sale}}/m² ({{saleSource}}, {{salePeriod}})."
         },
         "history": {
-          "eyebrow_one": "Last month",
-          "eyebrow_other": "Last {{count}} months",
+          "eyebrow": "History · {{first}} – {{last}}",
           "title": {
             "up": "Since {{month}}, the asking price rose by €{{value}}/m²",
             "down": "Since {{month}}, the asking price fell by €{{value}}/m²",
             "flat": "Since {{month}}, the asking price has not changed"
           },
-          "chartLabel": "Median asking price per square metre, month by month",
+          "chartLabel": "Asking price per square metre in months with data",
           "forArea": "For {{area}} m², compared with {{month}}",
           "span_one": "{{percent}} in {{count}} month",
           "span_other": "{{percent}} in {{count}} months"
@@ -1053,13 +1065,17 @@
             "apartamente_org_index": "apartamente.org, monthly index",
             "imospot_index": "Imospot Index (CC BY 4.0)"
           },
-          "saleCity": "{{city}} · sale",
-          "saleCityOffers_one": "{{city}} · sale · {{amount}} listing",
-          "saleCityOffers_other": "{{city}} · sale · {{amount}} listings",
-          "rentCity": "{{city}} · rent",
-          "rentCityOffers_one": "{{city}} · rent · {{amount}} listing",
-          "rentCityOffers_other": "{{city}} · rent · {{amount}} listings"
-        }
+          "roles": {
+            "sale": "{{place}} · sale",
+            "rent": "{{place}} · rent",
+            "history": "Asking-price history",
+            "yield_sale": "Sale price used for yield",
+            "yield_rent": "Rent used for yield"
+          }
+        },
+        "badgeRadius": "Precision: around the address",
+        "apartments_one": "{{amount}} apartment",
+        "apartments_other": "{{amount}} apartments"
       },
       "closing": {
         "title": "Before the viewing",
