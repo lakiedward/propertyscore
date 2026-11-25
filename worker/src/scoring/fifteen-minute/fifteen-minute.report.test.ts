@@ -168,10 +168,27 @@ describe('assembleFifteenMinuteReport', () => {
 
 describe('routeTargets', () => {
   it('routes to the nearest place of each category, closest first', () => {
-    expect(routeTargets(assembled, 2).map((place) => place.id)).toEqual([
+    expect(routeTargets(assembled).map((place) => place.id)).toEqual([
       'osm:node/4',
       'osm:node/5',
+      'osm:node/1',
     ]);
+  });
+
+  it('keeps the nearest place for every category in the 15-minute list', () => {
+    const allParams = testParams();
+    const categories = allParams.categories.map(({ key }) => key);
+    const report = assembleFifteenMinuteReport({
+      params: allParams,
+      candidates: categories.map((key, index) => candidate(key, index + 1, 300 + index * 20)),
+      coveredKeys: new Set(categories),
+      cell: { score: 88, cityAvg: 64, cityPercentile: 81 },
+      typical: new Map(),
+      distanceMethod: 'pedestrian_routing',
+    });
+
+    expect(report.covered).toBe(30);
+    expect(routeTargets(report).map(({ category }) => category)).toEqual(categories);
   });
 });
 

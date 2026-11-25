@@ -255,13 +255,13 @@ export function assembleFifteenMinuteReport(input: {
   };
 }
 
-export function routeTargets(assembled: Assembled, limit: number): Assembled['places'] {
+export function routeTargets(assembled: Assembled): Assembled['places'] {
   const nearestPerCategory = new Map<string, Assembled['places'][number]>();
   for (const place of assembled.places) {
     const current = nearestPerCategory.get(place.category);
     if (!current || place.minutes < current.minutes) nearestPerCategory.set(place.category, place);
   }
-  return [...nearestPerCategory.values()].sort((a, b) => a.minutes - b.minutes).slice(0, limit);
+  return [...nearestPerCategory.values()].sort((a, b) => a.minutes - b.minutes);
 }
 
 async function readReportCell(
@@ -424,7 +424,7 @@ async function buildFifteenMinuteReport(options: {
     : [];
   const routes = [];
   if (router) {
-    for (const place of routeTargets(assembled, params.report.routes)) {
+    for (const place of routeTargets(assembled)) {
       const route = await router.route({
         origin,
         destination: { lng: place.lng, lat: place.lat },
