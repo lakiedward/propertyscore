@@ -4,9 +4,10 @@ import type { Sql } from '../db/sql.ts';
 import { WorkerError } from '../lib/errors.ts';
 import type { Logger } from '../lib/logger.ts';
 import { renderPdf } from '../pdf/render-pdf.ts';
+import type { ReportPdfStorage } from '../report-queue/report-pdf-storage.ts';
 import { buildReportDocument } from './build-document.ts';
 import { reportInputSchema, toReportData, type ReportData } from './report-data.ts';
-import { readReadyReport } from './report-pdf.db.ts';
+import { readReadyReport, readStoredReportPdf } from './report-pdf.db.ts';
 
 export type RenderReportPdfOptions = {
   source: { reportId: string; sql: Sql } | { inputPath: string };
@@ -71,4 +72,20 @@ export async function renderReportPdf(options: RenderReportPdfOptions): Promise<
   });
   await writeFile(options.outputPath, pdf);
   logger.info('report pdf written', { report_number: number, bytes: pdf.length });
+}
+
+type RefreshReportPdfOptions = {
+  sql: Sql;
+  reportId: string;
+  storage: ReportPdfStorage;
+  renderReport: (raw: unknown) => Promise<Buffer>;
+  logger: Logger;
+};
+
+export async function refreshReportPdf(options: RefreshReportPdfOptions): Promise<void> {
+  const { sql, reportId, storage, renderReport, logger } = options;
+  const { path, input } = await readStoredReportPdf(sql, reportId);
+  const pdf = await renderReport(input);
+  await storage.upload(path, pdf);
+  logger.info('stored report pdf refreshed', { report_id: reportId, bytes: pdf.length });
 }

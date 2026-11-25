@@ -74,11 +74,17 @@ export type RenderReportPdfCommand = {
   outputPath: string;
 };
 
+export type RefreshReportPdfCommand = {
+  command: 'refresh-report-pdf';
+  reportId: string;
+};
+
 export type WorkerCommand =
   | BuildSnapshotCommand
   | GenerateReportCommand
   | ServeReportsCommand
   | RenderReportPdfCommand
+  | RefreshReportPdfCommand
   | CreateReportCommand
   | ImportMarketListingsCommand
   | ImportCityAveragesCommand
@@ -214,6 +220,28 @@ function parseRenderReportPdf(argv: readonly string[]): RenderReportPdfCommand {
     source: { reportId: reportId.data },
     outputPath: values.out,
   };
+}
+
+function parseRefreshReportPdf(argv: readonly string[]): RefreshReportPdfCommand {
+  const { values } = parseArgs({
+    args: [...argv],
+    options: { report: { type: 'string', multiple: true }, apply: { type: 'boolean' } },
+  });
+  if (!values.apply) {
+    throw new WorkerError(
+      'invalid_refresh_report_pdf',
+      'refresh-report-pdf needs --apply to replace the stored PDF',
+    );
+  }
+  const reports = values.report ?? [];
+  const reportId = reportIdSchema.safeParse(reports[0]);
+  if (reports.length !== 1 || !reportId.success) {
+    throw new WorkerError(
+      'invalid_report_id',
+      'refresh-report-pdf needs exactly one --report <uuid>',
+    );
+  }
+  return { command: 'refresh-report-pdf', reportId: reportId.data };
 }
 
 function parseCreateReport(argv: readonly string[]): CreateReportCommand {
@@ -384,6 +412,8 @@ export function parseCommand(argv: readonly string[], now: Date): WorkerCommand 
       return parseServeReports(rest);
     case 'render-report-pdf':
       return parseRenderReportPdf(rest);
+    case 'refresh-report-pdf':
+      return parseRefreshReportPdf(rest);
     case 'create-report':
       return parseCreateReport(rest);
     case 'import-health-sources':
