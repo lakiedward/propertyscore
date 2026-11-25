@@ -36,6 +36,7 @@ describe('serveReports', () => {
     const result = await serveReports({
       claim,
       process,
+      processPdfVariant: () => Promise.resolve(false),
       waitForWork,
       stop: controller.signal,
       logger,
@@ -60,6 +61,7 @@ describe('serveReports', () => {
     const result = await serveReports({
       claim,
       process,
+      processPdfVariant: () => Promise.resolve(false),
       waitForWork: () => Promise.resolve(),
       stop: controller.signal,
       logger,
@@ -85,6 +87,7 @@ describe('serveReports', () => {
     const result = await serveReports({
       claim,
       process,
+      processPdfVariant: () => Promise.resolve(false),
       waitForWork,
       stop: controller.signal,
       logger,
@@ -93,6 +96,73 @@ describe('serveReports', () => {
 
     expect(result).toEqual({ completed: 1, failed: 0 });
     expect(waitForWork).toHaveBeenCalledWith(50, controller.signal);
+    expect(lines).toContainEqual(expect.objectContaining({ message: 'report queue unreachable' }));
+  });
+
+  it('delivers on-demand PDFs and new report variants without draining either queue', async () => {
+    const controller = new AbortController();
+    const { logger } = recordingLogger();
+    const deliveries: string[] = [];
+    const variants = ['saved-ro', 'saved-en', 'another-saved-en'];
+    const waitForWork = vi.fn(() => Promise.resolve());
+    let nextReport = 1;
+
+    const result = await serveReports({
+      claim: () => {
+        if (nextReport <= 5) return Promise.resolve(`new-${nextReport++}`);
+        controller.abort();
+        return Promise.resolve(null);
+      },
+      process: (reportId) => {
+        deliveries.push(`report:${reportId}`);
+        variants.push(`${reportId}-en`);
+        return Promise.resolve();
+      },
+      processPdfVariant: () => {
+        deliveries.push(`pdf:${variants.shift() ?? 'empty'}`);
+        if (deliveries.length === 10) controller.abort();
+        return Promise.resolve(true);
+      },
+      waitForWork,
+      stop: controller.signal,
+      logger,
+    });
+
+    expect(result).toEqual({ completed: 5, failed: 0 });
+    expect(deliveries).toEqual([
+      'report:new-1',
+      'pdf:saved-ro',
+      'report:new-2',
+      'pdf:saved-en',
+      'report:new-3',
+      'pdf:another-saved-en',
+      'report:new-4',
+      'pdf:new-1-en',
+      'report:new-5',
+      'pdf:new-2-en',
+    ]);
+    expect(variants).toEqual(['new-3-en', 'new-4-en', 'new-5-en']);
+    expect(waitForWork).not.toHaveBeenCalled();
+  });
+
+  it('continues processing PDFs when report claiming fails', async () => {
+    const controller = new AbortController();
+    const { logger, lines } = recordingLogger();
+    const waitForWork = vi.fn(() => Promise.resolve());
+    const result = await serveReports({
+      claim: () => Promise.reject(new Error('report claim failed')),
+      process: () => Promise.resolve(),
+      processPdfVariant: () => {
+        controller.abort();
+        return Promise.resolve(true);
+      },
+      waitForWork,
+      stop: controller.signal,
+      logger,
+    });
+
+    expect(result).toEqual({ completed: 0, failed: 0 });
+    expect(waitForWork).not.toHaveBeenCalled();
     expect(lines).toContainEqual(expect.objectContaining({ message: 'report queue unreachable' }));
   });
 
@@ -108,6 +178,7 @@ describe('serveReports', () => {
     const result = await serveReports({
       claim,
       process,
+      processPdfVariant: () => Promise.resolve(false),
       waitForWork: () => Promise.resolve(),
       stop: controller.signal,
       logger,

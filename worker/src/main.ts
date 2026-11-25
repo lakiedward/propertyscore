@@ -99,19 +99,8 @@ async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<voi
           storage,
           logger,
         }),
-      waitForWork: async (timeoutMs, signal) => {
-        try {
-          if (
-            !signal.aborted &&
-            (await processNextReportPdfVariant(sql, renderReport, storage, logger))
-          ) {
-            return;
-          }
-        } catch (error) {
-          logger.error('localized report pdf queue unreachable', { code: errorCode(error) });
-        }
-        await work.wait(timeoutMs, signal);
-      },
+      processPdfVariant: () => processNextReportPdfVariant(sql, renderReport, storage, logger),
+      waitForWork: work.wait,
       stop,
       logger,
     });
