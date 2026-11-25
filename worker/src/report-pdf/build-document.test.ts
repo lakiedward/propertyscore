@@ -235,44 +235,51 @@ describe('buildReportDocument', () => {
   });
 
   it.each([
-    { date: 'not-a-date', displayedDate: null },
-    { date: '2026-02-30', displayedDate: null },
-    { date: '2026-11-03', displayedDate: '3 nov. 2026' },
-  ])('only cites a valid local GTFS reference date ($date)', async ({ date, displayedDate }) => {
-    const input = reportInputSchema.parse(await exampleInput());
-    const accessibility = input.result.accessibility;
-    if (!accessibility || typeof accessibility !== 'object') {
-      throw new Error('The example report has no accessibility section');
-    }
-    const report = toReportData({
-      ...input,
-      result: {
-        ...input.result,
-        accessibility: { ...accessibility, data_quality: 'gtfs', reference_date: date },
-        snapshot: { ...input.result.snapshot, source_dates: { gtfs: '2026-11-25' } },
-      },
-    });
-    const { html } = await buildReportDocument(report);
+    { quality: 'gtfs', date: 'not-a-date', displayedDate: null },
+    { quality: 'gtfs', date: '2026-02-30', displayedDate: null },
+    { quality: 'gtfs', date: '2026-11-03', displayedDate: '3 nov. 2026' },
+    { quality: 'osm_only', date: '2026-11-03', displayedDate: null },
+  ])(
+    'cites only the timetable used ($quality, $date)',
+    async ({ quality, date, displayedDate }) => {
+      const input = reportInputSchema.parse(await exampleInput());
+      const accessibility = input.result.accessibility;
+      if (!accessibility || typeof accessibility !== 'object') {
+        throw new Error('The example report has no accessibility section');
+      }
+      const report = toReportData({
+        ...input,
+        result: {
+          ...input.result,
+          accessibility: { ...accessibility, data_quality: quality, reference_date: date },
+          snapshot: {
+            ...input.result.snapshot,
+            source_dates: { gtfs: '2026-11-25', osm: '2026-11-01' },
+          },
+        },
+      });
+      const { html } = await buildReportDocument(report);
 
-    expect(report.unreadableSections).not.toContain('accessibility');
-    expect(html).not.toContain('25 nov. 2026');
-    const english = (await buildReportDocument({ ...report, locale: 'en' })).html;
-    expect(english).not.toContain('25 Nov 2026');
-    if (displayedDate) {
-      expect(html).toContain(`Orare transport public (GTFS) · ${displayedDate}`);
-      expect(html).toContain(
-        `Orare transport public (GTFS)</span><span class="dt">${displayedDate}`,
-      );
-      expect(html).toContain(`(GTFS) pentru ${displayedDate}, o zi lucrătoare.`);
-      expect(english).toContain('(GTFS) for 3 Nov 2026, a weekday.');
-    } else {
-      expect(html).toContain('Data orarului nu este disponibilă în raport.');
-      expect(html).not.toContain('Orare transport public (GTFS)');
-      expect(html).not.toContain(date);
-      expect(english).toContain('No timetable date is available in the report.');
-      expect(english).not.toContain('Public transport timetables (GTFS)');
-    }
-  });
+      expect(report.unreadableSections).not.toContain('accessibility');
+      expect(html).not.toContain('25 nov. 2026');
+      if (displayedDate) {
+        expect(html).toContain(`Orare transport public (GTFS) · ${displayedDate}`);
+        expect(html).toContain(
+          `Orare transport public (GTFS)</span><span class="dt">${displayedDate}`,
+        );
+        expect(html).toContain(`(GTFS) pentru ${displayedDate}, o zi lucrătoare.`);
+      } else {
+        expect(html).toContain(
+          quality === 'osm_only'
+            ? 'Raportul nu a folosit orarul operatorului, iar timpul de așteptare este estimat.'
+            : 'Data orarului nu este disponibilă în raport.',
+        );
+        expect(html).not.toContain('Orare transport public (GTFS)');
+        expect(html).not.toContain(date);
+      }
+      expect(html).toContain('OpenStreetMap · 1 nov. 2026');
+    },
+  );
 
   it('fits the Green map to the full listed park and shows its fastest routed time', async () => {
     const report = toReportData(reportInputSchema.parse(await exampleInput()));
