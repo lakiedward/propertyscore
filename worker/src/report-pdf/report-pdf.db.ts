@@ -7,6 +7,7 @@ type ReportRow = {
   latitude: number;
   longitude: number;
   generated_at: Date | null;
+  locale: string;
   status: string;
   result: unknown;
   pdf_path: string | null;
@@ -16,7 +17,7 @@ type ReadyReportRow = ReportRow & { generated_at: Date };
 
 async function readReadyReportRow(sql: SqlQueries, reportId: string): Promise<ReadyReportRow> {
   const [row] = await sql<ReportRow[]>`
-    select number, address_text, latitude, longitude, generated_at, status, result, pdf_path
+    select number, address_text, latitude, longitude, generated_at, locale, status, result, pdf_path
     from public.online_reports
     where id = ${reportId}
   `;
@@ -34,6 +35,7 @@ function toReportInput(row: ReadyReportRow) {
     latitude: row.latitude,
     longitude: row.longitude,
     generated_at: row.generated_at.toISOString(),
+    locale: row.locale,
     result: row.result,
   };
 }

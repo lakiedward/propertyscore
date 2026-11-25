@@ -18,6 +18,7 @@ describe('buildReportDocument', () => {
     const document = await buildReportDocument(report);
 
     expect(report.unreadableSections).toEqual([]);
+    expect(document.html).toContain('<html lang="ro">');
     expect(document.html).toContain(report.addressText);
     expect(document.html).toContain('risc moderat, nu ridicat');
     expect(document.html).toContain('preț cerut');
@@ -27,6 +28,39 @@ describe('buildReportDocument', () => {
     expect(document.allowedHosts).toEqual(['tiles.openfreemap.org']);
     expect(document.assets.has('/assets/maplibre-gl.mjs')).toBe(true);
     expect(document.assets.has('/assets/fonts/manrope-latin-ext.woff2')).toBe(true);
+  });
+
+  it('localizes the English chapters, sources and values from the same report', async () => {
+    const input = reportInputSchema.parse({ ...(await exampleInput()), locale: 'en' });
+    const report = toReportData(input);
+    const accessibility = report.sections.accessibility;
+    if (!accessibility) throw new Error('The example report has no accessibility section');
+    const destinations = accessibility.destinations.map((destination) => ({
+      ...destination,
+      label: { ro: 'Destinație de test', en: 'Example destination' },
+    }));
+    const { html } = await buildReportDocument({
+      ...report,
+      sections: { ...report.sections, accessibility: { ...accessibility, destinations } },
+    });
+
+    expect(html).toContain('<html lang="en">');
+    for (const text of [
+      'generated on 4 Nov 2026',
+      'All scores compared with the city',
+      'Example destination',
+      'Your everyday checklist',
+      '9 large parks',
+      'Estimate based on roads',
+      'Copernicus CAMS',
+      'the USGS and EMSC catalogues',
+      '€123,000',
+      'Gross annual yield',
+      'Data from Nov 2026',
+    ]) {
+      expect(html).toContain(text);
+    }
+    expect(html).not.toMatch(/Destinație de test|catalogul USGS și EMSC|preț cerut|Surse și date/);
   });
 
   it('labels saved straight-line times without drawing a walking zone', async () => {
@@ -65,6 +99,35 @@ describe('buildReportDocument', () => {
 
     expect(makeChapter(4.5)?.html).toContain('străzi și alei), la 75 m/min.');
     expect(makeChapter(undefined)?.html).toContain('străzi și alei).');
+  });
+
+  it.each([
+    { count: 0, expected: { ro: '0 scoruri', en: '0 scores' } },
+    { count: 1, expected: { ro: '1 scor', en: '1 score' } },
+    { count: 2, expected: { ro: '2 scoruri', en: '2 scores' } },
+  ])('uses the right score count for $count available scores', async ({ count, expected }) => {
+    const report = toReportData(reportInputSchema.parse(await exampleInput()));
+    const categories = { ...report.categories };
+    for (const key of CATEGORY_KEYS.slice(count)) {
+      categories[key] = { ...categories[key], score: null };
+    }
+    const zone = count === 0 ? { ...report.zone, score: null } : report.zone;
+
+    for (const locale of ['ro', 'en'] as const) {
+      const { html } = await buildReportDocument({ ...report, locale, categories, zone });
+      expect(html).toContain(`${expected[locale]} ·`);
+      if (count > 0) {
+        expect(html).toContain(
+          locale === 'ro' ? `Am calculat ${expected.ro} pe` : `We calculated ${expected.en} within`,
+        );
+      }
+      if (count === 1) {
+        expect(html).toContain(
+          locale === 'ro' ? 'pe singurul scor disponibil.' : 'on the only available score.',
+        );
+        expect(html).not.toMatch(/1 (?:scoruri|scores)\b/u);
+      }
+    }
   });
 
   it('leaves out a section without data and reports one it cannot read', async () => {
@@ -118,6 +181,18 @@ describe('buildReportDocument', () => {
     expect(html).not.toContain('Toate scorurile, față de tot orașul');
     expect(html).not.toContain('Media orașului 48.');
     expect(html).not.toContain('Cel mai bun scor 87.');
+
+    const english = (await buildReportDocument({ ...report, locale: 'en' })).html;
+    expect(english).toContain('There is not enough data to calculate scores for this address.');
+    expect(english).toContain('Scores are not available for this address');
+    expect(english).toContain('This report includes seismic risk for context.');
+    expect(english).toContain('No green space data is available for this address.');
+    expect(english).toContain('Public transport data is not available for this address');
+    expect(english).toContain('Air quality and industry data are not available for this address');
+    expect(english).not.toContain('None of the available scores are low.');
+    expect(english).not.toContain('All scores compared with the city');
+    expect(english).not.toContain('City average: 48.');
+    expect(english).not.toContain('Best score: 87.');
   });
 
   it('treats a score of zero as a weak result, not as missing data', async () => {
@@ -180,16 +255,21 @@ describe('buildReportDocument', () => {
 
     expect(report.unreadableSections).not.toContain('accessibility');
     expect(html).not.toContain('25 nov. 2026');
+    const english = (await buildReportDocument({ ...report, locale: 'en' })).html;
+    expect(english).not.toContain('25 Nov 2026');
     if (displayedDate) {
       expect(html).toContain(`Orare transport public (GTFS) · ${displayedDate}`);
       expect(html).toContain(
         `Orare transport public (GTFS)</span><span class="dt">${displayedDate}`,
       );
       expect(html).toContain(`(GTFS) pentru ${displayedDate}, o zi lucrătoare.`);
+      expect(english).toContain('(GTFS) for 3 Nov 2026, a weekday.');
     } else {
       expect(html).toContain('Data orarului nu este disponibilă în raport.');
       expect(html).not.toContain('Orare transport public (GTFS)');
       expect(html).not.toContain(date);
+      expect(english).toContain('No timetable date is available in the report.');
+      expect(english).not.toContain('Public transport timetables (GTFS)');
     }
   });
 
