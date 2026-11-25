@@ -1082,8 +1082,6 @@
           "includedPrefix": "Raportul online e inclus",
           "text": "<strong>Starea apartamentului o verifică un inspector,</strong> la fața locului: întrebări, fotografii, plan și tur 360°.",
           "book": "Programează inspecția",
-          "another": "Vrei să verifici și altă adresă? <strong>Primești același tip de raport, în câteva minute.</strong>",
-          "anotherAction": "Verifică altă adresă",
           "titleGood": "Zona arată bine. Verifică și apartamentul.",
           "textGood": "<strong>Zona arată bine. Starea apartamentului o verifică un inspector.</strong> La fața locului: întrebări, fotografii, plan și tur 360°. Raportul online e inclus."
         },

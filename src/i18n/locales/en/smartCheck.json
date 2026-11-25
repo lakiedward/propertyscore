@@ -1065,8 +1065,6 @@
           "includedPrefix": "The online report is included",
           "text": "<strong>An inspector checks the apartment's condition</strong> on site: questions, photos, floor plan and a 360° tour.",
           "book": "Book the inspection",
-          "another": "Want to check another address? <strong>You get the same kind of report, in a few minutes.</strong>",
-          "anotherAction": "Check another address",
           "titleGood": "The area looks good. Check the apartment too.",
           "textGood": "<strong>The area looks good. A single inspector checks the apartment's condition.</strong> On site: questions, photos, floor plan and a 360° tour. The online report is included."
         },
