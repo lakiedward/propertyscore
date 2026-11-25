@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 
 import { describe, expect, it } from 'vitest';
 
+import { CATEGORY_KEYS } from '../scoring/categories.ts';
 import { buildReportDocument } from './build-document.ts';
 import { reportInputSchema, toReportData } from './report-data.ts';
 
@@ -40,6 +41,80 @@ describe('buildReportDocument', () => {
     await expect(buildReportDocument(report)).resolves.toMatchObject({
       allowedHosts: ['tiles.openfreemap.org'],
     });
+  });
+
+  it('explains missing scores and missing chapter data without drawing conclusions', async () => {
+    const input = reportInputSchema.parse(await exampleInput());
+    const noScore = { score: null, percentile: null, city_avg: null, histogram: [] };
+    const categories = Object.fromEntries(
+      CATEGORY_KEYS.map((key) => [key, { ...noScore, weight: 0 }]),
+    );
+    const missingSections = Object.fromEntries(
+      CATEGORY_KEYS.map((key) => [key, { status: 'no_data' }]),
+    );
+    const report = toReportData(
+      reportInputSchema.parse({
+        ...input,
+        result: {
+          ...input.result,
+          ...missingSections,
+          investment: { status: 'no_data' },
+          categories,
+          zone: noScore,
+        },
+      }),
+    );
+    const { html } = await buildReportDocument(report);
+
+    expect(report.unreadableSections).toEqual([]);
+    expect(html).toContain('Nu avem suficiente date pentru a calcula scorurile acestei adrese.');
+    expect(html).toContain('Scoruri indisponibile pentru această adresă');
+    expect(html).toContain('Raportul include riscul seismic ca informații de context.');
+    expect(html).toContain('Nu avem date despre spațiile verzi pentru această adresă.');
+    expect(html).toContain('Datele despre transportul public nu sunt disponibile');
+    expect(html).toContain('Datele despre aer și industrie nu sunt disponibile');
+    expect(html).not.toContain('Niciun parc mare la o plimbare de adresă');
+    expect(html).not.toContain('Calitatea aerului');
+    expect(html).not.toContain('Niciunul dintre scorurile disponibile nu e slab');
+    expect(html).not.toContain('Toate scorurile, față de tot orașul');
+  });
+
+  it('treats a score of zero as a weak result, not as missing data', async () => {
+    const input = reportInputSchema.parse(await exampleInput());
+    const report = toReportData({
+      ...input,
+      result: {
+        ...input.result,
+        categories: {
+          ...input.result.categories,
+          safety: { ...input.result.categories.safety, score: 0 },
+        },
+      },
+    });
+    const { html } = await buildReportDocument(report);
+
+    expect(html).toContain('Punctul slab e siguranță.');
+    expect(html).not.toContain('Scoruri indisponibile pentru această adresă');
+  });
+
+  it('uses only the industry registry for the headline when air data is missing', async () => {
+    const input = reportInputSchema.parse(await exampleInput());
+    const report = toReportData({
+      ...input,
+      result: {
+        ...input.result,
+        air: { status: 'no_data' },
+        categories: {
+          ...input.result.categories,
+          air: { ...input.result.categories.air, score: null },
+        },
+      },
+    });
+    const { html } = await buildReportDocument(report);
+
+    expect(html).toMatch(/<h2>(?:Fabrici la peste|Nicio fabrică în registru aproape)/u);
+    expect(html).toContain('Datele despre aer nu sunt disponibile pentru această adresă.');
+    expect(html).not.toContain('Calitatea aerului,');
   });
 
   it('draws the city reach card and leaves out the neighbourhoods line when the city has none', async () => {

@@ -235,7 +235,7 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
     const head = chapterHead({
       eyebrow: categoryEyebrow('accessibility', summary),
       color: theme.color,
-      title: 'Transportul public din jurul adresei',
+      title: 'Datele despre transportul public nu sunt disponibile pentru această adresă',
     });
     return {
       html: chapter(

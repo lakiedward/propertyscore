@@ -58,25 +58,27 @@ export function GreenChapter({ report }: ReportChapterProps) {
               })
             : t('report.categories.green.name')
         }
-        badge={t('report.chapters.green.precision')}
+        badge={section ? t('report.chapters.green.precision') : undefined}
         isEyebrowColored
         title={
-          farthest
-            ? t('report.chapters.green.headline', {
-                count: parks.length,
-                minutes: parkWalkMinutes(farthest.walk_m),
-              })
-            : t('report.chapters.green.headlineNone')
+          !section
+            ? t('report.chapters.green.headlineNoData')
+            : farthest
+              ? t('report.chapters.green.headline', {
+                  count: parks.length,
+                  minutes: parkWalkMinutes(farthest.walk_m),
+                })
+              : t('report.chapters.green.headlineNone')
         }
         lead={lead()}
       />
-      {section && parks.length > 0 ? (
-        <GreenParksBlock report={report} parks={parks} />
-      ) : (
+      {!section ? (
         <p className="rounded-icon border border-border bg-card p-5 text-muted-foreground">
           {t('report.chapters.green.noData')}
         </p>
-      )}
+      ) : parks.length > 0 ? (
+        <GreenParksBlock report={report} parks={parks} />
+      ) : null}
       <ChapterScoreBlock
         report={report}
         chapter="green"

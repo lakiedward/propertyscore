@@ -2,7 +2,14 @@ import { CATEGORY_KEYS, type CategoryKey } from '../../scoring/categories.ts';
 import { SCORE_BANDS, scoreBand } from '../bands.ts';
 import type { ChapterOutput } from '../chapter.ts';
 import { categoryTile } from '../components.ts';
-import { esc, escKeepingRangesTogether, formatDate, formatNumber, lowerFirst } from '../format.ts';
+import {
+  esc,
+  escKeepingRangesTogether,
+  formatDate,
+  formatNumber,
+  lowerFirst,
+  plural,
+} from '../format.ts';
 import { icon, logo } from '../icons.ts';
 import { CATEGORY_GROUPS } from '../labels.ts';
 import { addressMarker, around, mapHtml, ring, type MapSpec } from '../maps.ts';
@@ -47,18 +54,18 @@ function weakest(scored: readonly Scored[]): Scored | undefined {
 }
 
 function heroLead(scored: readonly Scored[]): string {
+  if (scored.length === 0) {
+    return 'Nu avem suficiente date pentru a calcula scorurile acestei adrese.';
+  }
   const strong = [...scored]
     .sort((left, right) => right.score - right.average - (left.score - left.average))
     .slice(0, 2)
     .map((item) => lowerFirst(CATEGORY_THEME[item.key].name));
   const weak = weakest(scored);
-  const lead =
-    strong.length === 0
-      ? 'Scorurile descriu zona din jurul adresei.'
-      : `Zona stă cel mai bine la ${strong.join(' și ')}.`;
+  const lead = `Zona stă cel mai bine la ${strong.join(' și ')}.`;
   return weak
     ? `${lead} Punctul slab e ${lowerFirst(CATEGORY_THEME[weak.key].name)}.`
-    : `${lead} Niciun scor nu e slab.`;
+    : `${lead} Niciunul dintre scorurile disponibile nu e slab.`;
 }
 
 function scoreRing(score: number | null): string {
@@ -85,6 +92,7 @@ function hero(report: ReportData, scored: readonly Scored[], map: MapSpec): stri
 }
 
 function headline(report: ReportData, scored: readonly Scored[]): string {
+  if (scored.length === 0) return 'Scoruri indisponibile pentru această adresă';
   const weak = weakest(scored);
   const position = esc(zonePosition(report));
   if (!weak) return position;
@@ -93,11 +101,31 @@ function headline(report: ReportData, scored: readonly Scored[]): string {
 
 function summaryHead(report: ReportData, scored: readonly Scored[]): string {
   const { zone } = report;
+  const contexts = [
+    report.sections.seismic ? 'riscul seismic' : '',
+    report.sections.investment ? 'investiția' : '',
+  ].filter(Boolean);
   const zoneLine =
     zone.score === null
       ? ''
       : ` Zona primește ${String(Math.round(zone.score))} din 100${zone.city_avg === null ? '' : `, față de ${String(Math.round(zone.city_avg))} media orașului`}.`;
-  return `<div class="sx-head"><div class="eyebrow"><span>Pe scurt</span><span class="acc" style="--c:#3F6478"><i></i>${String(scored.length)} scoruri · 2 contexte</span></div><h2>${headline(report, scored)}</h2><p class="lead">Am calculat ${String(scored.length)} scoruri pe o rază de până la 1,2 km, plus riscul seismic și investiția ca și context.${zoneLine} Fiecare scor are capitolul lui.</p></div>`;
+  const contextLine =
+    contexts.length > 0
+      ? `Raportul include ${contexts.join(' și ')} ca informații de context.`
+      : '';
+  const scoreCount = plural(scored.length, 'scor', 'scoruri', 'de scoruri');
+  const contextCount = plural(contexts.length, 'context', 'contexte', 'de contexte');
+  const lead =
+    scored.length === 0
+      ? contextLine
+      : [
+          `Am calculat ${scoreCount} pe o rază de până la 1,2 km.${zoneLine}`,
+          contextLine,
+          'Fiecare scor are capitolul lui.',
+        ]
+          .filter(Boolean)
+          .join(' ');
+  return `<div class="sx-head"><div class="eyebrow"><span>Pe scurt</span><span class="acc" style="--c:#3F6478"><i></i>${scoreCount} · ${contextCount}</span></div><h2>${headline(report, scored)}</h2>${lead ? `<p class="lead">${esc(lead)}</p>` : ''}</div>`;
 }
 
 function standing(item: Scored, cityName: string): string {
@@ -266,6 +294,10 @@ export function summaryChapter(report: ReportData): ChapterOutput {
     ],
     markers: [addressMarker(center, report.addressText.split(',')[0])],
   };
-  const html = `<article class="chapter cover">${hero(report, scored, heroMap)}<div class="wrap"><div class="sx sC">${summaryHead(report, scored)}${highlights(report, scored)}</div></div></article><article class="chapter"><div class="wrap"><div class="sx sC">${allScores(report, scored)}${formation(report, scored)}</div></div></article>`;
+  const scoresPage =
+    scored.length === 0
+      ? ''
+      : `<article class="chapter"><div class="wrap"><div class="sx sC">${allScores(report, scored)}${formation(report, scored)}</div></div></article>`;
+  const html = `<article class="chapter cover">${hero(report, scored, heroMap)}<div class="wrap"><div class="sx sC">${summaryHead(report, scored)}${highlights(report, scored)}</div></div></article>${scoresPage}`;
   return { html, maps: [heroMap] };
 }
