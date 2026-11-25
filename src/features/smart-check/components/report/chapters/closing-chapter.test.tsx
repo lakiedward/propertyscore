@@ -21,6 +21,6 @@ describe('ClosingChapter', { timeout: 20_000 }, () => {
     expect(screen.queryByText(/întrebări pentru proprietar/)).not.toBeInTheDocument();
     expect(screen.queryByText(/din 2 bifate/)).not.toBeInTheDocument();
     expect(screen.queryByText('Verifică altă adresă')).not.toBeInTheDocument();
-    expect(screen.getByText(/Programează inspecția/)).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: /Programează inspecția/ })).not.toHaveLength(0);
   });
 });
