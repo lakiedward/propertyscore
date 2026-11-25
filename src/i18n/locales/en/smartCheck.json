@@ -278,7 +278,8 @@
         "mapBand": {
           "eyebrow": "Area map",
           "title": "Explore the area on the map",
-          "text": "See the available routes and the layers that contributed to the score.",
+          "textWithRoutes": "Explore routes to destinations and the available map layers.",
+          "textWithoutRoutes": "Find the address on the map and explore the available layers.",
           "walk": "places on foot",
           "transit": "destinations by transit",
           "layers": "layers",
