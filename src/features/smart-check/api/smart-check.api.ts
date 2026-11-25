@@ -97,6 +97,12 @@ const savedWalkRouteSchema = z.discriminatedUnion('status', [
   }),
 ]);
 
+function throwSavedWalkRouteError(message: string): never {
+  const error = new AppError('unknown', message);
+  logger.error(error);
+  throw error;
+}
+
 export async function requestSavedWalkRoute(
   reportId: string,
   category: string,
@@ -110,14 +116,16 @@ export async function requestSavedWalkRoute(
       ...(shareToken === undefined ? {} : { p_token: shareToken }),
     })
     .abortSignal(signal);
-  if (error) throw toAppError(error);
+  if (error) {
+    const appError = toAppError(error);
+    if (appError.code === 'unknown' && !signal.aborted) {
+      throwSavedWalkRouteError('Saved walk route request failed');
+    }
+    throw appError;
+  }
   if (data === null) return { status: 'unavailable' } as const;
   const parsed = savedWalkRouteSchema.safeParse(data);
-  if (!parsed.success) {
-    const invalidResponse = new AppError('unknown', 'Saved walk route response is invalid');
-    logger.error(invalidResponse);
-    throw invalidResponse;
-  }
+  if (!parsed.success) throwSavedWalkRouteError('Saved walk route response is invalid');
   return parsed.data;
 }
 

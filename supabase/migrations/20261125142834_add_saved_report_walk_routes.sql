@@ -3,6 +3,7 @@ create table private.saved_report_walk_routes (
   report_id uuid not null references public.online_reports (id) on delete cascade,
   place_id text not null,
   requested_at timestamptz not null default now(),
+  attempt_count smallint not null default 0 check (attempt_count between 0 and 3),
   claim_token uuid,
   claim_expires_at timestamptz,
   completed_at timestamptz,
@@ -19,7 +20,8 @@ alter table private.saved_report_walk_routes enable row level security;
 revoke all on private.saved_report_walk_routes from public, anon, authenticated;
 
 create index saved_report_walk_routes_pending_idx
-  on private.saved_report_walk_routes (requested_at) where completed_at is null;
+  on private.saved_report_walk_routes (requested_at, id)
+  where completed_at is null and attempt_count < 3;
 
 create trigger saved_report_walk_routes_set_updated_at
   before update on private.saved_report_walk_routes
@@ -88,12 +90,16 @@ begin
   select * into v_route from private.saved_report_walk_routes
   where report_id = p_report_id and place_id = v_place_id;
 
-  if not found or (v_route.polyline6 is null and v_route.completed_at <= now() - interval '5 minutes') then
+  if not found or (
+    v_route.attempt_count < 3 and v_route.polyline6 is null
+    and v_route.completed_at <= now() - interval '5 minutes'
+  ) then
     insert into private.saved_report_walk_routes (report_id, place_id)
     values (p_report_id, v_place_id)
     on conflict (report_id, place_id) do update
       set requested_at = excluded.requested_at, completed_at = null
     where saved_report_walk_routes.polyline6 is null
+      and saved_report_walk_routes.attempt_count < 3
       and saved_report_walk_routes.completed_at <= now() - interval '5 minutes';
     if found then
       perform pg_notify('saved_report_walk_route_queued', '');
@@ -105,7 +111,9 @@ begin
 
   if v_route.polyline6 is not null then
     return jsonb_build_object('status', 'ready', 'polyline6', v_route.polyline6);
-  elsif v_route.completed_at is null and v_route.requested_at > now() - interval '5 minutes' then
+  elsif v_route.completed_at is null and v_route.requested_at > now() - interval '5 minutes'
+    and (v_route.attempt_count < 3 or v_route.claim_expires_at > now())
+  then
     return jsonb_build_object('status', 'pending');
   end if;
   return jsonb_build_object('status', 'unavailable');
@@ -124,14 +132,15 @@ as $$
     select q.id
     from private.saved_report_walk_routes q
     join public.online_reports r on r.id = q.report_id
-    where q.completed_at is null and r.status = 'ready'
+    where q.completed_at is null and q.attempt_count < 3 and r.status = 'ready'
       and (q.claim_expires_at is null or q.claim_expires_at <= now())
     order by q.requested_at, q.id
     limit 1
     for update of q skip locked
   ), claimed as (
     update private.saved_report_walk_routes q
-    set claim_token = gen_random_uuid(), claim_expires_at = now() + interval '30 seconds'
+    set claim_token = gen_random_uuid(), claim_expires_at = now() + interval '30 seconds',
+      attempt_count = q.attempt_count + 1
     from next_route n
     where q.id = n.id
     returning q.id, q.claim_token, q.report_id, q.place_id
