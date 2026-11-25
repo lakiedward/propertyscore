@@ -59,6 +59,7 @@ export const investmentSectionSchema = z.object({
   rent: z
     .looseObject({
       ...sample,
+      precision: z.string().optional(),
       median_eur: z.number().nullable().optional(),
       median_eur_m2: z.number().nullable().optional(),
       estimate_eur: z.number().nullable().optional(),
@@ -97,6 +98,17 @@ function roundTo(value: number, step: number): number {
 
 export function isCityWide(precision: string): boolean {
   return precision === 'city_statistics' || precision === 'city_average' || precision === 'city';
+}
+
+export function yieldScope(investment: InvestmentSection) {
+  if (investment.yield.basis) return 'city';
+  const sale = investment.sale?.precision ?? '';
+  const rent = investment.rent?.precision ?? '';
+  if (sale === 'radius' && rent === 'radius') return 'address';
+  if (sale === 'radius' && isCityWide(rent)) return 'addressSaleCityRent';
+  if (isCityWide(sale) && rent === 'radius') return 'citySaleAddressRent';
+  if (isCityWide(sale) && isCityWide(rent)) return 'city';
+  return 'unknown';
 }
 
 export function sampleKind(value: Sample): MarketCountKind {

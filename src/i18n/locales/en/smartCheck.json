@@ -1029,6 +1029,12 @@
           "eyebrow": "Gross yield per year",
           "title": "A year of rent is {{value}}% of the price",
           "value": "{{value}}%",
+          "scope": {
+            "address": "Around the address",
+            "addressSaleCityRent": "Sale price around the address · citywide rent",
+            "citySaleAddressRent": "Citywide sale price · rent around the address",
+            "unknown": "Market data"
+          },
           "note": "Twelve months of rent divided by the price, before taxes, repairs and months without a tenant.",
           "legacyTitle": "Gross yield: {{value}}% (calculation basis unavailable)",
           "basis": "Calculation: 12 × €{{rent}}/m² per month ({{rentSource}}, {{rentPeriod}}) ÷ €{{sale}}/m² ({{saleSource}}, {{salePeriod}})."

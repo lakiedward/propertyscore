@@ -10,6 +10,7 @@ export {
   investmentSources,
   isCityWide,
   rentForArea,
+  yieldScope,
   type InvestmentYieldBasis,
 } from '../../../worker/src/report/investment-contract.ts';
 

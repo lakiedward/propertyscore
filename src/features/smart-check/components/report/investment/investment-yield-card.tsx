@@ -9,7 +9,7 @@ import { marketPeriod, marketSourceName } from './market-source-format';
 const YIELD_TITLE_ID = 'investment-yield-title';
 
 type InvestmentYieldCardProps = {
-  marketName: string;
+  scopeLabel: string;
   grossPct: number;
   isExample: boolean;
   basis: InvestmentYieldBasis | undefined;
@@ -17,7 +17,7 @@ type InvestmentYieldCardProps = {
 };
 
 export function InvestmentYieldCard({
-  marketName,
+  scopeLabel,
   grossPct,
   isExample,
   basis,
@@ -38,10 +38,10 @@ export function InvestmentYieldCard({
     >
       <div className="mt-5 flex items-center gap-3">
         <span className="flex items-center gap-2 text-[14px] font-bold">
-          {marketName}
+          {scopeLabel}
           {isExample ? <ExamplePill /> : null}
         </span>
-        <div aria-hidden="true" className="h-3.5 flex-1 rounded-full bg-muted">
+        <div aria-hidden="true" className="h-3.5 min-w-6 flex-1 rounded-full bg-muted">
           <i
             style={{ width: `${String(yieldBarWidth(grossPct))}%` }}
             className="block h-full rounded-full bg-primary"

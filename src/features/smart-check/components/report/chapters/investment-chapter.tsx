@@ -9,6 +9,7 @@ import {
   initialArea,
   isCityWide,
   rentForArea,
+  yieldScope,
 } from '../../../investment.utils';
 import { InvestmentHistoryCard } from '../investment/investment-history-card';
 import { InvestmentHomeCard } from '../investment/investment-home-card';
@@ -65,6 +66,7 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
   const estimate = estimateForArea(investment, sale, area);
   const rent = rentForArea(investment, area);
   const grossPct = investment.yield.gross_pct;
+  const scope = yieldScope(investment);
   const change = historyChange(investment.history?.months ?? []);
   const isRentExample = investment.rent?.is_example === true;
   const hasExample = isRentExample || investment.yield.is_example === true;
@@ -117,7 +119,9 @@ export function InvestmentChapter({ report }: ReportChapterProps) {
           />
           {grossPct === null ? null : (
             <InvestmentYieldCard
-              marketName={marketName}
+              scopeLabel={
+                scope === 'city' ? cityName : t(`report.chapters.investment.yield.scope.${scope}`)
+              }
               grossPct={grossPct}
               isExample={investment.yield.is_example === true}
               basis={investment.yield.basis}
