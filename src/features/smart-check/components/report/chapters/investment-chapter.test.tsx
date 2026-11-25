@@ -69,6 +69,46 @@ describe('InvestmentChapter', () => {
     expect(thumb).toHaveAttribute('aria-valuenow', '60');
     expect(screen.getByText('≈ 119.000 €')).toBeInTheDocument();
     expect(screen.getByText('Suprafața aleasă')).toBeInTheDocument();
+
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Revino la 58,5 m²' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(thumb).toHaveAttribute('aria-valuenow', '58.5');
+    expect(screen.getByText('Suprafața declarată')).toBeInTheDocument();
+    expect(screen.getByText('≈ 116.000 €')).toBeInTheDocument();
+    expect(screen.getByText('≈ 480 €')).toBeInTheDocument();
+  });
+
+  it('keeps the declared rent and yield on the same-room basis while simulating another area', async () => {
+    const user = userEvent.setup();
+    const report = readyReport((investment) => {
+      investment.declared = { area_m2: 84 };
+      investment.sale = { precision: 'radius', median_eur_m2: 2250, estimate_eur: 189000 };
+      investment.rent = {
+        precision: 'radius',
+        basis: 'same_rooms',
+        median_eur: 620,
+        median_eur_m2: 7.6,
+      };
+      investment.yield = { gross_pct: 3.9 };
+    });
+    await renderWithProviders(<InvestmentChapter report={report} onOpenChapter={vi.fn()} />);
+
+    const thumb = await screen.findByRole('slider', { name: 'Suprafața apartamentului' });
+    expect(screen.getByText('≈ 620 €')).toBeInTheDocument();
+    expect(screen.queryByText('≈ 640 €')).not.toBeInTheDocument();
+    expect(
+      screen.getByText('Mediana chiriilor pentru același număr de camere.'),
+    ).toBeInTheDocument();
+    const calculation = screen.getByText(
+      'Calcul pentru suprafața declarată: 12 × 620 € pe lună ÷ 189.000 €.',
+    );
+
+    thumb.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByText('≈ 645 €')).toBeInTheDocument();
+    expect(screen.getByText('Estimare pe m² pentru această suprafață.')).toBeInTheDocument();
+    expect(calculation).toBeInTheDocument();
   });
 
   it('shows rent, yield, the last months and every source with its link', async () => {

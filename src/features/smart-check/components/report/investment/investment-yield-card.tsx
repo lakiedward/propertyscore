@@ -1,7 +1,11 @@
 import { InfoIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { formatNumber } from '@/i18n/format';
-import { yieldBarWidth, type InvestmentYieldBasis } from '../../../investment.utils';
+import { formatNumber, formatPrice } from '@/i18n/format';
+import {
+  yieldBarWidth,
+  type declaredYieldAmounts,
+  type InvestmentYieldBasis,
+} from '../../../investment.utils';
 import { ExamplePill } from './example-pill';
 import { InvestmentCard } from './investment-card';
 import { marketPeriod, marketSourceName } from './market-source-format';
@@ -13,6 +17,7 @@ type InvestmentYieldCardProps = {
   grossPct: number;
   isExample: boolean;
   basis: InvestmentYieldBasis | undefined;
+  declaredAmounts: ReturnType<typeof declaredYieldAmounts>;
   hasUnknownBasis: boolean;
 };
 
@@ -21,6 +26,7 @@ export function InvestmentYieldCard({
   grossPct,
   isExample,
   basis,
+  declaredAmounts,
   hasUnknownBasis,
 }: InvestmentYieldCardProps) {
   const { t } = useTranslation('smartCheck');
@@ -60,6 +66,13 @@ export function InvestmentYieldCard({
             rent: formatNumber(basis.rent_eur_m2, { maximumFractionDigits: 2 }),
             rentSource: marketSourceName(t, basis.rent_source.source),
             rentPeriod: marketPeriod(basis.rent_source.period),
+          })}
+        </p>
+      ) : declaredAmounts ? (
+        <p className="mt-4 text-[12.5px] text-muted-foreground">
+          {t('report.chapters.investment.yield.declaredBasis', {
+            rent: formatPrice(declaredAmounts.monthly, 'EUR'),
+            sale: formatPrice(declaredAmounts.price, 'EUR'),
           })}
         </p>
       ) : null}

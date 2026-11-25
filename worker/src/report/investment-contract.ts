@@ -60,6 +60,7 @@ export const investmentSectionSchema = z.object({
     .looseObject({
       ...sample,
       precision: z.string().optional(),
+      basis: z.string().optional(),
       median_eur: z.number().nullable().optional(),
       median_eur_m2: z.number().nullable().optional(),
       estimate_eur: z.number().nullable().optional(),
@@ -130,16 +131,49 @@ export function estimateForArea(investment: InvestmentSection, sale: Sale, area:
   };
 }
 
-export function rentForArea(investment: InvestmentSection, area: number): number | null {
+function listingRentAmount(rent: NonNullable<InvestmentSection['rent']>) {
+  if (rent.precision !== 'radius' && rent.precision !== 'city') return null;
+  return rent.basis === 'same_rooms' || rent.basis === 'per_m2' ? (rent.median_eur ?? null) : null;
+}
+
+export function rentEstimateForArea(investment: InvestmentSection, area: number) {
   const { rent } = investment;
   if (!rent) return null;
   const declared = investment.declared.area_m2;
-  if (declared === area && rent.estimate_eur != null) return rent.estimate_eur;
-  if (rent.median_eur_m2 != null) return roundTo(rent.median_eur_m2 * area, RENT_STEP_EUR);
+  if (declared === area) {
+    const value = rent.estimate_eur ?? listingRentAmount(rent);
+    if (value !== null) {
+      const basis =
+        rent.basis === 'same_rooms'
+          ? 'sameRooms'
+          : rent.basis === 'per_m2' || rent.basis === 'median_over_area'
+            ? 'perM2'
+            : null;
+      return { value, basis } as const;
+    }
+  }
+  if (rent.median_eur_m2 != null) {
+    return { value: roundTo(rent.median_eur_m2 * area, RENT_STEP_EUR), basis: 'perM2' } as const;
+  }
   if (rent.estimate_eur != null && declared !== null && declared > 0) {
-    return roundTo((rent.estimate_eur / declared) * area, RENT_STEP_EUR);
+    return {
+      value: roundTo((rent.estimate_eur / declared) * area, RENT_STEP_EUR),
+      basis: 'perM2',
+    } as const;
   }
   return null;
+}
+
+export function declaredYieldAmounts(investment: InvestmentSection) {
+  const { declared, sale, rent, yield: marketYield } = investment;
+  if (declared.area_m2 === null || !rent || marketYield.basis || marketYield.is_example)
+    return null;
+  if (sale?.precision !== 'radius' && sale?.precision !== 'city') return null;
+  const price = sale.estimate_eur;
+  const monthly = listingRentAmount(rent);
+  if (price == null || price <= 0 || monthly === null) return null;
+  if (Math.round(((12 * monthly) / price) * 100 * 10) / 10 !== marketYield.gross_pct) return null;
+  return { price, monthly };
 }
 
 type Month = NonNullable<InvestmentSection['history']>['months'][number];

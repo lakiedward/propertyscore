@@ -7,7 +7,7 @@ import {
   initialArea,
   isCityWide,
   priceIntervals,
-  rentForArea,
+  rentEstimateForArea,
 } from './investment.utils';
 import { parseReportResult } from './report.utils';
 
@@ -45,12 +45,12 @@ describe('investment utils', () => {
       low: 102000,
       high: 136000,
     });
-    expect(rentForArea(section, area)).toBe(480);
+    expect(rentEstimateForArea(section, area)?.value).toBe(480);
   });
 
   it('does not use an unscaled market median as an estimate', () => {
     const { section } = investment();
-    expect(rentForArea({ ...section, rent: { median_eur: 420 } }, 58.5)).toBeNull();
+    expect(rentEstimateForArea({ ...section, rent: { median_eur: 420 } }, 58.5)).toBeNull();
   });
 
   it('prices an area from the median and the interval, rounded to a thousand', () => {
@@ -64,7 +64,7 @@ describe('investment utils', () => {
 
   it('prices the rent per square metre of the chosen area, rounded to 5', () => {
     const { section } = investment();
-    expect(rentForArea(section, 62)).toBe(505);
+    expect(rentEstimateForArea(section, 62)).toEqual({ value: 505, basis: 'perM2' });
   });
 
   it('lists the city first and the localities from the dearest', () => {

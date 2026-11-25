@@ -1049,10 +1049,15 @@
           "chosenArea": "Suprafața aleasă",
           "area": "{{area}} m²",
           "sliderLabel": "Suprafața apartamentului",
+          "resetArea": "Revino la {{area}} m²",
           "price": "Preț cerut estimat",
           "approx": "≈ {{value}}",
           "between": "între {{low}} și {{high}}",
           "rent": "Chirie estimată",
+          "rentBasis": {
+            "sameRooms": "Mediana chiriilor pentru același număr de camere.",
+            "perM2": "Estimare pe m² pentru această suprafață."
+          },
           "perMonth": "pe lună"
         },
         "yield": {
@@ -1067,6 +1072,7 @@
           },
           "note": "Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș.",
           "legacyTitle": "Randament brut: {{value}}% (baza nu este disponibilă)",
+          "declaredBasis": "Calcul pentru suprafața declarată: 12 × {{rent}} pe lună ÷ {{sale}}.",
           "basis": "Calcul: 12 × {{rent}} €/m² pe lună ({{rentSource}}, {{rentPeriod}}) ÷ {{sale}} €/m² ({{saleSource}}, {{salePeriod}})."
         },
         "history": {

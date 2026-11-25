@@ -1,9 +1,10 @@
 import {
+  declaredYieldAmounts,
   estimateForArea,
   historyRange,
   investmentSources,
   isCityWide,
-  rentForArea,
+  rentEstimateForArea,
   sampleKind,
   yieldScope,
   type MarketCountKind,
@@ -140,12 +141,24 @@ function homeCard(locale: ReportLocale, section: Investment, sale: Sale): string
     low !== null && high !== null
       ? `<small>${t('între {0} și {1}', 'between {0} and {1}', formatNumber(low), formatEuro(high))}</small>`
       : '';
-  const rentValue = rentForArea(section, area);
-  const rent =
-    rentValue === null
+  const rent = rentEstimateForArea(section, area);
+  const rentBasis = rent?.basis
+    ? {
+        sameRooms: t(
+          'Mediana chiriilor pentru același număr de camere.',
+          'Median rent for homes with the same room count.',
+        ),
+        perM2: t(
+          'Estimare pe m² pentru această suprafață.',
+          'Per-square-metre estimate for this area.',
+        ),
+      }[rent.basis]
+    : '';
+  const rentHtml =
+    rent === null
       ? ''
-      : `<div class="inv-big g"><span>${t('Chirie cerută estimată{0}', 'Estimated asking rent{0}', section.rent?.is_example ? ` ${exampleTag(locale)}` : '')}</span><b>${t('circa {0} ', 'about {0} ', formatEuro(rentValue))}<i>${t('pe lună', 'per month')}</i></b></div>`;
-  return `<section class="card ac invE">${eyebrow(t('Pentru apartamentul tău', 'For your flat'))}<div class="inv-sl"><div class="inv-sl-h"><span>${t('Suprafața declarată', 'Declared floor area')}</span><b>${decimal(locale, area)} m²</b></div></div><div class="inv-big"><span>${t('Preț cerut estimat', 'Estimated asking price')}</span><b>${t('circa {0}', 'about {0}', formatEuro(price))}</b>${bounds}</div>${rent}</section>`;
+      : `<div class="inv-big g"><span>${t('Chirie cerută estimată{0}', 'Estimated asking rent{0}', section.rent?.is_example ? ` ${exampleTag(locale)}` : '')}</span><b>${t('circa {0} ', 'about {0} ', formatEuro(rent.value))}<i>${t('pe lună', 'per month')}</i></b>${rentBasis ? `<small>${rentBasis}</small>` : ''}</div>`;
+  return `<section class="card ac invE">${eyebrow(t('Pentru apartamentul tău', 'For your flat'))}<div class="inv-sl"><div class="inv-sl-h"><span>${t('Suprafața declarată', 'Declared floor area')}</span><b>${decimal(locale, area)} m²</b></div></div><div class="inv-big"><span>${t('Preț cerut estimat', 'Estimated asking price')}</span><b>${t('circa {0}', 'about {0}', formatEuro(price))}</b>${bounds}</div>${rentHtml}</section>`;
 }
 
 function sourceName(locale: ReportLocale, code: string): string {
@@ -158,11 +171,12 @@ function yieldCard(
   section: Investment,
   sale: Sale,
 ): string {
-  const { t, formatMonth } = reportFormat(locale);
+  const { t, formatMonth, formatEuro } = reportFormat(locale);
   const value = section.yield.gross_pct;
   if (value === null) return '';
   const width = Math.min(100, (value / YIELD_SCALE_PCT) * 100).toFixed(1);
   const basis = section.yield.basis;
+  const declaredAmounts = declaredYieldAmounts(section);
   const scopeLabel = {
     city: cityName,
     address: t('În jurul adresei', 'Around the address'),
@@ -196,7 +210,14 @@ function yieldCard(
         esc(sourceName(locale, basis.sale_source.source)),
         esc(formatMonth(basis.sale_source.period)),
       )}</p>`
-    : '';
+    : declaredAmounts
+      ? `<p class="hint">${t(
+          'Calcul pentru suprafața declarată: 12 × {0} pe lună ÷ {1}.',
+          'Calculation for the declared area: 12 × {0} per month ÷ {1}.',
+          formatEuro(declaredAmounts.monthly),
+          formatEuro(declaredAmounts.price),
+        )}</p>`
+      : '';
   return `<section class="card ac invY"><div class="ac-h"><div>${eyebrow(t('Randament brut pe an', 'Gross annual yield'))}<h3>${title}</h3></div></div><div class="inv-yb z"><span>${esc(scopeLabel)}${section.yield.is_example ? ` ${exampleTag(locale)}` : ''}</span><div><i style="width:${width}%"></i></div><b>${percent}</b></div>${calculation}<p class="fqx-foot">${icon('info')}<span>${t('Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș.', "Twelve months' rent divided by the price, before tax, repairs and vacant periods.")}</span></p></section>`;
 }
 

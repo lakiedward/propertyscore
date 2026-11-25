@@ -1036,10 +1036,15 @@
           "chosenArea": "Chosen area",
           "area": "{{area}} m²",
           "sliderLabel": "Apartment area",
+          "resetArea": "Reset to {{area}} m²",
           "price": "Estimated asking price",
           "approx": "≈ {{value}}",
           "between": "between {{low}} and {{high}}",
           "rent": "Estimated rent",
+          "rentBasis": {
+            "sameRooms": "Median rent for homes with the same room count.",
+            "perM2": "Per-square-metre estimate for this area."
+          },
           "perMonth": "per month"
         },
         "yield": {
@@ -1054,6 +1059,7 @@
           },
           "note": "Twelve months of rent divided by the price, before taxes, repairs and months without a tenant.",
           "legacyTitle": "Gross yield: {{value}}% (calculation basis unavailable)",
+          "declaredBasis": "Calculation for the declared area: 12 × {{rent}} per month ÷ {{sale}}.",
           "basis": "Calculation: 12 × €{{rent}}/m² per month ({{rentSource}}, {{rentPeriod}}) ÷ €{{sale}}/m² ({{saleSource}}, {{salePeriod}})."
         },
         "history": {
