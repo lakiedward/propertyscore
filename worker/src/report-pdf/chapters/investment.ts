@@ -5,6 +5,7 @@ import {
   isCityWide,
   rentForArea,
   sampleKind,
+  yieldScope,
   type MarketCountKind,
 } from '../../report/investment-contract.ts';
 import type { ChapterBuilder } from '../chapter.ts';
@@ -131,11 +132,18 @@ function sourceName(code: string): string {
   return MARKET_SOURCES[code] ?? code;
 }
 
-function yieldCard(marketName: string, section: Investment, sale: Sale): string {
+function yieldCard(cityName: string, section: Investment, sale: Sale): string {
   const value = section.yield.gross_pct;
   if (value === null) return '';
   const width = Math.min(100, (value / YIELD_SCALE_PCT) * 100).toFixed(1);
   const basis = section.yield.basis;
+  const scopeLabel = {
+    city: cityName,
+    address: RADIUS_LABEL,
+    addressSaleCityRent: 'Preț în jurul adresei · chirie la nivelul orașului',
+    citySaleAddressRent: 'Preț la nivelul orașului · chirie în jurul adresei',
+    unknown: 'Date de piață',
+  }[yieldScope(section)];
   const percent = `${new Intl.NumberFormat('ro-RO', { maximumFractionDigits: 1 }).format(value)}%`;
   const title =
     !basis && sale.precision === 'city_statistics' && !section.yield.is_example
@@ -144,7 +152,7 @@ function yieldCard(marketName: string, section: Investment, sale: Sale): string 
   const calculation = basis
     ? `<p class="hint">Calcul: 12 × ${DECIMAL.format(basis.rent_eur_m2)} €/m² pe lună (${esc(sourceName(basis.rent_source.source))}, ${esc(formatMonth(basis.rent_source.period))}) ÷ ${DECIMAL.format(basis.sale_eur_m2)} €/m² (${esc(sourceName(basis.sale_source.source))}, ${esc(formatMonth(basis.sale_source.period))}).</p>`
     : '';
-  return `<section class="card ac invY"><div class="ac-h"><div>${eyebrow('Randament brut pe an')}<h3>${title}</h3></div></div><div class="inv-yb z"><span>${esc(marketName)}${section.yield.is_example ? ` ${EXAMPLE}` : ''}</span><div><i style="width:${width}%"></i></div><b>${percent}</b></div>${calculation}<p class="fqx-foot">${icon('info')}<span>Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș.</span></p></section>`;
+  return `<section class="card ac invY"><div class="ac-h"><div>${eyebrow('Randament brut pe an')}<h3>${title}</h3></div></div><div class="inv-yb z"><span>${esc(scopeLabel)}${section.yield.is_example ? ` ${EXAMPLE}` : ''}</span><div><i style="width:${width}%"></i></div><b>${percent}</b></div>${calculation}<p class="fqx-foot">${icon('info')}<span>Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș.</span></p></section>`;
 }
 
 function historyCard(section: Investment): string {
@@ -233,7 +241,7 @@ export const investmentChapter: ChapterBuilder = (report) => {
   });
   return {
     html: chapter(
-      `${head}<div class="invA">${priceCard(report, section, sale)}<div class="inv-col">${homeCard(section, sale)}${yieldCard(marketName, section, sale)}</div></div>${historyCard(section)}${sourcesCard(section, marketName)}`,
+      `${head}<div class="invA">${priceCard(report, section, sale)}<div class="inv-col">${homeCard(section, sale)}${yieldCard(report.city.name, section, sale)}</div></div>${historyCard(section)}${sourcesCard(section, marketName)}`,
     ),
     maps: [],
   };

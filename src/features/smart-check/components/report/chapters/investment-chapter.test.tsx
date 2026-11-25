@@ -154,6 +154,22 @@ describe('InvestmentChapter', () => {
     expect(screen.queryByText(ro.report.chapters.investment.home.rent)).not.toBeInTheDocument();
   });
 
+  it.each([
+    ['radius', 'city', ro.report.chapters.investment.yield.scope.addressSaleCityRent],
+    ['city', 'radius', ro.report.chapters.investment.yield.scope.citySaleAddressRent],
+    ['radius', 'radius', ro.report.chapters.investment.yield.scope.address],
+    ['radius', undefined, ro.report.chapters.investment.yield.scope.unknown],
+  ] as const)('describes the yield inputs for sale %s and rent %s', async (sale, rent, label) => {
+    const report = readyReport((investment) => {
+      investment.sale = { ...(investment.sale as object), precision: sale };
+      investment.rent = { ...(investment.rent as object), precision: rent };
+    });
+    await renderWithProviders(<InvestmentChapter report={report} onOpenChapter={vi.fn()} />);
+
+    const yieldCard = await screen.findByRole('region', { name: /Chiria pe un an/ });
+    expect(yieldCard).toHaveTextContent(label);
+  });
+
   it('shows both transactions for one provider and explains the actual yield input prices', async () => {
     const source = {
       source: 'apartamente_org_index',

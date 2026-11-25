@@ -1052,6 +1052,12 @@
           "eyebrow": "Randament brut pe an",
           "title": "Chiria pe un an înseamnă {{value}}% din preț",
           "value": "{{value}}%",
+          "scope": {
+            "address": "În jurul adresei",
+            "addressSaleCityRent": "Preț în jurul adresei · chirie la nivelul orașului",
+            "citySaleAddressRent": "Preț la nivelul orașului · chirie în jurul adresei",
+            "unknown": "Date de piață"
+          },
           "note": "Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș.",
           "legacyTitle": "Randament brut: {{value}}% (baza nu este disponibilă)",
           "basis": "Calcul: 12 × {{rent}} €/m² pe lună ({{rentSource}}, {{rentPeriod}}) ÷ {{sale}} €/m² ({{saleSource}}, {{salePeriod}})."

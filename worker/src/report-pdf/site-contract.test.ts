@@ -47,6 +47,23 @@ describe('report contract with the site', () => {
     expect(html).not.toContain('Chirie cerută estimată');
   });
 
+  it.each([
+    ['radius', 'city', 'Preț în jurul adresei · chirie la nivelul orașului'],
+    ['city', 'radius', 'Preț la nivelul orașului · chirie în jurul adresei'],
+    ['radius', 'radius', 'În jurul adresei'],
+    ['city', 'city', 'Timișoara'],
+    ['radius', undefined, 'Date de piață'],
+  ] as const)('labels the yield inputs for sale %s and rent %s', async (sale, rent, label) => {
+    const report = toReportData(await freidorfReport());
+    const section = report.sections.investment;
+    if (!section?.sale || !section.rent) throw new Error('Missing Investment fixture');
+    section.sale = { ...section.sale, precision: sale };
+    section.rent = { ...section.rent, precision: rent };
+    expect(investmentChapter(report)?.html).toContain(
+      `<div class="inv-yb z"><span>${label}</span>`,
+    );
+  });
+
   it('uses elapsed months and retains the actual price and history sources', async () => {
     const report = toReportData(await freidorfReport());
     const section = report.sections.investment;
