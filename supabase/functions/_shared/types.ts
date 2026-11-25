@@ -5,7 +5,7 @@ export type ReportPdfRequest = {
 };
 
 export type ReportPdfResponse =
-  { status: 'ready'; url: string } | { status: 'pending' } | { status: 'unavailable' };
+  { status: 'ready'; downloadPath: string } | { status: 'pending' } | { status: 'unavailable' };
 
 export type EdgeFunctionError = {
   error: string;

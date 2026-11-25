@@ -70,7 +70,11 @@ async function handle(request: Request, requestId: string) {
     }
     const url = await signPdf(supabase, variant.path, `${variant.number}-${locale}`);
     if (!url) return errorResponse('not_found', 404);
-    return jsonResponse({ status: 'ready', url } satisfies ReportPdfResponse);
+    const signedUrl = new URL(url);
+    return jsonResponse({
+      status: 'ready',
+      downloadPath: signedUrl.pathname + signedUrl.search,
+    } satisfies ReportPdfResponse);
   }
 
   const { data, error } = await supabase

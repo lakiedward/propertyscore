@@ -3,6 +3,7 @@ import type {
   ReportPdfResponse,
 } from '../../../../supabase/functions/_shared/types';
 import { z } from 'zod';
+import { env } from '@/config/env';
 import { AppError, type AppErrorReason } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase/client';
@@ -173,7 +174,10 @@ const SHARE_LINK_COLUMNS = 'id, expires_at, created_at' as const;
 const PDF_POLL_MS = 3_000;
 const PDF_WAIT_MS = 3 * 60_000;
 const reportPdfResponseSchema = z.discriminatedUnion('status', [
-  z.object({ status: z.literal('ready'), url: z.url() }),
+  z.object({
+    status: z.literal('ready'),
+    downloadPath: z.string().startsWith('/storage/v1/object/sign/online-report-pdfs/'),
+  }),
   z.object({ status: z.literal('pending') }),
   z.object({ status: z.literal('unavailable') }),
 ]) satisfies z.ZodType<ReportPdfResponse>;
@@ -225,7 +229,9 @@ export async function getReportPdfUrl(body: ReportPdfRequest) {
     if (!parsed.success) {
       throw new AppError('unknown', 'Report PDF response does not match its schema');
     }
-    if (parsed.data.status === 'ready') return parsed.data.url;
+    if (parsed.data.status === 'ready') {
+      return new URL(parsed.data.downloadPath, env.VITE_SUPABASE_URL).href;
+    }
     if (parsed.data.status === 'unavailable') break;
     await new Promise<void>((resolve) => window.setTimeout(resolve, PDF_POLL_MS));
   }

@@ -12,9 +12,14 @@ export const SEEDED_SHARE_TOKEN = 'a'.repeat(48);
 
 export const CREATED_SHARE_TOKEN = 'b'.repeat(48);
 
+const SIGNED_PDF_PATH = {
+  ro: '/storage/v1/object/sign/online-report-pdfs/smartcheck-ro.pdf?token=example',
+  en: '/storage/v1/object/sign/online-report-pdfs/smartcheck-en.pdf?token=example',
+};
+
 export const SIGNED_PDF_URL = {
-  ro: 'https://files.example.test/smartcheck-ro.pdf',
-  en: 'https://files.example.test/smartcheck-en.pdf',
+  ro: supabaseUrl(SIGNED_PDF_PATH.ro),
+  en: supabaseUrl(SIGNED_PDF_PATH.en),
 };
 
 function isSharedRequest(body: unknown, reportKey: string, tokenKey: string) {
@@ -61,7 +66,7 @@ export const smartCheckHandlers = [
         (locale === 'ro' || locale === 'en') &&
         (isOwnerRequest || isSharedRequest(body, 'reportId', 'token'))
       ) {
-        return HttpResponse.json({ status: 'ready', url: SIGNED_PDF_URL[locale] });
+        return HttpResponse.json({ status: 'ready', downloadPath: SIGNED_PDF_PATH[locale] });
       }
     }
     return HttpResponse.json({ error: 'not_found' }, { status: 404 });
