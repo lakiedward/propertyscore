@@ -67,11 +67,6 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   decision_message_required: 'decision_message_required',
   decision_message_too_long: 'decision_message_too_long',
   favorite_limit_reached: 'favorite_limit_reached',
-  address_invalid: 'address_invalid',
-  location_invalid: 'location_invalid',
-  outside_coverage: 'outside_coverage',
-  no_ready_snapshot: 'no_ready_snapshot',
-  payment_required: 'payment_required',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
@@ -181,12 +176,18 @@ function fromAuthError(error: {
   return new AppError('unknown', error.message, { cause: error });
 }
 
-function fromPostgrestError(error: PostgrestLikeError) {
+function fromPostgrestError(
+  error: PostgrestLikeError,
+  rpcReasons: ReadonlyMap<string, AppErrorReason> | undefined,
+) {
   const checkViolation = error.code === '23514' ? fromCheckViolation(error) : undefined;
   if (checkViolation) {
     return checkViolation;
   }
-  const reason = error.code === 'P0001' ? RPC_REASONS[error.message] : undefined;
+  const reason =
+    error.code === 'P0001'
+      ? (rpcReasons?.get(error.message) ?? RPC_REASONS[error.message])
+      : undefined;
   if (reason) {
     return new AppError('validation', error.message, {
       cause: error,
@@ -228,7 +229,10 @@ function fromFunctionsError(error: FunctionsHttpError | FunctionsFetchError | Fu
   return new AppError('unknown', error.message, { cause: error });
 }
 
-export function toAppError(error: unknown): AppError {
+export function toAppError(
+  error: unknown,
+  rpcReasons?: ReadonlyMap<string, AppErrorReason>,
+): AppError {
   if (isAppError(error)) {
     return error;
   }
@@ -236,7 +240,7 @@ export function toAppError(error: unknown): AppError {
     return fromAuthError(error);
   }
   if (isPostgrestLikeError(error)) {
-    return fromPostgrestError(error);
+    return fromPostgrestError(error, rpcReasons);
   }
   if (
     error instanceof FunctionsHttpError ||
