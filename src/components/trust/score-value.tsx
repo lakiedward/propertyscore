@@ -62,7 +62,7 @@ const strokeNumberVariants = cva('tabular-nums', {
   variants: {
     size: {
       sm: 'text-lead-sm font-extrabold tracking-figure text-info-ink',
-      lg: 'text-score-2xl text-on-inverse',
+      lg: 'text-[length:36cqi] leading-none font-extrabold tracking-[-0.045em] text-on-inverse',
       report: 'text-[length:36cqi] leading-none font-extrabold tracking-[-0.045em] text-info-ink',
     },
   },
