@@ -73,8 +73,8 @@ export function priceIntervals(
         count: locality.count ?? null,
         countKind: sampleKind(locality),
         median: locality.median_eur_m2,
-        low: locality.p25_eur_m2,
-        high: locality.p75_eur_m2,
+        low: locality.p25_eur_m2 ?? null,
+        high: locality.p75_eur_m2 ?? null,
         isCity: false,
       })),
   ];
