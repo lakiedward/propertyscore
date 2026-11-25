@@ -83,6 +83,32 @@ export async function getSharedReport(id: string, token: string) {
   return toReport({ ...data, pdf_path: null });
 }
 
+const savedWalkRouteSchema = z.discriminatedUnion('status', [
+  z.object({ status: z.literal('pending') }),
+  z.object({ status: z.literal('unavailable') }),
+  z.object({ status: z.literal('ready'), polyline6: z.string().min(4) }),
+]);
+
+export async function requestSavedWalkRoute(
+  reportId: string,
+  category: string,
+  shareToken: string | undefined,
+  signal: AbortSignal,
+) {
+  const { data, error } = await supabase
+    .rpc('request_saved_report_walk_route', {
+      p_report_id: reportId,
+      p_category_key: category,
+      ...(shareToken === undefined ? {} : { p_token: shareToken }),
+    })
+    .abortSignal(signal);
+  if (error) throw toAppError(error);
+  if (data === null) return { status: 'unavailable' } as const;
+  const parsed = savedWalkRouteSchema.safeParse(data);
+  if (!parsed.success) throw new AppError('unknown', 'Saved walk route response is invalid');
+  return parsed.data;
+}
+
 export async function listMyReports(page = 0) {
   const from = page * MY_REPORTS_PAGE_SIZE;
   const { data, error, count } = await supabase

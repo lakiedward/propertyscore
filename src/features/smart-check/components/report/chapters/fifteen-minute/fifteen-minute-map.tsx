@@ -23,6 +23,7 @@ type FifteenMinuteMapProps = {
   report: ReadyReport;
   section: FifteenMinuteSection;
   selectedKey: string | null;
+  routePolyline6: string | null;
 };
 
 function PlaceDot({
@@ -63,15 +64,17 @@ function uniquePlaces(places: FifteenMinuteSection['places']): FifteenMinuteSect
   );
 }
 
-export function FifteenMinuteMap({ report, section, selectedKey }: FifteenMinuteMapProps) {
+export function FifteenMinuteMap({
+  report,
+  section,
+  selectedKey,
+  routePolyline6,
+}: FifteenMinuteMapProps) {
   const { t } = useTranslation('smartCheck');
   const center = reportCenter(report);
   const widest = widestIsochrone(section);
   const selectedPlace = selectedKey === null ? undefined : nearestPlace(section, selectedKey);
   const selectedFamily = selectedKey === null ? null : categoryFamily(section, selectedKey);
-  const route = selectedPlace
-    ? section.routes.find((candidate) => candidate.place_id === selectedPlace.id)
-    : undefined;
 
   const overlays: MapOverlay[] = [
     ...(widest
@@ -93,8 +96,8 @@ export function FifteenMinuteMap({ report, section, selectedKey }: FifteenMinute
       colorToken: FAMILY_STYLES[selectedFamily ?? 'services'].color,
       width: 4.5,
       hasCasing: true,
-      isVisible: route !== undefined,
-      data: lineCollection(route ? [decodePolyline6(route.polyline6)] : []),
+      isVisible: routePolyline6 !== null,
+      data: lineCollection(routePolyline6 === null ? [] : [decodePolyline6(routePolyline6)]),
     },
   ];
 

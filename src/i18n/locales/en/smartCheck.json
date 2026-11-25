@@ -551,6 +551,11 @@
         "map": {
           "label": "Map of places within 15 minutes on foot · OpenStreetMap",
           "panelLabel": "Map and list",
+          "routeStatus": {
+            "pending": "Looking up the walking route…",
+            "ready": "Route from the available walking network. The time shown is from your saved report.",
+            "unavailable": "No walking route could be displayed. The time shown is from your saved report."
+          },
           "chip": "{{limit}} minutes on foot",
           "key": {
             "title": "On the map",

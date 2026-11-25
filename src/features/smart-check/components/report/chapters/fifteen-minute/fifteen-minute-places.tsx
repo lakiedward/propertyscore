@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { InfoIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,19 +8,39 @@ import { FifteenMinuteMap } from './fifteen-minute-map';
 import {
   WALK_LIMIT_MIN,
   formatSourceDate,
+  nearestPlace,
   walkMetersPerMinute,
   type FifteenMinuteSection,
 } from '../../../../fifteen-minute.utils';
 import type { ReadyReport } from '../../../../report.types';
+import { smartCheckQueries } from '../../../../api/smart-check.queries';
 
 type FifteenMinutePlacesProps = {
   report: ReadyReport;
   section: FifteenMinuteSection;
+  shareToken?: string;
 };
 
-export function FifteenMinutePlaces({ report, section }: FifteenMinutePlacesProps) {
+export function FifteenMinutePlaces({ report, section, shareToken }: FifteenMinutePlacesProps) {
   const { t } = useTranslation('smartCheck');
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const selectedPlace = selectedKey === null ? undefined : nearestPlace(section, selectedKey);
+  const frozenRoute = selectedPlace
+    ? section.routes.find((route) => route.place_id === selectedPlace.id)
+    : undefined;
+  const missingRouteCategory = selectedPlace && !frozenRoute ? selectedKey : null;
+  const savedRoute = useQuery(
+    smartCheckQueries.savedWalkRoute(report.id, missingRouteCategory, shareToken),
+  );
+  const routeState =
+    missingRouteCategory === null
+      ? null
+      : savedRoute.isError
+        ? 'unavailable'
+        : (savedRoute.data?.status ?? 'pending');
+  const polyline6 =
+    frozenRoute?.polyline6 ??
+    (savedRoute.data?.status === 'ready' ? savedRoute.data.polyline6 : null);
   const osmDate = report.result.snapshot.source_dates.osm;
   const speed = walkMetersPerMinute(section);
   const note = osmDate
@@ -36,7 +57,12 @@ export function FifteenMinutePlaces({ report, section }: FifteenMinutePlacesProp
         className="grid overflow-hidden rounded-icon border border-border bg-card w1059:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]"
       >
         <div className="relative h-[380px] min-h-[380px] w560:h-[460px] w1059:h-auto w1059:min-h-[640px]">
-          <FifteenMinuteMap report={report} section={section} selectedKey={selectedKey} />
+          <FifteenMinuteMap
+            report={report}
+            section={section}
+            selectedKey={selectedKey}
+            routePolyline6={polyline6}
+          />
           <span className="pointer-events-none absolute top-2.5 left-2.5 z-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/96 px-3 py-1.5 text-meta font-bold shadow-report-label">
             <i aria-hidden="true" className="size-2 rounded-full bg-report-fifteen-minute" />
             {t('report.chapters.fifteenMinute.map.chip', { limit: WALK_LIMIT_MIN })}
@@ -53,6 +79,14 @@ export function FifteenMinutePlaces({ report, section }: FifteenMinutePlacesProp
           />
         </aside>
       </section>
+      <p
+        role="status"
+        className={routeState === null ? undefined : 'mt-2.5 text-meta text-muted-foreground'}
+      >
+        {routeState === null
+          ? null
+          : t(`report.chapters.fifteenMinute.map.routeStatus.${routeState}`)}
+      </p>
       <p className="mt-2.5 flex gap-2 text-meta leading-[1.45] text-muted-foreground">
         <InfoIcon aria-hidden className="mt-0.5 size-3.75 shrink-0" />
         <span>{note}</span>

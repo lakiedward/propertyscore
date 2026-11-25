@@ -16,6 +16,7 @@ import {
 import { processReport } from './report-queue/process-report.ts';
 import { createReportPdfStorage } from './report-queue/report-pdf-storage.ts';
 import { claimNextReport, REPORT_QUEUE_CHANNEL } from './report-queue/report-queue.db.ts';
+import { serveSavedReportWalkRoutes } from './report-queue/saved-report-walk-routes.ts';
 import { serveReports } from './report-queue/serve-reports.ts';
 import { createWorkSignal } from './report-queue/work-signal.ts';
 import { importHealthSources } from './scoring/health/import-health-sources.ts';
@@ -43,7 +44,7 @@ function reportRouter(env: Env): ValhallaClient | null {
   return env.VALHALLA_URL ? createValhallaClient(env.VALHALLA_URL) : null;
 }
 
-function stopOnSignals(logger: Logger): AbortSignal {
+function stopOnSignals(logger: Logger): AbortController {
   const controller = new AbortController();
   const stop = (signal: NodeJS.Signals) => {
     logger.info('serve-reports stopping', { signal });
@@ -51,7 +52,7 @@ function stopOnSignals(logger: Logger): AbortSignal {
   };
   process.once('SIGTERM', stop);
   process.once('SIGINT', stop);
-  return controller.signal;
+  return controller;
 }
 
 function reportStorage(env: Env, command: 'serve-reports' | 'refresh-report-pdf') {
@@ -70,11 +71,14 @@ function reportStorage(env: Env, command: 'serve-reports' | 'refresh-report-pdf'
 async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<void> {
   const storage = reportStorage(env, 'serve-reports');
   const work = createWorkSignal();
-  const stop = stopOnSignals(logger);
+  const shutdown = stopOnSignals(logger);
+  const stop = shutdown.signal;
+  const router = reportRouter(env);
   const listener = await sql.listen(REPORT_QUEUE_CHANNEL, () => {
     work.notify();
   });
   logger.info('serve-reports listening', { channel: REPORT_QUEUE_CHANNEL });
+  const savedRoutes = router ? serveSavedReportWalkRoutes(sql, router.route, stop, logger) : null;
   try {
     const result = await serveReports({
       claim: () => claimNextReport(sql),
@@ -83,7 +87,7 @@ async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<voi
           sql,
           reportId,
           sections: REPORT_SECTIONS,
-          router: reportRouter(env),
+          router,
           earthquakes: createEarthquakeCatalog(),
           renderReport: async (raw) =>
             (await renderReportDocument(raw, { chromiumPath: env.CHROMIUM_PATH, logger })).pdf,
@@ -96,7 +100,8 @@ async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<voi
     });
     logger.info('serve-reports done', { completed: result.completed, failed: result.failed });
   } finally {
-    await listener.unlisten();
+    shutdown.abort();
+    await Promise.all([listener.unlisten(), savedRoutes]);
   }
 }
 

@@ -30,6 +30,7 @@ type RouteRequest = {
   origin: LngLat;
   destination: LngLat;
   walkSpeedKmh: number;
+  signal?: AbortSignal;
 };
 
 type Route = Leg & { polyline6: string };
@@ -105,13 +106,18 @@ export function createValhallaClient(
   const maxPairs = options.maxMatrixPairs ?? 2500;
   const root = baseUrl.replace(/\/+$/, '');
 
-  async function call(path: string, body: unknown): Promise<{ status: number; json: unknown }> {
+  async function call(
+    path: string,
+    body: unknown,
+    signal?: AbortSignal,
+  ): Promise<{ status: number; json: unknown }> {
     let response: Response;
     try {
       response = await request(`${root}${path}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(body),
+        signal,
       });
     } catch (error) {
       throw new WorkerError('walk_routing_unreachable', `Routing service unreachable on ${path}`, {
@@ -189,14 +195,18 @@ export function createValhallaClient(
         .sort((a, b) => a.minutes - b.minutes);
     },
 
-    async route({ origin, destination, walkSpeedKmh }) {
-      const { status, json } = await call('/route', {
-        locations: [location(origin), location(destination)],
-        costing: 'pedestrian',
-        costing_options: costingOptions('pedestrian', walkSpeedKmh),
-        units: 'kilometers',
-        directions_type: 'none',
-      });
+    async route({ origin, destination, walkSpeedKmh, signal }) {
+      const { status, json } = await call(
+        '/route',
+        {
+          locations: [location(origin), location(destination)],
+          costing: 'pedestrian',
+          costing_options: costingOptions('pedestrian', walkSpeedKmh),
+          units: 'kilometers',
+          directions_type: 'none',
+        },
+        signal,
+      );
       if (isNoRoute(status, json)) return null;
       if (status !== 200) throw failed('/route', status);
       const parsed = routeResponseSchema.safeParse(json);

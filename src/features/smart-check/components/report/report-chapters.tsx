@@ -31,7 +31,13 @@ type ReportChaptersProps = ReportChapterProps & {
   panelId: string;
 };
 
-export function ReportChapters({ report, chapter, panelId, onOpenChapter }: ReportChaptersProps) {
+export function ReportChapters({
+  report,
+  shareToken,
+  chapter,
+  panelId,
+  onOpenChapter,
+}: ReportChaptersProps) {
   const { t } = useTranslation('smartCheck');
   const Chapter = CHAPTER_COMPONENTS[chapter];
   const next = nextTab(chapter);
@@ -81,7 +87,7 @@ export function ReportChapters({ report, chapter, panelId, onOpenChapter }: Repo
         tabIndex={-1}
         className="flex flex-col gap-4 focus-visible:outline-none"
       >
-        <Chapter report={report} onOpenChapter={onOpenChapter} />
+        <Chapter report={report} shareToken={shareToken} onOpenChapter={onOpenChapter} />
         {nextCard()}
       </div>
       <ClosingChapter report={report} onOpenChapter={onOpenChapter} />
