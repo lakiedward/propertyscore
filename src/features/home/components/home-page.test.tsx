@@ -1,8 +1,11 @@
 import { screen, waitFor, within } from '@testing-library/react';
+import { SERVICE_PRICES } from '@/config/pricing';
+import { formatPrice } from '@/i18n/format';
 import enHome from '@/i18n/locales/en/home.json';
 import roCommon from '@/i18n/locales/ro/common.json';
 import roHome from '@/i18n/locales/ro/home.json';
 import roListings from '@/i18n/locales/ro/listings.json';
+import roSmartCheck from '@/i18n/locales/ro/smartCheck.json';
 import { renderAppRoute } from '@/test/render';
 
 vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
@@ -38,6 +41,49 @@ describe('HomePage', { timeout: 20_000 }, () => {
       await screen.findByRole('heading', { level: 1, name: new RegExp(enHome.hero.titleLead) }),
     ).toBeInTheDocument();
     expect(heading(2, enHome.pricing.titleLead)).toBeInTheDocument();
+  });
+
+  it('starts Smart Check from the home page without signing in', async () => {
+    const { user } = await renderAppRoute('/');
+    const hero = await screen.findByRole('group', { name: roHome.hero.servicesLabel });
+    const heroAction = within(hero).getByRole('link', {
+      name: new RegExp(roHome.hero.smartCheck.action),
+    });
+    const main = within(screen.getByRole('main'));
+    const { amount, currency } = SERVICE_PRICES.smartCheck;
+    const price = formatPrice(amount, currency);
+    const footer = within(screen.getByRole('contentinfo'));
+
+    const priceActions = main.getAllByRole('link', { name: roHome.smartCheck.price.cta });
+    expect(priceActions).toHaveLength(2);
+    for (const action of [
+      heroAction,
+      ...priceActions,
+      main.getByRole('link', {
+        name: roHome.smartCheck.steps.cta.replace('{{price}}', price),
+      }),
+      footer.getByRole('link', { name: roCommon.site.footer.smartCheckCta }),
+      footer.getByRole('link', {
+        name: roCommon.site.footer.services.smartCheck.replace('{{price}}', price),
+      }),
+    ]) {
+      expect(action).toHaveAttribute('href', '/check');
+    }
+    const smartCheckSection = main.getByRole('region', {
+      name: new RegExp(roHome.smartCheck.titleLead),
+    });
+    expect(
+      within(smartCheckSection).getByRole('link', { name: roHome.smartCheck.price.example }),
+    ).toHaveAttribute('href', '/?deliverable=zone#deliverables');
+    expect(
+      within(hero).getByRole('link', { name: new RegExp(roHome.hero.physical.action) }),
+    ).toHaveAttribute('href', '/#physical');
+
+    await user.click(heroAction);
+
+    expect(
+      await screen.findByRole('heading', { name: roSmartCheck.check.heading.address.title }),
+    ).toBeInTheDocument();
   });
 
   it('opens the deliverable named in the address', async () => {

@@ -7,6 +7,7 @@ import { formatPrice } from '@/i18n/format';
 import { useBrandNames } from '../hooks/use-brand-names';
 import { ConsultationCard } from './consultation-card';
 import { PriceCard } from './price-card';
+import { SmartCheckPriceLink } from './smart-check-price-link';
 import { SectionTitle } from './section-title';
 import { ServiceComparison } from './service-comparison';
 
@@ -99,7 +100,7 @@ export function PricingSection() {
             }
             features={t('pricing.smartCheck.features', { returnObjects: true })}
             cta={t('pricing.smartCheck.cta')}
-            ctaHash={HOME_SECTION.smartCheck}
+            actionLink={SmartCheckPriceLink}
             secondary={t('pricing.smartCheck.secondary')}
             secondaryHash={HOME_SECTION.deliverables}
           />

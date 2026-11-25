@@ -6,8 +6,11 @@ import type { HomeSectionId } from '@/components/layout/site-navigation';
 import { PillLink } from '@/components/navigation/pill-link';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
+import type { PriceLinkProps } from './smart-check-price-link';
 
 type Product = 'physical' | 'smartcheck';
+
+const DefaultActionLink = PillLink;
 
 const boxVariants = cva('w-full overflow-hidden rounded-xl text-on-inverse', {
   variants: { product: { physical: 'bg-primary', smartcheck: 'bg-info' } },
@@ -39,7 +42,7 @@ const CTA_TONE = { physical: 'cta', smartcheck: 'inverse' } as const satisfies R
   'cta' | 'inverse'
 >;
 
-type ProductPriceBoxProps = {
+type SectionProductPriceBoxProps = {
   product: Product;
   label: string;
   kind: string;
@@ -50,6 +53,8 @@ type ProductPriceBoxProps = {
   ctaHash: HomeSectionId;
 };
 
+type ProductPriceBoxProps = PriceLinkProps<SectionProductPriceBoxProps>;
+
 export function ProductPriceBox({
   product,
   label,
@@ -59,6 +64,7 @@ export function ProductPriceBox({
   footer,
   ctaLabel,
   ctaHash,
+  actionLink: PillLink = DefaultActionLink,
 }: ProductPriceBoxProps) {
   return (
     <div role="group" aria-label={label} className={boxVariants({ product })}>

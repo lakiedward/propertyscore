@@ -27,7 +27,7 @@ export function SmartCheckSteps() {
               <span className="text-cta">{t('smartCheck.steps.titleAccent')}</span>
             </h3>
           </div>
-          <PillLink to="/" hash={HOME_SECTION.pricing} tone="inverseAccent">
+          <PillLink to="/check" tone="inverseAccent">
             {t('smartCheck.steps.cta', { price })}
           </PillLink>
         </div>

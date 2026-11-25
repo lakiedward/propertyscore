@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { cva } from 'class-variance-authority';
 import { ArrowUpRightIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import type { HomeServiceDestination } from '@/components/layout/site-navigation';
 import type { Currency } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import { SplitPrice } from './split-price';
@@ -39,7 +40,7 @@ const textVariants = cva('mt-3 mb-2.5 max-w-copy text-service', {
 
 type ServiceCardProps = {
   tone: 'forest' | 'online';
-  hash: string;
+  destination: HomeServiceDestination;
   brand: ReactNode;
   amount: number;
   currency: Currency;
@@ -50,7 +51,7 @@ type ServiceCardProps = {
 
 export function ServiceCard({
   tone,
-  hash,
+  destination,
   brand,
   amount,
   currency,
@@ -59,7 +60,7 @@ export function ServiceCard({
   action,
 }: ServiceCardProps) {
   return (
-    <Link to="/" hash={hash} className={cn(serviceCardVariants({ tone }))}>
+    <Link {...destination} className={cn(serviceCardVariants({ tone }))}>
       <span className="flex items-center justify-between gap-3.75">
         {brand}
         <SplitPrice

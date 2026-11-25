@@ -6,8 +6,11 @@ import { PillLink } from '@/components/navigation/pill-link';
 import { TextLink } from '@/components/navigation/text-link';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
+import type { PriceLinkProps } from './smart-check-price-link';
 
 type PriceCardTone = 'physical' | 'smartcheck';
+
+const DefaultActionLink = PillLink;
 
 const priceCardVariants = cva('flex flex-col gap-4.5 rounded-2xl p-6 text-on-inverse w520:p-10', {
   variants: { tone: { physical: 'bg-primary shadow-price', smartcheck: 'bg-info' } },
@@ -18,7 +21,7 @@ const CTA_TONE = { physical: 'cta', smartcheck: 'inverse' } as const satisfies R
   'cta' | 'inverse'
 >;
 
-type PriceCardProps = {
+type SectionPriceCardProps = {
   tone: PriceCardTone;
   brand: ReactNode;
   amount: number;
@@ -32,6 +35,8 @@ type PriceCardProps = {
   secondaryHash: HomeSectionId;
 };
 
+type PriceCardProps = PriceLinkProps<SectionPriceCardProps>;
+
 export function PriceCard({
   tone,
   brand,
@@ -42,6 +47,7 @@ export function PriceCard({
   features,
   cta,
   ctaHash,
+  actionLink: PillLink = DefaultActionLink,
   secondary,
   secondaryHash,
 }: PriceCardProps) {

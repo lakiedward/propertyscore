@@ -18,6 +18,7 @@ import {
 import { useBrandNames } from '../hooks/use-brand-names';
 import { ProductPriceBox } from './product-price-box';
 import { SectionTitle } from './section-title';
+import { SmartCheckPriceLink } from './smart-check-price-link';
 
 type Chip = {
   key: HomeCategory | typeof PRICES_CATEGORY;
@@ -85,7 +86,7 @@ export function SmartCheckIntro({ titleId }: SmartCheckIntroProps) {
             currency={currency}
             footer={t('smartCheck.price.features')}
             ctaLabel={t('smartCheck.price.cta')}
-            ctaHash={HOME_SECTION.pricing}
+            actionLink={SmartCheckPriceLink}
           />
           <TextLink
             to="/"
