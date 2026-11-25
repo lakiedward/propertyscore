@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(25);
+select plan(30);
 
 update public.score_snapshots set status = 'failed', finished_at = now(), error_code = 'test_setup'
 where status = 'building';
@@ -200,6 +200,99 @@ select throws_ok(
   'P0001',
   'green_surroundings_invalid',
   'The surroundings need a park limit between 1 and 20'
+);
+
+select id as bucharest_id from public.cities where slug = 'bucuresti' \gset
+
+insert into private.green_area_sources (snapshot_id, city_id, source, source_ref, name, kind, is_public, geometry)
+select :'snapshot_id', :'bucharest_id', 'osm', part.ref, 'Parc de test', 'park', true,
+  extensions.st_multi(extensions.st_collect(extensions.st_makeenvelope(part.w, 44.428, part.e, 44.429, 4326)))::extensions.geography
+from (
+  values
+    ('osm:relation/19937268', 26.103, 26.104),
+    ('osm:relation/19937268', 26.105, 26.106),
+    ('osm:relation/19937268', 26.122, 26.123),
+    ('osm:relation/20000001', 26.110, 26.111)
+) as part (ref, w, e)
+group by part.ref;
+
+insert into private.poi_features (snapshot_id, city_id, source_ref, category, location)
+values
+  (:'snapshot_id', :'bucharest_id', 'osm:node/8', 'playground',
+    extensions.st_point(26.1035, 44.4285, 4326)::extensions.geography),
+  (:'snapshot_id', :'bucharest_id', 'osm:node/9', 'playground',
+    extensions.st_point(26.1055, 44.4285, 4326)::extensions.geography),
+  (:'snapshot_id', :'bucharest_id', 'osm:node/10', 'sports',
+    extensions.st_point(26.1225, 44.4285, 4326)::extensions.geography);
+
+select is(
+  private.merge_green_areas(:'snapshot_id', :'bucharest_id', 0.05),
+  4,
+  'Scoring still stores the four individual geometries'
+);
+
+create temporary table multipart_surroundings on commit drop as
+select private.describe_green_surroundings(
+  :'snapshot_id', extensions.st_point(26.1035, 44.4285, 4326)::extensions.geography, 1000, 2, 1200, 0.5
+) as described;
+
+select results_eq(
+  format(
+    $$
+      select
+        jsonb_array_length(described -> 'parks'),
+        (described #>> '{parks,0,distance_m}')::integer,
+        described #>> '{parks,0,name}' = described #>> '{parks,1,name}',
+        ga.source_refs
+      from multipart_surroundings
+      join private.green_areas ga on ga.id = (described #>> '{parks,1,id}')::uuid
+      where ga.snapshot_id = %L
+    $$,
+    :'snapshot_id'
+  ),
+  $$ values (2, 0, true, array['osm:relation/20000001']) $$,
+  'The multipart park occupies one place before the limit, and a different park with the same name remains'
+);
+
+select results_eq(
+  format(
+    $$
+      select
+        (described #>> '{parks,0,area_ha}')::numeric = (
+          select sum(ga.area_ha) from private.green_areas ga
+          where ga.snapshot_id = %L and ga.source_refs = array['osm:relation/19937268']
+        ),
+        described #> '{parks,0,amenities}'
+      from multipart_surroundings
+    $$,
+    :'snapshot_id'
+  ),
+  $$ values (true, '["playground", "sports"]'::jsonb) $$,
+  'The card combines area and distinct amenities, including parts beyond the park radius'
+);
+
+select results_eq(
+  $$
+    select
+      count(*) filter (where feature #>> '{properties,id}' = described #>> '{parks,0,id}'),
+      count(*) filter (where feature #>> '{properties,id}' = described #>> '{parks,1,id}')
+    from multipart_surroundings, jsonb_array_elements(described #> '{areas,features}') as feature
+  $$,
+  $$ values (2::bigint, 1::bigint) $$,
+  'Both nearby parts have the listed park ID on the map without changing the other park'
+);
+
+select results_eq(
+  $$
+    select
+      described #>> '{score_park_ids,0}' = described #>> '{parks,0,id}',
+      ga.source_refs,
+      ga.id <> (described #>> '{parks,0,id}')::uuid
+    from multipart_surroundings
+    join private.green_areas ga on ga.id = (described #>> '{score_park_ids,1}')::uuid
+  $$,
+  $$ values (true, array['osm:relation/19937268'], true) $$,
+  'Scoring still receives both original nearest IDs for routing'
 );
 
 set local role anon;

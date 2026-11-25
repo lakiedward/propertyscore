@@ -38,6 +38,7 @@ const scoredInputsSchema = z.object({
 const noDataInputsSchema = z.object({ reason: z.string() });
 
 const surroundingsSchema = z.object({
+  score_park_ids: z.array(z.string()).optional(),
   parks: z.array(
     z.object({
       id: z.string(),
@@ -137,14 +138,9 @@ async function walkToParks(
   router: ValhallaClient,
   snapshotId: string,
   position: Position,
-  parks: readonly SurroundingPark[],
+  parkIds: readonly string[],
 ): Promise<Map<string, Leg | null>> {
-  const entrances = await readParkEntrances(
-    sql,
-    snapshotId,
-    position,
-    parks.map((park) => park.id),
-  );
+  const entrances = await readParkEntrances(sql, snapshotId, position, parkIds);
   const [cell] = await walkCellCandidates(router, [
     { cell_id: 'address', lng: position.longitude, lat: position.latitude, candidates: entrances },
   ]);
@@ -274,8 +270,12 @@ export const greenReportSection: ReportSection = {
       Math.max(radii.wide, PARKS_RADIUS_M),
       greenParams.small_min_ha,
     );
+    const listedParkIds = surroundings.parks.map((park) => park.id);
+    const scoreParkIds = new Set(surroundings.score_park_ids ?? listedParkIds);
     const legs = router
-      ? await walkToParks(sql, router, snapshotId, position, surroundings.parks)
+      ? await walkToParks(sql, router, snapshotId, position, [
+          ...new Set([...listedParkIds, ...scoreParkIds]),
+        ])
       : new Map<string, Leg | null>();
     const measure = await measureAddress(sql, {
       snapshotId,
@@ -286,9 +286,13 @@ export const greenReportSection: ReportSection = {
     const address = scoreGreenCell(
       measure,
       greenParams,
-      addressWalks(measure, legs, greenParams.walk_detour_factor),
+      addressWalks(
+        measure,
+        new Map([...legs].filter(([id]) => scoreParkIds.has(id))),
+        greenParams.walk_detour_factor,
+      ),
     );
-    const distanceMethod: DistanceMethod = [...legs.values()].some(Boolean)
+    const distanceMethod: DistanceMethod = listedParkIds.some((id) => legs.get(id))
       ? 'pedestrian_routing'
       : 'straight_line';
 
