@@ -23,6 +23,7 @@ export function GreenChapter({ report }: ReportChapterProps) {
   const band = item ? scoreBand(item.score) : null;
   const parks = section ? listedParks(section) : [];
   const { farthest, biggest, totalHa } = parksSummary(parks);
+  const hasEstimatedWalk = parks.some((park) => isParkWalkEstimated(park, section));
   const share = section?.share[String(section.near_radius_m)];
 
   const shareText =
@@ -70,7 +71,7 @@ export function GreenChapter({ report }: ReportChapterProps) {
             ? t('report.chapters.green.headlineNoData')
             : farthest
               ? t(
-                  isParkWalkEstimated(farthest, section)
+                  hasEstimatedWalk
                     ? 'report.chapters.green.headlineApprox'
                     : 'report.chapters.green.headline',
                   { count: parks.length, minutes: parkWalkMinutes(farthest) },

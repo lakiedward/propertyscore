@@ -97,14 +97,12 @@ export const greenChapter: ChapterBuilder = (report) => {
   const parks = [...section.parks].sort((left, right) => walkDuration(left) - walkDuration(right));
   const large = parks.filter((park) => park.area_ha >= LARGE_PARK_HA);
   const listed = (large.length > 0 ? large : parks).slice(0, LISTED_PARKS);
-  const farthest = listed.reduce<Park | undefined>(
-    (far, park) => (!far || walkDuration(park) > walkDuration(far) ? park : far),
-    undefined,
-  );
+  const farthest = listed.at(-1);
   const hasRoutedTimes = section.parks.some((park) => park.walk_seconds !== undefined);
   const isWalkEstimated = (park: Park) =>
     park.walk_seconds === undefined &&
     (section.distance_method === 'straight_line' || hasRoutedTimes);
+  const hasEstimatedWalk = listed.some(isWalkEstimated);
   const totalHa = listed.reduce((sum, park) => sum + park.area_ha, 0);
   const biggest = [...listed].sort((left, right) => right.area_ha - left.area_ha)[0];
   const share = section.share[String(section.near_radius_m)];
@@ -135,10 +133,10 @@ export const greenChapter: ChapterBuilder = (report) => {
             'No large park within walking distance of the address',
           )
         : t(
-            isWalkEstimated(farthest)
+            hasEstimatedWalk
               ? '{0}, până la circa {1} minute pe jos'
               : '{0}, la cel mult {1} minute pe jos',
-            isWalkEstimated(farthest)
+            hasEstimatedWalk
               ? '{0}, within about a {1}-minute walk'
               : '{0}, within a {1}-minute walk',
             plural(listed.length, ['parc mare', 'large park'], 'parcuri mari', [
