@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { ArrowRightIcon, RefreshCwIcon } from 'lucide-react';
+import { ArrowRightIcon } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Logo } from '@/components/brand/logo';
 import { HOME_SECTION } from '@/components/layout/site-navigation';
@@ -15,10 +15,6 @@ export function ClosingNextStep({ report }: { report: ReadyReport }) {
   const physicalPrice = formatPrice(
     SERVICE_PRICES.physical.amount,
     SERVICE_PRICES.physical.currency,
-  );
-  const smartCheckPrice = formatPrice(
-    SERVICE_PRICES.smartCheck.amount,
-    SERVICE_PRICES.smartCheck.currency,
   );
 
   return (
@@ -67,33 +63,6 @@ export function ClosingNextStep({ report }: { report: ReadyReport }) {
               className="grid size-9 place-items-center rounded-full bg-cta text-cta-foreground transition-transform duration-(--duration-fast) group-hover:translate-x-0.75"
             >
               <ArrowRightIcon className="size-4.5" />
-            </span>
-          </Link>
-        </article>
-        <article className="grid min-w-0 content-between gap-3 rounded-icon bg-info p-4.5 text-info-foreground shadow-report-card w560:px-6 w560:py-5.5">
-          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-            <Logo product="smartcheck" tone="inverse" size="md" />
-            <span className="text-[25px] font-extrabold tracking-[-0.03em] w560:text-[30px]">
-              {smartCheckPrice}
-            </span>
-          </div>
-          <p className="text-[14.5px] leading-[1.55] [&_strong]:font-bold">
-            <Trans
-              t={t}
-              i18nKey="report.chapters.closing.next.another"
-              components={{ strong: <strong /> }}
-            />
-          </p>
-          <Link
-            to="/check"
-            className="group ml-auto flex items-center gap-3 text-[14px] font-extrabold no-underline focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            {t('report.chapters.closing.next.anotherAction')}
-            <span
-              aria-hidden="true"
-              className="grid size-9 place-items-center rounded-full border border-current/40 transition-colors group-hover:bg-white/12"
-            >
-              <RefreshCwIcon className="size-4" />
             </span>
           </Link>
         </article>
