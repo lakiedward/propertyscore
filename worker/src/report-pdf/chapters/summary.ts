@@ -77,9 +77,11 @@ function hero(report: ReportData, scored: readonly Scored[], map: MapSpec): stri
   const { zone } = report;
   const band = zone.score === null ? 'Fără date' : scoreBand(Math.round(zone.score)).label;
   const average =
-    zone.city_avg === null ? '' : `Media orașului ${String(Math.round(zone.city_avg))}.`;
+    zone.score === null || zone.city_avg === null
+      ? ''
+      : `Media orașului ${String(Math.round(zone.city_avg))}.`;
   const best =
-    zone.city_max === null || zone.city_max === undefined
+    zone.score === null || zone.city_max === null || zone.city_max === undefined
       ? ''
       : ` Cel mai bun scor ${String(Math.round(zone.city_max))}.`;
   const area = report.sections.investment?.declared.area_m2;
