@@ -85,7 +85,7 @@ describe('SummaryMapBand', () => {
       }
     });
 
-    it('keeps the selected destination and address identifiable without on-map text', async () => {
+    it('keeps route details outside the map before and after selection', async () => {
       const report = buildSavedWalkReport('pedestrian_routing', {
         walkingPolylines: [ONE_POINT_WALK_POLYLINE, SAVED_WALK_POLYLINE],
       });
@@ -99,10 +99,15 @@ describe('SummaryMapBand', () => {
       await user.click(teaser.getByRole('button', { name: copy.mapBand.open }));
       const explorer = within(await screen.findByRole('dialog'));
       const map = within(await explorer.findByRole('region', { name: copy.explorer.mapLabel }));
-      expect(map.getByText(report.address_text)).toBeInTheDocument();
-      expect(map.getByText(duration)).toBeInTheDocument();
+      const unselectedRoute = explorer.getByRole('button', { name: routeLabel, pressed: false });
+      expect(map.queryByText(report.address_text)).not.toBeInTheDocument();
+      expect(map.queryByText(duration)).not.toBeInTheDocument();
+      expect(explorer.getByText(report.address_text)).toBeVisible();
+      expect(within(unselectedRoute).getByText(name)).toBeVisible();
+      expect(within(unselectedRoute).getByText(duration)).toBeVisible();
+      expect(map.getByRole('img', { name: 'zone-route-shop-2' })).toBeInTheDocument();
 
-      await user.click(explorer.getByRole('button', { name: routeLabel, pressed: false }));
+      await user.click(unselectedRoute);
 
       expect(map.queryByText(report.address_text)).not.toBeInTheDocument();
       expect(map.queryByText(duration)).not.toBeInTheDocument();
@@ -113,8 +118,8 @@ describe('SummaryMapBand', () => {
       expect(map.getByRole('img', { name: 'zone-route-shop-2' })).toBeInTheDocument();
 
       await user.click(selectedRoute);
-      expect(map.getByText(report.address_text)).toBeInTheDocument();
-      expect(map.getByText(duration)).toBeInTheDocument();
+      expect(map.queryByText(report.address_text)).not.toBeInTheDocument();
+      expect(map.queryByText(duration)).not.toBeInTheDocument();
     });
 
     it.each([
