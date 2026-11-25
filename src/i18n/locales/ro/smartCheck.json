@@ -69,7 +69,6 @@
         "green": "Spații verzi pe 500 m și 1 km",
         "environment": "Siguranță, zgomot, aer, zone industriale, risc seismic",
         "market": "Prețuri, chirii și randament în zonă",
-        "questions": "Ce să întrebi la vizionare",
         "share": "PDF și link de partajare"
       },
       "note": "Scorul descrie zona, nu starea locuinței. Pentru asta e inspecția fizică.",
@@ -119,7 +118,7 @@
       },
       "why": {
         "title": "De ce te întrebăm",
-        "text": "Răspunsurile nu schimbă scorul zonei. Le folosim pentru prețurile comparabile, randament și întrebările de la vizionare. În raport apar marcate „declarat”.",
+        "text": "Răspunsurile nu schimbă scorul zonei. Le folosim pentru prețurile comparabile, și randament. În raport apar marcate „declarat”.",
         "progress_one": "{{count}} din {{total}} răspunsuri completate",
         "progress_few": "{{count}} din {{total}} răspunsuri completate",
         "progress_other": "{{count}} din {{total}} de răspunsuri completate"
@@ -158,7 +157,6 @@
         "scores": "9 scoruri pe categorii, de la 0 la 100",
         "market": "Prețuri cerute și chirii în zonă, cu €/m²",
         "nearby": "Facilități din apropiere și trasee pe jos",
-        "questions": "Întrebări de pus la vizionare",
         "account": "Acces în cont, PDF și link de partajare"
       },
       "note": "Raportul descrie zona. Nu poate vedea starea locuinței.",
@@ -1077,47 +1075,6 @@
       },
       "closing": {
         "title": "Înainte de vizionare",
-        "questions": {
-          "eyebrow": "De întrebat la vizionare",
-          "title_one": "O întrebare pentru proprietar",
-          "title_few": "{{count}} întrebări pentru proprietar",
-          "title_other": "{{count}} de întrebări pentru proprietar",
-          "progress": "<strong>{{done}}</strong> din {{total}} bifate",
-          "copy": "Copiază lista",
-          "copied": "Lista de întrebări a fost copiată.",
-          "copyFailed": "Lista nu a putut fi copiată.",
-          "print": "Printează",
-          "listLabel": "Întrebări pentru proprietar",
-          "check": "Bifează întrebarea {{number}}",
-          "openChapter": "Vezi capitolul {{topic}}",
-          "topics": {
-            "noise": "Zgomot",
-            "seismic": "Risc seismic",
-            "apartment": "Apartament"
-          },
-          "items": {
-            "bedroom_facade_side": {
-              "question": "Spre ce dau dormitoarele: spre stradă sau spre curte?",
-              "why": "Zgomotul diferă mult între fața și spatele blocului. Scorul descrie zona, nu fațada."
-            },
-            "construction_year": {
-              "question": "În ce an a fost construit blocul și are expertiză tehnică?",
-              "why": "Anul arată după ce normativ a fost proiectat. Fără el, nu putem judeca riscul clădirii."
-            },
-            "stairs_without_elevator": {
-              "question": "Blocul nu are lift: cum e urcatul pe scări cu cumpărături sau cu un copil?",
-              "why": "La etajele de sus, fiecare drum zilnic și orice mutare se simt din plin."
-            },
-            "ground_floor_damp_and_security": {
-              "question": "Apartamentul e la parter: apare umezeală și cum sunt asigurate geamurile și ușa?",
-              "why": "Parterul e mai expus la umezeală, la zgomotul străzii și la intrări neautorizate."
-            },
-            "top_floor_roof_and_insulation": {
-              "question": "Apartamentul e la ultimul etaj: când s-a refăcut acoperișul și cum e izolat?",
-              "why": "Infiltrațiile și căldura din timpul verii vin de la acoperiș și de la terasă."
-            }
-          }
-        },
         "next": {
           "eyebrow": "Pasul următor",
           "title": "Raportul descrie zona. Verifică și apartamentul.",

@@ -3,7 +3,6 @@ import {
   FileDownIcon,
   FootprintsIcon,
   MapIcon,
-  MessageCircleQuestionIcon,
   ShieldIcon,
   SproutIcon,
   TramFrontIcon,
@@ -15,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { CHECK_CITIES, CHECK_PRICE_RON } from '../check.utils';
 
 type IncludedItem = {
-  key: 'score' | 'transit' | 'fifteen' | 'green' | 'environment' | 'market' | 'questions' | 'share';
+  key: 'score' | 'transit' | 'fifteen' | 'green' | 'environment' | 'market' | 'share';
   icon: LucideIcon;
   tile: string;
 };
@@ -38,11 +37,6 @@ const INCLUDED_ITEMS: readonly IncludedItem[] = [
     key: 'market',
     icon: ChartNoAxesCombinedIcon,
     tile: 'bg-category-education-surface text-category-education',
-  },
-  {
-    key: 'questions',
-    icon: MessageCircleQuestionIcon,
-    tile: 'bg-category-green-surface text-category-green',
   },
   { key: 'share', icon: FileDownIcon, tile: 'bg-category-safety-surface text-category-safety' },
 ];

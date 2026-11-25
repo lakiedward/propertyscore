@@ -71,29 +71,16 @@ describe('buildReportDocument', () => {
     expect(html).not.toContain('cartiere, plecând la 8 dimineața');
   });
 
-  it('prints the viewing questions of the report and skips unknown codes', async () => {
-    const input = reportInputSchema.parse(await exampleInput());
-    const report = toReportData({
-      ...input,
-      result: {
-        ...input.result,
-        questions: { codes: ['bedroom_facade_side', 'unknown_code', 'construction_year'] },
-      },
-    });
-    const { html } = await buildReportDocument(report);
-
-    expect(html).toContain('De întrebat la vizionare');
-    expect(html).toContain('2 întrebări pentru proprietar');
-    expect(html).toContain('Spre ce dau dormitoarele');
-    expect(html).not.toContain('unknown_code');
-  });
-
-  it('leaves out the viewing questions block when the report has none', async () => {
+  it('leaves out the viewing questions even when the report carries their codes', async () => {
     const input = reportInputSchema.parse(await exampleInput());
     const { html } = await buildReportDocument(
-      toReportData({ ...input, result: { ...input.result, questions: null } }),
+      toReportData({
+        ...input,
+        result: { ...input.result, questions: { codes: ['bedroom_facade_side'] } },
+      }),
     );
 
     expect(html).not.toContain('De întrebat la vizionare');
+    expect(html).not.toContain('Spre ce dau dormitoarele');
   });
 });

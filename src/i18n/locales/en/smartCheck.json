@@ -69,7 +69,6 @@
         "green": "Green space within 500 m and 1 km",
         "environment": "Safety, noise, air, industrial areas, seismic risk",
         "market": "Prices, rents and yield in the area",
-        "questions": "What to ask at the viewing",
         "share": "PDF and share link"
       },
       "note": "The score describes the area, not the condition of the home. That is what the physical inspection is for.",
@@ -119,7 +118,7 @@
       },
       "why": {
         "title": "Why we ask",
-        "text": "Your answers don't change the area score. We use them for comparable prices, yield and the viewing questions. In the report they are marked “declared”.",
+        "text": "Your answers don't change the area score. We use them for comparable prices and yield. In the report they are marked “declared”.",
         "progress_one": "{{count}} of {{total}} answers filled in",
         "progress_other": "{{count}} of {{total}} answers filled in"
       },
@@ -157,7 +156,6 @@
         "scores": "9 category scores from 0 to 100",
         "market": "Asking prices and rents in the area, with €/m²",
         "nearby": "Nearby amenities and walking routes",
-        "questions": "Questions to ask at the viewing",
         "account": "Access in your account, PDF and share link"
       },
       "note": "The report describes the area. It can't see the condition of the home.",
@@ -1060,46 +1058,6 @@
       },
       "closing": {
         "title": "Before the viewing",
-        "questions": {
-          "eyebrow": "To ask at the viewing",
-          "title_one": "One question for the owner",
-          "title_other": "{{count}} questions for the owner",
-          "progress": "<strong>{{done}}</strong> of {{total}} ticked",
-          "copy": "Copy the list",
-          "copied": "The list of questions was copied.",
-          "copyFailed": "The list could not be copied.",
-          "print": "Print",
-          "listLabel": "Questions for the owner",
-          "check": "Tick question {{number}}",
-          "openChapter": "See the {{topic}} chapter",
-          "topics": {
-            "noise": "Noise",
-            "seismic": "Seismic risk",
-            "apartment": "Apartment"
-          },
-          "items": {
-            "bedroom_facade_side": {
-              "question": "Which way do the bedrooms face: the street or the courtyard?",
-              "why": "Noise differs a lot between the front and the back of the building. The score describes the area, not the façade."
-            },
-            "construction_year": {
-              "question": "What year was the building built, and does it have a technical expertise?",
-              "why": "The year shows which code it was designed to. Without it, we cannot judge the building's risk."
-            },
-            "stairs_without_elevator": {
-              "question": "The building has no elevator: how is climbing the stairs with shopping or a child?",
-              "why": "On the upper floors, every daily trip and any move is felt in full."
-            },
-            "ground_floor_damp_and_security": {
-              "question": "The apartment is on the ground floor: is there damp, and how are the windows and door secured?",
-              "why": "The ground floor is more exposed to damp, street noise and unauthorised entry."
-            },
-            "top_floor_roof_and_insulation": {
-              "question": "The apartment is on the top floor: when was the roof redone and how is it insulated?",
-              "why": "Leaks and summer heat come from the roof and the terrace."
-            }
-          }
-        },
         "next": {
           "eyebrow": "Next step",
           "title": "The report describes the area. Check the apartment too.",
