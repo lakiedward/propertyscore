@@ -75,8 +75,8 @@ describe('ReportPage', { timeout: 20_000 }, () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: ro.report.share.action })).toBeNull();
 
-    const language = screen.getByRole('group', { name: ro.report.language });
-    await user.click(within(language).getByRole('button', { name: roCommon.language.en }));
+    const language = screen.getByRole('radiogroup', { name: ro.report.language });
+    await user.click(within(language).getByRole('radio', { name: roCommon.language.en }));
     expect(
       await screen.findByRole('tab', {
         name: new RegExp(en.report.frame.tabs.names.summary),
