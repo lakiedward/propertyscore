@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Leg } from '../../routing/valhalla.ts';
+import type { Sql } from '../../db/sql.ts';
+import { createLogger } from '../../lib/logger.ts';
+import { createValhallaClient, type Leg } from '../../routing/valhalla.ts';
 import { testParams } from './fifteen-minute.fixtures.ts';
 import {
   assembleFifteenMinuteReport,
+  fifteenMinuteReportSection,
   fifteenMinuteReportSchema,
   type ReportCandidate,
   routeTargets,
@@ -168,10 +171,112 @@ describe('assembleFifteenMinuteReport', () => {
 
 describe('routeTargets', () => {
   it('routes to the nearest place of each category, closest first', () => {
-    expect(routeTargets(assembled, 2).map((place) => place.id)).toEqual([
+    expect(routeTargets(assembled).map((place) => place.id)).toEqual([
       'osm:node/4',
       'osm:node/5',
+      'osm:node/1',
     ]);
+  });
+
+  it('keeps the nearest place for every category in the 15-minute list', () => {
+    const allParams = testParams();
+    const categories = allParams.categories.map(({ key }) => key);
+    const report = assembleFifteenMinuteReport({
+      params: allParams,
+      candidates: categories.map((key, index) => candidate(key, index + 1, 300 + index * 20)),
+      coveredKeys: new Set(categories),
+      cell: { score: 88, cityAvg: 64, cityPercentile: 81 },
+      typical: new Map(),
+      distanceMethod: 'pedestrian_routing',
+    });
+
+    expect(report.covered).toBe(30);
+    expect(routeTargets(report).map(({ category }) => category)).toEqual(categories);
+  });
+});
+
+describe('fifteenMinuteReportSection', () => {
+  it('keeps scores, walking times and successful routes after a later route request fails', async () => {
+    const allParams = testParams();
+    const candidates = allParams.categories
+      .slice(0, 14)
+      .map(({ key }, index) =>
+        candidate(key, index + 1, 120 + index * 40, { lng: (index + 1) / 1000, lat: 0 }),
+      );
+    const sql = Object.assign(
+      (query: TemplateStringsArray) => {
+        const statement = query.join('');
+        if (statement.includes('with origin')) {
+          return [{ city_id: 'synthetic-city', score: 88, city_avg: 64, city_percentile: 81 }];
+        }
+        if (statement.includes('private.city_category_stats')) {
+          return candidates.map(({ key }) => ({ category: key }));
+        }
+        if (statement.includes('private.walk_candidates_from')) return candidates;
+        if (statement.includes('private.cell_walk_access')) return [];
+        throw new Error('Unexpected SQL query');
+      },
+      { json: (value: unknown) => value },
+    ) as unknown as Sql;
+    const warnings: string[] = [];
+    const context = {
+      sql,
+      snapshotId: 'synthetic-snapshot',
+      cellId: 'synthetic-cell',
+      citySlug: 'synthetic-city',
+      latitude: 0,
+      longitude: 0,
+      params: { fifteen_minute: allParams },
+      logger: createLogger('warn', (line) => warnings.push(line)),
+    };
+    const failed = candidates[12];
+    if (!failed) throw new Error('Missing synthetic destination after the old route cap');
+    const router = (failRoute: boolean) =>
+      createValhallaClient('http://router.invalid', {
+        fetch: (url, request) => {
+          const path = url instanceof Request ? url.url : url.toString();
+          if (path.endsWith('/sources_to_targets')) {
+            return Promise.resolve(
+              Response.json({
+                sources_to_targets: [
+                  candidates.map(({ leg }) => ({
+                    time: leg?.seconds,
+                    distance: (leg?.meters ?? 0) / 1000,
+                  })),
+                ],
+              }),
+            );
+          }
+          if (path.endsWith('/isochrone')) {
+            return Promise.resolve(Response.json({ features: [] }));
+          }
+          if (!path.endsWith('/route')) throw new Error('Unexpected routing request');
+          if (typeof request?.body !== 'string') throw new Error('Missing routing request body');
+          const body = JSON.parse(request.body) as { locations: { lon: number }[] };
+          if (failRoute && body.locations[1]?.lon === failed.lng) {
+            return Promise.resolve(Response.json({}, { status: 503 }));
+          }
+          return Promise.resolve(
+            Response.json({
+              trip: { summary: { time: 120, length: 0.15 }, legs: [{ shape: '??gEgE' }] },
+            }),
+          );
+        },
+      });
+
+    const complete = fifteenMinuteReportSchema.parse(
+      await fifteenMinuteReportSection.build({ ...context, router: router(false) }),
+    );
+    const partial = fifteenMinuteReportSchema.parse(
+      await fifteenMinuteReportSection.build({ ...context, router: router(true) }),
+    );
+
+    expect(complete.routes).toHaveLength(14);
+    expect(partial).toEqual({
+      ...complete,
+      routes: complete.routes.filter(({ place_id }) => place_id !== failed.source_ref),
+    });
+    expect(warnings).toEqual([expect.stringContaining('"code":"walk_routing_failed"')]);
   });
 });
 
