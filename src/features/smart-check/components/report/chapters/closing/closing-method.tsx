@@ -74,7 +74,7 @@ type ClosingMethodProps = {
 export function ClosingMethod({ report }: ClosingMethodProps) {
   const { t } = useTranslation('smartCheck');
   const dates = report.result.snapshot.source_dates;
-  const formatted = (source: SourceKey) => {
+  const formatted = (source: SourceKey): Row[] => {
     if (source === 'gtfs') {
       const date = gtfsReferenceDate(report.result.sections.accessibility);
       return date
