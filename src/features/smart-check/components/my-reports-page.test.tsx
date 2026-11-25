@@ -25,6 +25,7 @@ describe('MyReportsPage', { timeout: 20_000 }, () => {
     expect(list).toBeInTheDocument();
     expect(screen.getByText(ro.myReports.count_one.replace('{{count}}', '1'))).toBeInTheDocument();
     const card = reportCard(SEEDED_REPORT.address_text);
+    expect(within(card).getByText(roCommon.brand.smartcheck)).toBeInTheDocument();
     expect(within(card).getByText(ro.status.ready)).toBeInTheDocument();
     expect(within(card).getByRole('link', { name: ro.myReports.open })).toHaveAttribute(
       'href',

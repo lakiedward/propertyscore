@@ -196,7 +196,6 @@
       "description": "Verifică o adresă și raportul apare aici, cu PDF și link de partajare.",
       "action": "Verifică o adresă"
     },
-    "kind": "Raport online",
     "score": "{{score}} / 100",
     "scoreLabel": "Scor de zonă {{score}} din 100",
     "open": "Deschide",

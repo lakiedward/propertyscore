@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import {
   ArrowRightIcon,
-  ChartNoAxesColumnIcon,
   CircleXIcon,
   CreditCardIcon,
   FileCheckIcon,
@@ -12,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ProductTag } from '@/components/brand/product-tag';
 import { StatusPill } from '@/components/feedback/status-pill';
 import { ScoreValue } from '@/components/trust/score-value';
 import { Button } from '@/components/ui/button';
@@ -121,10 +121,7 @@ function ReportVisual({ report }: MyReportCardProps) {
 
   return (
     <div className="relative flex min-h-40 items-center justify-center bg-report-hero px-4 pt-12 pb-5 text-on-inverse">
-      <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-card px-2.5 py-1.25 text-meta font-extrabold text-report-hero">
-        <ChartNoAxesColumnIcon aria-hidden className="size-3.5" />
-        {t('myReports.kind')}
-      </span>
+      <ProductTag product="smartcheck" className="absolute top-3 left-3" />
       {score === null ? (
         <StatusIcon
           aria-hidden

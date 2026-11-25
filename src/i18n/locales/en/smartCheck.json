@@ -194,7 +194,6 @@
       "description": "Check an address and the report appears here, with a PDF and a share link.",
       "action": "Check an address"
     },
-    "kind": "Online report",
     "score": "{{score}} / 100",
     "scoreLabel": "Area score {{score}} out of 100",
     "open": "Open",
