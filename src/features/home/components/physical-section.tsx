@@ -125,7 +125,7 @@ export function PhysicalSection() {
                 </span>
               }
               ctaLabel={t('physical.price.cta')}
-              ctaDestination={{ to: '/', hash: HOME_SECTION.pricing }}
+              ctaHash={HOME_SECTION.pricing}
             />
           </div>
         </div>

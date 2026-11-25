@@ -69,10 +69,15 @@ describe('HomePage', { timeout: 20_000 }, () => {
     ]) {
       expect(action).toHaveAttribute('href', '/check');
     }
-    expect(main.getByRole('link', { name: roHome.smartCheck.price.example })).toHaveAttribute(
-      'href',
-      '/?deliverable=zone#deliverables',
-    );
+    const smartCheckSection = main.getByRole('region', {
+      name: new RegExp(roHome.smartCheck.titleLead),
+    });
+    expect(
+      within(smartCheckSection).getByRole('link', { name: roHome.smartCheck.price.example }),
+    ).toHaveAttribute('href', '/?deliverable=zone#deliverables');
+    expect(
+      within(hero).getByRole('link', { name: new RegExp(roHome.hero.physical.action) }),
+    ).toHaveAttribute('href', '/#physical');
 
     await user.click(heroAction);
 
