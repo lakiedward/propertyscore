@@ -7,6 +7,7 @@ import { InvestmentCard } from './investment-card';
 
 type InvestmentHomeCardProps = {
   area: number;
+  startArea: number;
   isDeclared: boolean;
   onAreaChange: (area: number) => void;
   price: number;
@@ -18,6 +19,7 @@ type InvestmentHomeCardProps = {
 
 export function InvestmentHomeCard({
   area,
+  startArea,
   isDeclared,
   onAreaChange,
   price,
@@ -28,6 +30,8 @@ export function InvestmentHomeCard({
 }: InvestmentHomeCardProps) {
   const { t } = useTranslation('smartCheck');
   const areaText = t('report.chapters.investment.home.area', { area: formatNumber(area) });
+  const min = Math.min(AREA_MIN, Math.floor(startArea));
+  const max = Math.max(AREA_MAX, Math.ceil(startArea));
   return (
     <InvestmentCard eyebrow={t('report.chapters.investment.home.eyebrow')}>
       <div className="mt-4 flex items-baseline justify-between gap-3">
@@ -42,8 +46,8 @@ export function InvestmentHomeCard({
       </div>
       <Slider
         className="mt-3"
-        min={AREA_MIN}
-        max={AREA_MAX}
+        min={min}
+        max={max}
         step={1}
         value={[area]}
         onValueChange={([next]) => {
@@ -53,8 +57,8 @@ export function InvestmentHomeCard({
         thumbValueText={areaText}
       />
       <p className="mt-1.5 flex justify-between text-[11.5px] font-semibold text-muted-foreground tabular-nums">
-        <span>{t('report.chapters.investment.home.area', { area: AREA_MIN })}</span>
-        <span>{t('report.chapters.investment.home.area', { area: AREA_MAX })}</span>
+        <span>{t('report.chapters.investment.home.area', { area: min })}</span>
+        <span>{t('report.chapters.investment.home.area', { area: max })}</span>
       </p>
       <div aria-live="polite" className="mt-4 rounded-icon bg-primary px-5 py-4 text-on-inverse">
         <p className="text-[13.5px] font-bold">{t('report.chapters.investment.home.price')}</p>

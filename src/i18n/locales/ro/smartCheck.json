@@ -1002,7 +1002,8 @@
         "offers_other": "{{amount}} de oferte",
         "note": "Nu intră în scorul de zonă. Investiția e context pentru cine cumpără ca să închirieze.",
         "headline": {
-          "city": "În {{city}} se cer în jur de {{value}} € pe metru pătrat"
+          "city": "În {{city}} se cer în jur de {{value}} € pe metru pătrat",
+          "radius": "În jurul adresei se cer în jur de {{value}} € pe metru pătrat"
         },
         "lead": {
           "declared": "Pentru {{area}} m², cam {{price}}, preț cerut.",
@@ -1022,7 +1023,8 @@
           "nearby": "{{name}}, lângă oraș",
           "typical": "Apartamentul tipic din anunțuri: {{area}} m², {{price}} €",
           "legendRange": "intervalul tipic",
-          "legendMedian": "prețul din mijloc"
+          "legendMedian": "prețul din mijloc",
+          "radius": "În jurul adresei"
         },
         "home": {
           "eyebrow": "Pentru apartamentul tău",
@@ -1040,18 +1042,18 @@
           "eyebrow": "Randament brut pe an",
           "title": "Chiria pe un an înseamnă {{value}}% din preț",
           "value": "{{value}}%",
-          "note": "Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș."
+          "note": "Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș.",
+          "legacyTitle": "Randament brut: {{value}}% (baza nu este disponibilă)",
+          "basis": "Calcul: 12 × {{rent}} €/m² pe lună ({{rentSource}}, {{rentPeriod}}) ÷ {{sale}} €/m² ({{saleSource}}, {{salePeriod}})."
         },
         "history": {
-          "eyebrow_one": "Ultima lună",
-          "eyebrow_few": "Ultimele {{count}} luni",
-          "eyebrow_other": "Ultimele {{count}} de luni",
+          "eyebrow": "Istoric · {{first}} – {{last}}",
           "title": {
             "up": "Din {{month}}, prețul cerut a urcat cu {{value}} €/m²",
             "down": "Din {{month}}, prețul cerut a scăzut cu {{value}} €/m²",
             "flat": "Din {{month}}, prețul cerut a rămas la fel"
           },
-          "chartLabel": "Prețul cerut mediu pe metru pătrat, lună cu lună",
+          "chartLabel": "Prețul cerut pe metru pătrat în lunile pentru care avem date",
           "forArea": "Pentru {{area}} m², față de {{month}}",
           "span_one": "{{percent}} în {{count}} lună",
           "span_few": "{{percent}} în {{count}} luni",
@@ -1067,15 +1069,18 @@
             "apartamente_org_index": "apartamente.org, indicele lunar",
             "imospot_index": "Indicele Imospot (CC BY 4.0)"
           },
-          "saleCity": "{{city}} · vânzare",
-          "saleCityOffers_one": "{{city}} · vânzare · {{amount}} ofertă",
-          "saleCityOffers_few": "{{city}} · vânzare · {{amount}} oferte",
-          "saleCityOffers_other": "{{city}} · vânzare · {{amount}} de oferte",
-          "rentCity": "{{city}} · închiriere",
-          "rentCityOffers_one": "{{city}} · închiriere · {{amount}} ofertă",
-          "rentCityOffers_few": "{{city}} · închiriere · {{amount}} oferte",
-          "rentCityOffers_other": "{{city}} · închiriere · {{amount}} de oferte"
-        }
+          "roles": {
+            "sale": "{{place}} · vânzare",
+            "rent": "{{place}} · închiriere",
+            "history": "Istoricul prețurilor cerute",
+            "yield_sale": "Prețul folosit pentru randament",
+            "yield_rent": "Chiria folosită pentru randament"
+          }
+        },
+        "badgeRadius": "Precizie: în jurul adresei",
+        "apartments_one": "{{amount}} apartament",
+        "apartments_few": "{{amount}} apartamente",
+        "apartments_other": "{{amount}} de apartamente"
       },
       "closing": {
         "title": "Înainte de vizionare",

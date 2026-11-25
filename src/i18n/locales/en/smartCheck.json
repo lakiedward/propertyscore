@@ -989,7 +989,8 @@
         "offers_other": "{{amount}} listings",
         "note": "Not part of the zone score. Investment is context for buyers who plan to rent the home out.",
         "headline": {
-          "city": "In {{city}}, asking prices are around €{{value}} per square metre"
+          "city": "In {{city}}, asking prices are around €{{value}} per square metre",
+          "radius": "Around the address, asking prices are about €{{value}} per square metre"
         },
         "lead": {
           "declared": "For {{area}} m², about {{price}}, asking price.",
@@ -1009,7 +1010,8 @@
           "nearby": "{{name}}, next to the city",
           "typical": "Typical apartment in listings: {{area}} m², €{{price}}",
           "legendRange": "typical range",
-          "legendMedian": "middle price"
+          "legendMedian": "middle price",
+          "radius": "Around the address"
         },
         "home": {
           "eyebrow": "For your apartment",
@@ -1027,17 +1029,18 @@
           "eyebrow": "Gross yield per year",
           "title": "A year of rent is {{value}}% of the price",
           "value": "{{value}}%",
-          "note": "Twelve months of rent divided by the price, before taxes, repairs and months without a tenant."
+          "note": "Twelve months of rent divided by the price, before taxes, repairs and months without a tenant.",
+          "legacyTitle": "Gross yield: {{value}}% (calculation basis unavailable)",
+          "basis": "Calculation: 12 × €{{rent}}/m² per month ({{rentSource}}, {{rentPeriod}}) ÷ €{{sale}}/m² ({{saleSource}}, {{salePeriod}})."
         },
         "history": {
-          "eyebrow_one": "Last month",
-          "eyebrow_other": "Last {{count}} months",
+          "eyebrow": "History · {{first}} – {{last}}",
           "title": {
             "up": "Since {{month}}, the asking price rose by €{{value}}/m²",
             "down": "Since {{month}}, the asking price fell by €{{value}}/m²",
             "flat": "Since {{month}}, the asking price has not changed"
           },
-          "chartLabel": "Median asking price per square metre, month by month",
+          "chartLabel": "Asking price per square metre in months with data",
           "forArea": "For {{area}} m², compared with {{month}}",
           "span_one": "{{percent}} in {{count}} month",
           "span_other": "{{percent}} in {{count}} months"
@@ -1052,13 +1055,17 @@
             "apartamente_org_index": "apartamente.org, monthly index",
             "imospot_index": "Imospot Index (CC BY 4.0)"
           },
-          "saleCity": "{{city}} · sale",
-          "saleCityOffers_one": "{{city}} · sale · {{amount}} listing",
-          "saleCityOffers_other": "{{city}} · sale · {{amount}} listings",
-          "rentCity": "{{city}} · rent",
-          "rentCityOffers_one": "{{city}} · rent · {{amount}} listing",
-          "rentCityOffers_other": "{{city}} · rent · {{amount}} listings"
-        }
+          "roles": {
+            "sale": "{{place}} · sale",
+            "rent": "{{place}} · rent",
+            "history": "Asking-price history",
+            "yield_sale": "Sale price used for yield",
+            "yield_rent": "Rent used for yield"
+          }
+        },
+        "badgeRadius": "Precision: around the address",
+        "apartments_one": "{{amount}} apartment",
+        "apartments_other": "{{amount}} apartments"
       },
       "closing": {
         "title": "Before the viewing",

@@ -31,7 +31,18 @@ export function InvestmentHistoryCard({ change, area }: InvestmentHistoryCardPro
 
   return (
     <InvestmentCard
-      eyebrow={t('report.chapters.investment.history.eyebrow', { count: change.bars.length })}
+      eyebrow={t('report.chapters.investment.history.eyebrow', {
+        first: formatDate(change.first.period.slice(0, 7) + '-01', {
+          month: 'long',
+          year: 'numeric',
+          timeZone: 'UTC',
+        }),
+        last: formatDate(change.last.period.slice(0, 7) + '-01', {
+          month: 'long',
+          year: 'numeric',
+          timeZone: 'UTC',
+        }),
+      })}
       title={t(`report.chapters.investment.history.title.${direction}`, {
         month: first,
         value: formatNumber(Math.abs(change.perM2)),
