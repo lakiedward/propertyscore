@@ -13,19 +13,27 @@ const FRAME_PADDING_DEGREES = 0.0015;
 
 export const GREEN_AMENITIES = ['playground', 'dog_park', 'sports'] as const;
 
-export function parkWalkMinutes(metres: number): number {
-  return Math.max(1, Math.round(metres / WALK_METRES_PER_MINUTE));
+function walkDuration(park: Pick<GreenPark, 'walk_m' | 'walk_seconds'>): number {
+  return park.walk_seconds === undefined
+    ? park.walk_m / WALK_METRES_PER_MINUTE
+    : park.walk_seconds / 60;
+}
+
+export function parkWalkMinutes(park: Pick<GreenPark, 'walk_m' | 'walk_seconds'>): number {
+  return Math.max(1, Math.round(walkDuration(park)));
 }
 
 export function listedParks(section: Green): GreenPark[] {
-  const byDistance = [...section.parks].sort((left, right) => left.walk_m - right.walk_m);
-  const large = byDistance.filter((park) => park.area_ha >= LARGE_PARK_HA);
-  return (large.length > 0 ? large : byDistance).slice(0, LISTED_PARKS);
+  const byWalkDuration = [...section.parks].sort(
+    (left, right) => walkDuration(left) - walkDuration(right),
+  );
+  const large = byWalkDuration.filter((park) => park.area_ha >= LARGE_PARK_HA);
+  return (large.length > 0 ? large : byWalkDuration).slice(0, LISTED_PARKS);
 }
 
 export function parksSummary(parks: readonly GreenPark[]) {
   const farthest = parks.reduce<GreenPark | undefined>(
-    (far, park) => (!far || park.walk_m > far.walk_m ? park : far),
+    (far, park) => (!far || walkDuration(park) > walkDuration(far) ? park : far),
     undefined,
   );
   const biggest = parks.reduce<GreenPark | undefined>(
@@ -51,17 +59,28 @@ export function areasOf(section: Green, parkIds: readonly string[]): MapFeatureC
   );
 }
 
-export function framingBounds(points: readonly LngLat[]): LngLatBounds {
-  const longitudes = points.map(([longitude]) => longitude);
-  const latitudes = points.map(([, latitude]) => latitude);
+export function framingBounds(
+  points: readonly LngLat[],
+  areas?: MapFeatureCollection,
+): LngLatBounds {
+  const polygonPoints =
+    areas?.features.flatMap(({ geometry }) => {
+      if (geometry.type === 'Polygon') return geometry.coordinates.flat();
+      if (geometry.type === 'MultiPolygon') return geometry.coordinates.flat(2);
+      return [];
+    }) ?? [];
+  let west = Infinity;
+  let east = -Infinity;
+  let south = Infinity;
+  let north = -Infinity;
+  for (const [longitude, latitude] of [...points, ...polygonPoints]) {
+    west = Math.min(west, longitude);
+    east = Math.max(east, longitude);
+    south = Math.min(south, latitude);
+    north = Math.max(north, latitude);
+  }
   return [
-    [
-      Math.min(...longitudes) - FRAME_PADDING_DEGREES,
-      Math.min(...latitudes) - FRAME_PADDING_DEGREES,
-    ],
-    [
-      Math.max(...longitudes) + FRAME_PADDING_DEGREES,
-      Math.max(...latitudes) + FRAME_PADDING_DEGREES,
-    ],
+    [west - FRAME_PADDING_DEGREES, south - FRAME_PADDING_DEGREES],
+    [east + FRAME_PADDING_DEGREES, north + FRAME_PADDING_DEGREES],
   ];
 }

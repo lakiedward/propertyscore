@@ -155,6 +155,24 @@ describe('walkedParks', () => {
     ]);
     expect(parks[0]).not.toHaveProperty('distance_m');
   });
+
+  it('uses the fastest routed fragment, not the nearest fragment or the shortest route', () => {
+    const multipart = { ...park('near', 100), part_ids: ['near', 'fast', 'short', 'unreachable'] };
+    const parks = walkedParks(
+      [multipart],
+      new Map([
+        ['near', { seconds: 900, meters: 1200 }],
+        ['fast', { seconds: 240, meters: 400 }],
+        ['short', { seconds: 300, meters: 300 }],
+        ['unreachable', null],
+      ]),
+      1.3,
+    );
+
+    expect(parks).toMatchObject([{ id: 'near', walk_m: 400, walk_seconds: 240 }]);
+    expect(parks[0]).not.toHaveProperty('part_ids');
+    expect(walkedParks([multipart], new Map(), 1.3)).toMatchObject([{ walk_m: 130 }]);
+  });
 });
 
 const databaseUrl = process.env.DATABASE_URL;

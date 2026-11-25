@@ -176,6 +176,7 @@ const greenSchema = z.object({
       area_ha: z.number(),
       amenities: z.array(z.string()),
       walk_m: z.number(),
+      walk_seconds: z.number().nonnegative().optional(),
       center: position,
     }),
   ),

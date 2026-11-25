@@ -66,7 +66,7 @@ export function GreenChapter({ report }: ReportChapterProps) {
             : farthest
               ? t('report.chapters.green.headline', {
                   count: parks.length,
-                  minutes: parkWalkMinutes(farthest.walk_m),
+                  minutes: parkWalkMinutes(farthest),
                 })
               : t('report.chapters.green.headlineNone')
         }

@@ -69,7 +69,7 @@ export function GreenParksBlock({ report, parks }: GreenParksBlockProps) {
                     isApproximate
                       ? 'report.chapters.green.parks.walkApprox'
                       : 'report.chapters.green.parks.walk',
-                    { minutes: parkWalkMinutes(park.walk_m) },
+                    { minutes: parkWalkMinutes(park) },
                   )}
                 </span>
                 {amenities.length > 0 ? (

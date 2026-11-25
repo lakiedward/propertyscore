@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { CATEGORY_KEYS } from '../scoring/categories.ts';
 import { buildReportDocument } from './build-document.ts';
 import { fifteenMinuteChapter } from './chapters/fifteen-minute.ts';
+import { greenChapter } from './chapters/green.ts';
 import { reportInputSchema, toReportData } from './report-data.ts';
 
 async function exampleInput(): Promise<Record<string, unknown>> {
@@ -271,6 +272,58 @@ describe('buildReportDocument', () => {
       expect(english).toContain('No timetable date is available in the report.');
       expect(english).not.toContain('Public transport timetables (GTFS)');
     }
+  });
+
+  it('fits the Green map to the full listed park and shows its fastest routed time', async () => {
+    const report = toReportData(reportInputSchema.parse(await exampleInput()));
+    const section = report.sections.green;
+    const park = section?.parks[0];
+    if (!section || !park) throw new Error('fixture has no green park');
+    const distant = [
+      [21.3, 45.9],
+      [21.4, 45.9],
+      [21.4, 46],
+      [21.3, 45.9],
+    ];
+    const unlisted = [
+      [22.3, 46.9],
+      [22.4, 46.9],
+      [22.4, 47],
+      [22.3, 46.9],
+    ];
+    const chapter = greenChapter({
+      ...report,
+      sections: {
+        ...report.sections,
+        green: {
+          ...section,
+          distance_method: 'pedestrian_routing',
+          parks: [{ ...park, walk_m: 1200, walk_seconds: 240 }],
+          areas: {
+            ...section.areas,
+            features: [
+              ...section.areas.features,
+              {
+                type: 'Feature',
+                properties: { id: park.id },
+                geometry: { type: 'MultiPolygon', coordinates: [[distant]] },
+              },
+              {
+                type: 'Feature',
+                properties: { id: 'unlisted' },
+                geometry: { type: 'Polygon', coordinates: [unlisted] },
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    if (!chapter) throw new Error('Green chapter was not built');
+    const points = chapter.maps[0]?.fit ?? [];
+    expect(Math.max(...points.map(([lng]) => lng))).toBe(21.4);
+    expect(Math.max(...points.map(([, lat]) => lat))).toBe(46);
+    expect(chapter.html).toContain('4 min pe jos');
   });
 
   it('draws the city reach card and leaves out the neighbourhoods line when the city has none', async () => {
