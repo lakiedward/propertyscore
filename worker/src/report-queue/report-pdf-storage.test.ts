@@ -28,6 +28,49 @@ describe('createReportPdfStorage', () => {
     });
   });
 
+  it('checks the exact object before sending the replacement to the same path', async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(null));
+    const storage = createReportPdfStorage({
+      supabaseUrl: 'https://example.supabase.co',
+      secretKey: 'sb_secret_test',
+      fetch,
+    });
+
+    await storage.replace('owner-id/report-id.pdf', Buffer.from('%PDF-1.7'));
+
+    const url =
+      'https://example.supabase.co/storage/v1/object/online-report-pdfs/owner-id/report-id.pdf';
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenNthCalledWith(1, url, expect.objectContaining({ method: 'HEAD' }));
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
+      url,
+      expect.objectContaining({ method: 'PUT', body: Uint8Array.from(Buffer.from('%PDF-1.7')) }),
+    );
+  });
+
+  it.each([
+    [404, 'report_pdf_not_stored'],
+    [503, 'report_pdf_lookup_failed'],
+  ])('does not write a PDF when checking Storage returns HTTP %i', async (status, code) => {
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValue(new Response(null, { status }));
+    const storage = createReportPdfStorage({
+      supabaseUrl: 'https://example.supabase.co',
+      secretKey: 'sb_secret_test',
+      fetch,
+    });
+
+    await expect(
+      storage.replace('owner-id/report-id.pdf', Buffer.from('pdf')),
+    ).rejects.toMatchObject({ code });
+    expect(fetch).toHaveBeenCalledExactlyOnceWith(
+      expect.stringContaining('/owner-id/report-id.pdf'),
+      expect.objectContaining({ method: 'HEAD' }),
+    );
+  });
+
   it('fails with a code when Storage refuses the file', async () => {
     const storage = createReportPdfStorage({
       supabaseUrl: 'https://example.supabase.co',

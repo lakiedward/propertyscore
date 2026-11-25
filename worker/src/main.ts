@@ -8,7 +8,11 @@ import { createLogger, type Logger } from './lib/logger.ts';
 import { generateReport } from './report/generate-report.ts';
 import { insertReport } from './report/report.db.ts';
 import { REPORT_SECTIONS } from './report/sections.ts';
-import { renderReportDocument, renderReportPdf } from './report-pdf/render-report-pdf.ts';
+import {
+  refreshReportPdf,
+  renderReportDocument,
+  renderReportPdf,
+} from './report-pdf/render-report-pdf.ts';
 import { processReport } from './report-queue/process-report.ts';
 import { createReportPdfStorage } from './report-queue/report-pdf-storage.ts';
 import { claimNextReport, REPORT_QUEUE_CHANNEL } from './report-queue/report-queue.db.ts';
@@ -50,17 +54,21 @@ function stopOnSignals(logger: Logger): AbortSignal {
   return controller.signal;
 }
 
-async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<void> {
+function reportStorage(env: Env, command: 'serve-reports' | 'refresh-report-pdf') {
   if (!env.SUPABASE_URL || !env.SUPABASE_SECRET_KEY) {
     throw new WorkerError(
       'report_storage_not_configured',
-      'serve-reports needs SUPABASE_URL and SUPABASE_SECRET_KEY',
+      `${command} needs SUPABASE_URL and SUPABASE_SECRET_KEY`,
     );
   }
-  const storage = createReportPdfStorage({
+  return createReportPdfStorage({
     supabaseUrl: env.SUPABASE_URL,
     secretKey: env.SUPABASE_SECRET_KEY,
   });
+}
+
+async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<void> {
+  const storage = reportStorage(env, 'serve-reports');
   const work = createWorkSignal();
   const stop = stopOnSignals(logger);
   const listener = await sql.listen(REPORT_QUEUE_CHANNEL, () => {
@@ -137,6 +145,15 @@ async function runCommand(
       await renderReportPdf({
         source: 'reportId' in command.source ? { ...command.source, sql } : command.source,
         outputPath: command.outputPath,
+        chromiumPath: env.CHROMIUM_PATH,
+        logger,
+      });
+      return;
+    case 'refresh-report-pdf':
+      await refreshReportPdf({
+        sql,
+        reportId: command.reportId,
+        storage: reportStorage(env, command.command),
         chromiumPath: env.CHROMIUM_PATH,
         logger,
       });
