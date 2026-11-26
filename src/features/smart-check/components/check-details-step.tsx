@@ -18,7 +18,6 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatPrice } from '@/i18n/format';
 import { useValidationMessage } from '@/i18n/validation';
 import { cn } from '@/lib/utils';
-import { CHECK_PRICE_RON } from '../check.utils';
 import {
   checkDetailsFormSchema,
   toDetailsFormValues,
@@ -40,13 +39,19 @@ const ANSWER_GROUPS = 4;
 const ELEVATOR_OPTIONS = ['yes', 'no', 'unknown'] as const;
 
 type CheckDetailsStepProps = {
+  priceRon: number | null;
   initialDetails: CheckDetailsSearch;
   onBack: () => void;
   onContinue: (details: CheckDetailsSearch) => void;
 };
 
-export function CheckDetailsStep({ initialDetails, onBack, onContinue }: CheckDetailsStepProps) {
-  const { t } = useTranslation('smartCheck');
+export function CheckDetailsStep({
+  priceRon,
+  initialDetails,
+  onBack,
+  onContinue,
+}: CheckDetailsStepProps) {
+  const { t, i18n } = useTranslation('smartCheck');
   const elevatorLegendId = useId();
   const [unknown, setUnknown] = useState<Record<UnknownGroup, boolean>>({
     size: false,
@@ -214,7 +219,11 @@ export function CheckDetailsStep({ initialDetails, onBack, onContinue }: CheckDe
             {t('check.details.skip')}
           </Button>
           <Button type="submit" size="lg">
-            {t('check.details.continue', { price: formatPrice(CHECK_PRICE_RON, 'RON') })}
+            {priceRon === null
+              ? t('check.details.continueWithoutPrice')
+              : t('check.details.continue', {
+                  price: formatPrice(priceRon, 'RON', i18n.resolvedLanguage),
+                })}
             <ArrowRightIcon aria-hidden />
           </Button>
         </div>

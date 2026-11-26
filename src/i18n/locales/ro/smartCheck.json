@@ -2,7 +2,8 @@
   "check": {
     "pageTitle": "Smart Check",
     "title": "Verifică o adresă cu Smart Check",
-    "eyebrow": "Raport online {{price}} · Pasul {{number}} din {{total}}",
+    "eyebrow": "{{product}} {{price}} · Pasul {{number}} din {{total}}",
+    "eyebrowWithoutPrice": "{{product}} · Pasul {{number}} din {{total}}",
     "steps": {
       "label": "Pașii comenzii",
       "item": "{{number}}. {{label}}",
@@ -62,6 +63,7 @@
     },
     "includes": {
       "title": "Ce primești pentru {{price}}",
+      "titleWithoutPrice": "Ce primești",
       "items": {
         "score": "Scor de zonă din 9 criterii, fiecare explicat",
         "transit": "Accesibilitate: linii, frecvență și direcții, nu doar distanța",
@@ -125,7 +127,8 @@
       },
       "back": "Înapoi",
       "skip": "Sari peste",
-      "continue": "Continuă la plată · {{price}}"
+      "continue": "Continuă la plată · {{price}}",
+      "continueWithoutPrice": "Continuă la plată"
     },
     "payment": {
       "title": "Plata",
@@ -151,7 +154,6 @@
     },
     "summary": {
       "eyebrow": "Comanda ta",
-      "product": "Raport online",
       "includesTitle": "Ce primești",
       "items": {
         "scores": "9 scoruri pe categorii, de la 0 la 100",

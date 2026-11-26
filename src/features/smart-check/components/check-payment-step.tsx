@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation } from '@tanstack/react-router';
 import {
   ArrowLeftIcon,
@@ -12,10 +11,10 @@ import { useTranslation } from 'react-i18next';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/features/auth';
 import { useErrorMessage } from '@/i18n/error-message';
 import { isAppError } from '@/lib/errors';
-import { smartCheckQueries, useCreateOnlineReport } from '../api/smart-check.queries';
+import { useCreateOnlineReport } from '../api/smart-check.queries';
+import type { CheckAccess } from '../check.utils';
 import type { CheckOrder } from '../smart-check.schemas';
 import { CheckOrderSummary } from './check-order-summary';
 
@@ -26,6 +25,8 @@ const ADDRESS_REASONS = new Set([
 ]);
 
 type CheckPaymentStepProps = {
+  access: CheckAccess;
+  priceRon: number | null;
   order: CheckOrder;
   onBack: () => void;
   onChangeAddress: () => void;
@@ -33,13 +34,14 @@ type CheckPaymentStepProps = {
 };
 
 export function CheckPaymentStep({
+  access,
+  priceRon,
   order,
   onBack,
   onChangeAddress,
   onCreated,
 }: CheckPaymentStepProps) {
   const { t } = useTranslation('smartCheck');
-  const { user } = useAuth();
 
   return (
     <div className="page-wrap grid max-w-default grid-cols-1 items-start gap-6 py-8 w767:py-10 w1059:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
@@ -50,9 +52,9 @@ export function CheckPaymentStep({
         <h2 id="check-payment-title" className="text-h3 font-extrabold">
           {t('check.payment.title')}
         </h2>
-        {user ? (
+        {access !== 'guest' ? (
           <SignedInPayment
-            userId={user.id}
+            access={access}
             order={order}
             onChangeAddress={onChangeAddress}
             onCreated={onCreated}
@@ -67,7 +69,7 @@ export function CheckPaymentStep({
           </Button>
         </div>
       </section>
-      <CheckOrderSummary address={order.address} />
+      <CheckOrderSummary address={order.address} priceRon={priceRon} />
     </div>
   );
 }
@@ -104,24 +106,23 @@ function SignedOutPayment() {
 }
 
 type SignedInPaymentProps = {
-  userId: string;
+  access: Exclude<CheckAccess, 'guest'>;
   order: CheckOrder;
   onChangeAddress: () => void;
   onCreated: (reportId: string) => void;
 };
 
-function SignedInPayment({ userId, order, onChangeAddress, onCreated }: SignedInPaymentProps) {
+function SignedInPayment({ access, order, onChangeAddress, onCreated }: SignedInPaymentProps) {
   const { t } = useTranslation('smartCheck');
   const errorMessage = useErrorMessage();
-  const access = useQuery(smartCheckQueries.unlimitedAccess(userId));
   const createReport = useCreateOnlineReport();
   const reason = isAppError(createReport.error) ? createReport.error.reason : undefined;
 
-  if (access.isPending) {
+  if (access === 'pending') {
     return <Skeleton className="h-24 rounded-lg" />;
   }
 
-  if (access.isError) {
+  if (access === 'error') {
     return (
       <Alert tone="error">
         <CircleAlertIcon aria-hidden />
@@ -130,7 +131,7 @@ function SignedInPayment({ userId, order, onChangeAddress, onCreated }: SignedIn
     );
   }
 
-  if (!access.data) {
+  if (access === 'standard') {
     return (
       <Alert tone="info">
         <InfoIcon aria-hidden />
