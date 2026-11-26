@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery } from '@tanstack/react-query';
 import { CalendarClockIcon, CalendarXIcon, UserMinusIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -22,7 +21,6 @@ import { useErrorMessage } from '@/i18n/error-message';
 import { formatDate, formatNumber, formatPrice, toCurrency } from '@/i18n/format';
 import { useValidationMessage } from '@/i18n/validation';
 import {
-  inspectionQueries,
   useAssignInspector,
   useCancelInspectionAsAdmin,
   useUnassignInspector,
@@ -33,6 +31,7 @@ import {
   type CancelReasonValues,
 } from '../../booking.schemas';
 import { useBookingText } from '../../hooks/use-booking-text';
+import { useFreeInspectors } from '../../hooks/use-free-inspectors';
 import type { AdminInspection, AppointmentMode } from '../../inspection.types';
 import { knownAccessTags } from '../../inspection.utils';
 import { InspectionHistory } from '../inspection-history';
@@ -240,7 +239,7 @@ function AssignInspector({ inspection }: { inspection: AdminInspection }) {
   const errorMessage = useErrorMessage();
   const selectId = useId();
   const titleId = useId();
-  const inspectors = useQuery(inspectionQueries.inspectors(inspection.city_id));
+  const inspectors = useFreeInspectors(inspection);
   const assign = useAssignInspector();
   const unassign = useUnassignInspector();
   const [inspectorId, setInspectorId] = useState(inspection.inspector_id ?? '');
@@ -279,25 +278,27 @@ function AssignInspector({ inspection }: { inspection: AdminInspection }) {
         <SearchSelect
           id={selectId}
           value={inspectorId === '' ? null : inspectorId}
-          options={(inspectors.data ?? [])
-            .filter((inspector) => inspector.is_active)
-            .map((inspector) => ({
-              value: inspector.user_id,
-              label: inspector.full_name ?? '',
-              description: inspector.city_name,
-              leading: (
-                <span
-                  aria-hidden
-                  className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-nav-sm font-extrabold text-primary-foreground"
-                >
-                  {initialsOf(inspector.full_name ?? '')}
-                </span>
-              ),
-            }))}
+          options={inspectors.free.map((inspector) => ({
+            value: inspector.user_id,
+            label: inspector.full_name ?? '',
+            description: inspector.city_name,
+            leading: (
+              <span
+                aria-hidden
+                className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-nav-sm font-extrabold text-primary-foreground"
+              >
+                {initialsOf(inspector.full_name ?? '')}
+              </span>
+            ),
+          }))}
           onChange={setInspectorId}
           placeholder={t('schedule.drawer.choose')}
           searchPlaceholder={t('schedule.availability.search')}
-          emptyText={t('schedule.availability.noMatch')}
+          emptyText={
+            inspectors.free.length === 0 && !inspectors.isLoading
+              ? t('schedule.drawer.noFree')
+              : t('schedule.availability.noMatch')
+          }
           className="flex-1"
         />
         <Button
@@ -321,6 +322,7 @@ function AssignInspector({ inspection }: { inspection: AdminInspection }) {
           {isChange ? t('schedule.drawer.change') : t('schedule.drawer.assign')}
         </Button>
       </div>
+      <p className="text-caption text-muted-foreground">{t('schedule.drawer.freeOnly')}</p>
       {assign.isError ? (
         <Alert tone="error">
           <AlertDescription>{errorMessage(assign.error)}</AlertDescription>

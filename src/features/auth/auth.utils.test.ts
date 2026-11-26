@@ -4,6 +4,7 @@ import {
   homePathFor,
   isExpiredLinkCode,
   isRecentLinkSignIn,
+  otherPanelRedirect,
   postSignInPath,
   rolesFromAccessToken,
   settingsPathFor,
@@ -98,6 +99,36 @@ describe('auth.utils', () => {
       expect(settingsPathFor(['user'])).toBe('/account/settings');
       expect(settingsPathFor([])).toBe('/account/settings');
     });
+
+    it('opens the settings inside the inspector area for inspectors', () => {
+      expect(settingsPathFor(['inspector'])).toBe('/field/settings');
+    });
+  });
+
+  describe('otherPanelRedirect', () => {
+    it('lets each role into its own panel', () => {
+      expect(otherPanelRedirect(['user'], '/account/listings')).toBeNull();
+      expect(otherPanelRedirect(['admin'], '/admin/users')).toBeNull();
+      expect(otherPanelRedirect(['inspector'], '/field/availability')).toBeNull();
+    });
+
+    it('sends a role out of another panel to its own home', () => {
+      expect(otherPanelRedirect(['inspector'], '/account/listings')).toBe('/field');
+      expect(otherPanelRedirect(['user'], '/field')).toBe('/account');
+      expect(otherPanelRedirect(['admin'], '/account')).toBe('/admin');
+      expect(otherPanelRedirect(['inspector'], '/admin/users')).toBe('/field');
+    });
+
+    it('keeps a settings page a settings page', () => {
+      expect(otherPanelRedirect(['inspector'], '/account/settings')).toBe('/field/settings');
+      expect(otherPanelRedirect(['admin'], '/account/settings/')).toBe('/admin/settings');
+      expect(otherPanelRedirect(['user'], '/field/settings')).toBe('/account/settings');
+    });
+
+    it('leaves pages outside the panels alone', () => {
+      expect(otherPanelRedirect(['inspector'], '/listings')).toBeNull();
+      expect(otherPanelRedirect(['user'], '/administration')).toBeNull();
+    });
   });
 
   describe('postSignInPath', () => {
@@ -121,6 +152,12 @@ describe('auth.utils', () => {
     it('keeps the admin panel for admins only', () => {
       expect(postSignInPath(['user'], '/admin/users')).toBe('/account');
       expect(postSignInPath(['admin'], '/admin/users')).toBe('/admin/users');
+    });
+
+    it('keeps every panel for its own role', () => {
+      expect(postSignInPath(['inspector'], '/account/listings')).toBe('/field');
+      expect(postSignInPath(['user'], '/field/availability')).toBe('/account');
+      expect(postSignInPath(['inspector'], '/field/availability')).toBe('/field/availability');
     });
   });
 

@@ -1,11 +1,13 @@
-import { createFileRoute, notFound, Outlet } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { FieldShell } from '@/components/layout/field-shell';
+import { otherPanelGuard } from '@/features/auth';
 import { UserMenu } from '@/features/profile';
 
 export const Route = createFileRoute('/_authenticated/field')({
-  beforeLoad: ({ context }) => {
-    if (!context.auth.hasRole('inspector')) {
-      throw notFound();
+  beforeLoad: ({ context, location }) => {
+    const guard = otherPanelGuard(context.auth, location);
+    if (guard) {
+      throw guard;
     }
   },
   component: FieldLayout,

@@ -185,14 +185,14 @@ isOneToOne: false
                   ]
                 },"inspection_form_questions": {
                   Row: {
-                    "category_id": string,"created_at": string,"form_version_id": string,"id": string,"key": string,"position": number,"required_media": Database["public"]['Enums']["inspection_required_media"],"text_en": string,"text_ro": string,"updated_at": string
+                    "category_id": string,"created_at": string,"form_version_id": string,"id": string,"key": string,"position": number,"required_media": Database["public"]['Enums']["inspection_required_media"],"text_en": string,"text_ro": string,"updated_at": string,"weight": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "category_id": string,"created_at"?: string,"form_version_id": string,"id"?: string,"key": string,"position": number,"required_media"?: Database["public"]['Enums']["inspection_required_media"],"text_en"?: string,"text_ro"?: string,"updated_at"?: string
+                    "category_id": string,"created_at"?: string,"form_version_id": string,"id"?: string,"key": string,"position": number,"required_media"?: Database["public"]['Enums']["inspection_required_media"],"text_en"?: string,"text_ro"?: string,"updated_at"?: string,"weight"?: number
                   }
                   Update: {
-                    "category_id"?: string,"created_at"?: string,"form_version_id"?: string,"id"?: string,"key"?: string,"position"?: number,"required_media"?: Database["public"]['Enums']["inspection_required_media"],"text_en"?: string,"text_ro"?: string,"updated_at"?: string
+                    "category_id"?: string,"created_at"?: string,"form_version_id"?: string,"id"?: string,"key"?: string,"position"?: number,"required_media"?: Database["public"]['Enums']["inspection_required_media"],"text_en"?: string,"text_ro"?: string,"updated_at"?: string,"weight"?: number
                   }
                   Relationships: [
                     {
@@ -608,6 +608,11 @@ isOneToOne: false
 "cancel_inspection":
 { Args: { "p_inspection_id": string,"p_reason"?: string }; Returns: undefined
                            },
+"consent_version_usage":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "consent_version_id": string,"inspection_count": number
+            }[]
+                           },
 "create_consent_draft":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
@@ -636,6 +641,12 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"delete_consent_version":
+{ Args: { "p_consent_version_id": string }; Returns: undefined
+                           },
+"delete_inspection_form_version":
+{ Args: { "p_form_version_id": string }; Returns: undefined
+                           },
 "delete_own_account":
 { Args: { "confirmation": string }; Returns: string
                            },
@@ -651,6 +662,11 @@ isOneToOne: false
 "inspection_cities":
 { Args: Record<PropertyKey, never>; Returns: {
               "has_inspectors": boolean,"id": string,"latitude": number,"longitude": number,"name": string,"slug": string
+            }[]
+                           },
+"inspection_form_version_usage":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "form_version_id": string,"inspection_count": number
             }[]
                            },
 "inspection_history":
@@ -753,6 +769,12 @@ isOneToOne: false
               "address_text": string,"created_at": string,"declared_area_m2": number,"declared_building_floors": number,"declared_construction_year": number,"declared_floor": number,"declared_rooms": number,"generated_at": string,"id": string,"latitude": number,"longitude": number,"number": number,"overall_score": number,"result": Json,"status": Database["public"]['Enums']["online_report_status"]
             }[]
                            },
+"restore_consent_version":
+{ Args: { "p_consent_version_id": string }; Returns: string
+                           },
+"restore_inspection_form_version":
+{ Args: { "p_form_version_id": string }; Returns: string
+                           },
 "revoke_report_share_link":
 { Args: { "p_report_id": string }; Returns: undefined
                            },
@@ -767,6 +789,9 @@ isOneToOne: false
                            },
 "set_inspector_weekly_hours":
 { Args: { "p_inspector_id": string,"p_ranges": Json,"p_weekday": number }; Returns: undefined
+                           },
+"split_inspection_form_question_weights":
+{ Args: { "p_category_id": string }; Returns: undefined
                            },
 "start_inspection":
 { Args: { "p_accepted_section_ids": (string)[],"p_inspection_id": string,"p_language": string,"p_latitude"?: number,"p_longitude"?: number,"p_signature_path": string,"p_signer_name": string }; Returns: undefined

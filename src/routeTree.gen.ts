@@ -44,6 +44,7 @@ import { Route as AuthenticatedFieldIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedFieldAvailabilityRouteImport } from './routes/_authenticated/field/availability'
 import { Route as AuthenticatedFieldCurrentRouteImport } from './routes/_authenticated/field/current'
 import { Route as AuthenticatedFieldHistoryRouteImport } from './routes/_authenticated/field/history'
+import { Route as AuthenticatedFieldSettingsRouteImport } from './routes/_authenticated/field/settings'
 import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth/callback'
 import { Route as PublicAuthConfirmRouteImport } from './routes/_public/auth/confirm'
 import { Route as PublicPasswordResetIndexRouteImport } from './routes/_public/password-reset/index'
@@ -252,6 +253,12 @@ const AuthenticatedFieldHistoryRoute =
     path: '/history',
     getParentRoute: () => AuthenticatedFieldRouteRoute,
   } as any)
+const AuthenticatedFieldSettingsRoute =
+  AuthenticatedFieldSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedFieldRouteRoute,
+  } as any)
 const PublicAuthCallbackRoute = PublicAuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
@@ -349,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/field/availability': typeof AuthenticatedFieldAvailabilityRoute
   '/field/current': typeof AuthenticatedFieldCurrentRoute
   '/field/history': typeof AuthenticatedFieldHistoryRoute
+  '/field/settings': typeof AuthenticatedFieldSettingsRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
@@ -392,6 +400,7 @@ export interface FileRoutesByTo {
   '/field/availability': typeof AuthenticatedFieldAvailabilityRoute
   '/field/current': typeof AuthenticatedFieldCurrentRoute
   '/field/history': typeof AuthenticatedFieldHistoryRoute
+  '/field/settings': typeof AuthenticatedFieldSettingsRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
@@ -442,6 +451,7 @@ export interface FileRoutesById {
   '/_authenticated/field/availability': typeof AuthenticatedFieldAvailabilityRoute
   '/_authenticated/field/current': typeof AuthenticatedFieldCurrentRoute
   '/_authenticated/field/history': typeof AuthenticatedFieldHistoryRoute
+  '/_authenticated/field/settings': typeof AuthenticatedFieldSettingsRoute
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
   '/_public/auth/confirm': typeof PublicAuthConfirmRoute
   '/_public/password-reset/new': typeof PublicPasswordResetNewRoute
@@ -490,6 +500,7 @@ export interface FileRouteTypes {
     | '/field/availability'
     | '/field/current'
     | '/field/history'
+    | '/field/settings'
     | '/auth/callback'
     | '/auth/confirm'
     | '/password-reset/new'
@@ -533,6 +544,7 @@ export interface FileRouteTypes {
     | '/field/availability'
     | '/field/current'
     | '/field/history'
+    | '/field/settings'
     | '/auth/callback'
     | '/auth/confirm'
     | '/password-reset/new'
@@ -582,6 +594,7 @@ export interface FileRouteTypes {
     | '/_authenticated/field/availability'
     | '/_authenticated/field/current'
     | '/_authenticated/field/history'
+    | '/_authenticated/field/settings'
     | '/_public/auth/callback'
     | '/_public/auth/confirm'
     | '/_public/password-reset/new'
@@ -852,6 +865,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFieldHistoryRouteImport
       parentRoute: typeof AuthenticatedFieldRouteRoute
     }
+    '/_authenticated/field/settings': {
+      id: '/_authenticated/field/settings'
+      path: '/settings'
+      fullPath: '/field/settings'
+      preLoaderRoute: typeof AuthenticatedFieldSettingsRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
     '/_public/auth/callback': {
       id: '/_public/auth/callback'
       path: '/auth/callback'
@@ -1018,6 +1038,7 @@ interface AuthenticatedFieldRouteRouteChildren {
   AuthenticatedFieldAvailabilityRoute: typeof AuthenticatedFieldAvailabilityRoute
   AuthenticatedFieldCurrentRoute: typeof AuthenticatedFieldCurrentRoute
   AuthenticatedFieldHistoryRoute: typeof AuthenticatedFieldHistoryRoute
+  AuthenticatedFieldSettingsRoute: typeof AuthenticatedFieldSettingsRoute
   AuthenticatedFieldIndexRoute: typeof AuthenticatedFieldIndexRoute
   AuthenticatedFieldInspectionsInspectionIdRoute: typeof AuthenticatedFieldInspectionsInspectionIdRoute
 }
@@ -1027,6 +1048,7 @@ const AuthenticatedFieldRouteRouteChildren: AuthenticatedFieldRouteRouteChildren
     AuthenticatedFieldAvailabilityRoute: AuthenticatedFieldAvailabilityRoute,
     AuthenticatedFieldCurrentRoute: AuthenticatedFieldCurrentRoute,
     AuthenticatedFieldHistoryRoute: AuthenticatedFieldHistoryRoute,
+    AuthenticatedFieldSettingsRoute: AuthenticatedFieldSettingsRoute,
     AuthenticatedFieldIndexRoute: AuthenticatedFieldIndexRoute,
     AuthenticatedFieldInspectionsInspectionIdRoute:
       AuthenticatedFieldInspectionsInspectionIdRoute,

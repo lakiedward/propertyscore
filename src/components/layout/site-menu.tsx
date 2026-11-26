@@ -18,6 +18,7 @@ type SiteMenuProps = {
   accountSection?: ReactNode;
   sectionNav?: SectionNav | undefined;
   languageSwitcher: ReactNode;
+  triggerTone?: 'default' | 'inverse';
 };
 
 type MenuLink =
@@ -30,6 +31,7 @@ export function SiteMenu({
   accountSection,
   sectionNav,
   languageSwitcher,
+  triggerTone = 'default',
 }: SiteMenuProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -105,7 +107,12 @@ export function SiteMenu({
         <Button
           variant="ghost"
           size="icon"
-          className="size-11 shrink-0 rounded-md border border-border-control text-brand hover:bg-surface-alt hover:text-brand"
+          className={cn(
+            'size-11 shrink-0 rounded-md border',
+            triggerTone === 'inverse'
+              ? 'border-on-inverse/45 text-on-inverse hover:bg-on-inverse/10 hover:text-on-inverse focus-visible:ring-focus-inverse'
+              : 'border-border-control text-brand hover:bg-surface-alt hover:text-brand',
+          )}
           aria-label={t('site.header.openMenu')}
         >
           <MenuIcon aria-hidden />

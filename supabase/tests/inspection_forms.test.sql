@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(39);
+select plan(40);
 
 create temporary table fixture as
 select
@@ -227,6 +227,13 @@ select is(
   ),
   array[0, 1],
   'Removing a question renumbers the rest'
+);
+
+select lives_ok(
+  $$ select public.split_inspection_form_question_weights(id)
+     from public.inspection_form_categories
+     where form_version_id = (select id from ids where name = 'draft') $$,
+  'An admin can balance the question weights of every category'
 );
 
 select lives_ok(

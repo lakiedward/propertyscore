@@ -65,6 +65,7 @@
         "plan": "Plan Polycam",
         "listing": "Anunț profesional gratuit"
       },
+      "priceLabel": "Preț fix",
       "priceNote": "totul inclus · TVA inclus",
       "duration": "1–2 ore la tine acasă",
       "reschedule": "Reprogramezi gratuit cu 24 h înainte",
@@ -481,6 +482,8 @@
       "description": "Detaliile programării, alocarea inspectorului, reprogramarea și anularea.",
       "inspector": "Inspector",
       "choose": "Alege inspectorul",
+      "noFree": "Niciun inspector liber la ora acestei programări.",
+      "freeOnly": "Sunt afișați doar inspectorii liberi la ora programării.",
       "assign": "Alocă",
       "change": "Schimbă",
       "unassign": "Retrage inspectorul",

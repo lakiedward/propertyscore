@@ -8,6 +8,8 @@ export const publishedFormVersion = {
   version: 3,
   status: 'published',
   published_at: '2026-09-01T09:00:00+03:00',
+  archived_at: null,
+  updated_at: '2026-09-01T09:00:00+03:00',
   points_good: 10,
   points_acceptable: 6.5,
   points_problem: 3,
@@ -43,6 +45,7 @@ const formQuestions = [
     text_ro: 'Fisuri vizibile în pereți portanți?',
     text_en: 'Visible cracks in load-bearing walls?',
     required_media: 'photo',
+    weight: 100,
   },
   {
     id: 'q2',
@@ -52,6 +55,7 @@ const formQuestions = [
     text_ro: 'Pete sau mucegai?',
     text_en: '',
     required_media: 'none',
+    weight: 100,
   },
 ];
 
@@ -69,7 +73,24 @@ export function formVersionsResponse(versions: readonly object[]) {
   );
 }
 
+export const archivedFormVersion = {
+  ...publishedFormVersion,
+  id: 'f1000000-0000-4000-8000-000000000002',
+  version: 2,
+  status: 'archived',
+  published_at: '2026-06-01T09:00:00+03:00',
+  archived_at: '2026-09-01T09:00:00+03:00',
+};
+
+export function formVersionUsageResponse(rows: readonly object[]) {
+  return http.post(supabaseUrl('/rest/v1/rpc/inspection_form_version_usage'), () =>
+    HttpResponse.json(rows),
+  );
+}
+
 export const inspectionFormHandlers = [
+  formVersionUsageResponse([]),
+  http.post(supabaseUrl('/rest/v1/rpc/consent_version_usage'), () => HttpResponse.json([])),
   http.patch(supabaseUrl('/rest/v1/inspection_form_questions'), () =>
     HttpResponse.json([{ id: 'q2' }]),
   ),

@@ -22,7 +22,7 @@ export function ContentPage() {
       onValueChange={(value) => {
         const tab = oneOf(CONTENT_TABS, value);
         if (tab) {
-          void navigate({ search: (previous) => ({ ...previous, tab }) });
+          void navigate({ search: (previous) => ({ ...previous, tab, version: undefined }) });
         }
       }}
       className="gap-5"

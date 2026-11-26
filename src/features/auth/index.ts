@@ -8,6 +8,7 @@ export {
 export {
   AuthContext,
   createAuthState,
+  otherPanelGuard,
   signedInRedirect,
   useAuth,
   type AuthState,

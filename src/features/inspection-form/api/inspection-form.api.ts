@@ -17,12 +17,12 @@ function assertDraftUpdated(rows: readonly unknown[]) {
 }
 
 const VERSION_COLUMNS =
-  'id, version, status, published_at, points_good, points_acceptable, points_problem' as const;
+  'id, version, status, published_at, archived_at, updated_at, points_good, points_acceptable, points_problem' as const;
 
 const CATEGORY_COLUMNS = 'id, key, position, name_ro, name_en, icon, weight' as const;
 
 const QUESTION_COLUMNS =
-  'id, key, category_id, position, text_ro, text_en, required_media' as const;
+  'id, key, category_id, position, text_ro, text_en, required_media, weight' as const;
 
 async function countRows(
   table: 'inspection_form_categories' | 'inspection_form_questions',
@@ -36,19 +36,36 @@ async function countRows(
   return count ?? 0;
 }
 
-export async function getFormEditor() {
-  const { data: versions, error } = await supabase
-    .from('inspection_form_versions')
-    .select(VERSION_COLUMNS)
-    .in('status', ['draft', 'published']);
+export async function getFormEditor(viewedId: string | null) {
+  const [{ data: versions, error }, usage] = await Promise.all([
+    supabase
+      .from('inspection_form_versions')
+      .select(VERSION_COLUMNS)
+      .order('version', { ascending: false }),
+    supabase.rpc('inspection_form_version_usage'),
+  ]);
   if (error) throw toAppError(error);
+  if (usage.error) throw toAppError(usage.error);
 
   const draft = versions.find((version) => version.status === 'draft') ?? null;
   const published = versions.find((version) => version.status === 'published') ?? null;
-  const shown = draft ?? published;
+  const viewed = versions.find((version) => version.id === viewedId) ?? null;
+  const shown = viewed ?? draft ?? published;
+  const usageCounts = Object.fromEntries(
+    usage.data.map((row) => [row.form_version_id, row.inspection_count]),
+  );
 
   if (!shown) {
-    return { draft, published, shown, publishedCounts: null, categories: [], questions: [] };
+    return {
+      versions,
+      draft,
+      published,
+      shown,
+      usageCounts,
+      publishedCounts: null,
+      categories: [],
+      questions: [],
+    };
   }
 
   const [categories, questions, publishedCounts] = await Promise.all([
@@ -73,9 +90,11 @@ export async function getFormEditor() {
   if (questions.error) throw toAppError(questions.error);
 
   return {
+    versions,
     draft,
     published,
     shown,
+    usageCounts,
     publishedCounts: publishedCounts
       ? { categories: publishedCounts[0], questions: publishedCounts[1] }
       : null,
@@ -88,6 +107,28 @@ export async function createFormDraft() {
   const { data, error } = await supabase.rpc('create_inspection_form_draft');
   if (error) throw toAppError(error);
   return data;
+}
+
+export async function restoreFormVersion(versionId: string) {
+  const { data, error } = await supabase.rpc('restore_inspection_form_version', {
+    p_form_version_id: versionId,
+  });
+  if (error) throw toAppError(error);
+  return data;
+}
+
+export async function deleteFormVersion(versionId: string) {
+  const { error } = await supabase.rpc('delete_inspection_form_version', {
+    p_form_version_id: versionId,
+  });
+  if (error) throw toAppError(error);
+}
+
+export async function splitQuestionWeights(categoryId: string) {
+  const { error } = await supabase.rpc('split_inspection_form_question_weights', {
+    p_category_id: categoryId,
+  });
+  if (error) throw toAppError(error);
 }
 
 export async function discardFormDraft(versionId: string) {

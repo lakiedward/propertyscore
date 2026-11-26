@@ -11,14 +11,17 @@ import { SegmentedControl } from '@/components/forms/segmented-control';
 import { EmptyState } from '@/components/layout/empty-state';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { versionLabel } from '@/lib/version-label';
 import {
   inspectionFormQueries,
   useAddConsentSection,
   useCreateConsentDraft,
+  useDeleteConsentVersion,
   useDiscardConsentDraft,
   usePublishConsent,
   useRemoveConsentSection,
+  useRestoreConsentVersion,
   useSaveConsentSections,
 } from '../api/inspection-form.queries';
 import { consentSectionsSchema, type ConsentSectionsValues } from '../inspection-form.schemas';
@@ -26,8 +29,12 @@ import {
   CONSENT_LANGUAGES,
   type ConsentEditor as ConsentEditorData,
 } from '../inspection-form.types';
+import { useVersionHistory } from '../hooks/use-version-history';
+import { nextConsentVersion, toVersionItems } from '../inspection-form.utils';
 import { ConsentSectionFields } from './consent-section-fields';
-import { ConsentVersionList } from './consent-version-list';
+import { VersionBanner } from './version-banner';
+import { VersionDialogs } from './version-dialogs';
+import { VersionList } from './version-list';
 
 const route = getRouteApi('/_authenticated/admin/content');
 
@@ -47,7 +54,9 @@ function sectionValues(editor: ConsentEditorData): ConsentSectionsValues {
 
 export function ConsentEditor() {
   const { t } = useTranslation('inspectionForm');
-  const { data: editor } = useSuspenseQuery(inspectionFormQueries.consent());
+  const search = route.useSearch();
+  const viewedId = search.tab === 'consent' ? (search.version ?? null) : null;
+  const { data: editor } = useSuspenseQuery(inspectionFormQueries.consent(viewedId));
   const createDraft = useCreateConsentDraft();
 
   if (!editor.shown) {
@@ -100,8 +109,20 @@ function ConsentEditorBody({ editor }: ConsentEditorBodyProps) {
   });
   const { fields } = useFieldArray({ control: form.control, name: 'sections', keyName: 'key' });
   const language = search.lang;
-  const draft = editor.draft;
+  const draft = editor.shown?.status === 'draft' ? editor.draft : null;
   const shownVersion = editor.shown ? versionLabel(editor.shown.version) : '';
+  const defaultVersion = editor.draft ?? editor.published;
+  const isViewing = editor.shown !== null && editor.shown.id !== defaultVersion?.id;
+  const label = (version: number) => t('versions.label', { version: versionLabel(version) });
+  const items = toVersionItems(editor.versions, editor.usageCounts, label);
+  const shownItem = items.find((item) => item.id === editor.shown?.id);
+  const nextLabel = label(nextConsentVersion(editor.versions));
+  const history = useVersionHistory({
+    defaultId: defaultVersion?.id ?? null,
+    nextLabel,
+    restore: useRestoreConsentVersion(),
+    remove: useDeleteConsentVersion(),
+  });
 
   const saveDraft = (onSaved?: () => void) => {
     if (!draft) {
@@ -130,8 +151,25 @@ function ConsentEditorBody({ editor }: ConsentEditorBodyProps) {
 
   return (
     <div className="grid grid-cols-1 items-start gap-4 w1180:grid-cols-[280px_minmax(0,1fr)]">
-      <ConsentVersionList versions={editor.versions} />
+      <VersionList
+        items={items}
+        shownId={editor.shown?.id ?? null}
+        onView={history.view}
+        onRequest={history.setRequest}
+      />
       <div className="flex min-w-0 flex-col gap-3.5">
+        {isViewing && shownItem ? (
+          <VersionBanner
+            item={shownItem}
+            backLabel={t(editor.draft ? 'versions.backToDraft' : 'versions.backToPublished')}
+            onBack={() => {
+              history.view(null);
+            }}
+            onRestore={() => {
+              history.setRequest({ kind: 'restore', item: shownItem });
+            }}
+          />
+        ) : null}
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-card bg-card px-4 py-3.5 shadow-card-soft">
           <div className="flex min-w-0 flex-col">
             <strong className="text-base font-extrabold">
@@ -155,7 +193,7 @@ function ConsentEditorBody({ editor }: ConsentEditorBodyProps) {
             }))}
           />
         </div>
-        {draft ? null : (
+        {draft || isViewing ? null : (
           <Alert tone="info">
             <AlertTitle>{t('consent.readOnly.title')}</AlertTitle>
             <AlertDescription>{t('consent.readOnly.text')}</AlertDescription>
@@ -200,7 +238,7 @@ function ConsentEditorBody({ editor }: ConsentEditorBodyProps) {
             message={t('consent.publishedToast', { version: publishedVersion })}
           />
         ) : null}
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className={cn('flex flex-wrap justify-end gap-2', isViewing && 'hidden')}>
           {draft ? (
             <>
               <Button
@@ -261,6 +299,16 @@ function ConsentEditorBody({ editor }: ConsentEditorBodyProps) {
           )}
         </div>
       </div>
+      <VersionDialogs
+        request={history.request}
+        nextLabel={nextLabel}
+        hasDraft={editor.draft !== null}
+        isPending={history.isPending}
+        onClose={() => {
+          history.setRequest(null);
+        }}
+        onConfirm={history.confirm}
+      />
       {draft ? (
         <>
           <ConfirmDialog

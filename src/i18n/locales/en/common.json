@@ -111,6 +111,7 @@
       "form_not_draft": "Only the draft can be changed.",
       "form_items_changed": "The form changed in the meantime. Reload the page.",
       "form_weights_invalid": "The weights must total 100%.",
+      "form_question_weights_invalid": "The questions of each category must add up to 100%.",
       "form_category_empty": "Every category needs at least one question.",
       "form_question_empty": "Every question needs Romanian text.",
       "form_translation_missing": "English translations are missing.",
@@ -121,6 +122,9 @@
       "consent_translation_missing": "Fill in the title, text and checkbox in both languages.",
       "consent_empty": "Add at least one section.",
       "consent_item_not_found": "The section no longer exists. Reload the page.",
+      "version_not_found": "The version no longer exists. Reload the page.",
+      "version_not_archived": "Only an archived version can be deleted.",
+      "version_in_use": "The version was used in an inspection, so it is kept.",
       "inspection_not_startable": "The inspection can start only on the visit day, at most one hour early.",
       "consent_incomplete": "Tick every consent section.",
       "signature_missing": "The signature did not upload. Try again.",
@@ -309,7 +313,7 @@
         "scoring": "Scoring",
         "analytics": "Analytics",
         "products": "Products",
-        "content": "Content",
+        "content": "$t(brand.physical)",
         "settings": "Settings"
       },
       "pageTitle": "{{page}} · Admin",
@@ -339,13 +343,15 @@
       "navLabel": "Inspector navigation",
       "groups": {
         "workday": "Working day",
-        "archive": "Archive"
+        "archive": "Archive",
+        "account": "Account"
       },
       "nav": {
         "agenda": "Agenda",
         "current": "Current inspection",
         "availability": "Availability",
-        "history": "History"
+        "history": "History",
+        "settings": "Settings"
       }
     }
   },

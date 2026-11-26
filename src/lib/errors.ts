@@ -66,6 +66,7 @@ export type AppErrorReason =
   | 'form_not_draft'
   | 'form_items_changed'
   | 'form_weights_invalid'
+  | 'form_question_weights_invalid'
   | 'form_category_empty'
   | 'form_question_empty'
   | 'form_translation_missing'
@@ -76,6 +77,9 @@ export type AppErrorReason =
   | 'consent_translation_missing'
   | 'consent_empty'
   | 'consent_item_not_found'
+  | 'version_not_found'
+  | 'version_not_archived'
+  | 'version_in_use'
   | 'account_blocked';
 
 type AppErrorOptions = {

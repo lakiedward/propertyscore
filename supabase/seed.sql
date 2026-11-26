@@ -415,6 +415,8 @@ join public.inspection_form_categories as categories
   on categories.form_version_id = 'f0000000-0000-4000-8000-000000000001'
  and categories.key = seed.category_key;
 
+select private.split_question_weights('f0000000-0000-4000-8000-000000000001', null);
+
 update public.inspection_form_versions
 set status = 'published', published_at = '2026-09-01 09:00:00+03', published_by = 'a0000000-0000-4000-8000-000000000004'
 where id = 'f0000000-0000-4000-8000-000000000001';

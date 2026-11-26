@@ -3,6 +3,8 @@ import {
   addFormCategory,
   addFormQuestion,
   createFormDraft,
+  deleteFormVersion,
+  restoreFormVersion,
   discardFormDraft,
   getFormEditor,
   moveFormQuestion,
@@ -11,6 +13,7 @@ import {
   removeFormQuestion,
   reorderFormCategories,
   reorderFormQuestions,
+  splitQuestionWeights,
   updateFormCategory,
   updateFormPoints,
   updateFormQuestion,
@@ -18,6 +21,8 @@ import {
 import {
   addConsentSection,
   createConsentDraft,
+  deleteConsentVersion,
+  restoreConsentVersion,
   discardConsentDraft,
   getConsentEditor,
   publishConsent,
@@ -27,15 +32,17 @@ import {
 
 export const inspectionFormQueries = {
   all: () => ['inspection-form'] as const,
-  editor: () =>
+  editors: () => [...inspectionFormQueries.all(), 'editor'] as const,
+  editor: (viewedId: string | null) =>
     queryOptions({
-      queryKey: [...inspectionFormQueries.all(), 'editor'],
-      queryFn: getFormEditor,
+      queryKey: [...inspectionFormQueries.editors(), viewedId],
+      queryFn: () => getFormEditor(viewedId),
     }),
-  consent: () =>
+  consents: () => [...inspectionFormQueries.all(), 'consent'] as const,
+  consent: (viewedId: string | null) =>
     queryOptions({
-      queryKey: [...inspectionFormQueries.all(), 'consent'],
-      queryFn: getConsentEditor,
+      queryKey: [...inspectionFormQueries.consents(), viewedId],
+      queryFn: () => getConsentEditor(viewedId),
     }),
 };
 
@@ -45,13 +52,20 @@ function useFormMutation<TVariables, TResult>(
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn,
-    onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: inspectionFormQueries.editor().queryKey }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: inspectionFormQueries.editors() }),
   });
 }
 
 export function useCreateFormDraft() {
   return useFormMutation(createFormDraft);
+}
+
+export function useRestoreFormVersion() {
+  return useFormMutation(restoreFormVersion);
+}
+
+export function useDeleteFormVersion() {
+  return useFormMutation(deleteFormVersion);
 }
 
 export function useDiscardFormDraft() {
@@ -79,7 +93,12 @@ export function useRemoveFormCategory() {
 }
 
 export function useReorderFormCategories() {
-  return useFormMutation(reorderFormCategories);
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: reorderFormCategories,
+    scope: { id: 'form-category-order' },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: inspectionFormQueries.editors() }),
+  });
 }
 
 export function useAddFormQuestion() {
@@ -98,6 +117,10 @@ export function useReorderFormQuestions() {
   return useFormMutation(reorderFormQuestions);
 }
 
+export function useSplitQuestionWeights() {
+  return useFormMutation(splitQuestionWeights);
+}
+
 export function useMoveFormQuestion() {
   return useFormMutation(moveFormQuestion);
 }
@@ -108,13 +131,20 @@ function useConsentMutation<TVariables, TResult>(
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn,
-    onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: inspectionFormQueries.consent().queryKey }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: inspectionFormQueries.consents() }),
   });
 }
 
 export function useCreateConsentDraft() {
   return useConsentMutation(createConsentDraft);
+}
+
+export function useRestoreConsentVersion() {
+  return useConsentMutation(restoreConsentVersion);
+}
+
+export function useDeleteConsentVersion() {
+  return useConsentMutation(deleteConsentVersion);
 }
 
 export function useDiscardConsentDraft() {

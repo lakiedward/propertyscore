@@ -5,6 +5,18 @@ import type { getFormEditor } from './api/inspection-form.api';
 
 export type RequiredMedia = Enums<'inspection_required_media'>;
 
+export type VersionStatus = Enums<'form_version_status'>;
+
+export type VersionItem = {
+  id: string;
+  label: string;
+  status: VersionStatus;
+  publishedAt: string | null;
+  archivedAt: string | null;
+  updatedAt: string;
+  inspectionCount: number;
+};
+
 export const REQUIRED_MEDIA = Constants.public.Enums.inspection_required_media;
 
 export const CONTENT_TABS = ['consent', 'form'] as const;
@@ -23,6 +35,7 @@ export type QuestionPatch = {
   text_ro?: string;
   text_en?: string;
   required_media?: RequiredMedia;
+  weight?: number;
 };
 
 export type PointsPatch = {
@@ -34,8 +47,6 @@ export type PointsPatch = {
 export type ConsentSectionPatch = ConsentSectionsValues['sections'][number];
 
 export type ConsentEditor = Awaited<ReturnType<typeof getConsentEditor>>;
-
-export type ConsentVersion = ConsentEditor['versions'][number];
 
 export const CONSENT_LANGUAGES = ['ro', 'en'] as const;
 

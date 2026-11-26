@@ -1,15 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, notFound, Outlet } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { AdminShell } from '@/components/layout/admin-shell';
+import { otherPanelGuard } from '@/features/auth';
 import { inspectionQueries } from '@/features/inspections';
 import { moderationQueries } from '@/features/moderation';
 import { UserMenu } from '@/features/profile';
 
 export const Route = createFileRoute('/_authenticated/admin')({
-  beforeLoad: ({ context }) => {
-    if (!context.auth.hasRole('admin')) {
-      throw notFound();
+  beforeLoad: ({ context, location }) => {
+    const guard = otherPanelGuard(context.auth, location);
+    if (guard) {
+      throw guard;
     }
   },
   component: AdminLayout,

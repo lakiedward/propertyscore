@@ -99,6 +99,7 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   form_not_draft: 'form_not_draft',
   form_items_changed: 'form_items_changed',
   form_weights_invalid: 'form_weights_invalid',
+  form_question_weights_invalid: 'form_question_weights_invalid',
   form_category_empty: 'form_category_empty',
   form_question_empty: 'form_question_empty',
   form_translation_missing: 'form_translation_missing',
@@ -109,6 +110,9 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   consent_translation_missing: 'consent_translation_missing',
   consent_empty: 'consent_empty',
   consent_item_not_found: 'consent_item_not_found',
+  version_not_found: 'version_not_found',
+  version_not_archived: 'version_not_archived',
+  version_in_use: 'version_in_use',
 };
 
 const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {

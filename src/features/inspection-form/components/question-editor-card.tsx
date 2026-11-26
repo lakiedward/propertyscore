@@ -46,7 +46,8 @@ import {
   type FormQuestion,
   type QuestionPatch,
 } from '../inspection-form.types';
-import { moveItem } from '../inspection-form.utils';
+import { moveItem, parseWeight } from '../inspection-form.utils';
+import { WeightInput } from './weight-input';
 
 const [, ENGLISH] = CONSENT_LANGUAGES;
 
@@ -79,6 +80,7 @@ export function QuestionEditorCard({
       textRo: question.text_ro,
       textEn: question.text_en,
       requiredMedia: question.required_media,
+      weight: String(question.weight),
     },
     resetOptions: { keepDirtyValues: true },
   });
@@ -236,37 +238,61 @@ export function QuestionEditorCard({
           </Field>
         )}
       />
-      <Controller
-        name="requiredMedia"
-        control={form.control}
-        render={({ field }) => (
-          <Field className="w-full max-w-60">
-            <FieldLabel htmlFor={`${baseId}-media`}>{t('form.question.media')}</FieldLabel>
-            <Select
+      <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
+        <Controller
+          name="requiredMedia"
+          control={form.control}
+          render={({ field }) => (
+            <Field className="w-full max-w-60">
+              <FieldLabel htmlFor={`${baseId}-media`}>{t('form.question.media')}</FieldLabel>
+              <Select
+                value={field.value}
+                disabled={!isEditable}
+                onValueChange={(value) => {
+                  const media = REQUIRED_MEDIA.find((option) => option === value);
+                  if (media) {
+                    field.onChange(media);
+                    save({ required_media: media });
+                  }
+                }}
+              >
+                <SelectTrigger id={`${baseId}-media`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {REQUIRED_MEDIA.map((media) => (
+                    <SelectItem key={media} value={media}>
+                      {t(`form.question.mediaOptions.${media}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        />
+        <Controller
+          name="weight"
+          control={form.control}
+          render={({ field }) => (
+            <WeightInput
+              id={`${baseId}-weight`}
+              label={t('form.question.weight')}
               value={field.value}
-              disabled={!isEditable}
-              onValueChange={(value) => {
-                const media = REQUIRED_MEDIA.find((option) => option === value);
-                if (media) {
-                  field.onChange(media);
-                  save({ required_media: media });
+              isEditable={isEditable}
+              isLabelVisible
+              onChange={field.onChange}
+              onBlur={() => {
+                field.onBlur();
+                const weight = parseWeight(field.value);
+                form.resetField('weight', { defaultValue: String(weight) });
+                if (weight !== question.weight) {
+                  save({ weight });
                 }
               }}
-            >
-              <SelectTrigger id={`${baseId}-media`}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {REQUIRED_MEDIA.map((media) => (
-                  <SelectItem key={media} value={media}>
-                    {t(`form.question.mediaOptions.${media}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        )}
-      />
+            />
+          )}
+        />
+      </div>
       {isEditable ? (
         <ConfirmDialog
           isOpen={isRemoveOpen}

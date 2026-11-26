@@ -111,6 +111,7 @@
       "form_not_draft": "Doar ciorna se poate modifica.",
       "form_items_changed": "Formularul s-a schimbat între timp. Reîncarcă pagina.",
       "form_weights_invalid": "Ponderile trebuie să facă 100%.",
+      "form_question_weights_invalid": "Întrebările fiecărei categorii trebuie să facă împreună 100%.",
       "form_category_empty": "Fiecare categorie are nevoie de cel puțin o întrebare.",
       "form_question_empty": "Fiecare întrebare are nevoie de text în română.",
       "form_translation_missing": "Lipsesc traduceri în engleză.",
@@ -121,6 +122,9 @@
       "consent_translation_missing": "Completează titlul, textul și bifa în ambele limbi.",
       "consent_empty": "Adaugă cel puțin o secțiune.",
       "consent_item_not_found": "Secțiunea nu mai există. Reîncarcă pagina.",
+      "version_not_found": "Versiunea nu mai există. Reîncarcă pagina.",
+      "version_not_archived": "Doar o versiune arhivată se poate șterge.",
+      "version_in_use": "Versiunea a fost folosită într-o inspecție și se păstrează.",
       "inspection_not_startable": "Inspecția poate începe doar în ziua vizitei, cu cel mult o oră înainte.",
       "consent_incomplete": "Bifează toate secțiunile consimțământului.",
       "signature_missing": "Semnătura nu s-a încărcat. Încearcă din nou.",
@@ -311,7 +315,7 @@
         "scoring": "Scoring",
         "analytics": "Analytics",
         "products": "Produse",
-        "content": "Conținut",
+        "content": "$t(brand.physical)",
         "settings": "Setări"
       },
       "pageTitle": "{{page}} · Admin",
@@ -343,13 +347,15 @@
       "navLabel": "Navigare inspector",
       "groups": {
         "workday": "Ziua de lucru",
-        "archive": "Arhivă"
+        "archive": "Arhivă",
+        "account": "Cont"
       },
       "nav": {
         "agenda": "Agenda",
         "current": "Inspecția curentă",
         "availability": "Disponibilitate",
-        "history": "Istoric"
+        "history": "Istoric",
+        "settings": "Setări"
       }
     }
   },

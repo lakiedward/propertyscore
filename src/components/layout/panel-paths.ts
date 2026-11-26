@@ -9,7 +9,7 @@ export type PanelPath = (typeof PANEL_PATHS)[PanelArea];
 export const SETTINGS_PATHS = {
   account: '/account/settings',
   admin: '/admin/settings',
-  field: '/account/settings',
+  field: '/field/settings',
 } as const satisfies Record<PanelArea, string>;
 
 export type SettingsPath = (typeof SETTINGS_PATHS)[PanelArea];

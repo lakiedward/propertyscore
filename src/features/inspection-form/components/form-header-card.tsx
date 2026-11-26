@@ -18,9 +18,14 @@ import { WEIGHT_TOTAL } from '../inspection-form.utils';
 type FormHeaderCardProps = {
   editor: FormEditor;
   weightSum: number;
+  hasQuestionWeightIssues: boolean;
 };
 
-export function FormHeaderCard({ editor, weightSum }: FormHeaderCardProps) {
+export function FormHeaderCard({
+  editor,
+  weightSum,
+  hasQuestionWeightIssues,
+}: FormHeaderCardProps) {
   const { t } = useTranslation('inspectionForm');
   const [isDiscardOpen, setIsDiscardOpen] = useState(false);
   const createDraft = useCreateFormDraft();
@@ -87,7 +92,7 @@ export function FormHeaderCard({ editor, weightSum }: FormHeaderCardProps) {
           <Button
             type="button"
             size="md"
-            disabled={!isBalanced || publish.isPending}
+            disabled={!isBalanced || hasQuestionWeightIssues || publish.isPending}
             aria-busy={publish.isPending}
             onClick={() => {
               publish.mutate(draft.id, {

@@ -47,7 +47,10 @@
     "categories": {
       "label": "Categorii",
       "weightLabel": "Pondere {{name}}",
-      "add": "Adaugă categorie"
+      "add": "Adaugă categorie",
+      "drag": "Trage ca să muți {{name}}",
+      "dragInstructions": "Folosește săgețile sus și jos ca să muți categoria cu un loc. Cu mouse-ul, trage de mâner.",
+      "questionWeightsOff": "Întrebările din {{name}} fac {{sum}}%, nu 100%"
     },
     "category": {
       "edit": "Editează",
@@ -71,7 +74,10 @@
         "add": "Adaugă categoria",
         "save": "Salvează",
         "saving": "Se salvează…"
-      }
+      },
+      "questionWeights": "Întrebările fac {{sum}}% din categorie",
+      "questionWeightsHint": "Trebuie să facă exact 100%. O întrebare cu N/A își împarte ponderea între celelalte.",
+      "splitEvenly": "Împarte egal"
     },
     "icons": {
       "building-2": "Clădire",
@@ -122,26 +128,26 @@
       "empty": {
         "title": "Categoria nu are întrebări",
         "description": "Adaugă cel puțin o întrebare ca să poți publica formularul."
-      }
+      },
+      "weight": "Pondere în categorie"
     },
     "points": {
       "title": "Punctaj răspunsuri",
       "good": "Bine",
       "acceptable": "Acceptabil",
       "problem": "Problemă",
-      "hint": "N/A nu intră în notă. Nota categoriei e media răspunsurilor; nota finală e media ponderată a categoriilor."
+      "hint": "N/A nu intră în notă: ponderea întrebării se împarte între celelalte. Nota categoriei e media răspunsurilor ponderată cu ponderea întrebărilor; nota finală e media ponderată a categoriilor."
     },
     "empty": {
       "title": "Nu există încă un formular",
       "description": "Creează o ciornă ca să adaugi categoriile și întrebările inspecției."
+    },
+    "questionWeightsInvalid": {
+      "title": "Întrebările nu fac 100% în toate categoriile",
+      "text": "Ajustează ponderile din: {{categories}}."
     }
   },
   "consent": {
-    "versions": "Versiuni",
-    "versionLabel": "v{{version}}",
-    "draftLine": "Ciornă · editată {{date}}",
-    "publishedLine": "Publicată · din {{date}}",
-    "archivedLine": "Arhivată · {{from}} – {{to}}",
     "signatures_one": "{{count}} semnătură",
     "signatures_few": "{{count}} semnături",
     "signatures_other": "{{count}} de semnături",
@@ -189,5 +195,39 @@
       "description": "Creează o ciornă și adaugă secțiunile pe care le semnează proprietarul."
     },
     "unsaved": "Ai modificări nesalvate."
+  },
+  "versions": {
+    "title": "Versiuni",
+    "label": "v{{version}}",
+    "draftLine": "Ciornă · editată {{date}}",
+    "publishedLine": "Publicată · din {{date}}",
+    "archivedLine": "Arhivată · {{from}} – {{to}}",
+    "usedIn_one": "Folosită într-o inspecție",
+    "usedIn_few": "Folosită în {{count}} inspecții",
+    "usedIn_other": "Folosită în {{count}} de inspecții",
+    "unused": "Nefolosită în nicio inspecție",
+    "actions": "Acțiuni pentru {{version}}",
+    "view": "Vezi versiunea",
+    "restore": "Restaurează ca versiune nouă",
+    "delete": "Șterge versiunea",
+    "cannotDeletePublished": "Versiunea publicată nu se poate șterge.",
+    "cannotDeleteInUse": "A fost folosită în inspecții, se păstrează.",
+    "backToDraft": "Înapoi la ciornă",
+    "backToPublished": "Înapoi la versiunea publicată",
+    "banner": {
+      "title": "Vizualizezi {{version}}",
+      "text": "Doar pentru citire."
+    },
+    "restoreTitle": "Restaurezi {{version}}?",
+    "restoreText": "Se creează ciorna {{next}} cu conținutul din {{version}}. O poți modifica și publica după.",
+    "restoreReplaceText": "Ciorna {{next}} se înlocuiește cu conținutul din {{version}}. Modificările făcute în ea se pierd.",
+    "restoreConfirm": "Creează ciorna {{next}}",
+    "restoring": "Se restaurează…",
+    "restoredToast": "Ciorna {{next}} a fost creată din {{version}}.",
+    "deleteTitle": "Ștergi {{version}}?",
+    "deleteText": "Versiunea nu a fost folosită în nicio inspecție. Se șterge definitiv, cu tot conținutul ei.",
+    "deleteConfirm": "Șterge definitiv",
+    "deleting": "Se șterge…",
+    "deletedToast": "Versiunea {{version}} a fost ștearsă."
   }
 }

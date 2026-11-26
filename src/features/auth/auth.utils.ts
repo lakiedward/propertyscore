@@ -11,7 +11,7 @@ import { safeRedirectPath } from '@/lib/url';
 import type { AppRole, EmailLinkType, SignInMethod } from './auth.types';
 
 const APP_ROLES: readonly string[] = Constants.public.Enums.app_role;
-const ADMIN_PATH = /^\/admin(?:[/?#]|$)/u;
+const SETTINGS_PATH_LIST: readonly string[] = Object.values(SETTINGS_PATHS);
 const LINK_SIGN_IN_METHOD = 'otp';
 const LINK_SIGN_IN_WINDOW_SECONDS = 900;
 
@@ -76,13 +76,35 @@ export function homePathFor(roles: readonly AppRole[]): PanelPath {
 }
 
 export function settingsPathFor(roles: readonly AppRole[]): SettingsPath {
-  return roles.includes('admin') ? SETTINGS_PATHS.admin : SETTINGS_PATHS.account;
+  const home = homePathFor(roles);
+  if (home === PANEL_PATHS.admin) {
+    return SETTINGS_PATHS.admin;
+  }
+  return home === PANEL_PATHS.field ? SETTINGS_PATHS.field : SETTINGS_PATHS.account;
+}
+
+function panelOf(path: string): PanelPath | undefined {
+  return Object.values(PANEL_PATHS).find(
+    (panel) =>
+      path === panel || (path.startsWith(panel) && /^[/?#]/u.test(path.slice(panel.length))),
+  );
+}
+
+export function otherPanelRedirect(roles: readonly AppRole[], pathname: string): string | null {
+  const panel = panelOf(pathname);
+  const home = homePathFor(roles);
+  if (panel === undefined || panel === home) {
+    return null;
+  }
+  const isSettings = SETTINGS_PATH_LIST.includes(pathname.replace(/\/$/u, ''));
+  return isSettings ? settingsPathFor(roles) : home;
 }
 
 export function postSignInPath(roles: readonly AppRole[], redirect: string | undefined): string {
   const home = homePathFor(roles);
   const path = safeRedirectPath(redirect, home);
-  return ADMIN_PATH.test(path) && !roles.includes('admin') ? home : path;
+  const panel = panelOf(path);
+  return panel !== undefined && panel !== home ? home : path;
 }
 
 function redirectFromEmailLink(next: string | undefined): string | undefined {

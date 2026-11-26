@@ -8,19 +8,27 @@ const CONSENT_VERSION_COLUMNS =
 const CONSENT_SECTION_COLUMNS =
   'id, position, title_ro, title_en, text_ro, text_en, check_ro, check_en' as const;
 
-export async function getConsentEditor() {
-  const { data: versions, error } = await supabase
-    .from('consent_versions')
-    .select(CONSENT_VERSION_COLUMNS)
-    .order('version', { ascending: false });
+export async function getConsentEditor(viewedId: string | null) {
+  const [{ data: versions, error }, usage] = await Promise.all([
+    supabase
+      .from('consent_versions')
+      .select(CONSENT_VERSION_COLUMNS)
+      .order('version', { ascending: false }),
+    supabase.rpc('consent_version_usage'),
+  ]);
   if (error) throw toAppError(error);
+  if (usage.error) throw toAppError(usage.error);
 
   const draft = versions.find((version) => version.status === 'draft') ?? null;
   const published = versions.find((version) => version.status === 'published') ?? null;
-  const shown = draft ?? published;
+  const viewed = versions.find((version) => version.id === viewedId) ?? null;
+  const shown = viewed ?? draft ?? published;
+  const usageCounts = Object.fromEntries(
+    usage.data.map((row) => [row.consent_version_id, row.inspection_count]),
+  );
 
   if (!shown) {
-    return { versions, draft, published, shown, sections: [] };
+    return { versions, draft, published, shown, usageCounts, sections: [] };
   }
 
   const { data: sections, error: sectionsError } = await supabase
@@ -30,7 +38,22 @@ export async function getConsentEditor() {
     .order('position');
   if (sectionsError) throw toAppError(sectionsError);
 
-  return { versions, draft, published, shown, sections };
+  return { versions, draft, published, shown, usageCounts, sections };
+}
+
+export async function restoreConsentVersion(versionId: string) {
+  const { data, error } = await supabase.rpc('restore_consent_version', {
+    p_consent_version_id: versionId,
+  });
+  if (error) throw toAppError(error);
+  return data;
+}
+
+export async function deleteConsentVersion(versionId: string) {
+  const { error } = await supabase.rpc('delete_consent_version', {
+    p_consent_version_id: versionId,
+  });
+  if (error) throw toAppError(error);
 }
 
 export async function createConsentDraft() {

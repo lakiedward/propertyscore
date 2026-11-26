@@ -51,6 +51,7 @@ describe('AdminSchedulePage', { timeout: 20_000 }, () => {
     let payload: unknown;
     server.use(
       adminInspectionsResponse([QUEUED]),
+      ALL_DAY_HOURS,
       http.post(supabaseUrl('/rest/v1/rpc/assign_inspector'), async ({ request }) => {
         payload = await request.json();
         return new HttpResponse(null, { status: 204 });
@@ -69,6 +70,23 @@ describe('AdminSchedulePage', { timeout: 20_000 }, () => {
     await waitFor(() => {
       expect(payload).toEqual({ p_inspection_id: QUEUED.id, p_inspector_id: MIHAI_ID });
     });
+  });
+
+  it('offers in the drawer only the inspectors free at the booking time', async () => {
+    server.use(
+      adminInspectionsResponse([QUEUED]),
+      http.get(supabaseUrl('/rest/v1/inspector_weekly_hours'), () => HttpResponse.json([])),
+    );
+    const { user } = await renderAppRoute(
+      `/admin/appointments?date=${dateOf(QUEUED)}&sheet=${QUEUED.id}`,
+      { auth: signedInAs('admin') },
+    );
+
+    const drawer = await screen.findByRole('dialog');
+    await user.click(within(drawer).getByRole('combobox', { name: ro.schedule.drawer.inspector }));
+
+    expect(await screen.findByText(ro.schedule.drawer.noFree)).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /Mihai Dobre/ })).not.toBeInTheDocument();
   });
 
   it('needs a reason to cancel a booking', async () => {

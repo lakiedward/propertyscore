@@ -80,7 +80,7 @@ export function CategoryDialog({
         onSuccess: (categoryId) => {
           close();
           void queryClient
-            .query({ ...inspectionFormQueries.editor(), staleTime: 0 })
+            .query({ ...inspectionFormQueries.editor(null), staleTime: 0 })
             .then((editor) => {
               const added = editor.categories.find((item) => item.id === categoryId);
               if (added) {

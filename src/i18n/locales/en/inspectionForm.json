@@ -45,7 +45,10 @@
     "categories": {
       "label": "Categories",
       "weightLabel": "Weight {{name}}",
-      "add": "Add category"
+      "add": "Add category",
+      "drag": "Drag to move {{name}}",
+      "dragInstructions": "Use the up and down arrows to move the category by one place. With a mouse, drag the handle.",
+      "questionWeightsOff": "The questions of {{name}} add up to {{sum}}%, not 100%"
     },
     "category": {
       "edit": "Edit",
@@ -68,7 +71,10 @@
         "add": "Add category",
         "save": "Save",
         "saving": "Saving…"
-      }
+      },
+      "questionWeights": "The questions make up {{sum}}% of the category",
+      "questionWeightsHint": "They must add up to exactly 100%. A question answered N/A shares its weight among the others.",
+      "splitEvenly": "Split evenly"
     },
     "icons": {
       "building-2": "Building",
@@ -119,26 +125,26 @@
       "empty": {
         "title": "This category has no questions",
         "description": "Add at least one question to publish the form."
-      }
+      },
+      "weight": "Weight in category"
     },
     "points": {
       "title": "Answer points",
       "good": "Good",
       "acceptable": "Acceptable",
       "problem": "Problem",
-      "hint": "N/A does not count. A category's grade is the average of its answers; the final grade is the weighted average of the categories."
+      "hint": "N/A does not count: the question's weight is shared among the others. The category score is the average of the answers weighted by the question weights; the final score is the weighted average of the categories."
     },
     "empty": {
       "title": "There is no form yet",
       "description": "Create a draft to add the inspection's categories and questions."
+    },
+    "questionWeightsInvalid": {
+      "title": "The questions do not add up to 100% in every category",
+      "text": "Adjust the weights in: {{categories}}."
     }
   },
   "consent": {
-    "versions": "Versions",
-    "versionLabel": "v{{version}}",
-    "draftLine": "Draft · edited {{date}}",
-    "publishedLine": "Published · since {{date}}",
-    "archivedLine": "Archived · {{from}} – {{to}}",
     "signatures_one": "{{count}} signature",
     "signatures_other": "{{count}} signatures",
     "titleDraft": "Draft v{{version}} · {{language}}",
@@ -185,5 +191,38 @@
       "description": "Create a draft and add the sections the owner signs."
     },
     "unsaved": "You have unsaved changes."
+  },
+  "versions": {
+    "title": "Versions",
+    "label": "v{{version}}",
+    "draftLine": "Draft · edited {{date}}",
+    "publishedLine": "Published · since {{date}}",
+    "archivedLine": "Archived · {{from}} – {{to}}",
+    "usedIn_one": "Used in one inspection",
+    "usedIn_other": "Used in {{count}} inspections",
+    "unused": "Not used in any inspection",
+    "actions": "Actions for {{version}}",
+    "view": "View version",
+    "restore": "Restore as a new version",
+    "delete": "Delete version",
+    "cannotDeletePublished": "The published version cannot be deleted.",
+    "cannotDeleteInUse": "Used in inspections, so it is kept.",
+    "backToDraft": "Back to the draft",
+    "backToPublished": "Back to the published version",
+    "banner": {
+      "title": "Viewing {{version}}",
+      "text": "Read only."
+    },
+    "restoreTitle": "Restore {{version}}?",
+    "restoreText": "Draft {{next}} is created with the content of {{version}}. You can edit and publish it afterwards.",
+    "restoreReplaceText": "Draft {{next}} is replaced with the content of {{version}}. The changes made in it are lost.",
+    "restoreConfirm": "Create draft {{next}}",
+    "restoring": "Restoring…",
+    "restoredToast": "Draft {{next}} was created from {{version}}.",
+    "deleteTitle": "Delete {{version}}?",
+    "deleteText": "This version was not used in any inspection. It is deleted for good, with all its content.",
+    "deleteConfirm": "Delete for good",
+    "deleting": "Deleting…",
+    "deletedToast": "Version {{version}} was deleted."
   }
 }

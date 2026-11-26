@@ -18,6 +18,7 @@ export const questionSchema = z.object({
   textRo: z.string().max(QUESTION_TEXT_MAX),
   textEn: z.string().max(QUESTION_TEXT_MAX),
   requiredMedia: z.enum(REQUIRED_MEDIA),
+  weight: z.string(),
 });
 
 export type QuestionValues = z.infer<typeof questionSchema>;

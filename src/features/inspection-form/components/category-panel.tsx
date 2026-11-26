@@ -1,19 +1,28 @@
 import { getRouteApi } from '@tanstack/react-router';
-import { ArrowDownIcon, ArrowUpIcon, PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  PencilIcon,
+  PlusIcon,
+  ScaleIcon,
+  Trash2Icon,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { localizedText } from '@/i18n/localized';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { CategoryIcon } from '@/components/inspection/category-icon';
 import { EmptyState } from '@/components/layout/empty-state';
+import { Alert, AlertAction, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   useAddFormQuestion,
   useRemoveFormCategory,
   useReorderFormCategories,
+  useSplitQuestionWeights,
 } from '../api/inspection-form.queries';
 import type { FormCategory, FormQuestion } from '../inspection-form.types';
-import { moveItem } from '../inspection-form.utils';
+import { moveItem, WEIGHT_TOTAL } from '../inspection-form.utils';
 import { CategoryDialog } from './category-dialog';
 import { QuestionEditorCard } from './question-editor-card';
 
@@ -32,11 +41,14 @@ export function CategoryPanel({ versionId, group, categories, isEditable }: Cate
   const [dialog, setDialog] = useState<'edit' | 'remove' | null>(null);
   const reorderCategories = useReorderFormCategories();
   const removeCategory = useRemoveFormCategory();
+  const splitWeights = useSplitQuestionWeights();
   const addQuestion = useAddFormQuestion();
   const { category, questions } = group;
   const index = categories.findIndex((item) => item.id === category.id);
   const name = localizedText(category.name_ro, category.name_en, i18n.language);
   const otherName = i18n.language === 'en' ? category.name_ro : category.name_en;
+  const questionWeightSum = questions.reduce((sum, question) => sum + question.weight, 0);
+  const isQuestionWeightValid = questionWeightSum === WEIGHT_TOTAL;
 
   const move = (offset: -1 | 1) => {
     reorderCategories.mutate({
@@ -113,6 +125,31 @@ export function CategoryPanel({ versionId, group, categories, isEditable }: Cate
           </div>
         ) : null}
       </div>
+      {questions.length > 0 ? (
+        <Alert tone={isQuestionWeightValid ? 'neutral' : 'warning'}>
+          <ScaleIcon aria-hidden />
+          <AlertTitle className="tabular-nums">
+            {t('form.category.questionWeights', { sum: questionWeightSum })}
+          </AlertTitle>
+          <AlertDescription>{t('form.category.questionWeightsHint')}</AlertDescription>
+          {isEditable ? (
+            <AlertAction>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={splitWeights.isPending}
+                aria-busy={splitWeights.isPending}
+                onClick={() => {
+                  splitWeights.mutate(category.id);
+                }}
+              >
+                {t('form.category.splitEvenly')}
+              </Button>
+            </AlertAction>
+          ) : null}
+        </Alert>
+      ) : null}
       {questions.length === 0 ? (
         <EmptyState
           title={t('form.question.empty.title')}
