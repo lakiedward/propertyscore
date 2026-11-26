@@ -1,3 +1,4 @@
+import { bucharestDate } from '@/test/bucharest-date';
 import {
   assignmentClash,
   dayStart,
@@ -9,7 +10,7 @@ import {
   weekStart,
 } from './schedule.utils';
 
-const DAY = new Date(2026, 10, 25);
+const DAY = bucharestDate(2026, 10, 25);
 const MIHAI = 'mihai';
 const RANGES = [
   { inspector_id: MIHAI, weekday: 3, starts_at: '08:00:00', ends_at: '12:00:00' },
@@ -17,13 +18,13 @@ const RANGES = [
 ];
 
 function at(hour: number, minute = 0) {
-  return new Date(2026, 10, 25, hour, minute).toISOString();
+  return bucharestDate(2026, 10, 25, hour, minute).toISOString();
 }
 
 describe('schedule.utils', () => {
   it('starts weeks on Monday and moves by a day or a week', () => {
-    expect(weekStart('2026-11-25')).toEqual(new Date(2026, 10, 23));
-    expect(scheduleRange('2026-11-25', 'week').to).toEqual(new Date(2026, 10, 30));
+    expect(weekStart('2026-11-25')).toEqual(bucharestDate(2026, 10, 23));
+    expect(scheduleRange('2026-11-25', 'week').to).toEqual(bucharestDate(2026, 10, 30));
     expect(shiftScheduleDate('2026-11-30', 'day', 1)).toBe('2026-12-01');
     expect(shiftScheduleDate('2026-11-25', 'week', -1)).toBe('2026-11-18');
   });
@@ -105,8 +106,8 @@ describe('schedule.utils', () => {
   });
 
   it('accepts a visit that starts when the hours start, whatever the time format', () => {
-    const startsAt = new Date(2026, 10, 25, 14);
-    const endsAt = new Date(2026, 10, 25, 16);
+    const startsAt = bucharestDate(2026, 10, 25, 14);
+    const endsAt = bucharestDate(2026, 10, 25, 16);
     const visit = {
       id: 'a',
       starts_at: startsAt.toISOString().replace('.000Z', '+00:00'),

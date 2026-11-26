@@ -1,3 +1,4 @@
+import { bucharestDate } from '@/test/bucharest-date';
 import {
   availabilityByDay,
   bookingWindow,
@@ -9,10 +10,10 @@ import {
   visitEnd,
 } from './slots.utils';
 
-const NOW = new Date(2026, 10, 20, 10, 0);
+const NOW = bucharestDate(2026, 10, 20, 10, 0);
 
 function slot(day: number, hour: number, minute: number, free: number, working = 1) {
-  return { starts_at: new Date(2026, 10, day, hour, minute).toISOString(), free, working };
+  return { starts_at: bucharestDate(2026, 10, day, hour, minute).toISOString(), free, working };
 }
 
 describe('slots.utils', () => {
@@ -48,11 +49,11 @@ describe('slots.utils', () => {
   });
 
   it('groups start times by part of the day and ends visits two hours later', () => {
-    expect(partOfDay(new Date(2026, 10, 21, 9, 30))).toBe('morning');
-    expect(partOfDay(new Date(2026, 10, 21, 12, 30))).toBe('midday');
-    expect(partOfDay(new Date(2026, 10, 21, 14, 0))).toBe('afternoon');
-    expect(visitEnd(new Date(2026, 10, 21, 9, 30).toISOString())).toEqual(
-      new Date(2026, 10, 21, 11, 30),
+    expect(partOfDay(bucharestDate(2026, 10, 21, 9, 30))).toBe('morning');
+    expect(partOfDay(bucharestDate(2026, 10, 21, 12, 30))).toBe('midday');
+    expect(partOfDay(bucharestDate(2026, 10, 21, 14, 0))).toBe('afternoon');
+    expect(visitEnd(bucharestDate(2026, 10, 21, 9, 30).toISOString())).toEqual(
+      bucharestDate(2026, 10, 21, 11, 30),
     );
   });
 

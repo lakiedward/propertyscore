@@ -1,5 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
+import { bucharestDay } from '@/lib/bucharest-time';
+import { bucharestDaysFromToday } from '@/test/bucharest-date';
 import ro from '@/i18n/locales/ro/inspections.json';
 import roCommon from '@/i18n/locales/ro/common.json';
 import roStaff from '@/i18n/locales/ro/staff.json';
@@ -25,8 +27,7 @@ const ALL_DAY_HOURS = http.get(supabaseUrl('/rest/v1/inspector_weekly_hours'), (
 );
 
 function dateOf(inspection: { starts_at: string }) {
-  const date = new Date(inspection.starts_at);
-  return `${String(date.getFullYear())}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  return bucharestDay(new Date(inspection.starts_at));
 }
 
 describe('AdminSchedulePage', { timeout: 20_000 }, () => {
@@ -338,10 +339,7 @@ describe('AdminSchedulePage', { timeout: 20_000 }, () => {
   });
 
   it('moves a booking to the first free hour from the drawer', async () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(9, 30, 0, 0);
-    const freeStart = tomorrow.toISOString();
+    const freeStart = bucharestDaysFromToday(1, 9, 30).toISOString();
     let payload: unknown;
     server.use(
       adminInspectionsResponse([QUEUED]),

@@ -1,4 +1,6 @@
 import { buildAgendaInspection } from '@/test/factories/agenda-inspection';
+import { bucharestDay } from '@/lib/bucharest-time';
+import { bucharestDate } from '@/test/bucharest-date';
 import {
   agendaDayBounds,
   canChangeAppointment,
@@ -11,26 +13,26 @@ import {
   phoneHref,
 } from './inspection.utils';
 
-const NOW = new Date(2026, 10, 24, 8, 0);
+const NOW = bucharestDate(2026, 10, 24, 8, 0);
 
 function at(day: number, hour: number, minute = 0) {
-  return new Date(2026, 10, day, hour, minute).toISOString();
+  return bucharestDate(2026, 10, day, hour, minute).toISOString();
 }
 
 describe('inspection.utils', () => {
   it('covers seven days from the start of today', () => {
     expect(agendaRange(NOW)).toEqual({
-      from: new Date(2026, 10, 24).toISOString(),
-      to: new Date(2026, 11, 1).toISOString(),
+      from: bucharestDate(2026, 10, 24).toISOString(),
+      to: bucharestDate(2026, 11, 1).toISOString(),
     });
   });
 
   it('bounds today, tomorrow and the week', () => {
     expect(agendaDayBounds('tomorrow', NOW)).toEqual({
-      from: new Date(2026, 10, 25),
-      to: new Date(2026, 10, 26),
+      from: bucharestDate(2026, 10, 25),
+      to: bucharestDate(2026, 10, 26),
     });
-    expect(agendaDayBounds('week', NOW).to).toEqual(new Date(2026, 11, 1));
+    expect(agendaDayBounds('week', NOW).to).toEqual(bucharestDate(2026, 11, 1));
   });
 
   it('keeps the inspections that start in the chosen day', () => {
@@ -52,7 +54,7 @@ describe('inspection.utils', () => {
     const next = buildAgendaInspection({ starts_at: at(24, 14), ends_at: at(24, 16) });
 
     expect(nextInspection([finished, submitted, next], NOW)).toBe(next);
-    expect(nextInspection([next], NOW, new Date(2026, 10, 25))).toBeUndefined();
+    expect(nextInspection([next], NOW, bucharestDate(2026, 10, 25))).toBeUndefined();
   });
 
   it('links directions to the pin, or to the address without one', () => {
@@ -73,10 +75,10 @@ describe('inspection.utils', () => {
 });
 
 describe('appointment helpers', () => {
-  const now = new Date(2026, 10, 20, 12, 0);
+  const now = bucharestDate(2026, 10, 20, 12, 0);
   const row = (status: string, day: number) => ({
     status,
-    starts_at: new Date(2026, 10, day, 9, 30).toISOString(),
+    starts_at: bucharestDate(2026, 10, day, 9, 30).toISOString(),
   });
 
   it('puts upcoming bookings first, soonest first, then the rest newest first', () => {
@@ -84,7 +86,9 @@ describe('appointment helpers', () => {
       [row('completed', 10), row('scheduled', 25), row('cancelled', 28), row('scheduled', 22)],
       now,
     );
-    expect(sorted.map((item) => new Date(item.starts_at).getDate())).toEqual([22, 25, 28, 10]);
+    expect(sorted.map((item) => Number(bucharestDay(new Date(item.starts_at)).slice(8)))).toEqual([
+      22, 25, 28, 10,
+    ]);
   });
 
   it('allows changes only to future bookings that are not done or cancelled', () => {

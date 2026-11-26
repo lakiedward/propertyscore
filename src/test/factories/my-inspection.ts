@@ -1,15 +1,13 @@
 import type { MyInspection } from '@/features/inspections';
+import { bucharestDaysFromToday } from '@/test/bucharest-date';
 
 let sequence = 0;
 
 export function buildMyInspection(overrides: Partial<MyInspection> = {}): MyInspection {
   sequence += 1;
   const suffix = String(sequence).padStart(12, '0');
-  const startsAt = new Date();
-  startsAt.setDate(startsAt.getDate() + 5);
-  startsAt.setHours(11, 0, 0, 0);
-  const endsAt = new Date(startsAt);
-  endsAt.setHours(13);
+  const startsAt = bucharestDaysFromToday(5, 11);
+  const endsAt = bucharestDaysFromToday(5, 13);
   return {
     id: `d2000000-0000-4000-8000-${suffix}`,
     number: 1100 + sequence,

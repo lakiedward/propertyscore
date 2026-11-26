@@ -1,15 +1,13 @@
 import type { AdminInspection } from '@/features/inspections';
+import { bucharestDaysFromToday } from '@/test/bucharest-date';
 
 let sequence = 0;
 
 export function buildAdminInspection(overrides: Partial<AdminInspection> = {}): AdminInspection {
   sequence += 1;
   const suffix = String(sequence).padStart(12, '0');
-  const startsAt = new Date();
-  startsAt.setDate(startsAt.getDate() + 3);
-  startsAt.setHours(14, 0, 0, 0);
-  const endsAt = new Date(startsAt);
-  endsAt.setHours(16);
+  const startsAt = bucharestDaysFromToday(3, 14);
+  const endsAt = bucharestDaysFromToday(3, 16);
   return {
     id: `d3000000-0000-4000-8000-${suffix}`,
     number: 1200 + sequence,

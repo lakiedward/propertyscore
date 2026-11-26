@@ -1,4 +1,5 @@
 import { exceptionBounds, SCHEDULE_TIMES, weeklyRangesByDay } from './staff.utils';
+import { bucharestDate } from '@/test/bucharest-date';
 
 describe('staff.utils', () => {
   it('offers half-hour times from 06:00 to 22:00', () => {
@@ -31,7 +32,7 @@ describe('staff.utils', () => {
         startTime: '08:00',
         endTime: '12:00',
       }),
-    ).toEqual({ startsAt: new Date(2026, 10, 3), endsAt: new Date(2026, 10, 8) });
+    ).toEqual({ startsAt: bucharestDate(2026, 10, 3), endsAt: bucharestDate(2026, 10, 8) });
     expect(
       exceptionBounds({
         fromDate: '2026-11-03',
@@ -40,7 +41,7 @@ describe('staff.utils', () => {
         startTime: '08:00',
         endTime: '11:00',
       }),
-    ).toEqual({ startsAt: new Date(2026, 10, 3, 8), endsAt: new Date(2026, 10, 3, 11) });
+    ).toEqual({ startsAt: bucharestDate(2026, 10, 3, 8), endsAt: bucharestDate(2026, 10, 3, 11) });
   });
 
   it('reads the exception dates and times as Romanian wall time', () => {
