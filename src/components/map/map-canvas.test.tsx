@@ -508,8 +508,10 @@ describe('MapCanvas', () => {
     let notifyResize: (() => void) | undefined;
     vi.spyOn(globalThis, 'ResizeObserver').mockImplementation(
       class {
-        constructor(callback: () => void) {
-          notifyResize = callback;
+        constructor(callback: ResizeObserverCallback) {
+          notifyResize = () => {
+            callback([], this);
+          };
         }
         observe = vi.fn();
         unobserve = vi.fn();
@@ -518,6 +520,8 @@ describe('MapCanvas', () => {
     );
     const { user } = await renderWithProviders(<MapHarness refitsBoundsOnResize />);
     const map = lastMap();
+    const viewportBounds = map.getBounds();
+    vi.spyOn(map, 'getBounds').mockReturnValue(viewportBounds);
     let width = 375;
     let height = 520;
     Object.defineProperties(map.options.container, {
@@ -544,7 +548,7 @@ describe('MapCanvas', () => {
     });
     expect(map.setMaxBounds).toHaveBeenNthCalledWith(1, null);
     expect(map.setMinZoom).toHaveBeenNthCalledWith(1, null);
-    expect(map.setMaxBounds).toHaveBeenLastCalledWith(map.getBounds());
+    expect(map.setMaxBounds).toHaveBeenLastCalledWith(viewportBounds);
     expect(maplibre.FakeMap.instances).toHaveLength(1);
 
     act(() => notifyResize?.());
