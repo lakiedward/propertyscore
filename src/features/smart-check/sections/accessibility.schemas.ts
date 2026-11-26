@@ -1,5 +1,12 @@
 import { z } from 'zod';
+import { decodePolyline6, isDrawableLine } from '@/components/report/report-map.utils';
 import { isochroneSchema, positionSchema } from './shared.schemas';
+
+const carRouteSchema = z.object({
+  seconds: z.int().positive(),
+  meters: z.int().positive(),
+  polyline6: z.string().refine((encoded) => isDrawableLine(decodePolyline6(encoded))),
+});
 
 const destinationSchema = z.object({
   id: z.string(),
@@ -7,6 +14,7 @@ const destinationSchema = z.object({
   label: z.object({ ro: z.string(), en: z.string() }),
   group: z.string().nullable().default(null),
   location: positionSchema,
+  car_route: carRouteSchema.nullable().default(null).catch(null),
   minutes: z.number().nullable(),
   by_walking: z.boolean(),
   walk: z.number().nullable(),
@@ -25,7 +33,7 @@ const destinationSchema = z.object({
     .default([]),
 });
 
-export const accessibilitySectionSchema = z.object({
+const scoredAccessibilitySchema = z.object({
   status: z.literal('scored'),
   data_quality: z.enum(['gtfs', 'osm_only']),
   reference_date: z.iso.date().nullable().catch(null),
@@ -84,3 +92,10 @@ export const accessibilitySectionSchema = z.object({
     .nullable()
     .default(null),
 });
+
+export const accessibilitySectionSchema = z.discriminatedUnion('status', [
+  scoredAccessibilitySchema,
+  scoredAccessibilitySchema.pick({ destinations: true, destination_groups: true }).extend({
+    status: z.literal('car_only'),
+  }),
+]);

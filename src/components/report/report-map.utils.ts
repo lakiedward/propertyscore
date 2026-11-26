@@ -4,6 +4,7 @@ import type { MapFeatureCollection } from '@/components/map/map-canvas';
 const EARTH_RADIUS_M = 6_371_008.8;
 const RING_STEPS = 96;
 const POLYLINE_PRECISION = 1e6;
+const MAX_POLYLINE_SHIFT = 25;
 
 function offsetPosition([longitude, latitude]: LngLat, distanceM: number, bearing: number): LngLat {
   const latitudeRad = (latitude * Math.PI) / 180;
@@ -49,26 +50,36 @@ export function lineCollection(lines: readonly (readonly LngLat[])[]): MapFeatur
 }
 
 export function decodePolyline6(encoded: string): LngLat[] {
-  const positions: LngLat[] = [];
-  let index = 0;
+  const coordinates: LngLat[] = [];
   let latitude = 0;
   let longitude = 0;
-  const readValue = (): number => {
-    let result = 0;
-    let shift = 0;
-    let byte: number;
-    do {
-      byte = encoded.charCodeAt(index) - 63;
-      index += 1;
-      result |= (byte & 0x1f) << shift;
-      shift += 5;
-    } while (byte >= 0x20 && index < encoded.length);
-    return result & 1 ? ~(result >> 1) : result >> 1;
-  };
-  while (index < encoded.length) {
-    latitude += readValue();
-    longitude += readValue();
-    positions.push([longitude / POLYLINE_PRECISION, latitude / POLYLINE_PRECISION]);
+  let index = 0;
+
+  function readDelta() {
+    let delta = 0;
+    for (let shift = 0; shift <= MAX_POLYLINE_SHIFT && index < encoded.length; shift += 5) {
+      const chunk = encoded.charCodeAt(index++) - 63;
+      if (chunk < 0 || chunk > 63) return null;
+      delta |= (chunk & 31) << shift;
+      if (chunk < 32) return delta & 1 ? ~(delta >> 1) : delta >> 1;
+    }
+    return null;
   }
-  return positions;
+
+  while (index < encoded.length) {
+    const latDelta = readDelta();
+    const lngDelta = readDelta();
+    if (latDelta === null || lngDelta === null) return [];
+    latitude += latDelta;
+    longitude += lngDelta;
+    if (
+      Math.abs(latitude) > 90 * POLYLINE_PRECISION ||
+      Math.abs(longitude) > 180 * POLYLINE_PRECISION
+    ) {
+      return [];
+    }
+    coordinates.push([longitude / POLYLINE_PRECISION, latitude / POLYLINE_PRECISION]);
+  }
+
+  return coordinates;
 }

@@ -29,9 +29,8 @@ type IsochroneFeature = {
 type RouteRequest = {
   origin: LngLat;
   destination: LngLat;
-  walkSpeedKmh: number;
   signal?: AbortSignal;
-};
+} & ({ costing?: 'pedestrian'; walkSpeedKmh: number } | { costing: 'auto'; walkSpeedKmh?: never });
 
 type Route = Leg & { polyline6: string };
 
@@ -195,13 +194,13 @@ export function createValhallaClient(
         .sort((a, b) => a.minutes - b.minutes);
     },
 
-    async route({ origin, destination, walkSpeedKmh, signal }) {
+    async route({ origin, destination, costing = 'pedestrian', walkSpeedKmh, signal }) {
       const { status, json } = await call(
         '/route',
         {
           locations: [location(origin), location(destination)],
-          costing: 'pedestrian',
-          costing_options: costingOptions('pedestrian', walkSpeedKmh),
+          costing,
+          costing_options: costingOptions(costing, walkSpeedKmh),
           units: 'kilometers',
           directions_type: 'none',
         },
@@ -214,6 +213,9 @@ export function createValhallaClient(
       const { summary, legs } = parsed.data.trip;
       const [leg] = legs;
       if (!leg) throw new WorkerError('walk_routing_invalid', 'Route without legs');
+      if (costing === 'auto' && legs.length !== 1) {
+        throw new WorkerError('car_routing_invalid', 'Unexpected number of driving legs');
+      }
       return {
         seconds: Math.round(summary.time),
         meters: Math.round(summary.length * 1000),

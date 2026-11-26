@@ -5,7 +5,7 @@ import { AddressPin } from '@/components/report/address-pin';
 import { ReportMap } from '@/components/report/report-map';
 import { boundsAround, lineCollection } from '@/components/report/report-map.utils';
 import { cn } from '@/lib/utils';
-import type { DestinationRow } from '../../../accessibility.utils';
+import type { DestinationMode, DestinationRow } from '../../../accessibility.utils';
 import { addressLabel, reportCenter } from '../../../report-map.utils';
 import type { ReadyReport } from '../../../report.types';
 
@@ -22,6 +22,7 @@ type AccessibilityRouteMapProps = {
   rows: readonly DestinationRow[];
   stops: readonly StopPoint[];
   selectedId: string | null;
+  mode: DestinationMode;
   namedId?: string | null;
   className?: string;
 };
@@ -30,20 +31,30 @@ function toLngLat(coordinate: readonly number[]): LngLat {
   return [coordinate[0] ?? 0, coordinate[1] ?? 0];
 }
 
-function routeBounds(center: LngLat, rows: readonly DestinationRow[]): LngLatBounds {
-  const [[minLng, minLat], [maxLng, maxLat]] = boundsAround(center, MIN_RADIUS_M);
-  const points = rows.flatMap((row) =>
-    row.path.flatMap((leg) => leg.coordinates.map((coordinate) => toLngLat(coordinate))),
-  );
+function routeBounds(
+  center: LngLat,
+  rows: readonly DestinationRow[],
+  mode: DestinationMode,
+): LngLatBounds {
+  const [[west, south], [east, north]]: LngLatBounds =
+    mode === 'car' && rows.length > 0 ? [center, center] : boundsAround(center, MIN_RADIUS_M);
+  let minLng = west;
+  let minLat = south;
+  let maxLng = east;
+  let maxLat = north;
+  for (const row of rows) {
+    for (const leg of row.path) {
+      for (const [lng, lat] of leg.coordinates) {
+        minLng = Math.min(minLng, lng);
+        minLat = Math.min(minLat, lat);
+        maxLng = Math.max(maxLng, lng);
+        maxLat = Math.max(maxLat, lat);
+      }
+    }
+  }
   return [
-    [
-      Math.min(minLng, ...points.map(([lng]) => lng)),
-      Math.min(minLat, ...points.map(([, lat]) => lat)),
-    ],
-    [
-      Math.max(maxLng, ...points.map(([lng]) => lng)),
-      Math.max(maxLat, ...points.map(([, lat]) => lat)),
-    ],
+    [minLng, minLat],
+    [maxLng, maxLat],
   ];
 }
 
@@ -52,16 +63,19 @@ export function AccessibilityRouteMap({
   rows,
   stops,
   selectedId,
+  mode,
   namedId = null,
   className,
 }: AccessibilityRouteMapProps) {
   const { t, i18n } = useTranslation('smartCheck');
   const language = i18n.resolvedLanguage === 'en' ? 'en' : 'ro';
   const center = reportCenter(report);
+  const isCar = mode === 'car';
+  const visibleRows = selectedId === null ? rows : rows.filter((row) => row.id === selectedId);
 
   const overlays: MapOverlay[] = rows.flatMap((row) => {
     const isVisible = selectedId === null || selectedId === row.id;
-    const rides = row.path.filter((leg) => leg.mode === 'transit');
+    const rides = row.path.filter((leg) => leg.mode !== 'walk');
     const walks = row.path.filter((leg) => leg.mode === 'walk');
     return [
       {
@@ -76,7 +90,7 @@ export function AccessibilityRouteMap({
         ),
       },
       {
-        id: `accessibility-ride-${row.id}`,
+        id: `accessibility-${isCar ? 'car' : 'ride'}-${row.id}`,
         kind: 'line' as const,
         colorToken: row.swatch.token,
         width: selectedId === row.id ? SELECTED_ROUTE_WIDTH : ROUTE_WIDTH,
@@ -89,15 +103,20 @@ export function AccessibilityRouteMap({
     ];
   });
 
-  const endMarkers: MapMarkerItem[] = rows.flatMap((row) =>
-    row.end && (selectedId === null || selectedId === row.id)
+  const endMarkers = visibleRows.flatMap<MapMarkerItem>((row) =>
+    row.end
       ? [
           {
             id: `accessibility-end-${row.id}`,
             position: row.end,
-            anchor: 'left' as const,
+            anchor: isCar ? 'center' : 'left',
             isRaised: selectedId === row.id,
-            node: (
+            node: isCar ? (
+              <span
+                aria-hidden="true"
+                className={cn('block size-3 rounded-full border-2 border-card', row.swatch.fill)}
+              />
+            ) : (
               <span
                 aria-hidden="true"
                 className="pointer-events-none -ml-1.5 flex items-center gap-1.5"
@@ -148,20 +167,32 @@ export function AccessibilityRouteMap({
     {
       id: 'address',
       position: center,
-      anchor: 'bottom',
+      anchor: isCar ? 'center' : 'bottom',
       isRaised: true,
-      node: <AddressPin label={addressLabel(report.address_text)} />,
+      node: isCar ? (
+        <span
+          aria-hidden="true"
+          className="block size-3.5 rounded-full border-2 border-card bg-primary"
+        />
+      ) : (
+        <AddressPin label={addressLabel(report.address_text)} />
+      ),
     },
   ];
 
   return (
     <ReportMap
-      label={t('report.chapters.accessibility.mapLabel')}
+      label={t(
+        isCar
+          ? 'report.chapters.accessibility.car.mapLabel'
+          : 'report.chapters.accessibility.mapLabel',
+      )}
       errorLabel={t('report.frame.hero.mapError')}
       center={center}
       zoom={14}
-      bounds={routeBounds(center, rows)}
+      bounds={routeBounds(center, isCar ? visibleRows : rows, mode)}
       boundsPadding={56}
+      refitsBoundsOnResize={isCar}
       hasNavigationControl
       overlays={overlays}
       markers={markers}

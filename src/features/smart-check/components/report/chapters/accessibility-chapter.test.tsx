@@ -79,6 +79,122 @@ describe('AccessibilityChapter', () => {
   });
 
   it.each([
+    { locale: 'ro', copy },
+    { locale: 'en', copy: en.report.chapters.accessibility },
+  ] as const)('switches to a road-only route in $locale', async ({ locale, copy: labels }) => {
+    const report = readyReport();
+    const section = report.result.sections.accessibility;
+    if (!section) throw new Error('The Freidorf fixture has no accessibility section');
+    const destination = section.destinations[0];
+    if (!destination) throw new Error('The Freidorf fixture has no destination');
+    section.destinations[0] = {
+      ...destination,
+      car_route: { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' },
+    };
+    const { user } = await renderWithProviders(
+      <AccessibilityChapter report={report} onOpenChapter={vi.fn()} />,
+      { locale },
+    );
+
+    const mode = await screen.findByRole('radiogroup', { name: labels.travelMode });
+    const transit = within(mode).getByRole('radio', { name: labels.transitMode });
+    expect(transit).toBeChecked();
+    await user.click(within(mode).getByRole('radio', { name: labels.car.mode }));
+
+    const route = screen.getByRole('button', {
+      name: labels.car.rowLabel
+        .replace('{{name}}', destination.label[locale])
+        .replace('{{minutes}}', '8')
+        .replace('{{distance}}', locale === 'ro' ? '3,5 km' : '3.5 km'),
+    });
+    await user.click(route);
+    expect(route).toHaveAttribute('aria-pressed', 'true');
+    const map = await screen.findByRole('region', { name: labels.car.mapLabel });
+    expect(
+      within(map).getByRole('img', { name: `accessibility-car-${destination.id}` }),
+    ).toBeVisible();
+    expect(
+      within(map).queryByRole('img', { name: /accessibility-(walk|ride)-/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(labels.car.source)).toBeVisible();
+    expect(screen.queryByText(labels.routesTitle)).not.toBeInTheDocument();
+
+    await user.click(transit);
+    expect(screen.getByText(labels.routesTitle)).toBeVisible();
+  });
+
+  it('explains when an older report has no driving data', async () => {
+    const { user } = await renderWithProviders(
+      <AccessibilityChapter report={readyReport()} onOpenChapter={vi.fn()} />,
+    );
+    await user.click(await screen.findByRole('radio', { name: copy.car.mode }));
+    expect(screen.getByText(copy.car.unavailable)).toBeVisible();
+    expect(screen.getByText(scoreEyebrow)).toBeVisible();
+  });
+
+  it.each([
+    { locale: 'ro', copy, name: 'Gară de test', distance: '3,5 km' },
+    {
+      locale: 'en',
+      copy: en.report.chapters.accessibility,
+      name: 'Test station',
+      distance: '3.5 km',
+    },
+  ] as const)(
+    'shows the road map without a transit route or score in $locale',
+    async ({ locale, copy: labels, name, distance }) => {
+      const destination = readyReport().result.sections.accessibility?.destinations[0];
+      if (!destination) throw new Error('The fixture has no destination');
+      const report = readyReport({
+        ...FREIDORF_REPORT_RESULT,
+        accessibility: {
+          status: 'car_only',
+          destinations: [
+            {
+              ...destination,
+              id: 'test-station',
+              label: { ro: 'Gară de test', en: 'Test station' },
+              car_route: { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' },
+              minutes: null,
+              route: null,
+              path: [],
+            },
+          ],
+        },
+      });
+      delete report.result.categories.accessibility;
+      const { user } = await renderWithProviders(
+        <AccessibilityChapter report={report} onOpenChapter={vi.fn()} />,
+        { locale },
+      );
+      expect(await screen.findByRole('heading', { name: labels.headlineNoData })).toBeVisible();
+      const map = await screen.findByRole('region', { name: labels.car.mapLabel });
+      const line = within(map).getByRole('img', { name: 'accessibility-car-test-station' });
+      const departure = screen.getByText(
+        labels.car.departureAddress.replace('{{address}}', report.address_text),
+      );
+      expect(departure).toBeVisible();
+      expect(map).not.toContainElement(departure);
+      expect(line).toBeVisible();
+      expect(map).not.toHaveTextContent(/\S/);
+      await user.click(
+        screen.getByRole('button', {
+          name: labels.car.rowLabel
+            .replace('{{name}}', name)
+            .replace('{{minutes}}', '8')
+            .replace('{{distance}}', distance),
+        }),
+      );
+      expect(departure).toBeVisible();
+      expect(line).toBeVisible();
+      expect(map).not.toHaveTextContent(/\S/);
+      expect(screen.queryByText(labels.routesTitle)).not.toBeInTheDocument();
+      expect(screen.queryByText(labels.badge)).not.toBeInTheDocument();
+      expect(screen.queryByRole('radio', { name: labels.transitMode })).not.toBeInTheDocument();
+    },
+  );
+
+  it.each([
     { quality: 'gtfs', date: 'not-a-date', displayedDate: null },
     { quality: 'gtfs', date: '2026-02-30', displayedDate: null },
     { quality: 'gtfs', date: '2026-11-03', displayedDate: '3 nov. 2026' },

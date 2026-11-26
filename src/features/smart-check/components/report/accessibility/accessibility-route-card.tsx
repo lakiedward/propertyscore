@@ -1,11 +1,13 @@
-import { InfoIcon, MapPinIcon } from 'lucide-react';
+import { BusFrontIcon, CarFrontIcon, InfoIcon, MapPinIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   DESTINATION_GROUPS,
   type DestinationGroup,
+  type DestinationMode,
   destinationRows,
   matchingRows,
 } from '../../../accessibility.utils';
@@ -20,10 +22,15 @@ const LEG_KEY = [
   { kind: 'ride', dot: 'bg-report-industry' },
 ] as const;
 
+const TRAVEL_MODES = [
+  { value: 'transit', Icon: BusFrontIcon, label: 'report.chapters.accessibility.transitMode' },
+  { value: 'car', Icon: CarFrontIcon, label: 'report.chapters.accessibility.car.mode' },
+] as const;
+
 type AccessibilityRouteCardProps = {
   report: ReadyReport;
   section: AccessibilitySection;
-  sourceNote: string;
+  sourceNote?: string;
 };
 
 export function AccessibilityRouteCard({
@@ -35,15 +42,23 @@ export function AccessibilityRouteCard({
   const language = i18n.resolvedLanguage === 'en' ? 'en' : 'ro';
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [group, setGroup] = useState<DestinationGroup>('places');
+  const [selectedMode, setMode] = useState<DestinationMode>('transit');
   const [query, setQuery] = useState('');
-  const places = destinationRows(section);
+  const mode = section.status === 'car_only' ? 'car' : selectedMode;
+  const groupsByMode = {
+    places: destinationRows(section, 'places', mode),
+    highSchools: destinationRows(section, 'highSchools', mode),
+    faculties: destinationRows(section, 'faculties', mode),
+  };
+  const places = groupsByMode.places;
   const isPlaces = group === 'places';
-  const groupRows = isPlaces ? places : destinationRows(section, group);
+  const isCar = mode === 'car';
+  const groupRows = groupsByMode[group];
   const rows = isPlaces ? groupRows : matchingRows(groupRows, query, language);
   const selectedPick = isPlaces ? undefined : groupRows.find((row) => row.id === selectedId);
   const mapRows = selectedPick ? [...places, selectedPick] : places;
   const groups = DESTINATION_GROUPS.filter(
-    (option) => option === 'places' || destinationRows(section, option).length > 0,
+    (option) => option === 'places' || groupsByMode[option].length > 0,
   );
 
   const handleGroup = (next: DestinationGroup) => {
@@ -61,36 +76,80 @@ export function AccessibilityRouteCard({
       aria-labelledby="accessibility-routes-title"
       className="flex flex-col gap-3 min-[560px]:rounded-2xl min-[560px]:border min-[560px]:border-border min-[560px]:bg-card min-[560px]:p-5 min-[560px]:shadow-report-panel"
     >
+      {section.status === 'scored' ? (
+        <ToggleGroup
+          type="single"
+          value={mode}
+          aria-label={t('report.chapters.accessibility.travelMode')}
+          className="flex flex-wrap"
+          onValueChange={(value) => {
+            if (value !== 'transit' && value !== 'car') return;
+            setMode(value);
+            handleGroup('places');
+          }}
+        >
+          {TRAVEL_MODES.map(({ value, Icon, label }) => (
+            <ToggleGroupItem key={value} value={value} className="min-h-11">
+              <Icon aria-hidden="true" />
+              {t(label)}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      ) : null}
+      {isCar ? (
+        <div className="grid min-w-0 gap-1 px-1 text-small">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+            <b>{t('report.chapters.accessibility.car.mapChip')}</b>
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <i aria-hidden="true" className="h-1 w-4 shrink-0 rounded-full bg-report-noise" />
+              {t('report.chapters.accessibility.car.legend')}
+            </span>
+          </div>
+          <p className="flex min-w-0 items-start gap-2">
+            <i aria-hidden="true" className="mt-1 size-2.5 shrink-0 rounded-full bg-primary" />
+            <span className="min-w-0 wrap-anywhere">
+              {t('report.chapters.accessibility.car.departureAddress', {
+                address: report.address_text,
+              })}
+            </span>
+          </p>
+        </div>
+      ) : null}
       <div className="relative h-130 overflow-hidden rounded-xl border border-border bg-report-map-land w760:h-140">
         <AccessibilityRouteMap
           report={report}
           rows={mapRows}
           namedId={selectedPick?.id ?? null}
-          stops={section.stops}
+          stops={!isCar && section.status === 'scored' ? section.stops : []}
+          mode={mode}
           selectedId={selectedId}
         />
-        <span className="pointer-events-none absolute top-2.5 left-2.5 z-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/96 px-2.75 py-1.25 text-[12.5px] font-bold text-foreground shadow-report-label">
-          <i aria-hidden="true" className="size-2.25 rounded-full bg-report-noise" />
-          {t('report.chapters.accessibility.mapChip')}
-        </span>
-        <div className="pointer-events-none absolute bottom-9 left-2.5 z-3 grid gap-0.75 rounded-thumb border border-border bg-card/96 px-3 py-2 text-[12px] text-muted-foreground shadow-report-label min-[560px]:bottom-2.5">
-          <b className="text-foreground">{t('report.chapters.accessibility.legendTitle')}</b>
-          <span className="flex items-center gap-2">
-            <i aria-hidden="true" className="size-2.5 rounded-full bg-primary" />
-            {t('report.chapters.accessibility.legendAddress')}
-          </span>
-          <span className="flex items-center gap-2">
-            <i aria-hidden="true" className="h-2 w-4 rounded-[3px] bg-report-noise" />
-            {t('report.chapters.accessibility.legendVehicle')}
-          </span>
-          <span className="flex items-center gap-2">
-            <i
-              aria-hidden="true"
-              className="h-0.75 w-4 bg-[radial-gradient(circle,var(--report-noise)_1.5px,transparent_1.6px)] bg-size-[5px_3px]"
-            />
-            {t('report.chapters.accessibility.legendWalk')}
-          </span>
-        </div>
+        {!isCar ? (
+          <>
+            <span className="pointer-events-none absolute top-2.5 left-2.5 z-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/96 px-2.75 py-1.25 text-[12.5px] font-bold text-foreground shadow-report-label">
+              <i aria-hidden="true" className="size-2.25 rounded-full bg-report-noise" />
+              {t('report.chapters.accessibility.mapChip')}
+            </span>
+            <div className="pointer-events-none absolute bottom-9 left-2.5 z-3 grid gap-0.75 rounded-thumb border border-border bg-card/96 px-3 py-2 text-[12px] text-muted-foreground shadow-report-label min-[560px]:bottom-2.5">
+              <b className="text-foreground">{t('report.chapters.accessibility.legendTitle')}</b>
+              <span className="flex items-center gap-2">
+                <i aria-hidden="true" className="size-2.5 rounded-full bg-primary" />
+                {t('report.chapters.accessibility.legendAddress')}
+              </span>
+              <span className="flex items-center gap-2">
+                <i aria-hidden="true" className="h-2 w-4 rounded-[3px] bg-report-noise" />
+                {t('report.chapters.accessibility.legendVehicle')}
+              </span>
+              <span className="flex items-center gap-2">
+                <i
+                  aria-hidden="true"
+                  className="h-0.75 w-4 bg-[radial-gradient(circle,var(--report-noise)_1.5px,transparent_1.6px)] bg-size-[5px_3px]"
+                />
+                {t('report.chapters.accessibility.legendWalk')}
+              </span>
+            </div>
+          </>
+        ) : null}
       </div>
 
       <ul className="flex flex-wrap gap-x-5 gap-y-2 px-1 text-small font-semibold">
@@ -120,16 +179,22 @@ export function AccessibilityRouteCard({
             id="accessibility-routes-title"
             className="text-[18px] font-extrabold tracking-[-0.01em]"
           >
-            {t('report.chapters.accessibility.routesTitle')}
+            {t(
+              isCar
+                ? 'report.chapters.accessibility.car.routesTitle'
+                : 'report.chapters.accessibility.routesTitle',
+            )}
           </h3>
-          <ul className="hidden flex-wrap gap-3.5 text-[12px] text-muted-foreground w760:flex">
-            {LEG_KEY.map((item) => (
-              <li key={item.kind} className="inline-flex items-center gap-1.25">
-                <i aria-hidden="true" className={cn('size-2.5 rounded-[3px]', item.dot)} />
-                {t(`report.chapters.accessibility.legKey.${item.kind}`)}
-              </li>
-            ))}
-          </ul>
+          {isCar ? null : (
+            <ul className="hidden flex-wrap gap-3.5 text-[12px] text-muted-foreground w760:flex">
+              {LEG_KEY.map((item) => (
+                <li key={item.kind} className="inline-flex items-center gap-1.25">
+                  <i aria-hidden="true" className={cn('size-2.5 rounded-[3px]', item.dot)} />
+                  {t(`report.chapters.accessibility.legKey.${item.kind}`)}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         {groups.length > 1 ? (
           <div
@@ -154,7 +219,7 @@ export function AccessibilityRouteCard({
                 {t(`report.chapters.accessibility.groups.${option}`)}
                 {option === 'places' ? null : (
                   <span className="ml-1 text-[12px] font-extrabold text-muted-foreground">
-                    {destinationRows(section, option).length}
+                    {groupsByMode[option].length}
                   </span>
                 )}
               </button>
@@ -194,7 +259,9 @@ export function AccessibilityRouteCard({
           ))}
           {rows.length === 0 ? (
             <p className="px-1 py-4 text-[14px] text-muted-foreground">
-              {t('report.chapters.accessibility.search.empty', { query })}
+              {isCar && isPlaces
+                ? t('report.chapters.accessibility.car.unavailable')
+                : t('report.chapters.accessibility.search.empty', { query })}
             </p>
           ) : null}
         </div>
@@ -205,7 +272,7 @@ export function AccessibilityRouteCard({
         )}
         <p className="mt-2.5 flex gap-2 text-[12.5px] leading-[1.45] text-muted-foreground">
           <InfoIcon aria-hidden="true" className="mt-0.5 size-3.75 shrink-0" />
-          <span>{sourceNote}</span>
+          <span>{isCar ? t('report.chapters.accessibility.car.source') : sourceNote}</span>
         </p>
       </div>
     </section>

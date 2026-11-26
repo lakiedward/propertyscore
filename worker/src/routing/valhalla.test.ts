@@ -160,6 +160,39 @@ describe('createValhallaClient', () => {
     });
   });
 
+  it('requests a direct route by private car without pedestrian options or a departure time', async () => {
+    const { fetcher, calls } = fakeFetch(() => ({
+      status: 200,
+      json: {
+        trip: {
+          summary: { length: 3.5, time: 480 },
+          legs: [{ shape: '_njgvA_idng@o}@ozD_|Bo}@' }],
+        },
+      },
+    }));
+    const client = createValhallaClient('http://valhalla:8002', { fetch: fetcher });
+    expect(await client.route({ origin, destination, costing: 'auto' })).toEqual({
+      seconds: 480,
+      meters: 3500,
+      polyline6: '_njgvA_idng@o}@ozD_|Bo}@',
+    });
+    expect(calls).toEqual([
+      {
+        url: 'http://valhalla:8002/route',
+        body: {
+          locations: [
+            { lat: origin.lat, lon: origin.lng },
+            { lat: destination.lat, lon: destination.lng },
+          ],
+          costing: 'auto',
+          costing_options: {},
+          units: 'kilometers',
+          directions_type: 'none',
+        },
+      },
+    ]);
+  });
+
   it('reads the routing graph date from the status', async () => {
     const client = createValhallaClient('http://valhalla:8002', {
       fetch: fakeFetch(() => ({ status: 200, json: { tileset_last_modified: 1761955200 } }))

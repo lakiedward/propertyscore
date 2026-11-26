@@ -1,8 +1,90 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { accessibilitySection } from './accessibility.report.ts';
+import type { Sql } from '../../db/sql.ts';
+import { createLogger } from '../../lib/logger.ts';
+import type { ValhallaClient } from '../../routing/valhalla.ts';
+import { accessibilityReportSection, accessibilitySection } from './accessibility.report.ts';
+
+const routeFromTestAddress = { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' };
+
+function withoutTransit() {
+  const sql = vi.fn((parts: TemplateStringsArray, ...values: unknown[]) => {
+    const query = parts.join(' ');
+    if (query.includes('from private.cell_scores')) {
+      return [{ score: null, inputs: { reason: 'no_transit_data' }, city_id: 'test-city' }];
+    }
+    if (query.includes('from public.cities')) {
+      expect(query).toContain('d.is_active');
+      expect(values).toEqual(['test-city']);
+      return query;
+    }
+    if (query.includes('from private.key_destinations')) {
+      return [
+        {
+          id: 'test-station',
+          kind: 'station',
+          label_ro: 'Gară de test',
+          label_en: 'Test station',
+          longitude: 21.224,
+          latitude: 45.753,
+        },
+      ];
+    }
+    throw new Error(`Unexpected test query: ${query}`);
+  });
+  const route = vi.fn<ValhallaClient['route']>();
+  const router: ValhallaClient = {
+    route,
+    matrix: vi.fn<ValhallaClient['matrix']>(),
+    isochrones: vi.fn<ValhallaClient['isochrones']>(),
+    tilesetDate: vi.fn<ValhallaClient['tilesetDate']>(),
+  };
+  return {
+    route,
+    context: {
+      sql: sql as unknown as Sql,
+      snapshotId: 'test-snapshot',
+      cellId: 'test-cell',
+      citySlug: 'test-city',
+      latitude: 45.75,
+      longitude: 21.22,
+      params: {},
+      logger: createLogger('error'),
+      router,
+    },
+  };
+}
 
 describe('accessibilitySection', () => {
+  it('builds driving routes from the address without a transit score or transit row', async () => {
+    const { context, route } = withoutTransit();
+    route.mockResolvedValueOnce(routeFromTestAddress);
+
+    const section = await accessibilityReportSection.build(context);
+    expect(route).toHaveBeenCalledExactlyOnceWith({
+      origin: { lng: 21.22, lat: 45.75 },
+      destination: { lng: 21.224, lat: 45.753 },
+      costing: 'auto',
+      signal: expect.any(AbortSignal) as AbortSignal,
+    });
+    expect(section).toMatchObject({
+      status: 'car_only',
+      destinations: [{ car_route: routeFromTestAddress, minutes: null, route: null, path: [] }],
+    });
+    expect(section).not.toHaveProperty('components');
+    expect(section).not.toHaveProperty('stops');
+    expect(section).not.toHaveProperty('data_quality');
+  });
+
+  it('keeps the no-data state when driving also has no route', async () => {
+    const { context, route } = withoutTransit();
+    route.mockResolvedValueOnce(null);
+    await expect(accessibilityReportSection.build(context)).resolves.toEqual({
+      schema_version: 1,
+      status: 'no_data',
+    });
+  });
+
   it('names the stops, the lines and the key destinations of the cell', () => {
     const section = accessibilitySection({
       inputs: {
@@ -102,6 +184,9 @@ describe('accessibilitySection', () => {
       stops: [],
       routes: [],
       destinations: [label('gara'), label('far')],
+      carRoutes: new Map([
+        ['far', { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' }],
+      ]),
       addressTrips: new Map([
         [
           'gara',
@@ -126,7 +211,15 @@ describe('accessibilitySection', () => {
 
     expect(section.destinations).toMatchObject([
       { id: 'gara', walk: 7, wait: 1, ride: 4, transfers: 0, route: { ref: '18' } },
-      { id: 'far', minutes: null, walk: null, wait: null, ride: null, route: null },
+      {
+        id: 'far',
+        minutes: null,
+        walk: null,
+        wait: null,
+        ride: null,
+        route: null,
+        car_route: { seconds: 480, meters: 3500 },
+      },
     ]);
   });
 
@@ -184,6 +277,9 @@ describe('accessibilitySection', () => {
         ['high_school:a2', { transitMinutes: 12, walkMinutes: 9.6 }],
         ['high_school:a3', { transitMinutes: null, walkMinutes: null }],
         ['faculty:n4', { transitMinutes: 18, walkMinutes: 30 }],
+      ]),
+      carRoutes: new Map([
+        ['high_school:a3', { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' }],
       ]),
       addressTrips: new Map([
         [
@@ -272,6 +368,12 @@ describe('accessibilitySection', () => {
           ride: 12,
           route: { ref: '4', colour: '#E3A900' },
           path: [{ mode: 'walk' }, { mode: 'transit', route: { ref: '4' } }],
+        },
+        {
+          id: 'high_school:a3',
+          minutes: null,
+          path: [],
+          car_route: { seconds: 480, meters: 3500 },
         },
       ],
       faculties: [

@@ -19,15 +19,18 @@ export function AccessibilityChapter({ report }: ReportChapterProps) {
   const { result } = report;
   const section = result.sections.accessibility;
   const category = result.categories.accessibility;
-  if (category?.score == null || !section) {
+  if (category?.score == null || section?.status !== 'scored') {
     return (
-      <section aria-labelledby={TITLE_ID}>
+      <section aria-labelledby={TITLE_ID} className="grid min-w-0 gap-4">
         <ReportChapterHead
           hue="accessibility"
           titleId={TITLE_ID}
           eyebrow={t('report.categories.accessibility.name')}
           title={t('report.chapters.accessibility.headlineNoData')}
         />
+        {section?.status === 'car_only' ? (
+          <AccessibilityRouteCard report={report} section={section} />
+        ) : null}
       </section>
     );
   }

@@ -6,7 +6,7 @@ import { boundsAround } from '@/components/report/report-map.utils';
 import { REACH_MINUTES, type ReachShare } from '../../../accessibility.utils';
 import { areaCollection, reportCenter } from '../../../report-map.utils';
 import type { ReadyReport } from '../../../report.types';
-import type { AccessibilitySection } from '../../../sections/accessibility.types';
+import type { ScoredAccessibilitySection } from '../../../sections/accessibility.types';
 
 const BAND_TOKENS: Readonly<Record<ReachShare['minutes'], string>> = {
   15: '--report-accessibility',
@@ -19,7 +19,7 @@ const BOUNDS_MARGIN = 0.08;
 
 type AccessibilityReachMapProps = {
   report: ReadyReport;
-  reach: NonNullable<AccessibilitySection['reach']>;
+  reach: NonNullable<ScoredAccessibilitySection['reach']>;
   minutes: ReachShare['minutes'];
 };
 

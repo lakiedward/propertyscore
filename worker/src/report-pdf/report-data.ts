@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { carRouteSchema } from '../report/car-route-contract.ts';
 import { investmentSectionSchema } from '../report/investment-contract.ts';
 import { CATEGORY_KEYS, type CategoryKey } from '../scoring/categories.ts';
 
@@ -67,7 +68,7 @@ const safetySchema = z.object({
     .optional(),
 });
 
-const accessibilitySchema = z.object({
+const scoredAccessibilitySchema = z.object({
   status: z.literal('scored'),
   data_quality: z.enum(['gtfs', 'osm_only']),
   reference_date: z.iso.date().nullable().catch(null),
@@ -94,6 +95,7 @@ const accessibilitySchema = z.object({
       kind: z.string(),
       label: z.object({ ro: z.string(), en: z.string() }),
       location: position,
+      car_route: carRouteSchema.nullable().default(null).catch(null),
       minutes: z.number().nullable(),
       by_walking: z.boolean(),
       walk: z.number().nullable(),
@@ -131,6 +133,11 @@ const accessibilitySchema = z.object({
     .nullable()
     .default(null),
 });
+
+const accessibilitySchema = z.discriminatedUnion('status', [
+  scoredAccessibilitySchema,
+  scoredAccessibilitySchema.pick({ destinations: true }).extend({ status: z.literal('car_only') }),
+]);
 
 const fifteenMinuteSchema = z.object({
   status: z.literal('scored'),

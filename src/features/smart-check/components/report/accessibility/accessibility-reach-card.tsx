@@ -9,7 +9,7 @@ import {
   type ReachShare,
 } from '../../../accessibility.utils';
 import type { ReadyReport } from '../../../report.types';
-import type { AccessibilitySection } from '../../../sections/accessibility.types';
+import type { ScoredAccessibilitySection } from '../../../sections/accessibility.types';
 import { AccessibilityReachMap } from './accessibility-reach-map';
 
 const DEFAULT_MINUTES: ReachShare['minutes'] = 30;
@@ -22,7 +22,7 @@ const KEY_SWATCHES = [
 
 type AccessibilityReachCardProps = {
   report: ReadyReport;
-  section: AccessibilitySection;
+  section: ScoredAccessibilitySection;
 };
 
 export function AccessibilityReachCard({ report, section }: AccessibilityReachCardProps) {

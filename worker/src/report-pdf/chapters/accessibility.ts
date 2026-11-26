@@ -1,3 +1,4 @@
+import { decodePolyline6 } from '../../routing/polyline.ts';
 import type { ChapterBuilder } from '../chapter.ts';
 import {
   categoryEyebrow,
@@ -12,6 +13,7 @@ import {
 import { esc, reportFormat, labelFor } from '../format.ts';
 import { DESTINATION_KINDS, TRANSIT_MODES } from '../labels.ts';
 import {
+  addressDot,
   addressMarker,
   collection,
   mapHtml,
@@ -25,7 +27,7 @@ import { categoryTheme } from '../theme.ts';
 
 type Accessibility = NonNullable<ReportData['sections']['accessibility']>;
 type Destination = Accessibility['destinations'][number];
-type Reach = NonNullable<Accessibility['reach']>;
+type Reach = NonNullable<Extract<Accessibility, { status: 'scored' }>['reach']>;
 
 const NEAR_STOP_MIN = 5;
 const MAP_REACH_M = 4500;
@@ -108,6 +110,67 @@ function tripLegs(locale: ReportLocale, destination: Destination): string {
 function tripRow(locale: ReportLocale, destination: Destination): string {
   const kind = kindOf(destination);
   return `<div class="acr" style="--c:${kind.color}">${iconTile(kind.icon, kind.color, `color-mix(in srgb,${kind.color} 13%,#fff)`)}<span class="acr-t"><b>${esc(destination.label[locale])}</b><small>${tripDetail(locale, destination)}</small></span><span class="acr-b">${tripLegs(locale, destination)}</span><span class="acr-m"><b>${String(Math.round(destination.minutes ?? 0))}</b> min</span></div>`;
+}
+
+function carCard(
+  report: ReportData,
+  destinations: readonly Destination[],
+  center: [number, number],
+) {
+  const { t, formatDistance, formatNumber } = reportFormat(report.locale);
+  const title = t('Mașină personală', 'Private car');
+  const routes = destinations
+    .flatMap((destination) => {
+      const route = destination.car_route;
+      return route ? [{ destination, route, coordinates: decodePolyline6(route.polyline6) }] : [];
+    })
+    .sort((left, right) => left.route.seconds - right.route.seconds);
+  if (routes.length === 0) {
+    return {
+      map: null,
+      html: `<section class="acW-l"><h3>${title}</h3>${footnote(t('Nu sunt disponibile trasee cu mașina către locurile importante pentru acest raport.', 'Driving routes to key places are not available for this report.'))}</section>`,
+    };
+  }
+
+  const minutesLabel = (seconds: number) => formatNumber(Math.max(1, Math.round(seconds / 60)));
+  const map: MapSpec = {
+    id: 'map-accessibility-car',
+    center,
+    fit: [center, ...routes.flatMap(({ coordinates }) => coordinates)],
+    padding: 64,
+    maxZoom: 16,
+    layers: [
+      ...routes.flatMap(({ destination, coordinates }) => {
+        const data = collection([{ type: 'LineString', coordinates }]);
+        return [
+          { kind: 'line' as const, data, color: '#FFFFFF', width: 7 },
+          { kind: 'line' as const, data, color: kindOf(destination).color, width: 4 },
+        ];
+      }),
+      ...routes.map(({ destination, coordinates }) => ({
+        kind: 'circle' as const,
+        data: points([coordinates.at(-1) ?? destination.location]),
+        color: kindOf(destination).color,
+        radius: 4,
+      })),
+    ],
+    markers: [addressDot(center)],
+  };
+  const rows = routes
+    .map(({ destination, route }) => {
+      const kind = kindOf(destination);
+      return `<div class="acr" style="--c:${kind.color}">${iconTile(kind.icon, kind.color, `color-mix(in srgb,${kind.color} 13%,#fff)`)}<span class="acr-t"><b>${esc(destination.label[report.locale])}</b></span><span>${esc(formatDistance(route.meters))}</span><span class="acr-m"><b>${minutesLabel(route.seconds)}</b> min</span></div>`;
+    })
+    .join('');
+  const note = t(
+    'Sunt afișate doar traseele calculate pe drumuri din OpenStreetMap (Valhalla). Duratele nu includ traficul în timp real sau parcarea și nu influențează scorul.',
+    'Only routes calculated on OpenStreetMap roads (Valhalla) are shown. Travel times do not include live traffic or parking and do not affect the score.',
+  );
+  const departure = t('Adresa de plecare: {0}', 'Departure address: {0}', report.addressText);
+  return {
+    map,
+    html: `<section class="acW-l"><div class="ac-h"><div><h3>${title}</h3><p class="hint">${esc(departure)}</p></div></div>${mapHtml(report.locale, map)}<div class="acd">${rows}</div>${footnote(note)}</section>`,
+  };
 }
 
 function reachColour(minutes: number): string {
@@ -253,15 +316,24 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
   const summary = report.categories.accessibility;
   const section = report.sections.accessibility;
   const theme = categoryTheme(report.locale, 'accessibility');
-  if (!section) {
+  const center: [number, number] = [report.longitude, report.latitude];
+  if (section?.status !== 'scored') {
     const head = chapterHead(report.locale, {
-      eyebrow: categoryEyebrow(report.locale, 'accessibility', summary),
+      eyebrow: categoryEyebrow(
+        report.locale,
+        'accessibility',
+        section?.status === 'car_only' ? { ...summary, score: null } : summary,
+      ),
       color: theme.color,
       title: t(
         'Datele despre transportul public nu sunt disponibile pentru această adresă',
         'Public transport data is not available for this address',
       ),
     });
+    if (section?.status === 'car_only') {
+      const car = carCard(report, section.destinations, center);
+      return { html: chapter(head + car.html), maps: car.map ? [car.map] : [] };
+    }
     return {
       html: chapter(
         head + scoreCard('accessibility', report) + chapterSources(report, ['accessibility']),
@@ -301,7 +373,6 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
             better,
           ),
   });
-  const center: [number, number] = [report.longitude, report.latitude];
   const reachable = section.destinations
     .filter((destination) => destination.minutes !== null)
     .sort((left, right) => (left.minutes ?? 0) - (right.minutes ?? 0));
@@ -392,11 +463,12 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
       ? `<p class="hint">${t('Nu am putut calcula drumurile spre locurile importante.', 'We could not calculate journeys to key destinations.')}</p>`
       : `<div class="acd acp-l">${reachable.map((destination) => tripRow(report.locale, destination)).join('')}</div>`;
   const reach = section.reach ? reachCard(report.locale, section.reach, center) : null;
+  const car = carCard(report, section.destinations, center);
   const body = `<section class="acW"><div class="acmap acW-m">${mapHtml(report.locale, map, mapOverlay)}<div class="rleg">${legend}</div></div><div class="acW-l"><div class="acp"><div class="ac-h"><div><h3>${t('Cât faci până acolo, dimineața la 8', 'How long it takes to get there at 8 am')}</h3></div><div class="legkey"><span><i style="background:#52685B"></i>${t('pe jos', 'on foot')}</span><span><i style="background:#C9A44A"></i>${t('așteptare', 'waiting')}</span><span><i style="background:#8A8F99"></i>${t('cu linia', 'in transit')}</span></div></div>${trips}</div></div>${footnote(`${schedule} ${routesNote}`)}</section>`;
   return {
     html: chapter(
-      `${head}${body}<div class="sfB-rest">${scoreCard('accessibility', report)}${reach?.html ?? ''}${chapterSources(report, ['accessibility'])}</div>`,
+      `${head}${body}${car.html}<div class="sfB-rest">${scoreCard('accessibility', report)}${reach?.html ?? ''}${chapterSources(report, ['accessibility'])}</div>`,
     ),
-    maps: reach ? [map, reach.map] : [map],
+    maps: [map, ...(car.map ? [car.map] : []), ...(reach ? [reach.map] : [])],
   };
 };

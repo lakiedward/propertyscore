@@ -11,6 +11,7 @@ import {
 import { accessibilitySectionSchema } from './sections/accessibility.schemas';
 
 const section = accessibilitySectionSchema.parse(FREIDORF_REPORT_RESULT.accessibility);
+if (section.status !== 'scored') throw new Error('The fixture has no scored accessibility');
 
 describe('destinationRows', () => {
   const rows = destinationRows(section);
@@ -36,6 +37,64 @@ describe('destinationRows', () => {
     const riden = rows.find((row) => row.line !== null && row.boardingStop !== null);
     const stop = section.stops.find((item) => item.name === riden?.boardingStop);
     expect(stop?.routes).toContain(riden?.line?.ref);
+  });
+
+  it('shows a road route even when the same destination is not reachable without a car', () => {
+    const withCar = accessibilitySectionSchema.parse({
+      ...section,
+      destinations: section.destinations.map((destination, index) =>
+        index === 0
+          ? {
+              ...destination,
+              minutes: null,
+              car_route: { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' },
+            }
+          : destination,
+      ),
+    });
+
+    expect(destinationRows(withCar, 'places', 'car')).toMatchObject([
+      {
+        id: section.destinations[0]?.id,
+        minutes: 8,
+        carDistanceM: 3500,
+        line: null,
+        boardingStop: null,
+        legs: [],
+        path: [
+          {
+            mode: 'car',
+            coordinates: [
+              [21.22, 45.75],
+              [21.223, 45.751],
+              [21.224, 45.753],
+            ],
+          },
+        ],
+        end: [21.224, 45.753],
+      },
+    ]);
+    expect(destinationRows(withCar)).toHaveLength(section.destinations.length - 1);
+    expect(destinationRows(section, 'places', 'car')).toEqual([]);
+  });
+
+  it.each([
+    { seconds: 0, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' },
+    { seconds: 480, meters: -1, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' },
+    { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@' },
+    { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@~' },
+    { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@!?' },
+  ])('omits malformed driving data without losing the transit trips (%j)', (carRoute) => {
+    const parsed = accessibilitySectionSchema.parse({
+      ...section,
+      destinations: section.destinations.map((destination) => ({
+        ...destination,
+        car_route: carRoute,
+      })),
+    });
+
+    expect(destinationRows(parsed, 'places', 'car')).toEqual([]);
+    expect(destinationRows(parsed)).toEqual(rows);
   });
 });
 
