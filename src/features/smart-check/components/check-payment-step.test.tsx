@@ -1,5 +1,6 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
+import { changeLocale } from '@/i18n/i18n';
 import en from '@/i18n/locales/en/smartCheck.json';
 import ro from '@/i18n/locales/ro/smartCheck.json';
 import { signedInAs, TEST_USER_ID } from '@/test/factories/auth';
@@ -92,6 +93,23 @@ describe('CheckPaymentStep', () => {
     expect(
       screen.queryByRole('button', { name: ro.check.payment.generate }),
     ).not.toBeInTheDocument();
+  });
+
+  it('reformats the same checkout price when the language changes', async () => {
+    server.use(http.get(unlimitedAccessUrl, () => HttpResponse.json([{ user_id: TEST_USER_ID }])));
+    await renderPaymentStep({ auth: signedInAs('user') });
+
+    const romanian = within(screen.getByRole('complementary', { name: ro.check.summary.product }));
+    expect(await romanian.findAllByText('0 lei')).toHaveLength(3);
+
+    await act(async () => {
+      await changeLocale('en');
+    });
+
+    const english = within(screen.getByRole('complementary', { name: en.check.summary.product }));
+    expect(english.getAllByText('RON 0')).toHaveLength(3);
+    expect(english.queryByText('0 lei')).not.toBeInTheDocument();
+    expect(screen.getByText(checkoutEyebrow(en.check.eyebrow, 'RON 0'))).toBeVisible();
   });
 
   it('does not quote a total or offer generation when access cannot be checked', async () => {

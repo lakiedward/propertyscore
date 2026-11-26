@@ -22,7 +22,7 @@ type CheckHeroProps = {
 };
 
 export function CheckHero({ step, priceRon = CHECK_PRICE_RON }: CheckHeroProps) {
-  const { t } = useTranslation('smartCheck');
+  const { t, i18n } = useTranslation('smartCheck');
   const current = CHECK_STEPS.indexOf(step);
   const BadgeIcon = BADGE_ICONS[step];
   const progress = { number: Math.min(current + 1, ORDER_STEP_COUNT), total: ORDER_STEP_COUNT };
@@ -38,7 +38,10 @@ export function CheckHero({ step, priceRon = CHECK_PRICE_RON }: CheckHeroProps) 
             <p className="text-caption font-extrabold tracking-label text-cta uppercase">
               {priceRon === null
                 ? t('check.eyebrowWithoutPrice', progress)
-                : t('check.eyebrow', { ...progress, price: formatPrice(priceRon, 'RON') })}
+                : t('check.eyebrow', {
+                    ...progress,
+                    price: formatPrice(priceRon, 'RON', i18n.resolvedLanguage),
+                  })}
             </p>
             <h1
               id="check-title"
