@@ -37,6 +37,45 @@ describe('destinationRows', () => {
     const stop = section.stops.find((item) => item.name === riden?.boardingStop);
     expect(stop?.routes).toContain(riden?.line?.ref);
   });
+
+  it('shows a road route even when the same destination is not reachable without a car', () => {
+    const withCar = {
+      ...section,
+      destinations: section.destinations.map((destination, index) =>
+        index === 0
+          ? {
+              ...destination,
+              minutes: null,
+              car_route: { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' },
+            }
+          : destination,
+      ),
+    };
+
+    expect(destinationRows(withCar, 'places', 'car')).toMatchObject([
+      {
+        id: section.destinations[0]?.id,
+        minutes: 8,
+        carDistanceM: 3500,
+        line: null,
+        boardingStop: null,
+        legs: [],
+        path: [
+          {
+            mode: 'car',
+            coordinates: [
+              [21.22, 45.75],
+              [21.223, 45.751],
+              [21.224, 45.753],
+            ],
+          },
+        ],
+        end: [21.224, 45.753],
+      },
+    ]);
+    expect(destinationRows(withCar)).toHaveLength(section.destinations.length - 1);
+    expect(destinationRows(section, 'places', 'car')).toEqual([]);
+  });
 });
 
 describe('nearestStopsSummary', () => {

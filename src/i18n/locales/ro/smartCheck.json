@@ -482,6 +482,18 @@
         "minutes": "{{minutes}} min",
         "min": "min",
         "routesTitle": "Cât faci până acolo, dimineața la 8",
+        "travelMode": "Mod de deplasare",
+        "transitMode": "Transport public și pe jos",
+        "car": {
+          "mode": "Mașină personală",
+          "mapLabel": "Harta traseelor cu mașina personală",
+          "mapChip": "Trasee cu mașina",
+          "legend": "Traseu rutier",
+          "routesTitle": "Cât faci cu mașina personală",
+          "rowLabel": "{{name}}, {{minutes}} min cu mașina, {{distance}}",
+          "unavailable": "Nu sunt disponibile trasee cu mașina către locurile importante pentru acest raport.",
+          "source": "Sunt afișate doar traseele calculate pe drumuri din OpenStreetMap (Valhalla). Duratele nu includ traficul în timp real sau parcarea și nu influențează scorul."
+        },
         "rowLabel": "{{name}}, {{minutes}} minute",
         "walkFaster": "{{minutes}} min pe jos, mai repede decât cu linia",
         "walkDistance": "{{distance}} pe jos",

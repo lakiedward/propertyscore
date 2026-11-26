@@ -51,7 +51,15 @@ export function DestinationRow({ row, isPick = false, isSelected, onSelect }: De
     <button
       type="button"
       aria-pressed={isSelected}
-      aria-label={t('report.chapters.accessibility.rowLabel', { name, minutes: row.minutes })}
+      aria-label={
+        row.carDistanceM === null
+          ? t('report.chapters.accessibility.rowLabel', { name, minutes: row.minutes })
+          : t('report.chapters.accessibility.car.rowLabel', {
+              name,
+              minutes: row.minutes,
+              distance: formatDistanceM(row.carDistanceM),
+            })
+      }
       onClick={() => {
         onSelect(row.id);
       }}
@@ -87,7 +95,9 @@ export function DestinationRow({ row, isPick = false, isSelected, onSelect }: De
           ) : null}
         </b>
         <small className="flex flex-wrap items-center gap-1.5 text-[13px] text-muted-foreground">
-          {row.isWalkOnly && row.walkDistanceM !== null && isPick ? (
+          {row.carDistanceM !== null ? (
+            formatDistanceM(row.carDistanceM)
+          ) : row.isWalkOnly && row.walkDistanceM !== null && isPick ? (
             t('report.chapters.accessibility.walkDistance', {
               distance: formatDistanceM(row.walkDistanceM),
             })
@@ -105,24 +115,26 @@ export function DestinationRow({ row, isPick = false, isSelected, onSelect }: De
           )}
         </small>
       </span>
-      <span className="col-span-2 flex h-5 gap-0.5 overflow-hidden rounded-md w760:col-span-1 w760:col-start-3 w760:row-start-1">
-        {row.legs.map((leg) => (
-          <i
-            key={leg.kind}
-            title={t(`report.chapters.accessibility.legs.${leg.kind}`, { minutes: leg.minutes })}
-            className={cn(
-              'grid min-w-0 place-content-center overflow-hidden text-[0px] font-extrabold text-on-inverse not-italic w760:text-[10.5px]',
-              LEG_CLASSES[leg.kind],
-              leg.kind === 'ride' && row.swatch.fill,
-            )}
-            style={{ flex: Math.max(leg.minutes, MIN_LEG_FLEX) }}
-          >
-            {row.isWalkOnly
-              ? t('report.chapters.accessibility.legs.walk', { minutes: leg.minutes })
-              : leg.minutes}
-          </i>
-        ))}
-      </span>
+      {row.carDistanceM === null ? (
+        <span className="col-span-2 flex h-5 gap-0.5 overflow-hidden rounded-md w760:col-span-1 w760:col-start-3 w760:row-start-1">
+          {row.legs.map((leg) => (
+            <i
+              key={leg.kind}
+              title={t(`report.chapters.accessibility.legs.${leg.kind}`, { minutes: leg.minutes })}
+              className={cn(
+                'grid min-w-0 place-content-center overflow-hidden text-[0px] font-extrabold text-on-inverse not-italic w760:text-[10.5px]',
+                LEG_CLASSES[leg.kind],
+                leg.kind === 'ride' && row.swatch.fill,
+              )}
+              style={{ flex: Math.max(leg.minutes, MIN_LEG_FLEX) }}
+            >
+              {row.isWalkOnly
+                ? t('report.chapters.accessibility.legs.walk', { minutes: leg.minutes })
+                : leg.minutes}
+            </i>
+          ))}
+        </span>
+      ) : null}
       <span className="col-start-3 row-start-1 text-right text-[14px] font-bold text-muted-foreground w760:col-start-4">
         <b
           className="text-[22px] font-extrabold tracking-[-0.03em] tabular-nums w760:text-[26px]"

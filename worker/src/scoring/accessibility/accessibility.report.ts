@@ -7,6 +7,7 @@ import { routeFromAddress } from './accessibility.address.ts';
 import { listCityCells, readTravelRow } from './accessibility.db.ts';
 import { parseAccessibilityParams } from './accessibility.params.ts';
 import { buildReach, decodeTravelRow } from './accessibility.reach.ts';
+import { routeByCar } from './car-routes.ts';
 import type { EducationKind, EducationPlace } from './education-places.ts';
 import type { NeighbourhoodPlace } from './osm-transit.ts';
 import type { DestinationTiming, Itinerary } from './routing.ts';
@@ -224,6 +225,7 @@ function position(row: { longitude: number; latitude: number }): [number, number
 }
 
 type RouteLabel = (key: string | null) => JsonObject | null;
+type CarRoutes = Awaited<ReturnType<typeof routeByCar>>;
 
 function fastestMinutes(timing: DestinationTiming | undefined): number | null {
   const values = [timing?.transitMinutes, timing?.walkMinutes].filter(
@@ -239,15 +241,18 @@ function educationGroup(
   trips: ReadonlyMap<string, Itinerary>,
   routeKeyOf: (routeId: string | null) => string | null,
   routeLabel: RouteLabel,
+  carRoutes: CarRoutes | undefined,
 ): JsonObject[] {
   return places
     .filter((place) => place.kind === kind)
     .flatMap((place) => {
       const timing = timings.get(place.id);
       const minutes = fastestMinutes(timing);
-      if (minutes === null) return [];
-      const byWalking = timing?.walkMinutes === minutes;
-      const planned = trips.get(place.id);
+      const carRoute = carRoutes?.get(place.id);
+      if (minutes === null && !carRoute) return [];
+      const roundedMinutes = minutes === null ? null : Math.round(minutes);
+      const byWalking = minutes !== null && timing?.walkMinutes === minutes;
+      const planned = minutes === null ? undefined : trips.get(place.id);
       const trip = byWalking ? undefined : planned;
       const legs = byWalking ? planned?.walkLegs : planned?.legs;
       return [
@@ -257,13 +262,14 @@ function educationGroup(
           label: { ro: place.name, en: place.name },
           group: place.group,
           location: position({ longitude: place.lng, latitude: place.lat }),
-          minutes: Math.round(minutes),
+          minutes: roundedMinutes,
           by_walking: byWalking,
-          walk: byWalking ? Math.round(minutes) : trip ? Math.round(trip.walkMinutes) : null,
+          walk: byWalking ? roundedMinutes : trip ? Math.round(trip.walkMinutes) : null,
           wait: trip ? Math.round(trip.waitMinutes) : null,
           ride: trip ? Math.round(trip.rideMinutes) : null,
           transfers: trip ? trip.transfers : null,
           route: trip ? routeLabel(routeKeyOf(trip.routeId)) : null,
+          ...(carRoute ? { car_route: carRoute } : {}),
           path: (legs ?? []).map((leg) => ({
             mode: leg.mode,
             route: routeLabel(routeKeyOf(leg.routeId)),
@@ -272,7 +278,7 @@ function educationGroup(
         },
       ];
     })
-    .sort((left, right) => left.minutes - right.minutes);
+    .sort((left, right) => (left.minutes ?? Infinity) - (right.minutes ?? Infinity));
 }
 
 export function accessibilitySection(input: {
@@ -284,6 +290,7 @@ export function accessibilitySection(input: {
   addressTrips?: ReadonlyMap<string, Itinerary>;
   addressTimings?: ReadonlyMap<string, DestinationTiming>;
   education?: readonly EducationPlace[];
+  carRoutes?: CarRoutes;
   tripRoutes?: readonly RouteRow[];
   routeKeyOf?: (routeId: string | null) => string | null;
   reach?: JsonObject | null;
@@ -354,6 +361,7 @@ export function accessibilitySection(input: {
       const planned = entry.minutes === null ? undefined : addressTrips.get(destination.id);
       const trip = entry.by_walking ? undefined : planned;
       const legs = entry.by_walking ? planned?.walkLegs : planned?.legs;
+      const carRoute = input.carRoutes?.get(destination.id);
       return [
         {
           id: destination.id,
@@ -367,6 +375,7 @@ export function accessibilitySection(input: {
           ride: trip ? Math.round(trip.rideMinutes) : entry.ride,
           transfers: trip ? trip.transfers : entry.transfers,
           route: routeLabel(trip ? routeKeyOf(trip.routeId) : entry.route_key),
+          ...(carRoute ? { car_route: carRoute } : {}),
           path: (legs ?? []).map((leg) => ({
             mode: leg.mode,
             route: routeLabel(routeKeyOf(leg.routeId)),
@@ -383,6 +392,7 @@ export function accessibilitySection(input: {
         addressTrips,
         routeKeyOf,
         routeLabel,
+        input.carRoutes,
       ),
       faculties: educationGroup(
         'faculty',
@@ -391,6 +401,7 @@ export function accessibilitySection(input: {
         addressTrips,
         routeKeyOf,
         routeLabel,
+        input.carRoutes,
       ),
     },
     reach: input.reach ?? null,
@@ -399,7 +410,7 @@ export function accessibilitySection(input: {
 
 export const accessibilityReportSection: ReportSection = {
   key: 'accessibility',
-  build: async ({ sql, snapshotId, cellId, latitude, longitude, params, logger }) => {
+  build: async ({ sql, snapshotId, cellId, latitude, longitude, params, logger, router }) => {
     const cell = await readCellCategory(sql, snapshotId, cellId, 'accessibility');
     if (!cell) return null;
     const inputs = inputsSchema.safeParse(cell.inputs);
@@ -417,6 +428,7 @@ export const accessibilityReportSection: ReportSection = {
       ),
     ]);
     const accessibilityParams = parseAccessibilityParams(sectionParams(params, 'accessibility'));
+    const address = { lng: longitude, lat: latitude };
     const {
       trips: addressTrips,
       timings: addressTimings,
@@ -427,7 +439,7 @@ export const accessibilityReportSection: ReportSection = {
       logger,
       snapshotId,
       cityId: cell.cityId,
-      address: { lng: longitude, lat: latitude },
+      address,
       destinations: destinations
         .filter((destination) =>
           transit.data.destinations.some(
@@ -441,6 +453,15 @@ export const accessibilityReportSection: ReportSection = {
         })),
       params: accessibilityParams,
     });
+    const carRoutes = routeByCar(
+      router,
+      address,
+      [
+        ...destinations.map(({ id, longitude: lng, latitude: lat }) => ({ id, lng, lat })),
+        ...education,
+      ],
+      logger,
+    );
     const routeKeyOf = routeKeyResolver(
       addressTrips.size === 0 ? [] : await readRouteKeys(sql, snapshotId, cell.cityId),
     );
@@ -469,6 +490,7 @@ export const accessibilityReportSection: ReportSection = {
       addressTrips,
       addressTimings,
       education,
+      carRoutes: await carRoutes,
       tripRoutes,
       routeKeyOf,
       reach,

@@ -102,6 +102,9 @@ describe('accessibilitySection', () => {
       stops: [],
       routes: [],
       destinations: [label('gara'), label('far')],
+      carRoutes: new Map([
+        ['far', { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' }],
+      ]),
       addressTrips: new Map([
         [
           'gara',
@@ -126,7 +129,15 @@ describe('accessibilitySection', () => {
 
     expect(section.destinations).toMatchObject([
       { id: 'gara', walk: 7, wait: 1, ride: 4, transfers: 0, route: { ref: '18' } },
-      { id: 'far', minutes: null, walk: null, wait: null, ride: null, route: null },
+      {
+        id: 'far',
+        minutes: null,
+        walk: null,
+        wait: null,
+        ride: null,
+        route: null,
+        car_route: { seconds: 480, meters: 3500 },
+      },
     ]);
   });
 
@@ -184,6 +195,9 @@ describe('accessibilitySection', () => {
         ['high_school:a2', { transitMinutes: 12, walkMinutes: 9.6 }],
         ['high_school:a3', { transitMinutes: null, walkMinutes: null }],
         ['faculty:n4', { transitMinutes: 18, walkMinutes: 30 }],
+      ]),
+      carRoutes: new Map([
+        ['high_school:a3', { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' }],
       ]),
       addressTrips: new Map([
         [
@@ -272,6 +286,12 @@ describe('accessibilitySection', () => {
           ride: 12,
           route: { ref: '4', colour: '#E3A900' },
           path: [{ mode: 'walk' }, { mode: 'transit', route: { ref: '4' } }],
+        },
+        {
+          id: 'high_school:a3',
+          minutes: null,
+          path: [],
+          car_route: { seconds: 480, meters: 3500 },
         },
       ],
       faculties: [

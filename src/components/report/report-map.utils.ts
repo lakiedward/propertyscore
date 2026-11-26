@@ -1,9 +1,10 @@
 import type { LngLat, LngLatBounds } from '@/components/map/map.config';
 import type { MapFeatureCollection } from '@/components/map/map-canvas';
 
+export { decodePolyline6 } from '../../../worker/src/routing/polyline';
+
 const EARTH_RADIUS_M = 6_371_008.8;
 const RING_STEPS = 96;
-const POLYLINE_PRECISION = 1e6;
 
 function offsetPosition([longitude, latitude]: LngLat, distanceM: number, bearing: number): LngLat {
   const latitudeRad = (latitude * Math.PI) / 180;
@@ -46,29 +47,4 @@ export function lineCollection(lines: readonly (readonly LngLat[])[]): MapFeatur
       geometry: { type: 'LineString', coordinates: [...line] },
     })),
   };
-}
-
-export function decodePolyline6(encoded: string): LngLat[] {
-  const positions: LngLat[] = [];
-  let index = 0;
-  let latitude = 0;
-  let longitude = 0;
-  const readValue = (): number => {
-    let result = 0;
-    let shift = 0;
-    let byte: number;
-    do {
-      byte = encoded.charCodeAt(index) - 63;
-      index += 1;
-      result |= (byte & 0x1f) << shift;
-      shift += 5;
-    } while (byte >= 0x20 && index < encoded.length);
-    return result & 1 ? ~(result >> 1) : result >> 1;
-  };
-  while (index < encoded.length) {
-    latitude += readValue();
-    longitude += readValue();
-    positions.push([longitude / POLYLINE_PRECISION, latitude / POLYLINE_PRECISION]);
-  }
-  return positions;
 }

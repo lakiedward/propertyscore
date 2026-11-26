@@ -5,7 +5,7 @@ import { AddressPin } from '@/components/report/address-pin';
 import { ReportMap } from '@/components/report/report-map';
 import { boundsAround, lineCollection } from '@/components/report/report-map.utils';
 import { cn } from '@/lib/utils';
-import type { DestinationRow } from '../../../accessibility.utils';
+import type { DestinationMode, DestinationRow } from '../../../accessibility.utils';
 import { addressLabel, reportCenter } from '../../../report-map.utils';
 import type { ReadyReport } from '../../../report.types';
 
@@ -22,6 +22,7 @@ type AccessibilityRouteMapProps = {
   rows: readonly DestinationRow[];
   stops: readonly StopPoint[];
   selectedId: string | null;
+  mode: DestinationMode;
   namedId?: string | null;
   className?: string;
 };
@@ -52,6 +53,7 @@ export function AccessibilityRouteMap({
   rows,
   stops,
   selectedId,
+  mode,
   namedId = null,
   className,
 }: AccessibilityRouteMapProps) {
@@ -61,7 +63,7 @@ export function AccessibilityRouteMap({
 
   const overlays: MapOverlay[] = rows.flatMap((row) => {
     const isVisible = selectedId === null || selectedId === row.id;
-    const rides = row.path.filter((leg) => leg.mode === 'transit');
+    const rides = row.path.filter((leg) => leg.mode !== 'walk');
     const walks = row.path.filter((leg) => leg.mode === 'walk');
     return [
       {
@@ -76,7 +78,7 @@ export function AccessibilityRouteMap({
         ),
       },
       {
-        id: `accessibility-ride-${row.id}`,
+        id: `accessibility-${mode === 'car' ? 'car' : 'ride'}-${row.id}`,
         kind: 'line' as const,
         colorToken: row.swatch.token,
         width: selectedId === row.id ? SELECTED_ROUTE_WIDTH : ROUTE_WIDTH,
@@ -156,7 +158,11 @@ export function AccessibilityRouteMap({
 
   return (
     <ReportMap
-      label={t('report.chapters.accessibility.mapLabel')}
+      label={t(
+        mode === 'car'
+          ? 'report.chapters.accessibility.car.mapLabel'
+          : 'report.chapters.accessibility.mapLabel',
+      )}
       errorLabel={t('report.frame.hero.mapError')}
       center={center}
       zoom={14}

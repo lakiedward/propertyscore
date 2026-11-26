@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { carRouteSchema } from '../report/car-route-contract.ts';
 import { investmentSectionSchema } from '../report/investment-contract.ts';
 import { CATEGORY_KEYS, type CategoryKey } from '../scoring/categories.ts';
 
@@ -94,6 +95,7 @@ const accessibilitySchema = z.object({
       kind: z.string(),
       label: z.object({ ro: z.string(), en: z.string() }),
       location: position,
+      car_route: carRouteSchema.nullable().default(null).catch(null),
       minutes: z.number().nullable(),
       by_walking: z.boolean(),
       walk: z.number().nullable(),

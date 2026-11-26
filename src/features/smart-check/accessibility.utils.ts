@@ -1,4 +1,5 @@
 import type { LngLat } from '@/components/map/map.config';
+import { decodePolyline6 } from '@/components/report/report-map.utils';
 import type { AccessibilitySection } from './sections/accessibility.types';
 
 type Destination = AccessibilitySection['destinations'][number];
@@ -65,13 +66,14 @@ export type DestinationRow = {
   label: { ro: string; en: string };
   tag: string | null;
   walkDistanceM: number | null;
+  carDistanceM: number | null;
   minutes: number;
   isWalkOnly: boolean;
   swatch: RouteSwatch;
   line: { ref: string; mode: string; colour: string | null } | null;
   boardingStop: string | null;
   legs: TripLeg[];
-  path: Destination['path'];
+  path: (Destination['path'][number] | { mode: 'car'; coordinates: LngLat[] })[];
   end: LngLat | null;
 };
 
@@ -125,6 +127,7 @@ function legsFor(destination: Destination): TripLeg[] {
 export const DESTINATION_GROUPS = ['places', 'highSchools', 'faculties'] as const;
 
 export type DestinationGroup = (typeof DESTINATION_GROUPS)[number];
+export type DestinationMode = 'transit' | 'car';
 
 function groupDestinations(section: AccessibilitySection, group: DestinationGroup) {
   if (group === 'highSchools') return section.destination_groups.high_schools;
@@ -135,38 +138,49 @@ function groupDestinations(section: AccessibilitySection, group: DestinationGrou
 export function destinationRows(
   section: AccessibilitySection,
   group: DestinationGroup = 'places',
+  mode: DestinationMode = 'transit',
 ): DestinationRow[] {
   const seen = new Map<string, number>();
   return groupDestinations(section, group)
-    .flatMap((destination) =>
-      destination.minutes === null ? [] : [{ destination, minutes: destination.minutes }],
-    )
+    .flatMap((destination) => {
+      const carRoute = mode === 'car' ? destination.car_route : null;
+      const minutes =
+        mode === 'car'
+          ? carRoute && Math.max(1, Math.round(carRoute.seconds / 60))
+          : destination.minutes;
+      return minutes == null ? [] : [{ destination, minutes, carRoute }];
+    })
     .sort((left, right) => left.minutes - right.minutes)
-    .map(({ destination, minutes }) => {
+    .map(({ destination, minutes, carRoute }) => {
       const index = seen.get(destination.kind) ?? 0;
       seen.set(destination.kind, index + 1);
       const palette = KIND_SWATCHES[destination.kind] ?? FALLBACK_SWATCHES;
       const swatch = palette[index % palette.length] ?? ROUTE_SWATCHES.sun;
-      const last = destination.path.at(-1)?.coordinates.at(-1);
+      const path: DestinationRow['path'] = carRoute
+        ? [{ mode: 'car', coordinates: decodePolyline6(carRoute.polyline6) }]
+        : destination.path;
+      const last = path.at(-1)?.coordinates.at(-1);
       return {
         id: destination.id,
         kind: destination.kind,
         label: destination.label,
         tag: destination.group,
-        walkDistanceM: destination.by_walking ? pathMeters(destination.path) : null,
+        walkDistanceM: !carRoute && destination.by_walking ? pathMeters(destination.path) : null,
+        carDistanceM: carRoute?.meters ?? null,
         minutes,
-        isWalkOnly: destination.by_walking,
+        isWalkOnly: !carRoute && destination.by_walking,
         swatch,
-        line: destination.route
-          ? {
-              ref: destination.route.ref ?? '',
-              mode: destination.route.mode,
-              colour: destination.route.colour ?? null,
-            }
-          : null,
-        boardingStop: boardingStopFor(section, destination),
-        legs: legsFor(destination),
-        path: destination.path,
+        line:
+          !carRoute && destination.route
+            ? {
+                ref: destination.route.ref ?? '',
+                mode: destination.route.mode,
+                colour: destination.route.colour ?? null,
+              }
+            : null,
+        boardingStop: carRoute ? null : boardingStopFor(section, destination),
+        legs: carRoute ? [] : legsFor(destination),
+        path,
         end: last ? [last[0], last[1]] : destination.location,
       };
     });

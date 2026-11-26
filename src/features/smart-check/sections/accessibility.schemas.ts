@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { carRouteSchema } from '../../../../worker/src/report/car-route-contract';
 import { isochroneSchema, positionSchema } from './shared.schemas';
 
 const destinationSchema = z.object({
@@ -7,6 +8,7 @@ const destinationSchema = z.object({
   label: z.object({ ro: z.string(), en: z.string() }),
   group: z.string().nullable().default(null),
   location: positionSchema,
+  car_route: carRouteSchema.nullable().default(null).catch(null),
   minutes: z.number().nullable(),
   by_walking: z.boolean(),
   walk: z.number().nullable(),
