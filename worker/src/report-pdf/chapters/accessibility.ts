@@ -26,7 +26,7 @@ import { categoryTheme } from '../theme.ts';
 
 type Accessibility = NonNullable<ReportData['sections']['accessibility']>;
 type Destination = Accessibility['destinations'][number];
-type Reach = NonNullable<Accessibility['reach']>;
+type Reach = NonNullable<Extract<Accessibility, { status: 'scored' }>['reach']>;
 
 const NEAR_STOP_MIN = 5;
 const MAP_REACH_M = 4500;
@@ -314,15 +314,24 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
   const summary = report.categories.accessibility;
   const section = report.sections.accessibility;
   const theme = categoryTheme(report.locale, 'accessibility');
-  if (!section) {
+  const center: [number, number] = [report.longitude, report.latitude];
+  if (section?.status !== 'scored') {
     const head = chapterHead(report.locale, {
-      eyebrow: categoryEyebrow(report.locale, 'accessibility', summary),
+      eyebrow: categoryEyebrow(
+        report.locale,
+        'accessibility',
+        section?.status === 'car_only' ? { ...summary, score: null } : summary,
+      ),
       color: theme.color,
       title: t(
         'Datele despre transportul public nu sunt disponibile pentru această adresă',
         'Public transport data is not available for this address',
       ),
     });
+    if (section?.status === 'car_only') {
+      const car = carCard(report, section.destinations, center);
+      return { html: chapter(head + car.html), maps: car.map ? [car.map] : [] };
+    }
     return {
       html: chapter(
         head + scoreCard('accessibility', report) + chapterSources(report, ['accessibility']),
@@ -362,7 +371,6 @@ export const accessibilityChapter: ChapterBuilder = (report) => {
             better,
           ),
   });
-  const center: [number, number] = [report.longitude, report.latitude];
   const reachable = section.destinations
     .filter((destination) => destination.minutes !== null)
     .sort((left, right) => (left.minutes ?? 0) - (right.minutes ?? 0));

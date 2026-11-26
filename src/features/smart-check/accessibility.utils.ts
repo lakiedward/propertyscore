@@ -1,11 +1,16 @@
 import type { LngLat } from '@/components/map/map.config';
 import { decodePolyline6 } from '@/components/report/report-map.utils';
-import type { AccessibilitySection } from './sections/accessibility.types';
+import type {
+  AccessibilitySection,
+  ScoredAccessibilitySection,
+} from './sections/accessibility.types';
 
 type Destination = AccessibilitySection['destinations'][number];
 
 export function gtfsReferenceDate(section: AccessibilitySection | null | undefined): string | null {
-  return section?.data_quality === 'gtfs' ? section.reference_date : null;
+  return section?.status === 'scored' && section.data_quality === 'gtfs'
+    ? section.reference_date
+    : null;
 }
 
 type RouteSwatch = {
@@ -99,7 +104,10 @@ function pathMeters(path: Destination['path']): number | null {
   return metres > 0 ? Math.round(metres) : null;
 }
 
-function boardingStopFor(section: AccessibilitySection, destination: Destination): string | null {
+function boardingStopFor(
+  section: ScoredAccessibilitySection,
+  destination: Destination,
+): string | null {
   const ref = destination.route?.ref;
   const board = destination.path.find((leg) => leg.mode === 'transit')?.coordinates[0];
   if (!ref || !board) return null;
@@ -140,6 +148,7 @@ export function destinationRows(
   group: DestinationGroup = 'places',
   mode: DestinationMode = 'transit',
 ): DestinationRow[] {
+  if (mode === 'transit' && section.status !== 'scored') return [];
   const seen = new Map<string, number>();
   return groupDestinations(section, group)
     .flatMap((destination) => {
@@ -178,7 +187,8 @@ export function destinationRows(
                 colour: destination.route.colour ?? null,
               }
             : null,
-        boardingStop: carRoute ? null : boardingStopFor(section, destination),
+        boardingStop:
+          !carRoute && section.status === 'scored' ? boardingStopFor(section, destination) : null,
         legs: carRoute ? [] : legsFor(destination),
         path,
         end: last ? [last[0], last[1]] : destination.location,
@@ -206,7 +216,7 @@ export function matchingRows(
   );
 }
 
-export function nearestStopsSummary(section: AccessibilitySection) {
+export function nearestStopsSummary(section: ScoredAccessibilitySection) {
   const lines = new Set(section.stops.flatMap((stop) => stop.routes));
   const farthest = Math.max(0, ...section.stops.map((stop) => stop.walk_min));
   return { stops: section.stops.length, lines: lines.size, walkMinutes: Math.max(1, farthest) };
@@ -216,7 +226,7 @@ export type ReachShare = { minutes: 15 | 30 | 45; sharePct: number; reached: num
 
 export const REACH_MINUTES = [15, 30, 45] as const;
 
-export function reachShares(section: AccessibilitySection): ReachShare[] {
+export function reachShares(section: ScoredAccessibilitySection): ReachShare[] {
   const reach = section.reach;
   if (!reach) return [];
   return REACH_MINUTES.flatMap((minutes) => {

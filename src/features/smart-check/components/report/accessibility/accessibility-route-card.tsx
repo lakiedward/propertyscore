@@ -30,7 +30,7 @@ const TRAVEL_MODES = [
 type AccessibilityRouteCardProps = {
   report: ReadyReport;
   section: AccessibilitySection;
-  sourceNote: string;
+  sourceNote?: string;
 };
 
 export function AccessibilityRouteCard({
@@ -42,8 +42,9 @@ export function AccessibilityRouteCard({
   const language = i18n.resolvedLanguage === 'en' ? 'en' : 'ro';
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [group, setGroup] = useState<DestinationGroup>('places');
-  const [mode, setMode] = useState<DestinationMode>('transit');
+  const [selectedMode, setMode] = useState<DestinationMode>('transit');
   const [query, setQuery] = useState('');
+  const mode = section.status === 'car_only' ? 'car' : selectedMode;
   const groupsByMode = {
     places: destinationRows(section, 'places', mode),
     highSchools: destinationRows(section, 'highSchools', mode),
@@ -75,30 +76,32 @@ export function AccessibilityRouteCard({
       aria-labelledby="accessibility-routes-title"
       className="flex flex-col gap-3 min-[560px]:rounded-2xl min-[560px]:border min-[560px]:border-border min-[560px]:bg-card min-[560px]:p-5 min-[560px]:shadow-report-panel"
     >
-      <ToggleGroup
-        type="single"
-        value={mode}
-        aria-label={t('report.chapters.accessibility.travelMode')}
-        className="flex flex-wrap"
-        onValueChange={(value) => {
-          if (value !== 'transit' && value !== 'car') return;
-          setMode(value);
-          handleGroup('places');
-        }}
-      >
-        {TRAVEL_MODES.map(({ value, Icon, label }) => (
-          <ToggleGroupItem key={value} value={value} className="min-h-11">
-            <Icon aria-hidden="true" />
-            {t(label)}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+      {section.status === 'scored' ? (
+        <ToggleGroup
+          type="single"
+          value={mode}
+          aria-label={t('report.chapters.accessibility.travelMode')}
+          className="flex flex-wrap"
+          onValueChange={(value) => {
+            if (value !== 'transit' && value !== 'car') return;
+            setMode(value);
+            handleGroup('places');
+          }}
+        >
+          {TRAVEL_MODES.map(({ value, Icon, label }) => (
+            <ToggleGroupItem key={value} value={value} className="min-h-11">
+              <Icon aria-hidden="true" />
+              {t(label)}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      ) : null}
       <div className="relative h-130 overflow-hidden rounded-xl border border-border bg-report-map-land w760:h-140">
         <AccessibilityRouteMap
           report={report}
           rows={mapRows}
           namedId={selectedPick?.id ?? null}
-          stops={isCar ? [] : section.stops}
+          stops={!isCar && section.status === 'scored' ? section.stops : []}
           mode={mode}
           selectedId={selectedId}
         />

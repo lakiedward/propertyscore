@@ -4,7 +4,12 @@ import type { JsonObject, Sql } from '../../db/sql.ts';
 import { readCellCategory, sectionParams } from '../../report/cell-category.ts';
 import type { ReportSection } from '../../report/report-section.ts';
 import { routeFromAddress } from './accessibility.address.ts';
-import { listCityCells, readTravelRow } from './accessibility.db.ts';
+import {
+  listCityCells,
+  readDestinations,
+  readTravelRow,
+  type DestinationRow,
+} from './accessibility.db.ts';
 import { parseAccessibilityParams } from './accessibility.params.ts';
 import { buildReach, decodeTravelRow } from './accessibility.reach.ts';
 import { routeByCar } from './car-routes.ts';
@@ -69,18 +74,8 @@ const routeSchema = z.object({
   peak_per_hour: z.number().nullable(),
 });
 
-const destinationSchema = z.object({
-  id: z.string(),
-  kind: z.string(),
-  label_ro: z.string(),
-  label_en: z.string(),
-  longitude: z.number(),
-  latitude: z.number(),
-});
-
 type StopRow = z.infer<typeof stopSchema>;
 type RouteRow = z.infer<typeof routeSchema>;
-type DestinationRow = z.infer<typeof destinationSchema>;
 
 async function readCellTransit(sql: Sql, snapshotId: string, cellId: string): Promise<unknown> {
   const [row] = await sql`
@@ -204,24 +199,63 @@ async function readReach(
   });
 }
 
-async function readDestinations(sql: Sql, ids: readonly string[]): Promise<DestinationRow[]> {
-  if (ids.length === 0) return [];
-  const rows = await sql`
-    select
-      d.id::text as id,
-      d.kind,
-      d.label_ro,
-      d.label_en,
-      extensions.st_x(d.location::extensions.geometry) as longitude,
-      extensions.st_y(d.location::extensions.geometry) as latitude
-    from private.key_destinations d
-    where d.id = any(${[...ids]}::uuid[])
-  `;
-  return z.array(destinationSchema).parse(rows);
-}
-
 function position(row: { longitude: number; latitude: number }): [number, number] {
   return [Number(row.longitude.toFixed(6)), Number(row.latitude.toFixed(6))];
+}
+
+function destinationDetails(destination: DestinationRow) {
+  return {
+    id: destination.id,
+    kind: destination.kind,
+    label: { ro: destination.label_ro, en: destination.label_en },
+    location: position(destination),
+  };
+}
+
+function drivingTargets(rows: readonly DestinationRow[]) {
+  return rows.map(({ id, longitude: lng, latitude: lat }) => ({ id, lng, lat }));
+}
+
+async function carOnlySection({
+  sql,
+  citySlug,
+  longitude,
+  latitude,
+  router,
+  logger,
+}: Parameters<ReportSection['build']>[0]): Promise<JsonObject | null> {
+  if (!router) return null;
+  const destinations = await readDestinations(sql, { citySlug });
+  const routes = await routeByCar(
+    router,
+    { lng: longitude, lat: latitude },
+    drivingTargets(destinations),
+    logger,
+  );
+  if (routes.size === 0) return null;
+  return {
+    schema_version: 1,
+    status: 'car_only',
+    destinations: destinations.flatMap((destination) => {
+      const route = routes.get(destination.id);
+      return route
+        ? [
+            {
+              ...destinationDetails(destination),
+              car_route: route,
+              minutes: null,
+              by_walking: false,
+              walk: null,
+              wait: null,
+              ride: null,
+              transfers: null,
+              route: null,
+              path: [],
+            },
+          ]
+        : [];
+    }),
+  };
 }
 
 type RouteLabel = (key: string | null) => JsonObject | null;
@@ -364,10 +398,7 @@ export function accessibilitySection(input: {
       const carRoute = input.carRoutes?.get(destination.id);
       return [
         {
-          id: destination.id,
-          kind: destination.kind,
-          label: { ro: destination.label_ro, en: destination.label_en },
-          location: position(destination),
+          ...destinationDetails(destination),
           minutes: entry.minutes,
           by_walking: entry.by_walking,
           walk: trip ? Math.round(trip.walkMinutes) : entry.walk,
@@ -410,22 +441,25 @@ export function accessibilitySection(input: {
 
 export const accessibilityReportSection: ReportSection = {
   key: 'accessibility',
-  build: async ({ sql, snapshotId, cellId, latitude, longitude, params, logger, router }) => {
+  build: async (context) => {
+    const { sql, snapshotId, cellId, latitude, longitude, params, logger, router } = context;
     const cell = await readCellCategory(sql, snapshotId, cellId, 'accessibility');
-    if (!cell) return null;
+    if (!cell) return carOnlySection(context);
     const inputs = inputsSchema.safeParse(cell.inputs);
-    const transit = transitRowSchema.safeParse(await readCellTransit(sql, snapshotId, cellId));
-    if (cell.score === null || !inputs.success || !transit.success) {
-      return { schema_version: 1, status: 'no_data' };
+    const transit =
+      cell.score !== null && inputs.success
+        ? transitRowSchema.safeParse(await readCellTransit(sql, snapshotId, cellId))
+        : null;
+    if (!inputs.success || !transit?.success) {
+      return (await carOnlySection(context)) ?? { schema_version: 1, status: 'no_data' };
     }
     const stopKeys = transit.data.stops.map((stop) => stop.stop_key);
     const [stops, routes, destinations] = await Promise.all([
       readStops(sql, snapshotId, cell.cityId, stopKeys),
       readRoutes(sql, snapshotId, cell.cityId, stopKeys),
-      readDestinations(
-        sql,
-        transit.data.destinations.map((entry) => entry.destination_id),
-      ),
+      readDestinations(sql, {
+        ids: transit.data.destinations.map((entry) => entry.destination_id),
+      }),
     ]);
     const accessibilityParams = parseAccessibilityParams(sectionParams(params, 'accessibility'));
     const address = { lng: longitude, lat: latitude };
@@ -456,10 +490,7 @@ export const accessibilityReportSection: ReportSection = {
     const carRoutes = routeByCar(
       router,
       address,
-      [
-        ...destinations.map(({ id, longitude: lng, latitude: lat }) => ({ id, lng, lat })),
-        ...education,
-      ],
+      [...drivingTargets(destinations), ...education],
       logger,
     );
     const routeKeyOf = routeKeyResolver(

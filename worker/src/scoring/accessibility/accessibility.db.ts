@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { type JsonObject, type Sql, withLongStatements } from '../../db/sql.ts';
 import { WorkerError } from '../../lib/errors.ts';
 import type { BoundingBox } from '../../sources/osm.ts';
@@ -165,6 +167,41 @@ export async function listDestinationLabels(sql: Sql, cityId: string): Promise<J
     order by kind, id
   `;
   return rows.map((row) => row.entry);
+}
+
+const destinationSchema = z.object({
+  id: z.string(),
+  kind: z.string(),
+  label_ro: z.string(),
+  label_en: z.string(),
+  longitude: z.number(),
+  latitude: z.number(),
+});
+
+export type DestinationRow = z.infer<typeof destinationSchema>;
+
+export async function readDestinations(
+  sql: Sql,
+  selection: { ids: readonly string[] } | { citySlug: string },
+): Promise<DestinationRow[]> {
+  if ('ids' in selection && selection.ids.length === 0) return [];
+  const filter =
+    'ids' in selection
+      ? sql`d.id = any(${[...selection.ids]}::uuid[])`
+      : sql`d.is_active and d.city_id = (select id from public.cities where slug = ${selection.citySlug})`;
+  const rows = await sql`
+    select
+      d.id::text as id,
+      d.kind,
+      d.label_ro,
+      d.label_en,
+      extensions.st_x(d.location::extensions.geometry) as longitude,
+      extensions.st_y(d.location::extensions.geometry) as latitude
+    from private.key_destinations d
+    where ${filter}
+    order by d.kind, d.id
+  `;
+  return z.array(destinationSchema).parse(rows);
 }
 
 export async function clearCityTransit(

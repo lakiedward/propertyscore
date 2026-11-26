@@ -11,6 +11,7 @@ import {
 import { accessibilitySectionSchema } from './sections/accessibility.schemas';
 
 const section = accessibilitySectionSchema.parse(FREIDORF_REPORT_RESULT.accessibility);
+if (section.status !== 'scored') throw new Error('The fixture has no scored accessibility');
 
 describe('destinationRows', () => {
   const rows = destinationRows(section);

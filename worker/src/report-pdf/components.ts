@@ -116,7 +116,7 @@ export function sourceDate(report: ReportData, key: string): string | null {
   const { formatSourceDate } = reportFormat(report.locale);
   if (key === 'gtfs') {
     const section = report.sections.accessibility;
-    return section?.data_quality === 'gtfs' && section.reference_date
+    return section?.status === 'scored' && section.data_quality === 'gtfs' && section.reference_date
       ? formatSourceDate(section.reference_date)
       : null;
   }

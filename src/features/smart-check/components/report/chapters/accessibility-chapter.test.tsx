@@ -133,6 +133,60 @@ describe('AccessibilityChapter', () => {
   });
 
   it.each([
+    { locale: 'ro', copy, name: 'Gară de test', distance: '3,5 km' },
+    {
+      locale: 'en',
+      copy: en.report.chapters.accessibility,
+      name: 'Test station',
+      distance: '3.5 km',
+    },
+  ] as const)(
+    'shows the road map without a transit route or score in $locale',
+    async ({ locale, copy: labels, name, distance }) => {
+      const destination = readyReport().result.sections.accessibility?.destinations[0];
+      if (!destination) throw new Error('The fixture has no destination');
+      const report = readyReport({
+        ...FREIDORF_REPORT_RESULT,
+        accessibility: {
+          status: 'car_only',
+          destinations: [
+            {
+              ...destination,
+              id: 'test-station',
+              label: { ro: 'Gară de test', en: 'Test station' },
+              car_route: { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' },
+              minutes: null,
+              route: null,
+              path: [],
+            },
+          ],
+        },
+      });
+      delete report.result.categories.accessibility;
+      const { user } = await renderWithProviders(
+        <AccessibilityChapter report={report} onOpenChapter={vi.fn()} />,
+        { locale },
+      );
+      expect(await screen.findByRole('heading', { name: labels.headlineNoData })).toBeVisible();
+      await user.click(
+        screen.getByRole('button', {
+          name: labels.car.rowLabel
+            .replace('{{name}}', name)
+            .replace('{{minutes}}', '8')
+            .replace('{{distance}}', distance),
+        }),
+      );
+      const map = await screen.findByRole('region', { name: labels.car.mapLabel });
+      expect(
+        within(map).getByRole('img', { name: 'accessibility-car-test-station' }),
+      ).toBeVisible();
+      expect(screen.queryByText(labels.routesTitle)).not.toBeInTheDocument();
+      expect(screen.queryByText(labels.badge)).not.toBeInTheDocument();
+      expect(screen.queryByRole('radio', { name: labels.transitMode })).not.toBeInTheDocument();
+    },
+  );
+
+  it.each([
     { quality: 'gtfs', date: 'not-a-date', displayedDate: null },
     { quality: 'gtfs', date: '2026-02-30', displayedDate: null },
     { quality: 'gtfs', date: '2026-11-03', displayedDate: '3 nov. 2026' },

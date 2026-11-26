@@ -117,6 +117,68 @@ describe('buildReportDocument', () => {
     },
   );
 
+  it.each([
+    [
+      'ro',
+      'Mașină personală',
+      '3,5 km',
+      'Gară de test',
+      'Datele despre transportul public nu sunt disponibile',
+    ],
+    ['en', 'Private car', '3.5 km', 'Test station', 'Public transport data is not available'],
+  ] as const)(
+    'prints only the driving map when transit is missing in %s',
+    async (locale, title, distance, destination, noData) => {
+      const example = reportInputSchema.parse({ ...(await exampleInput()), locale });
+      const report = toReportData({
+        ...example,
+        result: {
+          ...example.result,
+          categories: {
+            ...example.result.categories,
+            accessibility: {
+              score: null,
+              percentile: null,
+              city_avg: null,
+              histogram: [],
+              weight: 20,
+            },
+          },
+          accessibility: {
+            status: 'car_only',
+            destinations: [
+              {
+                id: 'test-station',
+                kind: 'station',
+                label: { ro: 'Gară de test', en: 'Test station' },
+                location: [21.224, 45.753],
+                car_route: { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' },
+                minutes: null,
+                by_walking: false,
+                walk: null,
+                wait: null,
+                ride: null,
+                transfers: null,
+                route: null,
+                path: [],
+              },
+            ],
+          },
+        },
+      });
+      const chapter = accessibilityChapter(report);
+
+      expect(report.unreadableSections).toEqual([]);
+      expect(report.categories.accessibility.score).toBeNull();
+      expect(chapter?.html).toContain(noData);
+      expect(chapter?.html).toContain(title);
+      expect(chapter?.html).toContain(distance);
+      expect(chapter?.html).toContain(destination);
+      expect(chapter?.html).not.toContain('class="card scv');
+      expect(chapter?.maps.map(({ id }) => id)).toEqual(['map-accessibility-car']);
+    },
+  );
+
   it('labels saved straight-line times without drawing a walking zone', async () => {
     const input = reportInputSchema.parse(await exampleInput());
     const walking = input.result.fifteen_minute as Record<string, unknown>;
@@ -447,7 +509,8 @@ describe('buildReportDocument', () => {
     const withPlaces = toReportData(input);
     expect((await buildReportDocument(withPlaces)).html).toContain('din 23</b> cartiere');
 
-    const reach = withPlaces.sections.accessibility?.reach;
+    const section = withPlaces.sections.accessibility;
+    const reach = section?.status === 'scored' ? section.reach : null;
     if (!reach) throw new Error('The example report has no reach block');
     const accessibility = input.result.accessibility as Record<string, unknown>;
     const withoutPlaces = toReportData({

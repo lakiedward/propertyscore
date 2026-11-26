@@ -80,7 +80,7 @@ export function walkRoutes(result: ReportResult): ZoneRoute[] {
 
 export function transitRoutes(result: ReportResult, language: 'ro' | 'en'): ZoneRoute[] {
   const section = result.sections.accessibility;
-  if (!section) return [];
+  if (section?.status !== 'scored') return [];
   return section.destinations
     .flatMap((destination): ZoneRoute[] => {
       if (destination.minutes === null) return [];

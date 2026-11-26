@@ -68,7 +68,7 @@ const safetySchema = z.object({
     .optional(),
 });
 
-const accessibilitySchema = z.object({
+const scoredAccessibilitySchema = z.object({
   status: z.literal('scored'),
   data_quality: z.enum(['gtfs', 'osm_only']),
   reference_date: z.iso.date().nullable().catch(null),
@@ -133,6 +133,11 @@ const accessibilitySchema = z.object({
     .nullable()
     .default(null),
 });
+
+const accessibilitySchema = z.discriminatedUnion('status', [
+  scoredAccessibilitySchema,
+  scoredAccessibilitySchema.pick({ destinations: true }).extend({ status: z.literal('car_only') }),
+]);
 
 const fifteenMinuteSchema = z.object({
   status: z.literal('scored'),

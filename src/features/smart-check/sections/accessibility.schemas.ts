@@ -27,7 +27,7 @@ const destinationSchema = z.object({
     .default([]),
 });
 
-export const accessibilitySectionSchema = z.object({
+const scoredAccessibilitySchema = z.object({
   status: z.literal('scored'),
   data_quality: z.enum(['gtfs', 'osm_only']),
   reference_date: z.iso.date().nullable().catch(null),
@@ -86,3 +86,10 @@ export const accessibilitySectionSchema = z.object({
     .nullable()
     .default(null),
 });
+
+export const accessibilitySectionSchema = z.discriminatedUnion('status', [
+  scoredAccessibilitySchema,
+  scoredAccessibilitySchema.pick({ destinations: true, destination_groups: true }).extend({
+    status: z.literal('car_only'),
+  }),
+]);
