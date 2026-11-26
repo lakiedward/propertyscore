@@ -16,6 +16,10 @@ const locales = [
   { locale: 'en', copy: en.check, freePrice: 'RON 0', standardPrice: 'RON 30' },
 ] as const;
 
+function checkoutEyebrow(template: string, price: string) {
+  return template.replace('{{price}}', price).replace('{{number}}', '4').replace('{{total}}', '4');
+}
+
 async function renderPaymentStep(options: Parameters<typeof renderWithProviders>[1] = {}) {
   return renderWithProviders(
     <CheckPaymentStep
@@ -41,12 +45,13 @@ describe('CheckPaymentStep', () => {
       expect(await screen.findByText(copy.payment.unlimited.description)).toBeVisible();
       expect(screen.getByRole('button', { name: copy.payment.generate })).toBeEnabled();
       const summary = within(screen.getByRole('complementary', { name: copy.summary.product }));
-      expect(summary.getByText(copy.summary.total)).toBeVisible();
+      expect(await summary.findByText(copy.summary.total)).toBeVisible();
       expect(summary.getAllByText(freePrice)).toHaveLength(3);
       expect(summary.queryByText(standardPrice)).not.toBeInTheDocument();
-      const hero = screen.getByRole('region', { name: copy.heading.payment.title });
-      expect(hero).toHaveTextContent(freePrice);
-      expect(hero).not.toHaveTextContent(standardPrice);
+      expect(screen.getByText(checkoutEyebrow(copy.eyebrow, freePrice))).toBeVisible();
+      expect(
+        screen.queryByText(checkoutEyebrow(copy.eyebrow, standardPrice)),
+      ).not.toBeInTheDocument();
     },
   );
 
@@ -70,11 +75,9 @@ describe('CheckPaymentStep', () => {
 
       expect(await screen.findByText(copy.payment.comingSoon.title)).toBeVisible();
       const summary = within(screen.getByRole('complementary', { name: copy.summary.product }));
-      expect(summary.getByText(copy.summary.total)).toBeVisible();
+      expect(await summary.findByText(copy.summary.total)).toBeVisible();
       expect(summary.getAllByText(standardPrice)).toHaveLength(3);
-      expect(screen.getByRole('region', { name: copy.heading.payment.title })).toHaveTextContent(
-        standardPrice,
-      );
+      expect(screen.getByText(checkoutEyebrow(copy.eyebrow, standardPrice))).toBeVisible();
       expect(screen.queryByRole('button', { name: copy.payment.generate })).not.toBeInTheDocument();
     },
   );

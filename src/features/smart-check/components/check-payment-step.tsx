@@ -1,4 +1,4 @@
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation } from '@tanstack/react-router';
 import {
   ArrowLeftIcon,
@@ -42,8 +42,10 @@ export function CheckPaymentStep({
 }: CheckPaymentStepProps) {
   const { t } = useTranslation('smartCheck');
   const { user } = useAuth();
-  const access = useQuery(smartCheckQueries.unlimitedAccess(user?.id ?? null));
-  const priceRon = user && !access.isSuccess ? null : access.data ? 0 : CHECK_PRICE_RON;
+  const { status, data } = useQuery(smartCheckQueries.unlimitedAccess(user?.id ?? null));
+  const access = status === 'success' ? (data ? 'unlimited' : 'standard') : status;
+  const priceRon =
+    !user || access === 'standard' ? CHECK_PRICE_RON : access === 'unlimited' ? 0 : null;
 
   return (
     <>
@@ -111,7 +113,7 @@ function SignedOutPayment() {
 }
 
 type SignedInPaymentProps = {
-  access: UseQueryResult<boolean>;
+  access: 'pending' | 'error' | 'standard' | 'unlimited';
   order: CheckOrder;
   onChangeAddress: () => void;
   onCreated: (reportId: string) => void;
@@ -123,11 +125,11 @@ function SignedInPayment({ access, order, onChangeAddress, onCreated }: SignedIn
   const createReport = useCreateOnlineReport();
   const reason = isAppError(createReport.error) ? createReport.error.reason : undefined;
 
-  if (access.isPending) {
+  if (access === 'pending') {
     return <Skeleton className="h-24 rounded-lg" />;
   }
 
-  if (access.isError) {
+  if (access === 'error') {
     return (
       <Alert tone="error">
         <CircleAlertIcon aria-hidden />
@@ -136,7 +138,7 @@ function SignedInPayment({ access, order, onChangeAddress, onCreated }: SignedIn
     );
   }
 
-  if (!access.data) {
+  if (access === 'standard') {
     return (
       <Alert tone="info">
         <InfoIcon aria-hidden />
