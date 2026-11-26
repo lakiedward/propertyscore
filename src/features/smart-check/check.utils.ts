@@ -3,6 +3,8 @@ import type { PhotonFeature } from './api/geocoding.api';
 
 export const CHECK_PRICE_RON = 30;
 
+export type CheckAccess = 'guest' | 'pending' | 'error' | 'standard' | 'unlimited';
+
 export type AddressMatch = {
   id: string;
   main: string;

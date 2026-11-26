@@ -2,7 +2,8 @@
   "check": {
     "pageTitle": "Smart Check",
     "title": "Check an address with Smart Check",
-    "eyebrow": "Online report {{price}} · Step {{number}} of {{total}}",
+    "eyebrow": "{{product}} {{price}} · Step {{number}} of {{total}}",
+    "eyebrowWithoutPrice": "{{product}} · Step {{number}} of {{total}}",
     "steps": {
       "label": "Order steps",
       "item": "{{number}}. {{label}}",
@@ -62,6 +63,7 @@
     },
     "includes": {
       "title": "What you get for {{price}}",
+      "titleWithoutPrice": "What you get",
       "items": {
         "score": "Area score from 9 criteria, each explained",
         "transit": "Accessibility: lines, frequency and directions, not just distance",
@@ -124,7 +126,8 @@
       },
       "back": "Back",
       "skip": "Skip",
-      "continue": "Continue to payment · {{price}}"
+      "continue": "Continue to payment · {{price}}",
+      "continueWithoutPrice": "Continue to payment"
     },
     "payment": {
       "title": "Payment",
@@ -150,7 +153,6 @@
     },
     "summary": {
       "eyebrow": "Your order",
-      "product": "Online report",
       "includesTitle": "What you get",
       "items": {
         "scores": "9 category scores from 0 to 100",

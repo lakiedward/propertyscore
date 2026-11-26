@@ -11,7 +11,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/i18n/format';
 import { cn } from '@/lib/utils';
-import { CHECK_CITIES, CHECK_PRICE_RON } from '../check.utils';
+import { CHECK_CITIES } from '../check.utils';
 
 type IncludedItem = {
   key: 'score' | 'transit' | 'fifteen' | 'green' | 'environment' | 'market' | 'share';
@@ -41,8 +41,8 @@ const INCLUDED_ITEMS: readonly IncludedItem[] = [
   { key: 'share', icon: FileDownIcon, tile: 'bg-category-safety-surface text-category-safety' },
 ];
 
-export function CheckIncludesCard() {
-  const { t } = useTranslation('smartCheck');
+export function CheckIncludesCard({ priceRon }: { priceRon: number | null }) {
+  const { t, i18n } = useTranslation('smartCheck');
 
   return (
     <div className="flex flex-col gap-4">
@@ -51,7 +51,11 @@ export function CheckIncludesCard() {
         className="rounded-panel border-8 border-category-education-fill bg-card p-5 shadow-card-soft w767:p-6"
       >
         <h2 id="check-includes-title" className="text-h4 font-extrabold">
-          {t('check.includes.title', { price: formatPrice(CHECK_PRICE_RON, 'RON') })}
+          {priceRon === null
+            ? t('check.includes.titleWithoutPrice')
+            : t('check.includes.title', {
+                price: formatPrice(priceRon, 'RON', i18n.resolvedLanguage),
+              })}
         </h2>
         <ul className="mt-3.5 flex flex-col gap-3">
           {INCLUDED_ITEMS.map(({ key, icon: Icon, tile }) => (

@@ -94,10 +94,10 @@ export const smartCheckQueries = {
       staleTime: GEOCODING_STALE_MS,
       retry: GEOCODING_RETRIES,
     }),
-  unlimitedAccess: (userId: string) =>
+  unlimitedAccess: (userId: string | null) =>
     queryOptions({
       queryKey: [...smartCheckQueries.all(), 'unlimited', userId],
-      queryFn: () => hasUnlimitedSmartCheck(userId),
+      queryFn: userId === null ? skipToken : () => hasUnlimitedSmartCheck(userId),
     }),
 };
 

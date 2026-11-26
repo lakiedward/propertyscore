@@ -14,12 +14,14 @@ import { CheckPinMap } from './check-pin-map';
 import { CheckPinSummary } from './check-pin-summary';
 
 type CheckAddressStepProps = {
+  priceRon: number | null;
   initialAddress: string;
   initialPin: LngLat | null;
   onContinue: (location: { address: string; pin: LngLat }) => void;
 };
 
 export function CheckAddressStep({
+  priceRon,
   initialAddress,
   initialPin,
   onContinue,
@@ -154,7 +156,7 @@ export function CheckAddressStep({
           </Button>
         </div>
       </section>
-      <CheckIncludesCard />
+      <CheckIncludesCard priceRon={priceRon} />
     </div>
   );
 }

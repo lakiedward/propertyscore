@@ -1,6 +1,10 @@
+import { useQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import type { LngLat } from '@/components/map/map.config';
+import { useAuth } from '@/features/auth';
+import { smartCheckQueries } from '../api/smart-check.queries';
+import { CHECK_PRICE_RON, type CheckAccess } from '../check.utils';
 import type {
   CheckDetailsSearch,
   CheckOrder,
@@ -48,6 +52,21 @@ function effectiveStep(search: CheckSearch, hasLocation: boolean): CheckStep {
 
 export function CheckPage() {
   const { i18n } = useTranslation();
+  const { user } = useAuth();
+  const entitlement = useQuery(smartCheckQueries.unlimitedAccess(user?.id ?? null));
+  const access: CheckAccess = !user
+    ? 'guest'
+    : entitlement.status === 'success'
+      ? entitlement.data
+        ? 'unlimited'
+        : 'standard'
+      : entitlement.status;
+  const priceRon =
+    access === 'guest' || access === 'standard'
+      ? CHECK_PRICE_RON
+      : access === 'unlimited'
+        ? 0
+        : null;
   const search = route.useSearch();
   const navigate = route.useNavigate();
   const location = locationOf(search);
@@ -79,9 +98,10 @@ export function CheckPage() {
 
   return (
     <>
-      <CheckHero step={step} />
+      <CheckHero step={step} priceRon={priceRon} />
       {step === 'address' || !location || !order ? (
         <CheckAddressStep
+          priceRon={priceRon}
           initialAddress={location?.address ?? ''}
           initialPin={location?.pin ?? null}
           onContinue={(next) => {
@@ -101,6 +121,7 @@ export function CheckPage() {
         />
       ) : step === 'details' ? (
         <CheckDetailsStep
+          priceRon={priceRon}
           initialDetails={details}
           onBack={() => {
             goTo('confirm');
@@ -118,6 +139,8 @@ export function CheckPage() {
         />
       ) : step === 'payment' ? (
         <CheckPaymentStep
+          access={access}
+          priceRon={priceRon}
           order={order}
           onBack={() => {
             goTo('details');

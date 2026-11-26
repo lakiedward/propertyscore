@@ -1,4 +1,4 @@
-import { currentLocale, type Locale } from './i18n';
+import { currentLocale, isLocale, type Locale } from './i18n';
 
 export type Currency = 'RON' | 'EUR';
 
@@ -72,13 +72,14 @@ const PRICE_CURRENCY_DISPLAY: Readonly<
   en: 'symbol',
 };
 
-export function formatPrice(amount: number, currency: Currency): string {
-  return formatNumber(amount, {
+export function formatPrice(amount: number, currency: Currency, language?: string): string {
+  const locale = isLocale(language) ? language : currentLocale();
+  return new Intl.NumberFormat(FORMAT_LOCALES[locale], {
     style: 'currency',
     currency,
-    currencyDisplay: PRICE_CURRENCY_DISPLAY[currentLocale()],
+    currencyDisplay: PRICE_CURRENCY_DISPLAY[locale],
     maximumFractionDigits: 0,
-  });
+  }).format(amount);
 }
 
 export function formatPriceInThousands(amount: number, currency: Currency): string {
