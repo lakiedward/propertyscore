@@ -1,12 +1,13 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
 import { DownloadIcon, SearchIcon } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
 import { LoadMoreButton } from '@/components/layout/load-more-button';
 import { FilterChip } from '@/components/property/filter-chip';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -17,7 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import { oneOf } from '@/lib/utils';
+import { cn, oneOf } from '@/lib/utils';
 import { staffQueries } from '../api/staff.queries';
 import { USER_STATE_FILTERS, type AppRole, type StaffUser } from '../staff.types';
 import { downloadCsv, usersToCsv } from '../staff.utils';
@@ -59,11 +60,11 @@ export function UsersPage() {
         <div className="flex flex-col gap-4 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 id={`${searchId}-title`} className="text-[17px] leading-snug font-bold">
+              <h2 id={`${searchId}-title`} className="text-title-3xs leading-snug font-bold">
                 {t('users.card.title')}
               </h2>
               <p className="text-meta text-muted-foreground">
-                {t('users.card.shown', { count: items.length, total })}
+                {t('users.card.shown', { count: total, shown: items.length })}
               </p>
             </div>
             <Button
@@ -93,13 +94,15 @@ export function UsersPage() {
             </Button>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <label
-              htmlFor={searchId}
-              className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-md border border-border bg-card px-3 focus-within:ring-3 focus-within:ring-ring"
-            >
-              <SearchIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
-              <span className="sr-only">{t('users.search.label')}</span>
-              <input
+            <div className="relative min-w-0 flex-1">
+              <label htmlFor={searchId} className="sr-only">
+                {t('users.search.label')}
+              </label>
+              <SearchIcon
+                aria-hidden
+                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
                 id={searchId}
                 type="search"
                 value={query}
@@ -111,9 +114,9 @@ export function UsersPage() {
                     replace: true,
                   });
                 }}
-                className="min-w-0 flex-1 bg-transparent text-body-sm outline-none placeholder:text-muted-foreground"
+                className="h-10 pl-9 text-body-sm"
               />
-            </label>
+            </div>
             <Select
               value={search.city ?? ALL_CITIES}
               onValueChange={(value) => {
@@ -186,6 +189,10 @@ export function UsersPage() {
             <Skeleton className="h-10" />
             <Skeleton className="h-10" />
           </div>
+        ) : users.isError && !users.data ? (
+          <div className="p-5">
+            <EmptyState kind="error" title={t('users.error')} />
+          </div>
         ) : items.length === 0 ? (
           <div className="p-5">
             <EmptyState title={t('users.empty.title')} description={t('users.empty.description')} />
@@ -195,24 +202,12 @@ export function UsersPage() {
             <Table className="min-w-[56rem]">
               <TableHeader className="bg-background">
                 <TableRow className="border-border">
-                  <TableHead className="px-5 text-meta font-bold tracking-[0.06em] text-muted-foreground uppercase">
-                    {t('users.columns.name')}
-                  </TableHead>
-                  <TableHead className="text-meta font-bold tracking-[0.06em] text-muted-foreground uppercase">
-                    {t('users.columns.email')}
-                  </TableHead>
-                  <TableHead className="text-meta font-bold tracking-[0.06em] text-muted-foreground uppercase">
-                    {t('users.columns.phone')}
-                  </TableHead>
-                  <TableHead className="text-meta font-bold tracking-[0.06em] text-muted-foreground uppercase">
-                    {t('users.columns.roles')}
-                  </TableHead>
-                  <TableHead className="text-meta font-bold tracking-[0.06em] text-muted-foreground uppercase">
-                    {t('users.columns.created')}
-                  </TableHead>
-                  <TableHead className="text-meta font-bold tracking-[0.06em] text-muted-foreground uppercase">
-                    {t('users.columns.status')}
-                  </TableHead>
+                  <ColumnHead className="px-5">{t('users.columns.name')}</ColumnHead>
+                  <ColumnHead>{t('users.columns.email')}</ColumnHead>
+                  <ColumnHead>{t('users.columns.phone')}</ColumnHead>
+                  <ColumnHead>{t('users.columns.roles')}</ColumnHead>
+                  <ColumnHead>{t('users.columns.created')}</ColumnHead>
+                  <ColumnHead>{t('users.columns.status')}</ColumnHead>
                   <TableHead className="w-10 px-5">
                     <span className="sr-only">{t('users.columns.actions')}</span>
                   </TableHead>
@@ -237,5 +232,23 @@ export function UsersPage() {
         ) : null}
       </section>
     </div>
+  );
+}
+
+type ColumnHeadProps = {
+  className?: string;
+  children: ReactNode;
+};
+
+function ColumnHead({ className, children }: ColumnHeadProps) {
+  return (
+    <TableHead
+      className={cn(
+        'text-meta font-bold tracking-eyebrow text-muted-foreground uppercase',
+        className,
+      )}
+    >
+      {children}
+    </TableHead>
   );
 }

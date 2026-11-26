@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import type { User } from '@supabase/supabase-js';
@@ -15,6 +16,7 @@ import {
 import { useId } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { TilePicker } from '@/components/forms/tile-picker';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -26,7 +28,6 @@ import { useErrorMessage } from '@/i18n/error-message';
 import { formatPrice } from '@/i18n/format';
 import { useValidationMessage } from '@/i18n/validation';
 import { AppError } from '@/lib/errors';
-import { cn } from '@/lib/utils';
 import { useBookInspection } from '../api/inspections.queries';
 import type { BookingAccess, BookingHome } from '../booking.schemas';
 import { paymentFormSchema, type PaymentFormValues } from '../booking.schemas';
@@ -39,6 +40,15 @@ const PAYMENT_METHODS = [
   { value: 'apple_pay', icon: SmartphoneIcon },
   { value: 'google_pay', icon: SmartphoneIcon },
 ] as const satisfies readonly { value: PaymentMethod; icon: LucideIcon }[];
+
+const methodVariants = cva('flex items-start gap-3 rounded-lg border-2 p-3.5 text-left', {
+  variants: {
+    isSelected: {
+      true: 'border-primary bg-surface-highlight',
+      false: 'border-border bg-card hover:border-border-strong',
+    },
+  },
+});
 
 type BookingStepReviewProps = {
   user: User;
@@ -73,7 +83,6 @@ export function BookingStepReview({
   const errorMessage = useErrorMessage();
   const termsId = useId();
   const termsErrorId = useId();
-  const methodsId = useId();
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: { paymentMethod, hasAcceptedTerms: false },
@@ -174,34 +183,23 @@ export function BookingStepReview({
           name="paymentMethod"
           control={form.control}
           render={({ field }) => (
-            <fieldset aria-labelledby={methodsId} className="flex flex-col gap-2">
-              <span id={methodsId} className="text-label">
-                {t('booking.payment.legend')}
-              </span>
-              <div
-                role="radiogroup"
-                aria-labelledby={methodsId}
-                className="grid gap-2 sm:grid-cols-3"
-              >
-                {PAYMENT_METHODS.map(({ value, icon: Icon }) => {
-                  const isSelected = field.value === value;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      role="radio"
-                      aria-checked={isSelected}
-                      onClick={() => {
-                        field.onChange(value);
-                        setPaymentMethod(value);
-                      }}
-                      className={cn(
-                        'flex items-start gap-3 rounded-lg border-2 p-3.5 text-left',
-                        isSelected
-                          ? 'border-primary bg-surface-highlight'
-                          : 'border-border bg-card hover:border-border-strong',
-                      )}
-                    >
+            <TilePicker
+              value={field.value}
+              onChange={(value) => {
+                field.onChange(value);
+                setPaymentMethod(value);
+              }}
+              legend={t('booking.payment.legend')}
+              legendClassName="mb-2 font-semibold data-[variant=legend]:text-label"
+              fieldSetClassName="gap-2"
+              className="grid gap-2 sm:grid-cols-3"
+              options={PAYMENT_METHODS.map(({ value, icon: Icon }) => {
+                const isSelected = field.value === value;
+                return {
+                  value,
+                  className: methodVariants({ isSelected }),
+                  content: (
+                    <>
                       <Icon aria-hidden className="mt-0.5 size-5 shrink-0 text-brand" />
                       <span className="flex flex-col">
                         <strong className="text-body-sm">
@@ -213,11 +211,11 @@ export function BookingStepReview({
                           </span>
                         ) : null}
                       </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </fieldset>
+                    </>
+                  ),
+                };
+              })}
+            />
           )}
         />
         <Controller
@@ -257,14 +255,7 @@ export function BookingStepReview({
         <Alert tone="info">
           <AlertDescription>{t('booking.payment.notActive')}</AlertDescription>
         </Alert>
-        <Button
-          type="submit"
-          variant="cta"
-          size="lg"
-          className="w-full"
-          disabled={book.isPending}
-          aria-busy={book.isPending}
-        >
+        <Button type="submit" variant="cta" size="lg" className="w-full" loading={book.isPending}>
           <LockIcon aria-hidden />
           {book.isPending ? t('booking.payment.booking') : t('booking.payment.submit')}
           <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-small tabular-nums">

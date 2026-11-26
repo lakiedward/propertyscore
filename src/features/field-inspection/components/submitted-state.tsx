@@ -2,7 +2,8 @@ import { Link } from '@tanstack/react-router';
 import { CalendarDaysIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { formatDate, formatNumber } from '@/i18n/format';
+import { formatDate } from '@/i18n/format';
+import { formatInspectionScore } from '../field-inspection.utils';
 
 type SubmittedStateProps = {
   submittedAt: string | null;
@@ -26,7 +27,7 @@ export function SubmittedState({ submittedAt, score }: SubmittedStateProps) {
       {score === null ? null : (
         <p className="text-body-sm font-bold">
           {t('submitted.score', {
-            score: formatNumber(score, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+            score: formatInspectionScore(score),
           })}
         </p>
       )}

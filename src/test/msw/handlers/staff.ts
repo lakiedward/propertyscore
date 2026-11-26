@@ -2,9 +2,9 @@ import { http, HttpResponse } from 'msw';
 import type { StaffUser } from '@/features/staff';
 import { supabaseUrl } from '../supabase-url';
 
-export function usersResponse(users: readonly StaffUser[]) {
+export function usersResponse(users: readonly StaffUser[], total = users.length) {
   return http.post(supabaseUrl('/rest/v1/rpc/admin_list_users'), () =>
-    HttpResponse.json(users.map((user) => ({ ...user, total_count: users.length }))),
+    HttpResponse.json(users.map((user) => ({ ...user, total_count: total }))),
   );
 }
 

@@ -20,6 +20,8 @@ const buttonVariants = cva(
           'border-(length:--border-width-control) border-on-inverse/50 bg-transparent text-on-inverse hover:bg-on-inverse/10 focus-visible:ring-focus-inverse focus-visible:ring-offset-surface-inverse',
         outline:
           'border-brand bg-card text-brand hover:bg-surface-alt aria-expanded:bg-surface-alt',
+        outlineDestructive:
+          'border-error-border bg-card text-destructive hover:border-destructive hover:bg-error-surface aria-expanded:bg-surface-alt',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-surface-alt',
         ghost: 'text-brand hover:bg-accent aria-expanded:bg-accent',
         destructive: 'bg-destructive text-primary-foreground hover:bg-destructive/90',
@@ -57,10 +59,13 @@ function Button({
   size = 'default',
   shape = 'default',
   asChild = false,
+  loading = false,
+  disabled,
   ...props
 }: React.ComponentProps<'button'> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
+    loading?: boolean;
   }) {
   const Comp = asChild ? Slot.Root : 'button';
 
@@ -70,6 +75,8 @@ function Button({
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, shape, className }))}
+      disabled={loading || disabled}
+      aria-busy={loading || undefined}
       {...props}
     />
   );

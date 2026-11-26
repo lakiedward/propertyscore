@@ -2,9 +2,8 @@ import { cva } from 'class-variance-authority';
 import type { ReactNode } from 'react';
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
-import type { HomeSectionId } from '@/components/layout/site-navigation';
 import { PillLink } from '@/components/navigation/pill-link';
-import { BOOKING_TARGET } from '../home.constants';
+import { ctaLinkOptions, type CtaTarget } from '../home.constants';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
 
@@ -48,7 +47,7 @@ type ProductPriceBoxProps = {
   currency: Currency;
   footer: ReactNode;
   ctaLabel: string;
-  ctaHash: HomeSectionId | typeof BOOKING_TARGET;
+  ctaTarget: CtaTarget;
 };
 
 export function ProductPriceBox({
@@ -59,7 +58,7 @@ export function ProductPriceBox({
   currency,
   footer,
   ctaLabel,
-  ctaHash,
+  ctaTarget,
 }: ProductPriceBoxProps) {
   return (
     <div role="group" aria-label={label} className={boxVariants({ product })}>
@@ -78,15 +77,9 @@ export function ProductPriceBox({
       </div>
       <div className={footerVariants({ product })}>
         <span className={footerTextVariants({ product })}>{footer}</span>
-        {ctaHash === BOOKING_TARGET ? (
-          <PillLink to="/inspection" tone={CTA_TONE[product]} size="sm">
-            {ctaLabel}
-          </PillLink>
-        ) : (
-          <PillLink to="/" hash={ctaHash} tone={CTA_TONE[product]} size="sm">
-            {ctaLabel}
-          </PillLink>
-        )}
+        <PillLink {...ctaLinkOptions(ctaTarget)} tone={CTA_TONE[product]} size="sm">
+          {ctaLabel}
+        </PillLink>
       </div>
     </div>
   );

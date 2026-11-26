@@ -5,12 +5,12 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/c
 import { Textarea } from '@/components/ui/textarea';
 import { formatNumber } from '@/i18n/format';
 import { useValidationMessage } from '@/i18n/validation';
+import { TextField } from '@/components/forms/text-field';
 import {
   LISTING_DESCRIPTION_MAX,
   LISTING_TITLE_MAX,
   type ListingFormValues,
 } from '../listing-form.schemas';
-import { ListingTextField } from './listing-text-field';
 
 type ListingTextSectionProps = {
   control: Control<ListingFormValues>;
@@ -26,7 +26,7 @@ export function ListingTextSection({ control }: ListingTextSectionProps) {
 
   return (
     <FieldGroup className="gap-4">
-      <ListingTextField
+      <TextField
         control={control}
         name="title"
         label={t('form.title.label')}

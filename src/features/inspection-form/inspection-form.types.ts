@@ -47,7 +47,3 @@ export type PointsPatch = {
 export type ConsentSectionPatch = ConsentSectionsValues['sections'][number];
 
 export type ConsentEditor = Awaited<ReturnType<typeof getConsentEditor>>;
-
-export const CONSENT_LANGUAGES = ['ro', 'en'] as const;
-
-export type ConsentLanguage = (typeof CONSENT_LANGUAGES)[number];

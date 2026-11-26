@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CATEGORY_ICON_KEYS } from '@/components/inspection/category-icons';
+import { validationMessage } from '@/i18n/validation';
 import { REQUIRED_MEDIA } from './inspection-form.types';
 
 const CATEGORY_NAME_MAX = 60;
@@ -23,13 +24,17 @@ export const questionSchema = z.object({
 
 export type QuestionValues = z.infer<typeof questionSchema>;
 
+export const weightsSchema = z.object({ weights: z.record(z.string(), z.string()) });
+
+export type WeightValues = z.infer<typeof weightsSchema>;
+
 const pointSchema = z.number().min(0).max(10);
 
 export const pointsSchema = z
   .object({ good: pointSchema, acceptable: pointSchema, problem: pointSchema })
   .refine((points) => points.good >= points.acceptable && points.acceptable >= points.problem, {
     path: ['acceptable'],
-    message: 'invalid',
+    message: validationMessage('invalid'),
   });
 
 export type PointsValues = z.infer<typeof pointsSchema>;

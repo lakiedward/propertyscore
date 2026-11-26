@@ -589,6 +589,9 @@ isOneToOne: false
               "block_reason": string,"created_at": string,"email": string,"full_name": string,"inspector_city_id": string,"inspector_city_name": string,"is_blocked": boolean,"phone": string,"roles": (Database["public"]['Enums']["app_role"])[],"total_count": number,"user_id": string
             }[]
                            },
+"admin_unassigned_count":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "admin_user_role_counts":
 { Args: Record<PropertyKey, never>; Returns: {
               "amount": number,"role": Database["public"]['Enums']["app_role"],"total": number
@@ -685,11 +688,6 @@ isOneToOne: false
 "inspector_agenda":
 { Args: { "p_from": string,"p_to": string }; Returns: {
               "access_name": string,"access_notes": string,"access_phone": string,"access_tags": (string)[],"address_text": string,"answered_count": number,"area_m2": number,"building_floors": number,"city_name": string,"ends_at": string,"floor": number,"id": string,"latitude": number,"longitude": number,"number": number,"property_type": Database["public"]['Enums']["listing_property_type"],"question_count": number,"starts_at": string,"status": Database["public"]['Enums']["inspection_status"],"submitted_at": string,"year_built": number
-            }[]
-                           },
-"inspector_free_starts":
-{ Args: { "p_from": string,"p_inspector_id": string,"p_to": string }; Returns: {
-              "starts_at": string
             }[]
                            },
 "inspector_workspace":

@@ -1,17 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
-import { PencilIcon, PlusIcon, SaveIcon, UploadIcon } from 'lucide-react';
+import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { InlineToast } from '@/components/feedback/inline-toast';
 import { SegmentedControl } from '@/components/forms/segmented-control';
-import { EmptyState } from '@/components/layout/empty-state';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { SUPPORTED_LOCALES } from '@/i18n/i18n';
 import { versionLabel } from '@/lib/version-label';
 import {
   inspectionFormQueries,
@@ -24,14 +22,14 @@ import {
   useRestoreConsentVersion,
   useSaveConsentSections,
 } from '../api/inspection-form.queries';
-import { consentSectionsSchema, type ConsentSectionsValues } from '../inspection-form.schemas';
-import {
-  CONSENT_LANGUAGES,
-  type ConsentEditor as ConsentEditorData,
-} from '../inspection-form.types';
 import { useVersionHistory } from '../hooks/use-version-history';
-import { nextConsentVersion, toVersionItems } from '../inspection-form.utils';
+import { consentSectionsSchema, type ConsentSectionsValues } from '../inspection-form.schemas';
+import type { ConsentEditor as ConsentEditorData } from '../inspection-form.types';
+import { changedSections, nextConsentVersion } from '../inspection-form.utils';
+import { ConsentActionBar } from './consent-action-bar';
+import { ConsentDialogs, type ConsentDialog } from './consent-dialogs';
 import { ConsentSectionFields } from './consent-section-fields';
+import { CreateDraftEmptyState } from './create-draft-empty-state';
 import { VersionBanner } from './version-banner';
 import { VersionDialogs } from './version-dialogs';
 import { VersionList } from './version-list';
@@ -61,21 +59,14 @@ export function ConsentEditor() {
 
   if (!editor.shown) {
     return (
-      <EmptyState
+      <CreateDraftEmptyState
         title={t('consent.empty.title')}
         description={t('consent.empty.description')}
-        action={
-          <Button
-            type="button"
-            size="md"
-            disabled={createDraft.isPending}
-            onClick={() => {
-              createDraft.mutate();
-            }}
-          >
-            {t('consent.createDraft')}
-          </Button>
-        }
+        actionLabel={t('consent.createDraft')}
+        isPending={createDraft.isPending}
+        onCreate={() => {
+          createDraft.mutate();
+        }}
       />
     );
   }
@@ -98,9 +89,7 @@ function ConsentEditorBody({ editor }: ConsentEditorBodyProps) {
   const saveSections = useSaveConsentSections();
   const addSection = useAddConsentSection();
   const removeSection = useRemoveConsentSection();
-  const [dialog, setDialog] = useState<
-    { kind: 'discard' } | { kind: 'remove'; index: number } | null
-  >(null);
+  const [dialog, setDialog] = useState<ConsentDialog | null>(null);
   const [publishedVersion, setPublishedVersion] = useState<string | null>(null);
   const form = useForm<ConsentSectionsValues>({
     resolver: zodResolver(consentSectionsSchema),
@@ -111,28 +100,21 @@ function ConsentEditorBody({ editor }: ConsentEditorBodyProps) {
   const language = search.lang;
   const draft = editor.shown?.status === 'draft' ? editor.draft : null;
   const shownVersion = editor.shown ? versionLabel(editor.shown.version) : '';
-  const defaultVersion = editor.draft ?? editor.published;
-  const isViewing = editor.shown !== null && editor.shown.id !== defaultVersion?.id;
-  const label = (version: number) => t('versions.label', { version: versionLabel(version) });
-  const items = toVersionItems(editor.versions, editor.usageCounts, label);
-  const shownItem = items.find((item) => item.id === editor.shown?.id);
-  const nextLabel = label(nextConsentVersion(editor.versions));
   const history = useVersionHistory({
-    defaultId: defaultVersion?.id ?? null,
-    nextLabel,
+    editor,
+    label: (version) => t('versions.label', { version: versionLabel(version) }),
+    nextVersion: nextConsentVersion,
     restore: useRestoreConsentVersion(),
     remove: useDeleteConsentVersion(),
   });
+  const { isViewing } = history;
 
   const saveDraft = (onSaved?: () => void) => {
     if (!draft) {
       return;
     }
     void form.handleSubmit((values) => {
-      const dirty = form.formState.dirtyFields.sections ?? [];
-      const changed = values.sections.filter(
-        (_, index) => Object.keys(dirty[index] ?? {}).length > 0,
-      );
+      const changed = changedSections(values.sections, form.formState.dirtyFields.sections);
       if (changed.length === 0) {
         onSaved?.();
         return;
@@ -150,26 +132,10 @@ function ConsentEditorBody({ editor }: ConsentEditorBodyProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 items-start gap-4 w1180:grid-cols-[280px_minmax(0,1fr)]">
-      <VersionList
-        items={items}
-        shownId={editor.shown?.id ?? null}
-        onView={history.view}
-        onRequest={history.setRequest}
-      />
+    <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+      <VersionList {...history.list} />
       <div className="flex min-w-0 flex-col gap-3.5">
-        {isViewing && shownItem ? (
-          <VersionBanner
-            item={shownItem}
-            backLabel={t(editor.draft ? 'versions.backToDraft' : 'versions.backToPublished')}
-            onBack={() => {
-              history.view(null);
-            }}
-            onRestore={() => {
-              history.setRequest({ kind: 'restore', item: shownItem });
-            }}
-          />
-        ) : null}
+        {history.banner ? <VersionBanner {...history.banner} /> : null}
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-card bg-card px-4 py-3.5 shadow-card-soft">
           <div className="flex min-w-0 flex-col">
             <strong className="text-base font-extrabold">
@@ -186,7 +152,7 @@ function ConsentEditorBody({ editor }: ConsentEditorBodyProps) {
             onChange={(lang) => {
               void navigate({ search: (previous) => ({ ...previous, lang }), replace: true });
             }}
-            options={CONSENT_LANGUAGES.map((option) => ({
+            options={SUPPORTED_LOCALES.map((option) => ({
               value: option,
               label: tCommon(`language.short.${option}`),
               lang: option,
@@ -238,128 +204,65 @@ function ConsentEditorBody({ editor }: ConsentEditorBodyProps) {
             message={t('consent.publishedToast', { version: publishedVersion })}
           />
         ) : null}
-        <div className={cn('flex flex-wrap justify-end gap-2', isViewing && 'hidden')}>
-          {draft ? (
-            <>
-              <Button
-                type="button"
-                variant="ghost"
-                size="md"
-                onClick={() => {
-                  setDialog({ kind: 'discard' });
-                }}
-              >
-                {t('consent.discard')}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="md"
-                disabled={saveSections.isPending}
-                aria-busy={saveSections.isPending}
-                onClick={() => {
-                  saveDraft();
-                }}
-              >
-                <SaveIcon aria-hidden />
-                {saveSections.isPending ? t('consent.saving') : t('consent.save')}
-              </Button>
-              <Button
-                type="button"
-                size="md"
-                disabled={publish.isPending}
-                aria-busy={publish.isPending}
-                onClick={() => {
-                  saveDraft(() => {
-                    publish.mutate(draft.id, {
-                      onSuccess: () => {
-                        setPublishedVersion(versionLabel(draft.version));
-                      },
-                    });
-                  });
-                }}
-              >
-                <UploadIcon aria-hidden />
-                {publish.isPending ? t('consent.publishing') : t('consent.publish')}
-              </Button>
-            </>
-          ) : (
-            <Button
-              type="button"
-              size="md"
-              disabled={createDraft.isPending}
-              onClick={() => {
-                setPublishedVersion(null);
-                createDraft.mutate();
-              }}
-            >
-              <PencilIcon aria-hidden />
-              {t('consent.createDraft')}
-            </Button>
-          )}
-        </div>
+        <ConsentActionBar
+          isDraft={draft !== null}
+          isHidden={isViewing}
+          isSaving={saveSections.isPending}
+          isPublishing={publish.isPending}
+          isCreating={createDraft.isPending}
+          onDiscard={() => {
+            setDialog({ kind: 'discard' });
+          }}
+          onSave={() => {
+            saveDraft();
+          }}
+          onPublish={() => {
+            if (!draft) {
+              return;
+            }
+            saveDraft(() => {
+              publish.mutate(draft.id, {
+                onSuccess: () => {
+                  setPublishedVersion(versionLabel(draft.version));
+                },
+              });
+            });
+          }}
+          onCreateDraft={() => {
+            setPublishedVersion(null);
+            createDraft.mutate();
+          }}
+        />
       </div>
-      <VersionDialogs
-        request={history.request}
-        nextLabel={nextLabel}
-        hasDraft={editor.draft !== null}
-        isPending={history.isPending}
-        onClose={() => {
-          history.setRequest(null);
-        }}
-        onConfirm={history.confirm}
-      />
+      <VersionDialogs {...history.dialogs} />
       {draft ? (
-        <>
-          <ConfirmDialog
-            isOpen={dialog?.kind === 'discard'}
-            onOpenChange={(isOpen) => {
-              setDialog(isOpen ? { kind: 'discard' } : null);
-            }}
-            tone="destructive"
-            title={t('consent.discardTitle', { version: shownVersion })}
-            description={t('consent.discardDescription')}
-            confirmLabel={t('consent.discard')}
-            pendingLabel={t('consent.discarding')}
-            isPending={discardDraft.isPending}
-            onConfirm={() => {
-              discardDraft.mutate(draft.id, {
+        <ConsentDialogs
+          dialog={dialog}
+          version={shownVersion}
+          isDiscarding={discardDraft.isPending}
+          isRemoving={removeSection.isPending}
+          onDialogChange={setDialog}
+          onDiscard={() => {
+            discardDraft.mutate(draft.id, {
+              onSuccess: () => {
+                setDialog(null);
+              },
+            });
+          }}
+          onRemove={(index) => {
+            const section = fields[index];
+            if (!section) {
+              return;
+            }
+            saveDraft(() => {
+              removeSection.mutate(section.id, {
                 onSuccess: () => {
                   setDialog(null);
                 },
               });
-            }}
-          />
-          <ConfirmDialog
-            isOpen={dialog?.kind === 'remove'}
-            onOpenChange={(isOpen) => {
-              if (!isOpen) {
-                setDialog(null);
-              }
-            }}
-            tone="destructive"
-            title={t('consent.removeTitle', {
-              number: (dialog?.kind === 'remove' ? dialog.index : 0) + 1,
-            })}
-            description={t('consent.removeDescription')}
-            confirmLabel={t('consent.removeConfirm')}
-            pendingLabel={t('consent.removing')}
-            isPending={removeSection.isPending}
-            onConfirm={() => {
-              const section = dialog?.kind === 'remove' ? fields[dialog.index] : undefined;
-              if (!section) {
-                return;
-              }
-              saveDraft(() => {
-                removeSection.mutate(section.id, {
-                  onSuccess: () => {
-                    setDialog(null);
-                  },
-                });
-              });
-            }}
-          />
-        </>
+            });
+          }}
+        />
       ) : null}
     </div>
   );

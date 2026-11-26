@@ -10,7 +10,6 @@ import { useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { formatDate } from '@/i18n/format';
-import { cn } from '@/lib/utils';
 import {
   fromDateKey,
   monthStartKey,
@@ -18,7 +17,10 @@ import {
   shiftDateKey,
   shiftMonthKey,
   toDateKey,
-} from './date-picker.utils';
+} from '@/lib/date-keys';
+import { cn } from '@/lib/utils';
+
+const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
 const ARROW_STEPS: Readonly<Record<string, number>> = {
   ArrowLeft: -1,
@@ -93,9 +95,7 @@ export function DatePicker({
   const gridRef = useRef<HTMLDivElement>(null);
   const monthKey = monthStartKey(focusedKey);
   const weeks = monthWeeks(monthKey);
-  const weekdays = (weeks[0] ?? []).map((key) =>
-    formatDate(fromDateKey(key), { weekday: 'short' }).replace('.', ''),
-  );
+  const weekdays = WEEKDAYS.map((weekday) => t(`calendar.weekdaysShort.${weekday}`));
   const isBeforeMin = (key: string) => min !== undefined && key < min;
 
   const moveFocus = (key: string) => {

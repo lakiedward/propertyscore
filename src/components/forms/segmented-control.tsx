@@ -8,11 +8,23 @@ const itemVariants = cva(
       size: {
         sm: 'h-7.5',
         md: 'h-8',
+        control: 'h-full px-3.5 font-semibold',
       },
     },
     defaultVariants: { size: 'sm' },
   },
 );
+
+const groupVariants = cva('gap-0 rounded-md border border-border bg-card p-0.75', {
+  variants: {
+    size: {
+      sm: '',
+      md: '',
+      control: 'h-control',
+    },
+  },
+  defaultVariants: { size: 'sm' },
+});
 
 type SegmentedControlOption<Value extends string> = {
   value: Value;
@@ -25,7 +37,7 @@ type SegmentedControlProps<Value extends string> = {
   value: Value;
   onChange: (value: Value) => void;
   ariaLabel: string;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'control';
 };
 
 export function SegmentedControl<Value extends string>({
@@ -46,7 +58,7 @@ export function SegmentedControl<Value extends string>({
         }
       }}
       aria-label={ariaLabel}
-      className="gap-0 rounded-md border border-border bg-card p-0.75"
+      className={groupVariants({ size })}
     >
       {options.map((option) => (
         <ToggleGroupItem

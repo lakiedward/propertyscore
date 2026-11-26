@@ -1,45 +1,37 @@
 import { useId } from 'react';
-import { Controller, type Control } from 'react-hook-form';
+import { Controller, type Control, type FieldPath, type FieldValues } from 'react-hook-form';
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useValidationMessage } from '@/i18n/validation';
 import { cn } from '@/lib/utils';
-import type { ListingFormValues } from '../listing-form.schemas';
 
-type ListingTextFieldName =
-  | 'title'
-  | 'street_label'
-  | 'rooms'
-  | 'area_m2'
-  | 'price'
-  | 'floor'
-  | 'building_floors'
-  | 'year_built'
-  | 'land_area_m2'
-  | 'balconies'
-  | 'parking_spaces';
-
-type ListingTextFieldProps = {
-  control: Control<ListingFormValues>;
-  name: ListingTextFieldName;
+type TextFieldProps<Values extends FieldValues> = {
+  control: Control<Values>;
+  name: FieldPath<Values>;
   label: string;
+  isLabelHidden?: boolean;
   placeholder?: string;
   hint?: string | undefined;
   suffix?: string;
-  inputMode?: 'numeric' | 'decimal';
+  type?: 'text' | 'tel';
+  inputMode?: 'numeric' | 'decimal' | 'tel';
+  autoComplete?: string;
   maxLength?: number;
 };
 
-export function ListingTextField({
+export function TextField<Values extends FieldValues>({
   control,
   name,
   label,
+  isLabelHidden = false,
   placeholder,
   hint,
   suffix,
+  type = 'text',
   inputMode,
+  autoComplete,
   maxLength,
-}: ListingTextFieldProps) {
+}: TextFieldProps<Values>) {
   const validationMessage = useValidationMessage();
   const id = useId();
   const hintId = useId();
@@ -50,22 +42,26 @@ export function ListingTextField({
       control={control}
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
-          <FieldLabel htmlFor={id} className="text-label">
+          <FieldLabel htmlFor={id} className={cn('text-label', isLabelHidden && 'sr-only')}>
             {label}
           </FieldLabel>
           <div className="relative">
             <Input
               {...field}
+              value={
+                typeof field.value === 'string' || typeof field.value === 'number'
+                  ? field.value
+                  : ''
+              }
               id={id}
+              type={type}
               placeholder={placeholder}
               inputMode={inputMode}
+              autoComplete={autoComplete}
               maxLength={maxLength}
               aria-invalid={fieldState.invalid}
               aria-describedby={hint ? hintId : undefined}
-              className={cn(
-                'h-control rounded-md border-border bg-card px-(--control-padding-x) text-(length:--control-font-size) md:text-(length:--control-font-size)',
-                suffix && 'pr-12',
-              )}
+              className={cn(suffix && 'pr-12')}
             />
             {suffix ? (
               <span

@@ -9,15 +9,17 @@ import type { ComponentProps, ReactNode } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 
-type NoticeTone = NonNullable<ComponentProps<typeof Alert>['tone']>;
+type AlertTone = NonNullable<ComponentProps<typeof Alert>['tone']>;
 
-const TONE_ICONS: Record<NoticeTone, LucideIcon> = {
+const TONE_ICONS = {
   neutral: InfoIcon,
   info: InfoIcon,
   success: CircleCheckIcon,
   warning: TriangleAlertIcon,
   error: CircleXIcon,
-};
+} as const satisfies Partial<Record<AlertTone, LucideIcon>>;
+
+type NoticeTone = keyof typeof TONE_ICONS;
 
 type AuthNoticeProps = {
   tone: NoticeTone;

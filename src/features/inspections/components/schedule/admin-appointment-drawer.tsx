@@ -4,21 +4,14 @@ import { useId, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { SearchSelect } from '@/components/forms/search-select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
-import { initialsOf } from '@/features/profile';
 import { useErrorMessage } from '@/i18n/error-message';
-import { formatDate, formatNumber, formatPrice, toCurrency } from '@/i18n/format';
+import { formatDate, formatPrice, toCurrency } from '@/i18n/format';
 import { useValidationMessage } from '@/i18n/validation';
 import {
   useAssignInspector,
@@ -33,10 +26,11 @@ import {
 import { useBookingText } from '../../hooks/use-booking-text';
 import { useFreeInspectors } from '../../hooks/use-free-inspectors';
 import type { AdminInspection, AppointmentMode } from '../../inspection.types';
-import { knownAccessTags } from '../../inspection.utils';
+import { AppointmentSheet } from '../appointment-sheet';
 import { InspectionHistory } from '../inspection-history';
 import { InspectionStatusPill } from '../inspection-status-pill';
 import { RescheduleSection } from '../reschedule-section';
+import { inspectorOption } from './inspector-option';
 
 type RowKey = 'date' | 'address' | 'client' | 'opener' | 'notes' | 'payment';
 
@@ -58,52 +52,35 @@ export function AdminAppointmentDrawer({
     inspection.status === 'scheduled' || inspection.status === 'inspector_assigned';
 
   return (
-    <Sheet
-      open
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onClose();
-        }
-      }}
+    <AppointmentSheet
+      title={t('appointments.drawer.title', {
+        date: formatDate(inspection.starts_at, { day: 'numeric', month: 'short' }),
+      })}
+      description={t('schedule.drawer.description')}
+      onClose={onClose}
+      className="data-[side=right]:w-full data-[side=right]:sm:max-w-160"
     >
-      <SheetContent
-        side="right"
-        className="gap-0 overflow-y-auto p-0 data-[side=right]:w-full data-[side=right]:sm:max-w-160"
-      >
-        <SheetHeader className="border-b border-border-subtle px-5 py-4">
-          <SheetTitle className="text-h4 first-letter:uppercase">
-            {t('appointments.drawer.title', {
-              date: formatDate(inspection.starts_at, { day: 'numeric', month: 'short' }),
-            })}
-          </SheetTitle>
-          <SheetDescription className="sr-only">
-            {t('schedule.drawer.description')}
-          </SheetDescription>
-        </SheetHeader>
-        <div className="flex flex-col gap-4.5 p-5">
-          {mode === 'reschedule' && isOpenForChanges ? (
-            <RescheduleSection
-              inspectionId={inspection.id}
-              cityId={inspection.city_id}
-              cityName={inspection.city_name}
-              inspectorName={inspection.inspector_name}
-              onDone={() => {
-                onModeChange(undefined);
-              }}
-            />
-          ) : (
-            <Details
-              inspection={inspection}
-              isOpenForChanges={isOpenForChanges}
-              onReschedule={() => {
-                onModeChange('reschedule');
-              }}
-              onCancelled={onClose}
-            />
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+      {mode === 'reschedule' && isOpenForChanges ? (
+        <RescheduleSection
+          inspectionId={inspection.id}
+          cityId={inspection.city_id}
+          cityName={inspection.city_name}
+          inspectorName={inspection.inspector_name}
+          onDone={() => {
+            onModeChange(undefined);
+          }}
+        />
+      ) : (
+        <Details
+          inspection={inspection}
+          isOpenForChanges={isOpenForChanges}
+          onReschedule={() => {
+            onModeChange('reschedule');
+          }}
+          onCancelled={onClose}
+        />
+      )}
+    </AppointmentSheet>
   );
 }
 
@@ -117,21 +94,14 @@ type DetailsProps = {
 function Details({ inspection, isOpenForChanges, onReschedule, onCancelled }: DetailsProps) {
   const { t } = useTranslation('inspections');
   const text = useBookingText();
-  const [isCancelling, setIsCancelling] = useState(false);
   const bookingTitleId = useId();
-  const notes = [
-    ...knownAccessTags(inspection.access_tags).map((tag) => t(`accessTag.${tag}`)),
-    ...(inspection.access_notes ? [inspection.access_notes] : []),
-  ].join('. ');
-  const facts = [
-    t(`propertyType.${inspection.property_type}`),
-    ...(inspection.area_m2 !== null
-      ? [t('agenda.area', { area: formatNumber(inspection.area_m2) })]
-      : []),
-    ...(inspection.floor !== null && inspection.building_floors !== null
-      ? [t('agenda.floor', { floor: inspection.floor, floors: inspection.building_floors })]
-      : []),
-  ].join(' · ');
+  const notes = text.accessNotes(inspection.access_tags, inspection.access_notes);
+  const facts = text.factLine({
+    propertyType: inspection.property_type,
+    areaM2: inspection.area_m2,
+    floor: inspection.floor,
+    buildingFloors: inspection.building_floors,
+  });
   const rows: { key: RowKey; value: string; sub?: string }[] = [
     { key: 'date', value: text.date(inspection.starts_at) },
     {
@@ -184,7 +154,7 @@ function Details({ inspection, isOpenForChanges, onReschedule, onCancelled }: De
       </dl>
       {isOpenForChanges ? (
         <>
-          <AssignInspector inspection={inspection} />
+          <AssignInspector key={inspection.inspector_id} inspection={inspection} />
           <section
             aria-labelledby={bookingTitleId}
             className="flex flex-col gap-3 rounded-lg border border-card bg-card p-4 shadow-card-soft"
@@ -203,38 +173,21 @@ function Details({ inspection, isOpenForChanges, onReschedule, onCancelled }: De
                 <CalendarClockIcon aria-hidden />
                 {t('appointments.reschedule.open')}
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="md"
-                className="touch-target border-error-border text-destructive hover:border-destructive hover:bg-error-surface hover:text-destructive"
-                aria-expanded={isCancelling}
-                onClick={() => {
-                  setIsCancelling(true);
-                }}
-              >
-                <CalendarXIcon aria-hidden />
-                {t('schedule.drawer.cancel')}
-              </Button>
+              <CancelDialog inspection={inspection} onCancelled={onCancelled} />
             </div>
           </section>
         </>
-      ) : null}
-      {isCancelling ? (
-        <CancelPanel
-          inspection={inspection}
-          onBack={() => {
-            setIsCancelling(false);
-          }}
-          onCancelled={onCancelled}
-        />
       ) : null}
       <InspectionHistory inspectionId={inspection.id} />
     </>
   );
 }
 
-function AssignInspector({ inspection }: { inspection: AdminInspection }) {
+type AssignInspectorProps = {
+  inspection: AdminInspection;
+};
+
+function AssignInspector({ inspection }: AssignInspectorProps) {
   const { t } = useTranslation('inspections');
   const errorMessage = useErrorMessage();
   const selectId = useId();
@@ -278,19 +231,9 @@ function AssignInspector({ inspection }: { inspection: AdminInspection }) {
         <SearchSelect
           id={selectId}
           value={inspectorId === '' ? null : inspectorId}
-          options={inspectors.free.map((inspector) => ({
-            value: inspector.user_id,
-            label: inspector.full_name ?? '',
-            description: inspector.city_name,
-            leading: (
-              <span
-                aria-hidden
-                className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-nav-sm font-extrabold text-primary-foreground"
-              >
-                {initialsOf(inspector.full_name ?? '')}
-              </span>
-            ),
-          }))}
+          options={inspectors.free.map((inspector) =>
+            inspectorOption(inspector, inspector.city_name),
+          )}
           onChange={setInspectorId}
           placeholder={t('schedule.drawer.choose')}
           searchPlaceholder={t('schedule.availability.search')}
@@ -332,21 +275,29 @@ function AssignInspector({ inspection }: { inspection: AdminInspection }) {
   );
 }
 
-type CancelPanelProps = {
+type CancelDialogProps = {
   inspection: AdminInspection;
-  onBack: () => void;
   onCancelled: () => void;
 };
 
-function CancelPanel({ inspection, onBack, onCancelled }: CancelPanelProps) {
+function CancelDialog({ inspection, onCancelled }: CancelDialogProps) {
   const { t } = useTranslation('inspections');
   const validationMessage = useValidationMessage();
+  const formId = useId();
   const reasonId = useId();
+  const [isOpen, setIsOpen] = useState(false);
   const cancel = useCancelInspectionAsAdmin();
   const form = useForm<CancelReasonValues>({
     resolver: zodResolver(cancelReasonSchema),
     defaultValues: { reason: '' },
   });
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      form.reset();
+    }
+    setIsOpen(open);
+  };
 
   const handleSubmit = form.handleSubmit((values) => {
     cancel.mutate(
@@ -354,6 +305,7 @@ function CancelPanel({ inspection, onBack, onCancelled }: CancelPanelProps) {
       {
         onSuccess: () => {
           toast.success(t('appointments.cancel.done'));
+          setIsOpen(false);
           onCancelled();
         },
       },
@@ -361,45 +313,43 @@ function CancelPanel({ inspection, onBack, onCancelled }: CancelPanelProps) {
   });
 
   return (
-    <form
-      onSubmit={(event) => void handleSubmit(event)}
-      noValidate
-      className="flex flex-col gap-3 rounded-lg border-[1.5px] border-destructive bg-error-surface p-3.5"
+    <ConfirmDialog
+      isOpen={isOpen}
+      onOpenChange={handleOpenChange}
+      tone="destructive"
+      title={t('schedule.cancel.title', { number: inspection.number })}
+      description={t('schedule.cancel.text')}
+      confirmLabel={t('appointments.cancel.confirm')}
+      pendingLabel={t('appointments.cancel.pending')}
+      cancelLabel={t('schedule.cancel.back')}
+      confirmIcon={CalendarXIcon}
+      isPending={cancel.isPending}
+      formId={formId}
+      trigger={
+        <Button type="button" variant="outlineDestructive" size="md" className="touch-target">
+          <CalendarXIcon aria-hidden />
+          {t('schedule.drawer.cancel')}
+        </Button>
+      }
     >
-      <strong className="text-body-sm text-destructive">
-        {t('schedule.cancel.title', { number: inspection.number })}
-      </strong>
-      <p className="text-small">{t('schedule.cancel.text')}</p>
-      <Controller
-        name="reason"
-        control={form.control}
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor={reasonId}>{t('schedule.cancel.reason')}</FieldLabel>
-            <Textarea
-              {...field}
-              id={reasonId}
-              maxLength={CANCEL_REASON_MAX}
-              aria-invalid={fieldState.invalid}
-            />
-            <FieldError>{validationMessage(fieldState.error?.message)}</FieldError>
-          </Field>
-        )}
-      />
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="ghost" size="sm" className="touch-target" onClick={onBack}>
-          {t('schedule.cancel.back')}
-        </Button>
-        <Button
-          type="submit"
-          variant="destructive"
-          size="sm"
-          className="touch-target"
-          disabled={cancel.isPending}
-        >
-          {cancel.isPending ? t('appointments.cancel.pending') : t('appointments.cancel.confirm')}
-        </Button>
-      </div>
-    </form>
+      <form id={formId} onSubmit={(event) => void handleSubmit(event)} noValidate>
+        <Controller
+          name="reason"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={reasonId}>{t('schedule.cancel.reason')}</FieldLabel>
+              <Textarea
+                {...field}
+                id={reasonId}
+                maxLength={CANCEL_REASON_MAX}
+                aria-invalid={fieldState.invalid}
+              />
+              <FieldError>{validationMessage(fieldState.error?.message)}</FieldError>
+            </Field>
+          )}
+        />
+      </form>
+    </ConfirmDialog>
   );
 }

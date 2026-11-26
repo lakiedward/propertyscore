@@ -45,6 +45,12 @@ export async function listUnassignedInspections(cityId: string | null) {
   return rows;
 }
 
+export async function countUnassignedInspections() {
+  const { data, error } = await supabase.rpc('admin_unassigned_count');
+  if (error) throw toAppError(error);
+  return data;
+}
+
 export async function listAdminInspectors(cityId: string | null) {
   const { data, error } = await supabase.rpc(
     'admin_inspectors',

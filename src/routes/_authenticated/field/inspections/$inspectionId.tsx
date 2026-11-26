@@ -15,10 +15,18 @@ export const Route = createFileRoute('/_authenticated/field/inspections/$inspect
   beforeLoad: () => loadFeatureNamespaces(['fieldInspection']),
   loader: async ({ context, params }) => {
     try {
-      await context.queryClient.query({
-        ...fieldInspectionQueries.workspace(params.inspectionId),
-        staleTime: 'static',
-      });
+      const [workspace] = await Promise.all([
+        context.queryClient.query({
+          ...fieldInspectionQueries.workspace(params.inspectionId),
+          staleTime: 'static',
+        }),
+        context.queryClient
+          .query(fieldInspectionQueries.progress(params.inspectionId))
+          .catch(() => undefined),
+      ]);
+      await context.queryClient.query(
+        fieldInspectionQueries.content(workspace.formVersionId, workspace.consentVersionId),
+      );
     } catch (error) {
       if (isAppError(error) && (error.code === 'not_found' || error.code === 'validation')) {
         throw notFound();

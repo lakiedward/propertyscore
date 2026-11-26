@@ -1,5 +1,6 @@
 import {
   assignmentClash,
+  dayStart,
   gridPosition,
   HOUR_HEIGHT,
   offBlocks,
@@ -67,6 +68,40 @@ describe('schedule.utils', () => {
         blocks: [{ inspector_id: MIHAI, starts_at: at(15), ends_at: at(16) }],
       }),
     ).toBe('unavailable');
+  });
+
+  it('reads the board day and the working hours in Romania, from explicit instants', () => {
+    const day = dayStart('2026-11-25');
+    expect(day.toISOString()).toBe('2026-11-24T22:00:00.000Z');
+    expect(scheduleRange('2026-11-25', 'day').to.toISOString()).toBe('2026-11-25T22:00:00.000Z');
+    expect(
+      gridPosition(
+        { starts_at: '2026-11-25T07:30:00.000Z', ends_at: '2026-11-25T09:30:00.000Z' },
+        day,
+      ),
+    ).toEqual({ top: 1.5 * HOUR_HEIGHT, height: 2 * HOUR_HEIGHT });
+    expect(
+      offBlocks(MIHAI, day, RANGES, []).map(({ top, height }) => [
+        top / HOUR_HEIGHT,
+        height / HOUR_HEIGHT,
+      ]),
+    ).toEqual([
+      [4, 2],
+      [10, 1],
+    ]);
+    expect(
+      assignmentClash({
+        inspectorId: MIHAI,
+        ranges: RANGES,
+        blocks: [],
+        assigned: [],
+        inspection: {
+          id: 'a',
+          starts_at: '2026-11-25T06:00:00.000Z',
+          ends_at: '2026-11-25T08:00:00.000Z',
+        },
+      }),
+    ).toBeNull();
   });
 
   it('accepts a visit that starts when the hours start, whatever the time format', () => {

@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
+import roCommon from '@/i18n/locales/ro/common.json';
 import ro from '@/i18n/locales/ro/inspections.json';
 import { signedInAs } from '@/test/factories/auth';
 import { buildMyInspection } from '@/test/factories/my-inspection';
@@ -27,7 +28,9 @@ describe('AppointmentsPage', { timeout: 20_000 }, () => {
     server.use(myInspectionsResponse([DONE, UPCOMING]));
     await renderAppRoute('/account/appointments', { auth: signedInAs('user') });
 
-    const rows = await screen.findAllByRole('button', { name: /Inspecție fizică/ });
+    const rows = await screen.findAllByRole('button', {
+      name: new RegExp(ro.appointments.rowEyebrow.split(' · ')[0] ?? ''),
+    });
     expect(rows[0]).toHaveTextContent('Str. Paris 3, ap. 9');
     expect(rows[0]).toHaveTextContent(ro.appointments.inspectorPending);
     expect(rows[1]).toHaveTextContent(ro.appointments.inspector.replace('{{name}}', 'Mihai Dobre'));
@@ -81,7 +84,11 @@ describe('AppointmentsPage', { timeout: 20_000 }, () => {
     );
 
     const drawer = await screen.findByRole('dialog');
-    await user.click(await within(drawer).findByRole('button', { name: /Prima oră liberă/ }));
+    await user.click(
+      await within(drawer).findByRole('button', {
+        name: new RegExp(ro.booking.date.firstFree.split('{{')[0] ?? ''),
+      }),
+    );
     await user.click(
       within(drawer).getByRole('button', { name: ro.appointments.reschedule.confirm }),
     );
@@ -100,5 +107,16 @@ describe('AppointmentsPage', { timeout: 20_000 }, () => {
     expect(
       within(drawer).queryByRole('button', { name: ro.appointments.cancel.open }),
     ).not.toBeInTheDocument();
+  });
+
+  it('shows the error page when the inspections cannot load', async () => {
+    server.use(
+      http.post(supabaseUrl('/rest/v1/rpc/my_inspections'), () =>
+        HttpResponse.json({ message: 'boom' }, { status: 500 }),
+      ),
+    );
+    await renderAppRoute('/account/appointments', { auth: signedInAs('user') });
+
+    expect(await screen.findByText(roCommon.pages.error.title)).toBeInTheDocument();
   });
 });

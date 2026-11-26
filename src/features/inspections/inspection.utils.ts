@@ -1,4 +1,5 @@
-import { bucharestDay } from '@/lib/bucharest-time';
+import { bucharestDay, bucharestInstant } from '@/lib/bucharest-time';
+import { shiftDateKey } from '@/lib/date-keys';
 import type { HomeFormValues } from './booking.schemas';
 import type { HomeChoice } from './booking.store';
 import type {
@@ -12,31 +13,25 @@ import { ACCESS_TAGS } from './inspection.types';
 
 const AGENDA_DAYS_AHEAD = 7;
 
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function addDays(date: Date, days: number): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+function dayStartAfter(now: Date, days: number): Date {
+  return bucharestInstant(shiftDateKey(bucharestDay(now), days));
 }
 
 export function agendaRange(now: Date): AgendaRange {
-  const today = startOfDay(now);
   return {
-    from: today.toISOString(),
-    to: addDays(today, AGENDA_DAYS_AHEAD).toISOString(),
+    from: dayStartAfter(now, 0).toISOString(),
+    to: dayStartAfter(now, AGENDA_DAYS_AHEAD).toISOString(),
   };
 }
 
 export function agendaDayBounds(day: AgendaDay, now: Date): { from: Date; to: Date } {
-  const today = startOfDay(now);
   if (day === 'today') {
-    return { from: today, to: addDays(today, 1) };
+    return { from: dayStartAfter(now, 0), to: dayStartAfter(now, 1) };
   }
   if (day === 'tomorrow') {
-    return { from: addDays(today, 1), to: addDays(today, 2) };
+    return { from: dayStartAfter(now, 1), to: dayStartAfter(now, 2) };
   }
-  return { from: today, to: addDays(today, AGENDA_DAYS_AHEAD) };
+  return { from: dayStartAfter(now, 0), to: dayStartAfter(now, AGENDA_DAYS_AHEAD) };
 }
 
 export function inspectionsOn(
@@ -88,8 +83,28 @@ export function homeChoiceOf(property: BookableProperty): HomeChoice {
     : { kind: 'listing', listingId: property.listing_id ?? '' };
 }
 
+function choiceIds(choice: HomeChoice): { propertyId: string | null; listingId: string | null } {
+  if (choice.kind === 'property') {
+    return { propertyId: choice.propertyId, listingId: choice.listingId };
+  }
+  if (choice.kind === 'listing') {
+    return { propertyId: null, listingId: choice.listingId };
+  }
+  return { propertyId: null, listingId: null };
+}
+
 export function isSameChoice(choice: HomeChoice | null, property: BookableProperty): boolean {
-  return choice !== null && JSON.stringify(choice) === JSON.stringify(homeChoiceOf(property));
+  if (choice === null) {
+    return false;
+  }
+  const own = homeChoiceOf(property);
+  const chosen = choiceIds(choice);
+  const expected = choiceIds(own);
+  return (
+    choice.kind === own.kind &&
+    chosen.propertyId === expected.propertyId &&
+    chosen.listingId === expected.listingId
+  );
 }
 
 function optionalNumber(value: number | null): string {

@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';
 import type { ConsentSectionPatch } from '../inspection-form.types';
+import { resolveVersions, toUsageCounts } from '../inspection-form.utils';
 
 const CONSENT_VERSION_COLUMNS =
   'id, version, status, published_at, archived_at, updated_at' as const;
@@ -19,13 +20,8 @@ export async function getConsentEditor(viewedId: string | null) {
   if (error) throw toAppError(error);
   if (usage.error) throw toAppError(usage.error);
 
-  const draft = versions.find((version) => version.status === 'draft') ?? null;
-  const published = versions.find((version) => version.status === 'published') ?? null;
-  const viewed = versions.find((version) => version.id === viewedId) ?? null;
-  const shown = viewed ?? draft ?? published;
-  const usageCounts = Object.fromEntries(
-    usage.data.map((row) => [row.consent_version_id, row.inspection_count]),
-  );
+  const { draft, published, shown } = resolveVersions(versions, viewedId);
+  const usageCounts = toUsageCounts(usage.data, 'consent_version_id');
 
   if (!shown) {
     return { versions, draft, published, shown, usageCounts, sections: [] };

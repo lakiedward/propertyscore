@@ -124,7 +124,7 @@ export function SignaturePad({
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
           className={cn(
-            'block h-45 w-full touch-none rounded-lg border-[1.5px] border-border-strong bg-card text-foreground',
+            'block h-45 w-full touch-none rounded-lg border-(length:--border-width-control) border-border-strong bg-card text-foreground',
             isDisabled && 'opacity-70',
           )}
         />

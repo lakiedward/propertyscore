@@ -59,9 +59,7 @@ export function BookingPage() {
   };
   const nextStep = NEXT_STEP[step];
   const nextName = nextStep ? t(`booking.steps.${STEP_KEYS[nextStep]}`) : null;
-  const nextLabel = nextName
-    ? t('booking.summary.continue', { step: nextName.toLowerCase() })
-    : null;
+  const nextLabel = nextStep ? t(`booking.summary.continueTo.${STEP_KEYS[nextStep]}`) : null;
   const city = cities.data?.find((option) => option.id === booking.home?.cityId);
 
   return (

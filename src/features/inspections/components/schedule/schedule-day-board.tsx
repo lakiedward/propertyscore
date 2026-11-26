@@ -2,8 +2,8 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/layout/empty-state';
+import { InitialsAvatar } from '@/components/layout/initials-avatar';
 import { DashboardPanel } from '@/components/report/dashboard-panel';
-import { initialsOf } from '@/features/profile';
 import { formatDate } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import type {
@@ -92,12 +92,7 @@ export function ScheduleDayBoard({
                     key={inspector.user_id}
                     className="flex items-center gap-2.5 border-l border-border-subtle px-3 py-2.5"
                   >
-                    <span
-                      aria-hidden
-                      className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-meta font-extrabold text-primary-foreground"
-                    >
-                      {initialsOf(inspector.full_name ?? '')}
-                    </span>
+                    <InitialsAvatar name={inspector.full_name ?? ''} />
                     <span className="flex min-w-0 flex-col">
                       <strong className="truncate text-small">{inspector.full_name}</strong>
                       <span className="text-meta text-muted-foreground">
@@ -202,6 +197,7 @@ function InspectorColumn({
   return (
     <div
       ref={setNodeRef}
+      role="group"
       aria-label={t('schedule.day.column', { name })}
       className={cn(
         'relative border-l border-border-subtle bg-[repeating-linear-gradient(to_bottom,var(--color-border-subtle)_0_1px,transparent_1px_56px)]',

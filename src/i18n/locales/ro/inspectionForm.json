@@ -50,7 +50,15 @@
       "add": "Adaugă categorie",
       "drag": "Trage ca să muți {{name}}",
       "dragInstructions": "Folosește săgețile sus și jos ca să muți categoria cu un loc. Cu mouse-ul, trage de mâner.",
-      "questionWeightsOff": "Întrebările din {{name}} fac {{sum}}%, nu 100%"
+      "questionWeightsOff": "Întrebările din {{name}} fac {{sum}}%, nu 100%",
+      "announcements": {
+        "dragStart": "Ai ridicat categoria {{name}}.",
+        "dragOver": "Categoria {{name}} este deasupra categoriei {{over}}.",
+        "dragOutside": "Categoria {{name}} nu mai este deasupra unei alte categorii.",
+        "dragEnd": "Categoria {{name}} a fost mutată în locul categoriei {{over}}.",
+        "dropped": "Categoria {{name}} a fost lăsată la locul ei.",
+        "dragCancel": "Mutarea a fost anulată. Categoria {{name}} a rămas la locul ei."
+      }
     },
     "category": {
       "edit": "Editează",
@@ -148,9 +156,6 @@
     }
   },
   "consent": {
-    "signatures_one": "{{count}} semnătură",
-    "signatures_few": "{{count}} semnături",
-    "signatures_other": "{{count}} de semnături",
     "titleDraft": "Ciorna v{{version}} · {{language}}",
     "titlePublished": "Versiunea v{{version}} · {{language}}",
     "languages": {
@@ -178,7 +183,6 @@
     "publishedToast": "Versiunea {{version}} e publicată. Inspecțiile noi o folosesc de acum.",
     "save": "Salvează ciorna",
     "saving": "Se salvează…",
-    "saved": "Ciorna e salvată.",
     "publish": "Publică versiunea nouă",
     "publishing": "Se publică…",
     "createDraft": "Creează o ciornă",
@@ -193,8 +197,7 @@
     "empty": {
       "title": "Nu există încă texte de consimțământ",
       "description": "Creează o ciornă și adaugă secțiunile pe care le semnează proprietarul."
-    },
-    "unsaved": "Ai modificări nesalvate."
+    }
   },
   "versions": {
     "title": "Versiuni",
@@ -216,7 +219,10 @@
     "backToPublished": "Înapoi la versiunea publicată",
     "banner": {
       "title": "Vizualizezi {{version}}",
-      "text": "Doar pentru citire."
+      "usedIn_one": "Doar pentru citire. Folosită într-o inspecție",
+      "usedIn_few": "Doar pentru citire. Folosită în {{count}} inspecții",
+      "usedIn_other": "Doar pentru citire. Folosită în {{count}} de inspecții",
+      "unused": "Doar pentru citire. Nefolosită în nicio inspecție"
     },
     "restoreTitle": "Restaurezi {{version}}?",
     "restoreText": "Se creează ciorna {{next}} cu conținutul din {{version}}. O poți modifica și publica după.",

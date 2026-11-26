@@ -5,12 +5,15 @@ import type { VersionStatus } from '../inspection-form.types';
 
 type VersionStatusPillProps = {
   status: VersionStatus;
+  label?: string;
 };
 
-export function VersionStatusPill({ status }: VersionStatusPillProps) {
+export function VersionStatusPill({ status, label }: VersionStatusPillProps) {
   const { t } = useTranslation('inspectionForm');
   if (status === 'draft') {
-    return <StatusPill tone="info" shape="tag" icon={PencilIcon} label={t('status.draft')} />;
+    return (
+      <StatusPill tone="info" shape="tag" icon={PencilIcon} label={label ?? t('status.draft')} />
+    );
   }
   if (status === 'published') {
     return (
@@ -18,9 +21,16 @@ export function VersionStatusPill({ status }: VersionStatusPillProps) {
         tone="success"
         shape="tag"
         icon={CircleCheckIcon}
-        label={t('status.publishedFeminine')}
+        label={label ?? t('status.publishedFeminine')}
       />
     );
   }
-  return <StatusPill tone="neutral" shape="tag" icon={ArchiveIcon} label={t('status.archived')} />;
+  return (
+    <StatusPill
+      tone="neutral"
+      shape="tag"
+      icon={ArchiveIcon}
+      label={label ?? t('status.archived')}
+    />
+  );
 }

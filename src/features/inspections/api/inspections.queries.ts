@@ -17,6 +17,7 @@ import { listInspectorAgenda } from './inspections.api';
 import {
   assignInspector,
   cancelInspectionAsAdmin,
+  countUnassignedInspections,
   listAdminInspections,
   listAdminInspectors,
   listInspectorBlocks,
@@ -29,9 +30,10 @@ const CITIES_STALE_MS = 3_600_000;
 
 export const inspectionQueries = {
   all: () => ['inspections'] as const,
+  agendaAll: () => [...inspectionQueries.all(), 'agenda'] as const,
   agenda: (range: AgendaRange) =>
     queryOptions({
-      queryKey: [...inspectionQueries.all(), 'agenda', range],
+      queryKey: [...inspectionQueries.agendaAll(), range],
       queryFn: () => listInspectorAgenda(range),
     }),
   cities: () =>
@@ -51,14 +53,16 @@ export const inspectionQueries = {
       queryKey: [...inspectionQueries.slotsAll(), cityId, from, to],
       queryFn: () => listInspectionSlots(cityId, from, to),
     }),
+  mineAll: () => [...inspectionQueries.all(), 'mine'] as const,
   mine: (userId: string) =>
     queryOptions({
-      queryKey: [...inspectionQueries.all(), 'mine', userId],
+      queryKey: [...inspectionQueries.mineAll(), userId],
       queryFn: listMyInspections,
     }),
+  historyAll: () => [...inspectionQueries.all(), 'history'] as const,
   history: (inspectionId: string) =>
     queryOptions({
-      queryKey: [...inspectionQueries.all(), 'history', inspectionId],
+      queryKey: [...inspectionQueries.historyAll(), inspectionId],
       queryFn: () => listInspectionHistory(inspectionId),
     }),
   scheduleAll: () => [...inspectionQueries.all(), 'schedule'] as const,
@@ -71,6 +75,11 @@ export const inspectionQueries = {
     queryOptions({
       queryKey: [...inspectionQueries.scheduleAll(), 'unassigned', cityId],
       queryFn: () => listUnassignedInspections(cityId),
+    }),
+  unassignedCount: () =>
+    queryOptions({
+      queryKey: [...inspectionQueries.scheduleAll(), 'unassigned-count'],
+      queryFn: countUnassignedInspections,
     }),
   inspectors: (cityId: string | null) =>
     queryOptions({
@@ -87,12 +96,28 @@ export const inspectionQueries = {
       queryKey: [...inspectionQueries.scheduleAll(), 'blocks', inspectorIds, from, to],
       queryFn: () => listInspectorBlocks(inspectorIds, from, to),
     }),
+  bookedAll: () => [...inspectionQueries.all(), 'booked'] as const,
   booked: (id: string) =>
     queryOptions({
-      queryKey: [...inspectionQueries.all(), 'booked', id],
+      queryKey: [...inspectionQueries.bookedAll(), id],
       queryFn: () => getBookedInspection(id),
     }),
 };
+
+function useInvalidateBookingChanges() {
+  const queryClient = useQueryClient();
+  return () =>
+    Promise.all(
+      [
+        inspectionQueries.scheduleAll(),
+        inspectionQueries.slotsAll(),
+        inspectionQueries.mineAll(),
+        inspectionQueries.historyAll(),
+        inspectionQueries.agendaAll(),
+        inspectionQueries.bookedAll(),
+      ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+    );
+}
 
 export function useBookInspection() {
   const queryClient = useQueryClient();
@@ -104,43 +129,43 @@ export function useBookInspection() {
 }
 
 export function useRescheduleInspection() {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidateBookingChanges();
   return useMutation({
     mutationFn: rescheduleInspection,
     meta: { silent: true },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: inspectionQueries.all() }),
+    onSettled: invalidate,
   });
 }
 
 export function useCancelInspection() {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidateBookingChanges();
   return useMutation({
     mutationFn: cancelInspection,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: inspectionQueries.all() }),
+    onSuccess: invalidate,
   });
 }
 
 export function useAssignInspector() {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidateBookingChanges();
   return useMutation({
     mutationFn: assignInspector,
     meta: { silent: true },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: inspectionQueries.all() }),
+    onSettled: invalidate,
   });
 }
 
 export function useUnassignInspector() {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidateBookingChanges();
   return useMutation({
     mutationFn: unassignInspector,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: inspectionQueries.all() }),
+    onSettled: invalidate,
   });
 }
 
 export function useCancelInspectionAsAdmin() {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidateBookingChanges();
   return useMutation({
     mutationFn: cancelInspectionAsAdmin,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: inspectionQueries.all() }),
+    onSuccess: invalidate,
   });
 }

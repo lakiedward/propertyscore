@@ -1,5 +1,6 @@
+import { bucharestDay, bucharestInstant } from '@/lib/bucharest-time';
+import { isoWeekday, shiftDateKey, weekStartKey } from '@/lib/date-keys';
 import type { InspectorBlock, ScheduleView, WorkingRange } from './inspection.types';
-import { addDays, dateKey } from './slots.utils';
 
 export const GRID_START_HOUR = 8;
 export const GRID_HOURS = 11;
@@ -11,27 +12,30 @@ type Interval = { starts_at: string; ends_at: string };
 
 export type GridBlock = { key: string; top: number; height: number };
 
+const WEEK_DAYS = 7;
+
 export function dayStart(key: string): Date {
-  const [year = 0, month = 1, day = 1] = key.split('-').map(Number);
-  return new Date(year, month - 1, day);
+  return bucharestInstant(key);
 }
 
 export function weekStart(key: string): Date {
-  const date = dayStart(key);
-  return addDays(date, -((date.getDay() + 6) % 7));
+  return bucharestInstant(weekStartKey(key));
 }
 
-export function isoWeekday(date: Date): number {
-  return ((date.getDay() + 6) % 7) + 1;
+function viewDays(view: ScheduleView): number {
+  return view === 'day' ? 1 : WEEK_DAYS;
 }
 
 export function scheduleRange(key: string, view: ScheduleView): { from: Date; to: Date } {
-  const from = view === 'day' ? dayStart(key) : weekStart(key);
-  return { from, to: addDays(from, view === 'day' ? 1 : 7) };
+  const firstKey = view === 'day' ? key : weekStartKey(key);
+  return {
+    from: bucharestInstant(firstKey),
+    to: bucharestInstant(shiftDateKey(firstKey, viewDays(view))),
+  };
 }
 
 export function shiftScheduleDate(key: string, view: ScheduleView, direction: 1 | -1): string {
-  return dateKey(addDays(dayStart(key), (view === 'day' ? 1 : 7) * direction));
+  return shiftDateKey(key, viewDays(view) * direction);
 }
 
 function minutesIntoGrid(date: Date, day: Date): number {
@@ -49,8 +53,7 @@ export function gridPosition(interval: Interval, day: Date): { top: number; heig
 }
 
 function timeOnDay(day: Date, time: string): Date {
-  const [hours = 0, minutes = 0] = time.split(':').map(Number);
-  return new Date(day.getFullYear(), day.getMonth(), day.getDate(), hours, minutes);
+  return bucharestInstant(bucharestDay(day), time.slice(0, 5));
 }
 
 function workingIntervals(
@@ -58,7 +61,7 @@ function workingIntervals(
   day: Date,
   ranges: readonly WorkingRange[],
 ): Interval[] {
-  const weekday = isoWeekday(day);
+  const weekday = isoWeekday(bucharestDay(day));
   return ranges
     .filter((range) => range.inspector_id === inspectorId && range.weekday === weekday)
     .map((range) => ({
@@ -120,7 +123,7 @@ export function assignmentClash({
   ranges: readonly WorkingRange[];
   blocks: readonly InspectorBlock[];
 }): Clash {
-  const day = dayStart(dateKey(new Date(inspection.starts_at)));
+  const day = dayStart(bucharestDay(new Date(inspection.starts_at)));
   const isInsideHours = workingIntervals(inspectorId, day, ranges).some(
     (range) =>
       new Date(range.starts_at).getTime() <= new Date(inspection.starts_at).getTime() &&

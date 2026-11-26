@@ -154,7 +154,8 @@
       "noCoverage": {
         "title": "Încă nu avem inspectori în {{city}}",
         "text": "Nu îți cerem nicio plată. Revino curând: extindem echipa de inspectori în fiecare lună."
-      }
+      },
+      "citiesError": "Nu am putut încărca orașele. Încearcă din nou."
     },
     "pin": {
       "title": "Pinul pe hartă",
@@ -280,12 +281,17 @@
       "label": "Sumarul comenzii",
       "listLabel": "Rezumat",
       "next": "Următorul: {{step}}",
-      "continue": "Continuă la {{step}}",
       "back": "Înapoi",
       "pending": "Alegi la pasul {{step}}",
       "blocked": {
         "requester": "Alege o opțiune ca să continui",
         "date": "Alege o zi și o oră ca să continui"
+      },
+      "continueTo": {
+        "home": "Continuă la locuința",
+        "date": "Continuă la data",
+        "access": "Continuă la acces",
+        "payment": "Continuă la plată"
       }
     },
     "confirmation": {
@@ -422,7 +428,6 @@
     "range": "{{from}}–{{to}}",
     "week": {
       "range": "{{from}} – {{to}}",
-      "allCities": "Toate orașele",
       "closed": "Închis"
     },
     "queue": {
@@ -476,7 +481,13 @@
       "title": "{{name}} nu poate prelua inspecția"
     },
     "dnd": {
-      "instructions": "Apasă spațiu ca să ridici inspecția, săgețile ca s-o muți pe coloana unui inspector și spațiu ca s-o lași. Escape anulează."
+      "instructions": "Apasă spațiu ca să ridici inspecția, săgețile ca s-o muți pe coloana unui inspector și spațiu ca s-o lași. Escape anulează.",
+      "start": "Ai ridicat inspecția nr. {{number}}.",
+      "over": "Inspecția nr. {{number}} este deasupra coloanei lui {{name}}.",
+      "overNone": "Inspecția nr. {{number}} nu mai este deasupra unei coloane.",
+      "end": "Inspecția nr. {{number}} a fost lăsată pe coloana lui {{name}}.",
+      "endNone": "Inspecția nr. {{number}} a fost lăsată în afara coloanelor.",
+      "cancel": "Ai renunțat la mutarea inspecției nr. {{number}}."
     },
     "drawer": {
       "description": "Detaliile programării, alocarea inspectorului, reprogramarea și anularea.",
@@ -522,7 +533,6 @@
       "search": "Caută după nume sau oraș",
       "noMatch": "Niciun inspector găsit.",
       "city": "Oraș",
-      "allCities": "Toate orașele",
       "citySearch": "Caută orașul",
       "noCity": "Niciun oraș găsit."
     },

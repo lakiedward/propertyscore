@@ -4,9 +4,9 @@
     "export": "Exportă CSV",
     "card": {
       "title": "Toți utilizatorii",
-      "shown_one": "{{count}} din {{total}} cont",
-      "shown_few": "{{count}} din {{total}} conturi",
-      "shown_other": "{{count}} din {{total}} de conturi"
+      "shown_one": "{{shown}} din {{count}} cont",
+      "shown_few": "{{shown}} din {{count}} conturi",
+      "shown_other": "{{shown}} din {{count}} de conturi"
     },
     "search": {
       "label": "Caută utilizatori",
@@ -70,7 +70,8 @@
       "cityPlaceholder": "Alege orașul",
       "save": "Salvează",
       "saving": "Se salvează…",
-      "saved": "{{name}} e inspector în {{city}}."
+      "saved": "{{name}} e inspector în {{city}}.",
+      "citiesError": "Nu am putut încărca orașele. Încearcă din nou."
     },
     "removeDialog": {
       "title": "Scoți rolul de inspector?",
@@ -114,7 +115,8 @@
       "confirm": "Fă-l administrator",
       "pending": "Se salvează…",
       "done": "{{name}} este acum administrator."
-    }
+    },
+    "error": "Nu am putut încărca conturile. Încearcă din nou."
   },
   "availability": {
     "weekly": {
@@ -135,7 +137,8 @@
         "dayOff": "Ziua rămâne liberă.",
         "save": "Salvează programul",
         "saving": "Se salvează…"
-      }
+      },
+      "error": "Nu am putut încărca programul săptămânal. Încearcă din nou."
     },
     "exceptions": {
       "title": "Excepții",
@@ -166,7 +169,9 @@
         "note": "Notă (opțional)",
         "save": "Adaugă excepția",
         "saving": "Se adaugă…"
-      }
+      },
+      "error": "Nu am putut încărca excepțiile. Încearcă din nou.",
+      "kindWithNote": "{{kind}} · {{note}}"
     }
   }
 }

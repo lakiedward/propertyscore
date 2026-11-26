@@ -153,7 +153,8 @@
       "noCoverage": {
         "title": "We have no inspectors in {{city}} yet",
         "text": "We do not ask you to pay anything. Come back soon: our team of inspectors grows every month."
-      }
+      },
+      "citiesError": "We couldn't load the cities. Try again."
     },
     "pin": {
       "title": "Pin on the map",
@@ -276,12 +277,17 @@
       "label": "Order summary",
       "listLabel": "Summary",
       "next": "Next: {{step}}",
-      "continue": "Continue to {{step}}",
       "back": "Back",
       "pending": "You choose it in step {{step}}",
       "blocked": {
         "requester": "Choose an option to continue",
         "date": "Choose a day and a time to continue"
+      },
+      "continueTo": {
+        "home": "Continue to the home",
+        "date": "Continue to date",
+        "access": "Continue to access",
+        "payment": "Continue to payment"
       }
     },
     "confirmation": {
@@ -418,7 +424,6 @@
     "range": "{{from}}–{{to}}",
     "week": {
       "range": "{{from}} – {{to}}",
-      "allCities": "All cities",
       "closed": "Closed"
     },
     "queue": {
@@ -468,7 +473,13 @@
       "title": "{{name}} cannot take the inspection"
     },
     "dnd": {
-      "instructions": "Press space to pick up the inspection, the arrow keys to move it onto an inspector’s column and space to drop it. Escape cancels."
+      "instructions": "Press space to pick up the inspection, the arrow keys to move it onto an inspector’s column and space to drop it. Escape cancels.",
+      "start": "You picked up inspection no. {{number}}.",
+      "over": "Inspection no. {{number}} is over {{name}}’s column.",
+      "overNone": "Inspection no. {{number}} is no longer over a column.",
+      "end": "Inspection no. {{number}} was dropped on {{name}}’s column.",
+      "endNone": "Inspection no. {{number}} was dropped outside the columns.",
+      "cancel": "Moving inspection no. {{number}} was cancelled."
     },
     "drawer": {
       "description": "The booking details, the inspector, rescheduling and cancelling.",
@@ -514,7 +525,6 @@
       "search": "Search by name or city",
       "noMatch": "No inspector found.",
       "city": "City",
-      "allCities": "All cities",
       "citySearch": "Search the city",
       "noCity": "No city found."
     },

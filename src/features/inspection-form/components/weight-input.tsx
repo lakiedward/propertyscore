@@ -1,6 +1,7 @@
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { parseWeight, weightDigits } from '../inspection-form.utils';
 
 type WeightInputProps = {
   id: string;
@@ -10,6 +11,7 @@ type WeightInputProps = {
   isLabelVisible?: boolean;
   onChange: (value: string) => void;
   onBlur: () => void;
+  onCommit: (weight: number) => void;
 };
 
 export function WeightInput({
@@ -20,6 +22,7 @@ export function WeightInput({
   isLabelVisible = false,
   onChange,
   onBlur,
+  onCommit,
 }: WeightInputProps) {
   return (
     <Field
@@ -46,9 +49,12 @@ export function WeightInput({
           inputMode="numeric"
           disabled={!isEditable}
           onChange={(event) => {
-            onChange(event.target.value.replace(/\D/gu, '').slice(0, 3));
+            onChange(weightDigits(event.target.value));
           }}
-          onBlur={onBlur}
+          onBlur={() => {
+            onBlur();
+            onCommit(parseWeight(value));
+          }}
           className="h-full min-w-0 border-0 bg-transparent pr-0.5 pl-2 text-right text-body font-extrabold text-foreground tabular-nums focus-visible:ring-0 disabled:bg-transparent disabled:text-foreground"
         />
         <span aria-hidden className="text-small font-bold text-muted-foreground">

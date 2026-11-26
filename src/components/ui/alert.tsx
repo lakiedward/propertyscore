@@ -12,6 +12,8 @@ const alertVariants = cva(
         success: 'border-success-border bg-success-surface text-foreground *:[svg]:text-success',
         warning: 'border-warning-border bg-warning-surface text-foreground *:[svg]:text-warning',
         error: 'border-error-border bg-error-surface text-foreground *:[svg]:text-destructive',
+        leaf: 'border-transparent bg-step-leaf-surface text-step-leaf-ink',
+        sky: 'border-transparent bg-step-sky-soft text-step-sky-ink',
       },
     },
     defaultVariants: {
@@ -20,7 +22,7 @@ const alertVariants = cva(
   },
 );
 
-const POLITE_TONES = new Set(['info', 'success']);
+const POLITE_TONES = new Set(['info', 'success', 'leaf', 'sky']);
 
 function Alert({
   className,

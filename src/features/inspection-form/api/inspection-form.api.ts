@@ -1,4 +1,3 @@
-import { AppError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';
 import type {
@@ -7,12 +6,15 @@ import type {
   QuestionPatch,
   RequiredMedia,
 } from '../inspection-form.types';
+import { resolveVersions, toUsageCounts } from '../inspection-form.utils';
 
 const UPDATED_COLUMNS = 'id' as const;
 
+const COUNT_COLUMNS = 'id' as const;
+
 function assertDraftUpdated(rows: readonly unknown[]) {
   if (rows.length === 0) {
-    throw new AppError('validation', 'The form is no longer a draft', { reason: 'form_not_draft' });
+    throw toAppError({ code: 'P0001', message: 'form_not_draft', details: null });
   }
 }
 
@@ -30,7 +32,7 @@ async function countRows(
 ) {
   const { count, error } = await supabase
     .from(table)
-    .select('id', { count: 'exact', head: true })
+    .select(COUNT_COLUMNS, { count: 'exact', head: true })
     .eq('form_version_id', versionId);
   if (error) throw toAppError(error);
   return count ?? 0;
@@ -47,13 +49,8 @@ export async function getFormEditor(viewedId: string | null) {
   if (error) throw toAppError(error);
   if (usage.error) throw toAppError(usage.error);
 
-  const draft = versions.find((version) => version.status === 'draft') ?? null;
-  const published = versions.find((version) => version.status === 'published') ?? null;
-  const viewed = versions.find((version) => version.id === viewedId) ?? null;
-  const shown = viewed ?? draft ?? published;
-  const usageCounts = Object.fromEntries(
-    usage.data.map((row) => [row.form_version_id, row.inspection_count]),
-  );
+  const { draft, published, shown } = resolveVersions(versions, viewedId);
+  const usageCounts = toUsageCounts(usage.data, 'form_version_id');
 
   if (!shown) {
     return {

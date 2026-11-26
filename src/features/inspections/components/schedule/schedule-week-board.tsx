@@ -1,18 +1,18 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DashboardPanel } from '@/components/report/dashboard-panel';
-import { initialsOf } from '@/features/profile';
 import { formatDate } from '@/i18n/format';
+import { bucharestDay } from '@/lib/bucharest-time';
+import { fromDateKey, isoWeekday, shiftDateKey } from '@/lib/date-keys';
+import { initialsOf } from '@/lib/initials';
 import { cn } from '@/lib/utils';
 import type { AdminInspection, AdminInspector, WorkingRange } from '../../inspection.types';
-import { isoWeekday } from '../../schedule.utils';
-import { addDays, dateKey } from '../../slots.utils';
 import { scheduleItemVariants } from './schedule-item-look';
 
 const TIME = { hour: '2-digit', minute: '2-digit' } as const;
 
 type ScheduleWeekBoardProps = {
-  start: Date;
+  startKey: string;
   title: ReactNode;
   toolbar: ReactNode;
   subtitle: string;
@@ -24,7 +24,7 @@ type ScheduleWeekBoardProps = {
 };
 
 export function ScheduleWeekBoard({
-  start,
+  startKey,
   title,
   toolbar,
   subtitle,
@@ -39,17 +39,19 @@ export function ScheduleWeekBoard({
     inspectors.map((inspector) => [inspector.user_id, inspector.full_name ?? '']),
   );
   const inspectorIds = new Set(names.keys());
-  const days = Array.from({ length: 7 }, (_, index) => addDays(start, index));
+  const days = Array.from({ length: 7 }, (_, index) => shiftDateKey(startKey, index));
 
   return (
     <DashboardPanel title={title} toolbar={toolbar} subtitle={subtitle} isFlush className="min-w-0">
       <div className="overflow-x-auto rounded-b-lg">
         <div className="grid min-w-[700px] grid-cols-7">
-          {days.map((day) => {
-            const key = dateKey(day);
-            const items = inspections.filter((item) => dateKey(new Date(item.starts_at)) === key);
+          {days.map((key) => {
+            const day = fromDateKey(key);
+            const items = inspections.filter(
+              (item) => bucharestDay(new Date(item.starts_at)) === key,
+            );
             const isClosed = !ranges.some(
-              (range) => inspectorIds.has(range.inspector_id) && range.weekday === isoWeekday(day),
+              (range) => inspectorIds.has(range.inspector_id) && range.weekday === isoWeekday(key),
             );
             const isToday = key === today;
             return (
@@ -64,7 +66,7 @@ export function ScheduleWeekBoard({
                   <span className="text-meta text-muted-foreground first-letter:uppercase">
                     {formatDate(day, { weekday: 'short' })}
                   </span>
-                  <strong className={cn('text-[20px] tabular-nums', isToday && 'text-brand')}>
+                  <strong className={cn('text-title-2xs tabular-nums', isToday && 'text-brand')}>
                     {day.getDate()}
                   </strong>
                 </div>
@@ -85,7 +87,7 @@ export function ScheduleWeekBoard({
                         <strong className="text-meta tabular-nums">
                           {formatDate(item.starts_at, TIME)}
                         </strong>
-                        <span className="text-[11px] font-extrabold text-muted-foreground">
+                        <span className="text-nav-sm font-extrabold text-muted-foreground">
                           {item.inspector_id
                             ? initialsOf(names.get(item.inspector_id) ?? item.inspector_name ?? '')
                             : ''}

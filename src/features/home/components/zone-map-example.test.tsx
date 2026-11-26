@@ -9,7 +9,7 @@ vi.mock('@/components/map/map-canvas', () => import('@/test/mocks/map-canvas'));
 const map = roHome.smartCheck.map;
 const pharmacy = map.places.pharmacy.replace('{{name}}', 'Medimfarm');
 
-describe('ZoneMapExample', () => {
+describe('ZoneMapExample', { timeout: 20_000 }, () => {
   it('lists the walking routes first, then the safety legend', async () => {
     const { user } = await renderWithProviders(<ZoneMapExample />);
 

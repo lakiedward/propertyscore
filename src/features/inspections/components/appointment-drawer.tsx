@@ -5,18 +5,12 @@ import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { StageTimeline, type Stage } from '@/components/feedback/stage-timeline';
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { formatDate } from '@/i18n/format';
 import { useCancelInspection } from '../api/inspections.queries';
 import { useBookingText } from '../hooks/use-booking-text';
 import type { AppointmentMode, MyInspection } from '../inspection.types';
-import { canChangeAppointment, knownAccessTags } from '../inspection.utils';
+import { canChangeAppointment } from '../inspection.utils';
+import { AppointmentSheet } from './appointment-sheet';
 import { InspectionHistory } from './inspection-history';
 import { InspectionStatusPill } from './inspection-status-pill';
 import { RescheduleSection } from './reschedule-section';
@@ -41,49 +35,35 @@ export function AppointmentDrawer({
   const isRescheduling = mode === 'reschedule' && canChange;
 
   return (
-    <Sheet
-      open
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onClose();
-        }
-      }}
+    <AppointmentSheet
+      title={t('appointments.drawer.title', {
+        date: formatDate(appointment.starts_at, { day: 'numeric', month: 'short' }),
+      })}
+      description={t('appointments.drawer.description')}
+      onClose={onClose}
+      className="w-full sm:max-w-110"
     >
-      <SheetContent side="right" className="w-full gap-0 overflow-y-auto p-0 sm:max-w-110">
-        <SheetHeader className="border-b border-border-subtle px-5 py-4">
-          <SheetTitle className="text-h4 first-letter:uppercase">
-            {t('appointments.drawer.title', {
-              date: formatDate(appointment.starts_at, { day: 'numeric', month: 'short' }),
-            })}
-          </SheetTitle>
-          <SheetDescription className="sr-only">
-            {t('appointments.drawer.description')}
-          </SheetDescription>
-        </SheetHeader>
-        <div className="flex flex-col gap-4.5 p-5">
-          {isRescheduling ? (
-            <RescheduleSection
-              inspectionId={appointment.id}
-              cityId={appointment.city_id}
-              cityName={appointment.city_name}
-              inspectorName={appointment.inspector_name}
-              onDone={() => {
-                onModeChange('details');
-              }}
-            />
-          ) : (
-            <Details
-              appointment={appointment}
-              canChange={canChange}
-              onReschedule={() => {
-                onModeChange('reschedule');
-              }}
-              onCancelled={onClose}
-            />
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+      {isRescheduling ? (
+        <RescheduleSection
+          inspectionId={appointment.id}
+          cityId={appointment.city_id}
+          cityName={appointment.city_name}
+          inspectorName={appointment.inspector_name}
+          onDone={() => {
+            onModeChange('details');
+          }}
+        />
+      ) : (
+        <Details
+          appointment={appointment}
+          canChange={canChange}
+          onReschedule={() => {
+            onModeChange('reschedule');
+          }}
+          onCancelled={onClose}
+        />
+      )}
+    </AppointmentSheet>
   );
 }
 
@@ -102,10 +82,7 @@ function Details({ appointment, canChange, onReschedule, onCancelled }: DetailsP
   const cancel = useCancelInspection();
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const dateText = text.date(appointment.starts_at);
-  const notes = [
-    ...knownAccessTags(appointment.access_tags).map((tag) => t(`accessTag.${tag}`)),
-    ...(appointment.access_notes ? [appointment.access_notes] : []),
-  ].join('. ');
+  const notes = text.accessNotes(appointment.access_tags, appointment.access_notes);
   const allRows: { key: DetailRowKey; value: string }[] = [
     { key: 'date', value: dateText },
     { key: 'address', value: text.addressLine(appointment.address_text, appointment.city_name) },

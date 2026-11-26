@@ -1,12 +1,33 @@
 import { Link } from '@tanstack/react-router';
+import { cva } from 'class-variance-authority';
 import { PenLineIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { localizedText } from '@/i18n/localized';
 import { CategoryIcon } from '@/components/inspection/category-icon';
-import { formatDate, formatNumber } from '@/i18n/format';
+import { formatDate } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import { CONSENT_SECTION, type Progress, type Workspace } from '../field-inspection.types';
-import { scoreTone, type CategoryGroup } from '../field-inspection.utils';
+import { formatInspectionScore, scoreTone, type CategoryGroup } from '../field-inspection.utils';
+
+const itemClass =
+  'flex min-h-12 shrink-0 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring xl:shrink';
+
+const tileVariants = cva('grid size-8 shrink-0 place-items-center rounded-thumb', {
+  variants: {
+    state: {
+      active: 'bg-primary text-primary-foreground',
+      complete: 'bg-success-surface text-success',
+      pending: 'bg-background text-brand',
+    },
+  },
+});
+
+function tile(isActive: boolean, isComplete: boolean) {
+  if (isActive) {
+    return tileVariants({ state: 'active' });
+  }
+  return tileVariants({ state: isComplete ? 'complete' : 'pending' });
+}
 
 type SectionNavProps = {
   workspace: Workspace;
@@ -20,23 +41,10 @@ export function SectionNav({ workspace, groups, progress, current, language }: S
   const { t } = useTranslation('fieldInspection');
   const { inspection, consent } = workspace;
   const isSigned = consent !== null;
-  const itemClass =
-    'flex min-h-12 shrink-0 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring w1180:shrink';
-
-  const tile = (isActive: boolean, isComplete: boolean) =>
-    cn(
-      'grid size-8 shrink-0 place-items-center rounded-thumb',
-      isActive
-        ? 'bg-primary text-primary-foreground'
-        : isComplete
-          ? 'bg-success-surface text-success'
-          : 'bg-background text-brand',
-    );
-
   return (
     <nav
       aria-label={t('nav.label')}
-      className="-mx-1 scrollbar-none flex gap-1 overflow-x-auto px-1 w1180:mx-0 w1180:flex-col w1180:overflow-visible w1180:px-0"
+      className="-mx-1 scrollbar-none flex gap-1 overflow-x-auto px-1 xl:mx-0 xl:flex-col xl:overflow-visible xl:px-0"
     >
       <Link
         to="/field/inspections/$inspectionId"
@@ -82,7 +90,7 @@ export function SectionNav({ workspace, groups, progress, current, language }: S
             </span>
             {stats?.score !== null && stats?.score !== undefined ? (
               <strong className={cn('text-small tabular-nums', scoreTone(stats.score))}>
-                {formatNumber(stats.score, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                {formatInspectionScore(stats.score)}
               </strong>
             ) : null}
           </>

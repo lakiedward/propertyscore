@@ -1,10 +1,11 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import ro from '@/i18n/locales/ro/inspections.json';
+import roCommon from '@/i18n/locales/ro/common.json';
 import roStaff from '@/i18n/locales/ro/staff.json';
 import { buildAdminInspection } from '@/test/factories/admin-inspection';
 import { signedInAs } from '@/test/factories/auth';
-import { adminInspectionsResponse, MIHAI_ID } from '@/test/msw/handlers/inspections';
+import { adminInspectionsResponse, MIHAI_ID, slotsResponse } from '@/test/msw/handlers/inspections';
 import { server } from '@/test/msw/server';
 import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
@@ -105,13 +106,17 @@ describe('AdminSchedulePage', { timeout: 20_000 }, () => {
 
     const drawer = await screen.findByRole('dialog');
     await user.click(within(drawer).getByRole('button', { name: ro.schedule.drawer.cancel }));
-    await user.click(within(drawer).getByRole('button', { name: ro.appointments.cancel.confirm }));
+    const confirm = await screen.findByRole('alertdialog', {
+      name: ro.schedule.cancel.title.replace('{{number}}', String(QUEUED.number)),
+    });
+    await user.click(within(confirm).getByRole('button', { name: ro.appointments.cancel.confirm }));
+    expect(await within(confirm).findByText(roCommon.validation.required)).toBeInTheDocument();
     expect(payload).toBeUndefined();
     await user.type(
-      within(drawer).getByLabelText(ro.schedule.cancel.reason),
+      within(confirm).getByLabelText(ro.schedule.cancel.reason),
       'Proprietarul a vândut locuința.',
     );
-    await user.click(within(drawer).getByRole('button', { name: ro.appointments.cancel.confirm }));
+    await user.click(within(confirm).getByRole('button', { name: ro.appointments.cancel.confirm }));
 
     await waitFor(() => {
       expect(payload).toEqual({
@@ -181,7 +186,7 @@ describe('AdminSchedulePage', { timeout: 20_000 }, () => {
     });
 
     const city = await screen.findByRole('combobox', { name: ro.schedule.availability.city });
-    expect(city).toHaveTextContent(ro.schedule.availability.allCities);
+    expect(city).toHaveTextContent(ro.schedule.toolbar.allCities);
     await user.click(city);
     await user.type(
       screen.getByRole('combobox', { name: ro.schedule.availability.citySearch }),
@@ -259,5 +264,143 @@ describe('AdminSchedulePage', { timeout: 20_000 }, () => {
     expect(
       await screen.findByRole('region', { name: ro.schedule.queue.heading }),
     ).toBeInTheDocument();
+  });
+
+  it('closes the drawer after a cancellation confirmed in the dialog', async () => {
+    server.use(adminInspectionsResponse([QUEUED]));
+    const { user } = await renderAppRoute(
+      `/admin/appointments?date=${dateOf(QUEUED)}&sheet=${QUEUED.id}`,
+      { auth: signedInAs('admin') },
+    );
+
+    const drawer = await screen.findByRole('dialog');
+    await user.click(within(drawer).getByRole('button', { name: ro.schedule.drawer.cancel }));
+    const confirm = await screen.findByRole('alertdialog');
+    await user.type(within(confirm).getByLabelText(ro.schedule.cancel.reason), 'Dublură.');
+    await user.click(within(confirm).getByRole('button', { name: ro.appointments.cancel.confirm }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
+  it('puts the booking back in the queue when the assignment is undone', async () => {
+    let unassigned: unknown;
+    server.use(
+      adminInspectionsResponse([QUEUED]),
+      ALL_DAY_HOURS,
+      http.post(supabaseUrl('/rest/v1/rpc/unassign_inspector'), async ({ request }) => {
+        unassigned = await request.json();
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const { user } = await renderAppRoute('/admin/appointments', { auth: signedInAs('admin') });
+
+    await user.click(await screen.findByRole('button', { name: /Calea Circumvalațiunii 41/ }));
+    await user.click(
+      await screen.findByRole('button', {
+        name: new RegExp(ro.schedule.assignTo.replace('{{name}}', 'Mihai Dobre')),
+      }),
+    );
+    await user.click(await screen.findByRole('button', { name: ro.schedule.undo }));
+
+    await waitFor(() => {
+      expect(unassigned).toEqual({ p_inspection_id: QUEUED.id });
+    });
+  });
+
+  it('removes the inspector of an assigned booking from the drawer', async () => {
+    const assigned = buildAdminInspection({
+      status: 'inspector_assigned',
+      inspector_id: MIHAI_ID,
+      inspector_name: 'Mihai Dobre',
+    });
+    let payload: unknown;
+    server.use(
+      adminInspectionsResponse([assigned]),
+      ALL_DAY_HOURS,
+      http.post(supabaseUrl('/rest/v1/rpc/unassign_inspector'), async ({ request }) => {
+        payload = await request.json();
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const { user } = await renderAppRoute(
+      `/admin/appointments?date=${dateOf(assigned)}&sheet=${assigned.id}`,
+      { auth: signedInAs('admin') },
+    );
+
+    const drawer = await screen.findByRole('dialog');
+    await user.click(within(drawer).getByRole('button', { name: ro.schedule.drawer.unassign }));
+
+    await waitFor(() => {
+      expect(payload).toEqual({ p_inspection_id: assigned.id });
+    });
+  });
+
+  it('moves a booking to the first free hour from the drawer', async () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 30, 0, 0);
+    const freeStart = tomorrow.toISOString();
+    let payload: unknown;
+    server.use(
+      adminInspectionsResponse([QUEUED]),
+      slotsResponse([{ starts_at: freeStart, working: 1, free: 1 }]),
+      http.post(supabaseUrl('/rest/v1/rpc/reschedule_inspection'), async ({ request }) => {
+        payload = await request.json();
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const { user } = await renderAppRoute(
+      `/admin/appointments?date=${dateOf(QUEUED)}&sheet=${QUEUED.id}&mode=reschedule`,
+      { auth: signedInAs('admin') },
+    );
+
+    const drawer = await screen.findByRole('dialog');
+    await user.click(
+      await within(drawer).findByRole('button', {
+        name: new RegExp(ro.booking.date.firstFree.split('{{')[0] ?? ''),
+      }),
+    );
+    await user.click(
+      within(drawer).getByRole('button', { name: ro.appointments.reschedule.confirm }),
+    );
+
+    await waitFor(() => {
+      expect(payload).toEqual({ p_inspection_id: QUEUED.id, p_starts_at: freeStart });
+    });
+  });
+
+  it('shows the bookings of the week on the week board', async () => {
+    server.use(adminInspectionsResponse([QUEUED]));
+    await renderAppRoute(`/admin/appointments?view=week&date=${dateOf(QUEUED)}`, {
+      auth: signedInAs('admin'),
+    });
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /Calea Circumvalațiunii 41/ })).toHaveLength(2);
+    });
+    expect(screen.getByRole('radio', { name: ro.schedule.toolbar.views.week })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+  });
+
+  it('shows placeholders instead of the board and the queue while they load', async () => {
+    server.use(
+      http.post(
+        supabaseUrl('/rest/v1/rpc/admin_inspections'),
+        () => new Promise<Response>(() => undefined),
+      ),
+    );
+    await renderAppRoute('/admin/appointments', { auth: signedInAs('admin') });
+
+    expect(await screen.findByRole('tab', { name: ro.schedule.tabs.calendar })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('region', { name: ro.schedule.queue.heading }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText(ro.schedule.day.column.replace('{{name}}', 'Mihai Dobre')),
+    ).not.toBeInTheDocument();
   });
 });

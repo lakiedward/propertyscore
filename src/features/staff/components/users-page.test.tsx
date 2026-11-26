@@ -275,4 +275,42 @@ describe('UsersPage', { timeout: 20_000 }, () => {
       screen.queryByRole('menuitem', { name: ro.users.actions.makeAdmin }),
     ).not.toBeInTheDocument();
   });
+
+  it('shows no list while the users load and an error when they cannot', async () => {
+    let fail: (() => void) | undefined;
+    server.use(
+      http.post(
+        supabaseUrl('/rest/v1/rpc/admin_list_users'),
+        () =>
+          new Promise<Response>((resolve) => {
+            fail = () => {
+              resolve(HttpResponse.json({ message: 'boom' }, { status: 500 }));
+            };
+          }),
+      ),
+    );
+    await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
+
+    expect(await screen.findByRole('heading', { name: ro.users.card.title })).toBeInTheDocument();
+    expect(screen.queryByText(ro.users.empty.title)).not.toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(fail).toBeDefined();
+    });
+    fail?.();
+
+    expect(await screen.findByText(ro.users.error)).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('counts the shown accounts against the total', async () => {
+    server.use(usersResponse([CLIENT], 40));
+    await renderAppRoute('/admin/users', { auth: signedInAs('admin') });
+
+    expect(
+      await screen.findByText(
+        ro.users.card.shown_other.replace('{{shown}}', '1').replace('{{count}}', '40'),
+      ),
+    ).toBeInTheDocument();
+  });
 });

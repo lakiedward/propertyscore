@@ -71,7 +71,7 @@ function VersionRow({ item, isShown, onView, onRequest }: VersionRowProps) {
   return (
     <li
       className={cn(
-        'relative rounded-md border-[1.5px] transition-colors',
+        'relative rounded-md border-(length:--border-width-control) transition-colors',
         isShown
           ? 'border-primary bg-surface-selected'
           : 'border-transparent bg-background hover:border-border-strong',

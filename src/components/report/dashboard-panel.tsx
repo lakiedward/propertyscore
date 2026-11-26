@@ -39,7 +39,7 @@ export function DashboardPanel({
         )}
       >
         <div className="flex flex-col gap-0.5">
-          <h2 id={titleId} className="text-[17px] leading-snug font-bold">
+          <h2 id={titleId} className="text-title-3xs leading-snug font-bold">
             {title}
           </h2>
           {subtitle ? <span className="text-meta text-muted-foreground">{subtitle}</span> : null}

@@ -48,7 +48,15 @@
       "add": "Add category",
       "drag": "Drag to move {{name}}",
       "dragInstructions": "Use the up and down arrows to move the category by one place. With a mouse, drag the handle.",
-      "questionWeightsOff": "The questions of {{name}} add up to {{sum}}%, not 100%"
+      "questionWeightsOff": "The questions of {{name}} add up to {{sum}}%, not 100%",
+      "announcements": {
+        "dragStart": "Picked up category {{name}}.",
+        "dragOver": "Category {{name}} is over category {{over}}.",
+        "dragOutside": "Category {{name}} is no longer over another category.",
+        "dragEnd": "Category {{name}} was moved to the place of category {{over}}.",
+        "dropped": "Category {{name}} was dropped in its place.",
+        "dragCancel": "Moving was cancelled. Category {{name}} stayed in its place."
+      }
     },
     "category": {
       "edit": "Edit",
@@ -145,8 +153,6 @@
     }
   },
   "consent": {
-    "signatures_one": "{{count}} signature",
-    "signatures_other": "{{count}} signatures",
     "titleDraft": "Draft v{{version}} · {{language}}",
     "titlePublished": "Version v{{version}} · {{language}}",
     "languages": {
@@ -174,7 +180,6 @@
     "publishedToast": "Version {{version}} is published. New inspections use it from now on.",
     "save": "Save draft",
     "saving": "Saving…",
-    "saved": "The draft is saved.",
     "publish": "Publish new version",
     "publishing": "Publishing…",
     "createDraft": "Create a draft",
@@ -189,8 +194,7 @@
     "empty": {
       "title": "There are no consent texts yet",
       "description": "Create a draft and add the sections the owner signs."
-    },
-    "unsaved": "You have unsaved changes."
+    }
   },
   "versions": {
     "title": "Versions",
@@ -211,7 +215,9 @@
     "backToPublished": "Back to the published version",
     "banner": {
       "title": "Viewing {{version}}",
-      "text": "Read only."
+      "usedIn_one": "Read only. Used in one inspection",
+      "usedIn_other": "Read only. Used in {{count}} inspections",
+      "unused": "Read only. Not used in any inspection"
     },
     "restoreTitle": "Restore {{version}}?",
     "restoreText": "Draft {{next}} is created with the content of {{version}}. You can edit and publish it afterwards.",

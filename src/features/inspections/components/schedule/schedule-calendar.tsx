@@ -5,7 +5,9 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  type Announcements,
   type DragEndEvent,
+  type UniqueIdentifier,
 } from '@dnd-kit/core';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
@@ -19,6 +21,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useStoredFlag } from '@/hooks/use-stored-flag';
 import { useErrorMessage } from '@/i18n/error-message';
 import { formatDate } from '@/i18n/format';
+import { bucharestDay } from '@/lib/bucharest-time';
+import { fromDateKey, shiftDateKey, weekStartKey } from '@/lib/date-keys';
 import { cn } from '@/lib/utils';
 import {
   inspectionQueries,
@@ -27,7 +31,6 @@ import {
 } from '../../api/inspections.queries';
 import type { AdminInspection, ScheduleView } from '../../inspection.types';
 import { dayStart, scheduleRange, shiftScheduleDate } from '../../schedule.utils';
-import { addDays, dateKey } from '../../slots.utils';
 import { AdminAppointmentDrawer } from './admin-appointment-drawer';
 import { ScheduleDayBoard } from './schedule-day-board';
 import { ScheduleQueue } from './schedule-queue';
@@ -38,6 +41,8 @@ import { ScheduleWeekBoard } from './schedule-week-board';
 const route = getRouteApi('/_authenticated/admin/appointments');
 
 const DRAG_DISTANCE = 6;
+
+const WEEK_DAYS = 7;
 
 const QUEUE_HIDDEN_STORAGE_KEY = 'ps-schedule-queue-hidden';
 
@@ -50,7 +55,7 @@ export function ScheduleCalendar() {
   const errorMessage = useErrorMessage();
   const search = route.useSearch();
   const navigate = route.useNavigate();
-  const [today] = useState(() => dateKey(new Date()));
+  const [today] = useState(() => bucharestDay(new Date()));
   const date = search.date ?? today;
   const view: ScheduleView = search.view;
   const cityId = search.city ?? null;
@@ -91,7 +96,9 @@ export function ScheduleCalendar() {
   const draggedFromQueue = queue.find((item) => item.id === draggedId);
   const picked = queue.find((item) => item.id === search.pick);
   const pickedOnBoard =
-    picked && view === 'day' && dateKey(new Date(picked.starts_at)) === date ? picked : undefined;
+    picked && view === 'day' && bucharestDay(new Date(picked.starts_at)) === date
+      ? picked
+      : undefined;
   const cities = Array.from(
     new Map(
       (allInspectors.data ?? []).map((inspector) => [inspector.city_id, inspector.city_name]),
@@ -104,13 +111,46 @@ export function ScheduleCalendar() {
   const selected =
     (schedule.data ?? []).find((item) => item.id === search.sheet) ??
     queue.find((item) => item.id === search.sheet);
+  const weekKey = weekStartKey(date);
   const dateLabel =
     view === 'day'
-      ? formatDate(from, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
+      ? formatDate(fromDateKey(date), {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })
       : t('schedule.week.range', {
-          from: formatDate(from, { day: 'numeric', month: 'short' }),
-          to: formatDate(addDays(to, -1), { day: 'numeric', month: 'short', year: 'numeric' }),
+          from: formatDate(fromDateKey(weekKey), { day: 'numeric', month: 'short' }),
+          to: formatDate(fromDateKey(shiftDateKey(weekKey, WEEK_DAYS - 1)), {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          }),
         });
+  const inspectionNumber = (id: UniqueIdentifier) =>
+    (
+      items.find((item) => item.id === id) ?? queue.find((item) => item.id === id)
+    )?.number.toString() ?? '';
+  const inspectorName = (id: UniqueIdentifier) => names.get(String(id)) ?? '';
+  const announcements: Announcements = {
+    onDragStart: ({ active }) => t('schedule.dnd.start', { number: inspectionNumber(active.id) }),
+    onDragOver: ({ active, over }) =>
+      over
+        ? t('schedule.dnd.over', {
+            number: inspectionNumber(active.id),
+            name: inspectorName(over.id),
+          })
+        : t('schedule.dnd.overNone', { number: inspectionNumber(active.id) }),
+    onDragEnd: ({ active, over }) =>
+      over
+        ? t('schedule.dnd.end', {
+            number: inspectionNumber(active.id),
+            name: inspectorName(over.id),
+          })
+        : t('schedule.dnd.endNone', { number: inspectionNumber(active.id) }),
+    onDragCancel: ({ active }) => t('schedule.dnd.cancel', { number: inspectionNumber(active.id) }),
+  };
 
   const openSheet = (inspectionId: string) => {
     void navigate({
@@ -128,7 +168,7 @@ export function ScheduleCalendar() {
       search: (previous) => ({
         ...previous,
         view: 'day',
-        date: dateKey(new Date(inspection.starts_at)),
+        date: bucharestDay(new Date(inspection.starts_at)),
         city: inspection.city_id,
         inspector: undefined,
         pick: inspection.id,
@@ -281,6 +321,7 @@ export function ScheduleCalendar() {
         }}
         onDragEnd={handleDragEnd}
         accessibility={{
+          announcements,
           screenReaderInstructions: { draggable: t('schedule.dnd.instructions') },
         }}
       >
@@ -338,13 +379,13 @@ export function ScheduleCalendar() {
             />
           ) : (
             <ScheduleWeekBoard
-              start={from}
+              startKey={weekKey}
               title={boardTitle}
               toolbar={boardToolbar}
               subtitle={
                 search.city
                   ? (cities.find((city) => city.id === search.city)?.name ?? '')
-                  : t('schedule.week.allCities')
+                  : t('schedule.toolbar.allCities')
               }
               inspectors={shown}
               inspections={items}
@@ -360,6 +401,7 @@ export function ScheduleCalendar() {
       </DndContext>
       {selected ? (
         <AdminAppointmentDrawer
+          key={selected.id}
           inspection={selected}
           mode={search.mode}
           onModeChange={(mode) => {
@@ -378,7 +420,11 @@ export function ScheduleCalendar() {
 
 const TIME = { hour: '2-digit', minute: '2-digit' } as const;
 
-function QueueDragPreview({ inspection }: { inspection: AdminInspection }) {
+type QueueDragPreviewProps = {
+  inspection: AdminInspection;
+};
+
+function QueueDragPreview({ inspection }: QueueDragPreviewProps) {
   const { t } = useTranslation('inspections');
 
   return (

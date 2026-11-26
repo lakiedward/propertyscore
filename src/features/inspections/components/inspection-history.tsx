@@ -4,7 +4,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateTime } from '@/i18n/format';
 import { inspectionQueries } from '../api/inspections.queries';
 
-export function InspectionHistory({ inspectionId }: { inspectionId: string }) {
+type InspectionHistoryProps = {
+  inspectionId: string;
+};
+
+export function InspectionHistory({ inspectionId }: InspectionHistoryProps) {
   const { t } = useTranslation('inspections');
   const history = useQuery(inspectionQueries.history(inspectionId));
 

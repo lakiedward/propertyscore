@@ -4,6 +4,7 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
+import { inspectionQueries } from '@/features/inspections';
 import type { UserFilters } from '../staff.types';
 import {
   addException,
@@ -64,29 +65,42 @@ export const staffQueries = {
     }),
 };
 
-function useInvalidateUsers() {
+type InspectionReach = 'schedule' | 'all';
+
+function useInvalidateUsers(reach: InspectionReach) {
   const queryClient = useQueryClient();
+  const inspectionKeys =
+    reach === 'all'
+      ? [inspectionQueries.all()]
+      : [inspectionQueries.scheduleAll(), inspectionQueries.slotsAll()];
   return () =>
-    Promise.all([
-      queryClient.invalidateQueries({ queryKey: staffQueries.usersLists() }),
-      queryClient.invalidateQueries({ queryKey: staffQueries.roleCounts().queryKey }),
-    ]);
+    Promise.all(
+      [staffQueries.usersLists(), staffQueries.roleCounts().queryKey, ...inspectionKeys].map(
+        (queryKey) => queryClient.invalidateQueries({ queryKey }),
+      ),
+    );
 }
 
 export function useSetInspector() {
-  const invalidate = useInvalidateUsers();
+  const invalidate = useInvalidateUsers('schedule');
   return useMutation({ mutationFn: setInspector, onSuccess: invalidate });
 }
 
 export function useRemoveInspector() {
-  const invalidate = useInvalidateUsers();
+  const invalidate = useInvalidateUsers('all');
   return useMutation({ mutationFn: removeInspector, onSuccess: invalidate });
 }
 
 function useInvalidateAvailability() {
   const queryClient = useQueryClient();
   return (inspectorId: string) =>
-    queryClient.invalidateQueries({ queryKey: staffQueries.availability(inspectorId) });
+    Promise.all(
+      [
+        staffQueries.availability(inspectorId),
+        inspectionQueries.scheduleAll(),
+        inspectionQueries.slotsAll(),
+      ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+    );
 }
 
 export function useSetWeeklyHours() {
@@ -114,16 +128,21 @@ export function useRemoveException(inspectorId: string) {
 }
 
 export function useBlockUser() {
-  const invalidate = useInvalidateUsers();
+  const invalidate = useInvalidateUsers('all');
   return useMutation({ mutationFn: blockUser, meta: { silent: true }, onSuccess: invalidate });
 }
 
 export function useUnblockUser() {
-  const invalidate = useInvalidateUsers();
+  const invalidate = useInvalidateUsers('schedule');
   return useMutation({ mutationFn: unblockUser, onSuccess: invalidate });
 }
 
 export function useMakeAdmin() {
-  const invalidate = useInvalidateUsers();
+  const queryClient = useQueryClient();
+  const invalidate = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: staffQueries.usersLists() }),
+      queryClient.invalidateQueries({ queryKey: staffQueries.roleCounts().queryKey }),
+    ]);
   return useMutation({ mutationFn: makeAdmin, onSuccess: invalidate });
 }

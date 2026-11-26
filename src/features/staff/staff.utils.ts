@@ -1,4 +1,6 @@
 import { formatDate } from '@/i18n/format';
+import { bucharestInstant } from '@/lib/bucharest-time';
+import { shiftDateKey } from '@/lib/date-keys';
 import type { StaffUser, TimeRange } from './staff.types';
 
 type CsvLabels = {
@@ -80,20 +82,6 @@ export function weeklyRangesByDay(
   return byDay;
 }
 
-export function localDateKey(date: Date): string {
-  return `${String(date.getFullYear())}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
-
-export function localDateTime(dateKey: string, time: string): Date {
-  return new Date(`${dateKey}T${time}:00`);
-}
-
-export function addDaysTo(dateKey: string, days: number): string {
-  const date = localDateTime(dateKey, '00:00');
-  date.setDate(date.getDate() + days);
-  return localDateKey(date);
-}
-
 export function exceptionBounds(values: {
   fromDate: string;
   toDate: string;
@@ -103,12 +91,12 @@ export function exceptionBounds(values: {
 }): { startsAt: Date; endsAt: Date } {
   if (values.isAllDay) {
     return {
-      startsAt: localDateTime(values.fromDate, '00:00'),
-      endsAt: localDateTime(addDaysTo(values.toDate, 1), '00:00'),
+      startsAt: bucharestInstant(values.fromDate),
+      endsAt: bucharestInstant(shiftDateKey(values.toDate, 1)),
     };
   }
   return {
-    startsAt: localDateTime(values.fromDate, values.startTime),
-    endsAt: localDateTime(values.toDate, values.endTime),
+    startsAt: bucharestInstant(values.fromDate, values.startTime),
+    endsAt: bucharestInstant(values.toDate, values.endTime),
   };
 }

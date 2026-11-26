@@ -3,7 +3,7 @@ import { CheckIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { HomeSectionId } from '@/components/layout/site-navigation';
 import { PillLink } from '@/components/navigation/pill-link';
-import { BOOKING_TARGET } from '../home.constants';
+import { ctaLinkOptions, type CtaTarget } from '../home.constants';
 import { TextLink } from '@/components/navigation/text-link';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
@@ -28,7 +28,7 @@ type PriceCardProps = {
   badge: ReactNode;
   features: readonly { title: string; text: string }[];
   cta: string;
-  ctaHash: HomeSectionId | typeof BOOKING_TARGET;
+  ctaTarget: CtaTarget;
   secondary: string;
   secondaryHash: HomeSectionId;
 };
@@ -42,7 +42,7 @@ export function PriceCard({
   badge,
   features,
   cta,
-  ctaHash,
+  ctaTarget,
   secondary,
   secondaryHash,
 }: PriceCardProps) {
@@ -71,15 +71,9 @@ export function PriceCard({
         ))}
       </ul>
       <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-2">
-        {ctaHash === BOOKING_TARGET ? (
-          <PillLink to="/inspection" tone={CTA_TONE[tone]}>
-            {cta}
-          </PillLink>
-        ) : (
-          <PillLink to="/" hash={ctaHash} tone={CTA_TONE[tone]}>
-            {cta}
-          </PillLink>
-        )}
+        <PillLink {...ctaLinkOptions(ctaTarget)} tone={CTA_TONE[tone]}>
+          {cta}
+        </PillLink>
         <TextLink to="/" hash={secondaryHash} tone="inverse">
           {secondary}
         </TextLink>

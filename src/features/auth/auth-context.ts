@@ -37,14 +37,14 @@ export function signedInRedirect(auth: AuthState, target?: string) {
 
 export function otherPanelGuard(
   auth: AuthState,
-  location: { pathname: string; searchStr: string },
+  location: { pathname: string; search: Record<string, unknown> },
 ) {
   const target = otherPanelRedirect(auth.roles, location.pathname);
   if (target === null) {
     return undefined;
   }
   const keepsSearch = target === settingsPathFor(auth.roles);
-  return redirect({ href: keepsSearch ? `${target}${location.searchStr}` : target });
+  return redirect({ to: target, search: keepsSearch ? location.search : {} });
 }
 
 export const AuthContext = createContext<AuthState | null>(null);

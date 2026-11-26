@@ -1,9 +1,12 @@
 import { screen, within } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
+import roCommon from '@/i18n/locales/ro/common.json';
 import ro from '@/i18n/locales/ro/inspections.json';
 import { buildAgendaInspection } from '@/test/factories/agenda-inspection';
 import { signedInAs } from '@/test/factories/auth';
 import { agendaResponse } from '@/test/msw/handlers/inspections';
 import { server } from '@/test/msw/server';
+import { supabaseUrl } from '@/test/msw/supabase-url';
 import { renderAppRoute } from '@/test/render';
 
 const NOW = new Date(2026, 10, 24, 8, 0);
@@ -115,5 +118,16 @@ describe('AgendaPage', { timeout: 20_000 }, () => {
 
     expect(await screen.findByText(ro.agenda.next.emptyTitle)).toBeInTheDocument();
     expect(screen.getByText(ro.agenda.empty.day)).toBeInTheDocument();
+  });
+
+  it('shows the error page when the agenda cannot load', async () => {
+    server.use(
+      http.post(supabaseUrl('/rest/v1/rpc/inspector_agenda'), () =>
+        HttpResponse.json({ message: 'boom' }, { status: 500 }),
+      ),
+    );
+    await renderAppRoute('/field', { auth: signedInAs('inspector') });
+
+    expect(await screen.findByText(roCommon.pages.error.title)).toBeInTheDocument();
   });
 });

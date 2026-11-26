@@ -136,7 +136,9 @@ function AppointmentRow({ appointment, onOpen }: AppointmentRowProps) {
       data-cancelled={appointment.status === 'cancelled'}
     >
       <span className={bandVariants({ status: appointment.status })}>
-        <strong className="text-[24px] leading-none">{startsAt.getDate()}</strong>
+        <strong className="text-h3 leading-none tracking-normal">
+          {formatDate(startsAt, { day: 'numeric' })}
+        </strong>
         <span className="text-meta font-bold uppercase">
           {formatDate(startsAt, { month: 'short' })}
         </span>

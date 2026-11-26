@@ -4,13 +4,15 @@ import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SegmentedControl } from '@/components/forms/segmented-control';
 import { Button } from '@/components/ui/button';
+import { FieldLegend, FieldSet } from '@/components/ui/field';
+import { SUPPORTED_LOCALES, type Locale } from '@/i18n/i18n';
 import { formatDate } from '@/i18n/format';
 import { localizedText } from '@/i18n/localized';
 import { canStartAt } from '@/lib/bucharest-time';
 import { oneOf } from '@/lib/utils';
 import { versionLabel } from '@/lib/version-label';
 import { useStartInspection } from '../api/field-inspection.queries';
-import { SIGNER_LANGUAGES, type SignerLanguage, type Workspace } from '../field-inspection.types';
+import type { Workspace } from '../field-inspection.types';
 import { ConsentSection } from './consent-section';
 import { SignaturePad } from './signature-pad';
 
@@ -32,8 +34,8 @@ export function ConsentStep({ workspace, firstSection }: ConsentStepProps) {
   const signerTitleId = useId();
   const { inspection, sections, consent } = workspace;
   const isSigned = consent !== null;
-  const [language, setLanguage] = useState<SignerLanguage>(
-    oneOf(SIGNER_LANGUAGES, consent?.language ?? '') ?? 'ro',
+  const [language, setLanguage] = useState<Locale>(
+    oneOf(SUPPORTED_LOCALES, consent?.language ?? '') ?? 'ro',
   );
   const [checked, setChecked] = useState<ReadonlySet<string>>(
     () => new Set(isSigned ? sections.map((section) => section.id) : []),
@@ -72,42 +74,45 @@ export function ConsentStep({ workspace, firstSection }: ConsentStepProps) {
             value={language}
             onChange={setLanguage}
             size="md"
-            options={SIGNER_LANGUAGES.map((option) => ({
+            options={SUPPORTED_LOCALES.map((option) => ({
               value: option,
               label: tCommon(`language.short.${option}`),
               lang: option,
             }))}
           />
         </div>
-        {sections.map((section, index) => {
-          return (
-            <ConsentSection
-              key={section.id}
-              number={index + 1}
-              language={language}
-              title={localizedText(section.title_ro, section.title_en, language)}
-              text={localizedText(section.text_ro, section.text_en, language)}
-              checkLabel={localizedText(section.check_ro, section.check_en, language)}
-              meta={t('consent.version', {
-                version:
-                  workspace.consentVersion === null ? '' : versionLabel(workspace.consentVersion),
-              })}
-              isChecked={checked.has(section.id)}
-              isDisabled={isSigned}
-              onCheckedChange={(isChecked) => {
-                setChecked((current) => {
-                  const next = new Set(current);
-                  if (isChecked) {
-                    next.add(section.id);
-                  } else {
-                    next.delete(section.id);
-                  }
-                  return next;
-                });
-              }}
-            />
-          );
-        })}
+        <FieldSet className="min-w-0 gap-3.5">
+          <FieldLegend className="sr-only">{t('consent.title')}</FieldLegend>
+          {sections.map((section, index) => {
+            return (
+              <ConsentSection
+                key={section.id}
+                number={index + 1}
+                language={language}
+                title={localizedText(section.title_ro, section.title_en, language)}
+                text={localizedText(section.text_ro, section.text_en, language)}
+                checkLabel={localizedText(section.check_ro, section.check_en, language)}
+                meta={t('consent.version', {
+                  version:
+                    workspace.consentVersion === null ? '' : versionLabel(workspace.consentVersion),
+                })}
+                isChecked={checked.has(section.id)}
+                isDisabled={isSigned}
+                onCheckedChange={(isChecked) => {
+                  setChecked((current) => {
+                    const next = new Set(current);
+                    if (isChecked) {
+                      next.add(section.id);
+                    } else {
+                      next.delete(section.id);
+                    }
+                    return next;
+                  });
+                }}
+              />
+            );
+          })}
+        </FieldSet>
       </div>
       <section
         aria-labelledby={signerTitleId}

@@ -4,8 +4,8 @@
     "export": "Export CSV",
     "card": {
       "title": "All users",
-      "shown_one": "{{count}} of {{total}} account",
-      "shown_other": "{{count}} of {{total}} accounts"
+      "shown_one": "{{shown}} of {{count}} account",
+      "shown_other": "{{shown}} of {{count}} accounts"
     },
     "search": {
       "label": "Search users",
@@ -69,7 +69,8 @@
       "cityPlaceholder": "Choose the city",
       "save": "Save",
       "saving": "Saving…",
-      "saved": "{{name}} is an inspector in {{city}}."
+      "saved": "{{name}} is an inspector in {{city}}.",
+      "citiesError": "We couldn't load the cities. Try again."
     },
     "removeDialog": {
       "title": "Remove the inspector role?",
@@ -113,7 +114,8 @@
       "confirm": "Make admin",
       "pending": "Saving…",
       "done": "{{name}} is now an admin."
-    }
+    },
+    "error": "We couldn't load the accounts. Try again."
   },
   "availability": {
     "weekly": {
@@ -134,7 +136,8 @@
         "dayOff": "The day stays off.",
         "save": "Save the schedule",
         "saving": "Saving…"
-      }
+      },
+      "error": "We couldn't load the weekly hours. Try again."
     },
     "exceptions": {
       "title": "Exceptions",
@@ -165,7 +168,9 @@
         "note": "Note (optional)",
         "save": "Add the exception",
         "saving": "Adding…"
-      }
+      },
+      "error": "We couldn't load the exceptions. Try again.",
+      "kindWithNote": "{{kind}} · {{note}}"
     }
   }
 }

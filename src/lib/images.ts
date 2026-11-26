@@ -32,12 +32,3 @@ export function scaledWebp(bitmap: ImageBitmap, maxEdge: number): Promise<Blob> 
   drawingContext(canvas).drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   return canvasBlob(canvas);
 }
-
-export async function toWebp(source: Blob, maxEdge: number): Promise<Blob> {
-  const bitmap = await createImageBitmap(source);
-  try {
-    return await scaledWebp(bitmap, maxEdge);
-  } finally {
-    bitmap.close();
-  }
-}

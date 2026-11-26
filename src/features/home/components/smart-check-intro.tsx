@@ -85,7 +85,7 @@ export function SmartCheckIntro({ titleId }: SmartCheckIntroProps) {
             currency={currency}
             footer={t('smartCheck.price.features')}
             ctaLabel={t('smartCheck.price.cta')}
-            ctaHash={HOME_SECTION.pricing}
+            ctaTarget={HOME_SECTION.pricing}
           />
           <TextLink
             to="/"

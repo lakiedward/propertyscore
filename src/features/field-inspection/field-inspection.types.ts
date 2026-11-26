@@ -1,5 +1,6 @@
 import { Constants, type Database, type Enums } from '@/lib/supabase/database.types';
-import type { getProgress, getWorkspace } from './api/field-inspection.api';
+import type { NullableColumns } from '@/lib/supabase/nullable-columns';
+import type { getProgress, getWorkspace, getWorkspaceContent } from './api/field-inspection.api';
 
 export type InspectionAnswer = Enums<'inspection_answer'>;
 
@@ -9,7 +10,8 @@ export type InspectionMediaKind = Enums<'inspection_media_kind'>;
 
 type WorkspaceRow = Database['public']['Functions']['inspector_workspace']['Returns'][number];
 
-type NullableWorkspaceColumn =
+export type WorkspaceInspection = NullableColumns<
+  WorkspaceRow,
   | 'started_at'
   | 'submitted_at'
   | 'score'
@@ -18,13 +20,14 @@ type NullableWorkspaceColumn =
   | 'floor'
   | 'building_floors'
   | 'year_built'
-  | 'inspector_name';
+  | 'inspector_name'
+>;
 
-export type WorkspaceInspection = Omit<WorkspaceRow, NullableWorkspaceColumn> & {
-  [Column in NullableWorkspaceColumn]: WorkspaceRow[Column] | null;
-};
+export type WorkspaceState = Awaited<ReturnType<typeof getWorkspace>>;
 
-export type Workspace = Awaited<ReturnType<typeof getWorkspace>>;
+type WorkspaceContent = Awaited<ReturnType<typeof getWorkspaceContent>>;
+
+export type Workspace = WorkspaceState & WorkspaceContent;
 
 export type WorkspaceCategory = Workspace['categories'][number];
 
@@ -40,11 +43,9 @@ export type CategoryProgress = Progress['categories'][number];
 
 export const CONSENT_SECTION = 'consent';
 
-export const SIGNER_LANGUAGES = ['ro', 'en'] as const;
-
-export type SignerLanguage = (typeof SIGNER_LANGUAGES)[number];
-
 export const PHOTO_MAX_EDGE = 1920;
+
+export const PHOTO_THUMB_MAX_EDGE = 240;
 
 export const VIDEO_MAX_BYTES = 52_428_800;
 

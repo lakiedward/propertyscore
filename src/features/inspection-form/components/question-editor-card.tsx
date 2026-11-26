@@ -9,6 +9,7 @@ import {
 import { useId, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { SUPPORTED_LOCALES } from '@/i18n/i18n';
 import { localizedText } from '@/i18n/localized';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { Button } from '@/components/ui/button';
@@ -40,16 +41,15 @@ import {
 } from '../api/inspection-form.queries';
 import { questionSchema, type QuestionValues } from '../inspection-form.schemas';
 import {
-  CONSENT_LANGUAGES,
   REQUIRED_MEDIA,
   type FormCategory,
   type FormQuestion,
   type QuestionPatch,
 } from '../inspection-form.types';
-import { moveItem, parseWeight } from '../inspection-form.utils';
+import { moveItem } from '../inspection-form.utils';
 import { WeightInput } from './weight-input';
 
-const [, ENGLISH] = CONSENT_LANGUAGES;
+const [, ENGLISH] = SUPPORTED_LOCALES;
 
 type QuestionEditorCardProps = {
   question: FormQuestion & { number: string };
@@ -281,9 +281,8 @@ export function QuestionEditorCard({
               isEditable={isEditable}
               isLabelVisible
               onChange={field.onChange}
-              onBlur={() => {
-                field.onBlur();
-                const weight = parseWeight(field.value);
+              onBlur={field.onBlur}
+              onCommit={(weight) => {
                 form.resetField('weight', { defaultValue: String(weight) });
                 if (weight !== question.weight) {
                   save({ weight });

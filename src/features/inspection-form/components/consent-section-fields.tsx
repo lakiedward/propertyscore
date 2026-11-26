@@ -8,11 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useValidationMessage } from '@/i18n/validation';
 import type { ConsentSectionsValues } from '../inspection-form.schemas';
-import type { ConsentLanguage } from '../inspection-form.types';
+import type { Locale } from '@/i18n/i18n';
 
 type ConsentSectionFieldsProps = {
   index: number;
-  language: ConsentLanguage;
+  language: Locale;
   control: Control<ConsentSectionsValues>;
   isEditable: boolean;
   onRemove: () => void;

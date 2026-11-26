@@ -126,7 +126,7 @@ export function PhysicalSection() {
                 </span>
               }
               ctaLabel={t('physical.price.cta')}
-              ctaHash={BOOKING_TARGET}
+              ctaTarget={BOOKING_TARGET}
             />
           </div>
         </div>

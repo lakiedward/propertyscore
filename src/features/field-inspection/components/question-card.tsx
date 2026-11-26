@@ -10,21 +10,17 @@ import {
   XIcon,
   type LucideIcon,
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
 import { useId, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { localizedText } from '@/i18n/localized';
 import { cn } from '@/lib/utils';
-import {
-  fieldInspectionQueries,
-  useAddMedia,
-  useRemoveMedia,
-  useSaveAnswer,
-} from '../api/field-inspection.queries';
+import { useAddMedia, useRemoveMedia, useSaveAnswer } from '../api/field-inspection.queries';
+import { photoThumbPath } from '../api/field-inspection.storage';
 import { NOTE_MAX } from '../field-inspection.schemas';
 import {
   INSPECTION_ANSWERS,
@@ -46,7 +42,7 @@ const ANSWER_ICONS: Record<InspectionAnswer, LucideIcon> = {
 };
 
 const answerVariants = cva(
-  'h-auto min-h-13 rounded-lg border-[1.5px] border-border bg-card px-3 text-body-sm font-extrabold text-foreground hover:bg-card focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=on]:border-2 data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm @xl:min-h-11 [&_svg]:size-4.5 data-[state=on]:[&_svg]:text-primary-foreground',
+  'h-auto min-h-13 rounded-lg border-(length:--border-width-control) border-border bg-card px-3 text-body-sm font-extrabold text-foreground hover:bg-card focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=on]:border-2 data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm @xl:min-h-11 [&_svg]:size-4.5 data-[state=on]:[&_svg]:text-primary-foreground',
   {
     variants: {
       answer: {
@@ -82,6 +78,7 @@ type QuestionCardProps = {
   question: NumberedQuestion;
   answer: WorkspaceAnswer | undefined;
   media: readonly WorkspaceMedia[];
+  photoUrls: Partial<Record<string, string>> | undefined;
   language: string;
   isEditable: boolean;
 };
@@ -91,6 +88,7 @@ export function QuestionCard({
   question,
   answer,
   media,
+  photoUrls,
   language,
   isEditable,
 }: QuestionCardProps) {
@@ -187,7 +185,7 @@ export function QuestionCard({
           <div className="flex min-w-0 flex-col gap-0.5">
             <h3
               id={`${baseId}-text`}
-              className="text-[17px] leading-snug font-bold"
+              className="text-title-3xs leading-snug font-bold"
               lang={language}
             >
               {text}
@@ -252,35 +250,44 @@ export function QuestionCard({
             </span>
           ) : null}
           {isEditable && !isNoteOpen ? (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setIsNoteOpen(true);
               }}
-              className="ml-auto inline-flex min-h-10 items-center gap-1.5 rounded-md px-2 text-small font-extrabold text-brand outline-none focus-visible:ring-3 focus-visible:ring-ring"
+              className="ml-auto h-10 px-2 font-extrabold"
             >
-              <NotebookPenIcon aria-hidden className="size-4" />
+              <NotebookPenIcon aria-hidden />
               {t('question.addNote')}
-            </button>
+            </Button>
           ) : null}
         </div>
         {media.length > 0 ? (
           <ul className="flex flex-wrap gap-2">
-            {media.map((item, index) => {
+            {numberedMedia(media).map(({ item, index }) => {
               const label =
                 item.kind === 'photo'
-                  ? t('question.mediaAlt', { index: index + 1, number: question.number })
-                  : t('question.videoLabel', { index: index + 1, number: question.number });
+                  ? t('question.mediaAlt', { index, number: question.number })
+                  : t('question.videoLabel', { index, number: question.number });
+              const thumbPath = photoThumbPath(item.path);
               return (
                 <li key={item.id} className="relative">
-                  <MediaThumbnail media={item} label={label} />
+                  <MediaThumbnail
+                    kind={item.kind}
+                    src={(thumbPath ? photoUrls?.[thumbPath] : undefined) ?? photoUrls?.[item.path]}
+                    fallbackSrc={photoUrls?.[item.path]}
+                    label={label}
+                  />
                   {isEditable ? (
                     <button
                       type="button"
-                      aria-label={t('question.removeMedia', {
-                        index: index + 1,
-                        number: question.number,
-                      })}
+                      aria-label={
+                        item.kind === 'photo'
+                          ? t('question.removePhoto', { index, number: question.number })
+                          : t('question.removeVideo', { index, number: question.number })
+                      }
                       disabled={removeMedia.isPending}
                       onClick={() => {
                         removeMedia.mutate(item.id);
@@ -323,26 +330,40 @@ export function QuestionCard({
   );
 }
 
+function numberedMedia(media: readonly WorkspaceMedia[]) {
+  const counts: Partial<Record<InspectionMediaKind, number>> = {};
+  return media.map((item) => {
+    const index = (counts[item.kind] ?? 0) + 1;
+    counts[item.kind] = index;
+    return { item, index };
+  });
+}
+
 type MediaThumbnailProps = {
-  media: WorkspaceMedia;
+  kind: InspectionMediaKind;
+  src: string | undefined;
+  fallbackSrc: string | undefined;
   label: string;
 };
 
-function MediaThumbnail({ media, label }: MediaThumbnailProps) {
-  const url = useQuery({
-    ...fieldInspectionQueries.fileUrl(media.path),
-    enabled: media.kind === 'photo',
-  });
+function MediaThumbnail({ kind, src, fallbackSrc, label }: MediaThumbnailProps) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const shownSrc = src !== undefined && src === failedSrc ? fallbackSrc : src;
 
-  if (media.kind === 'photo' && url.data) {
+  if (kind === 'photo' && shownSrc) {
     return (
       <img
-        src={url.data}
+        src={shownSrc}
         alt={label}
         width={56}
         height={56}
         loading="lazy"
         decoding="async"
+        onError={() => {
+          if (shownSrc === src) {
+            setFailedSrc(src);
+          }
+        }}
         className="size-14 rounded-thumb border-2 border-card object-cover"
       />
     );
@@ -354,7 +375,7 @@ function MediaThumbnail({ media, label }: MediaThumbnailProps) {
       aria-label={label}
       className="grid size-14 place-items-center rounded-thumb border-2 border-card bg-surface-alt text-brand"
     >
-      {media.kind === 'photo' ? (
+      {kind === 'photo' ? (
         <CameraIcon aria-hidden className="size-5" />
       ) : (
         <VideoIcon aria-hidden className="size-5" />

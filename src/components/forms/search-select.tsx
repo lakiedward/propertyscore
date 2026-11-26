@@ -94,8 +94,8 @@ export function SearchSelect({
         align="start"
         className="w-(--radix-popover-trigger-width) min-w-72 gap-0 overflow-hidden p-0"
       >
-        <Command filter={matchScore}>
-          <CommandInput placeholder={searchPlaceholder} aria-label={searchPlaceholder} />
+        <Command filter={matchScore} label={searchPlaceholder}>
+          <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
             {options.map((option) => {

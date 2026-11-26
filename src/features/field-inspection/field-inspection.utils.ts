@@ -1,3 +1,4 @@
+import { formatNumber } from '@/i18n/format';
 import type {
   NumberedQuestion as NumberedQuestionOf,
   QuestionGroup,
@@ -50,4 +51,10 @@ export function scoreTone(score: number | null | undefined) {
     return 'text-success';
   }
   return score >= 5 ? 'text-warning' : 'text-destructive';
+}
+
+const ONE_DECIMAL = { minimumFractionDigits: 1, maximumFractionDigits: 1 } as const;
+
+export function formatInspectionScore(score: number): string {
+  return formatNumber(score, ONE_DECIMAL);
 }

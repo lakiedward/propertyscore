@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useId } from 'react';
+import { useId, useState, type Ref } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
@@ -69,20 +69,17 @@ export function AnswerPointsCard({ version, isEditable }: AnswerPointsCardProps)
                 <FieldLabel htmlFor={`${baseId}-${name}`} className="text-meta font-bold">
                   {t(`form.points.${name}`)}
                 </FieldLabel>
-                <Input
+                <PointInput
                   id={`${baseId}-${name}`}
-                  inputMode="decimal"
-                  disabled={!isEditable}
-                  aria-invalid={fieldState.invalid}
-                  defaultValue={Number.isNaN(field.value) ? '' : formatNumber(field.value)}
-                  key={`${version.id}-${String(field.value)}`}
-                  onBlur={(event) => {
-                    const parsed = parseLocaleNumber(event.target.value);
-                    field.onChange(parsed ?? Number.NaN);
+                  value={field.value}
+                  inputRef={field.ref}
+                  isEditable={isEditable}
+                  isInvalid={fieldState.invalid}
+                  onCommit={(point) => {
+                    field.onChange(point);
                     field.onBlur();
                     void save();
                   }}
-                  className="h-10 tabular-nums"
                 />
                 <FieldError>{validationMessage(fieldState.error?.message)}</FieldError>
               </Field>
@@ -92,5 +89,45 @@ export function AnswerPointsCard({ version, isEditable }: AnswerPointsCardProps)
       </div>
       <p className="text-meta text-muted-foreground">{t('form.points.hint')}</p>
     </section>
+  );
+}
+
+function formatPoint(value: number): string {
+  return Number.isNaN(value) ? '' : formatNumber(value);
+}
+
+type PointInputProps = {
+  id: string;
+  value: number;
+  inputRef: Ref<HTMLInputElement>;
+  isEditable: boolean;
+  isInvalid: boolean;
+  onCommit: (point: number) => void;
+};
+
+function PointInput({ id, value, inputRef, isEditable, isInvalid, onCommit }: PointInputProps) {
+  const [text, setText] = useState(() => formatPoint(value));
+  const [syncedValue, setSyncedValue] = useState(value);
+  if (!Object.is(value, syncedValue)) {
+    setSyncedValue(value);
+    setText(formatPoint(value));
+  }
+
+  return (
+    <Input
+      ref={inputRef}
+      id={id}
+      inputMode="decimal"
+      disabled={!isEditable}
+      aria-invalid={isInvalid}
+      value={text}
+      onChange={(event) => {
+        setText(event.target.value);
+      }}
+      onBlur={() => {
+        onCommit(parseLocaleNumber(text) ?? Number.NaN);
+      }}
+      className="h-10 tabular-nums"
+    />
   );
 }

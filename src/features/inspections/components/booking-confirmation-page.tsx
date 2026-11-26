@@ -13,7 +13,6 @@ import { useTranslation } from 'react-i18next';
 import { StageTimeline, type Stage } from '@/components/feedback/stage-timeline';
 import { LazyMapCanvas } from '@/components/map/lazy-map-canvas';
 import { Button } from '@/components/ui/button';
-import { formatNumber } from '@/i18n/format';
 import { inspectionQueries } from '../api/inspections.queries';
 import { useBookingText } from '../hooks/use-booking-text';
 import { inspectionIcs } from '../slots.utils';
@@ -36,13 +35,12 @@ export function BookingConfirmationPage() {
   const property = inspection.property;
   const isAssigned = inspection.status === 'inspector_assigned';
   const dateText = text.date(inspection.starts_at);
-  const facts = [
-    t(`propertyType.${property.property_type}`),
-    t('agenda.area', { area: formatNumber(property.area_m2) }),
-    ...(property.floor !== null && property.building_floors !== null
-      ? [t('agenda.floor', { floor: property.floor, floors: property.building_floors })]
-      : []),
-  ].join(' · ');
+  const facts = text.factLine({
+    propertyType: property.property_type,
+    areaM2: property.area_m2,
+    floor: property.floor,
+    buildingFloors: property.building_floors,
+  });
   const rows = [
     {
       key: 'address',
@@ -115,7 +113,9 @@ export function BookingConfirmationPage() {
             <h1 className="text-[30px] leading-[1.08] font-extrabold tracking-[-0.035em] sm:text-[40px]">
               {t('booking.confirmation.title')}
             </h1>
-            <p className="text-[18px] text-muted-foreground">{t('booking.confirmation.text')}</p>
+            <p className="text-title-2xs-sm text-muted-foreground">
+              {t('booking.confirmation.text')}
+            </p>
             <div className="flex flex-wrap gap-2.5 pt-1">
               <Button asChild variant="cta">
                 <Link to="/account/appointments">

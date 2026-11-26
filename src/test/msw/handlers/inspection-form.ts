@@ -1,4 +1,9 @@
 import { http, HttpResponse } from 'msw';
+import {
+  buildConsentSection,
+  buildFormCategory,
+  buildFormQuestion,
+} from '@/test/factories/inspection-form';
 import { supabaseUrl } from '../supabase-url';
 
 const VERSION_ID = 'f1000000-0000-4000-8000-000000000001';
@@ -16,16 +21,8 @@ export const publishedFormVersion = {
 };
 
 const formCategories = [
-  {
-    id: 'c1',
-    key: 'struct',
-    position: 0,
-    name_ro: 'Structură',
-    name_en: 'Structure',
-    icon: 'building-2',
-    weight: 60,
-  },
-  {
+  buildFormCategory(),
+  buildFormCategory({
     id: 'c2',
     key: 'umez',
     position: 1,
@@ -33,30 +30,19 @@ const formCategories = [
     name_en: 'Damp',
     icon: 'droplets',
     weight: 40,
-  },
+  }),
 ];
 
 const formQuestions = [
-  {
-    id: 'q1',
-    key: 'struct-1',
-    category_id: 'c1',
-    position: 0,
-    text_ro: 'Fisuri vizibile în pereți portanți?',
-    text_en: 'Visible cracks in load-bearing walls?',
-    required_media: 'photo',
-    weight: 100,
-  },
-  {
+  buildFormQuestion(),
+  buildFormQuestion({
     id: 'q2',
     key: 'umez-1',
     category_id: 'c2',
-    position: 0,
     text_ro: 'Pete sau mucegai?',
     text_en: '',
     required_media: 'none',
-    weight: 100,
-  },
+  }),
 ];
 
 export function formCategoriesResponse(categories: readonly object[]) {
@@ -132,17 +118,6 @@ export const inspectionFormHandlers = [
     ]),
   ),
   http.get(supabaseUrl('/rest/v1/consent_sections'), () =>
-    HttpResponse.json([
-      {
-        id: 's1',
-        position: 0,
-        title_ro: 'Prelucrarea datelor personale',
-        title_en: 'Personal data processing',
-        text_ro: 'Text',
-        text_en: 'Text',
-        check_ro: 'Sunt de acord.',
-        check_en: 'I agree.',
-      },
-    ]),
+    HttpResponse.json([buildConsentSection()]),
   ),
 ];

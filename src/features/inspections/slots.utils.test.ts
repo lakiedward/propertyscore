@@ -4,7 +4,7 @@ import {
   dayState,
   firstFreeSlot,
   inspectionIcs,
-  monthWeeks,
+  monthDays,
   partOfDay,
   visitEnd,
 } from './slots.utils';
@@ -18,14 +18,16 @@ function slot(day: number, hour: number, minute: number, free: number, working =
 describe('slots.utils', () => {
   it('opens booking from tomorrow for 90 days', () => {
     const { first, last } = bookingWindow(NOW);
-    expect(first).toEqual(new Date(2026, 10, 21));
-    expect(last).toEqual(new Date(2027, 1, 18));
+    expect(first).toBe('2026-11-21');
+    expect(last).toBe('2027-02-18');
   });
 
   it('lays a month out in weeks starting on Monday', () => {
-    const weeks = monthWeeks(new Date(2026, 10, 1));
+    const weeks = monthDays('2026-11-01');
     expect(weeks[0]?.slice(0, 6)).toEqual([null, null, null, null, null, null]);
-    expect(weeks[0]?.[6]).toEqual(new Date(2026, 10, 1));
+    expect(weeks[0]?.[6]).toBe('2026-11-01');
+    expect(weeks.at(-1)?.[0]).toBe('2026-11-30');
+    expect(weeks.at(-1)?.[1]).toBeNull();
     expect(weeks.every((week) => week.length === 7)).toBe(true);
   });
 
@@ -35,14 +37,14 @@ describe('slots.utils', () => {
 
     expect(byDay.get('2026-11-21')).toMatchObject({ working: 2, free: 1 });
     expect(firstFreeSlot(slots)).toBe(slots[1]);
-    expect(dayState(new Date(2026, 10, 21), byDay.get('2026-11-21'), NOW)).toBe('open');
-    expect(dayState(new Date(2026, 10, 22), byDay.get('2026-11-22'), NOW)).toBe('closed');
-    expect(dayState(new Date(2026, 10, 20), undefined, NOW)).toBe('past');
+    expect(dayState('2026-11-21', byDay.get('2026-11-21'), NOW)).toBe('open');
+    expect(dayState('2026-11-22', byDay.get('2026-11-22'), NOW)).toBe('closed');
+    expect(dayState('2026-11-20', undefined, NOW)).toBe('past');
   });
 
   it('marks a day where every working hour is taken as full', () => {
     const byDay = availabilityByDay([slot(23, 8, 0, 0), slot(23, 9, 30, 0)]);
-    expect(dayState(new Date(2026, 10, 23), byDay.get('2026-11-23'), NOW)).toBe('full');
+    expect(dayState('2026-11-23', byDay.get('2026-11-23'), NOW)).toBe('full');
   });
 
   it('groups start times by part of the day and ends visits two hours later', () => {
@@ -52,6 +54,16 @@ describe('slots.utils', () => {
     expect(visitEnd(new Date(2026, 10, 21, 9, 30).toISOString())).toEqual(
       new Date(2026, 10, 21, 11, 30),
     );
+  });
+
+  it('reads days and parts of the day in Romania whatever the device time zone', () => {
+    const lateEvening = { starts_at: '2026-11-24T22:30:00.000Z', free: 1, working: 1 };
+    expect([...availabilityByDay([lateEvening]).keys()]).toEqual(['2026-11-25']);
+    expect(bookingWindow(new Date('2026-11-24T22:30:00.000Z')).first).toBe('2026-11-26');
+    expect(partOfDay(new Date('2026-11-24T08:30:00.000Z'))).toBe('morning');
+    expect(partOfDay(new Date('2026-11-24T09:00:00.000Z'))).toBe('midday');
+    expect(partOfDay(new Date('2026-07-01T10:30:00.000Z'))).toBe('midday');
+    expect(partOfDay(new Date('2026-07-01T11:00:00.000Z'))).toBe('afternoon');
   });
 
   it('writes a calendar event with escaped text', () => {

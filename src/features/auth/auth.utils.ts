@@ -90,7 +90,10 @@ function panelOf(path: string): PanelPath | undefined {
   );
 }
 
-export function otherPanelRedirect(roles: readonly AppRole[], pathname: string): string | null {
+export function otherPanelRedirect(
+  roles: readonly AppRole[],
+  pathname: string,
+): PanelPath | SettingsPath | null {
   const panel = panelOf(pathname);
   const home = homePathFor(roles);
   if (panel === undefined || panel === home) {

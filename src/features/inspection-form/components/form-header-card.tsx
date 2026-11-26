@@ -1,9 +1,8 @@
-import { CircleCheckIcon, PencilIcon, UploadIcon } from 'lucide-react';
+import { PencilIcon, UploadIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
-import { StatusPill } from '@/components/feedback/status-pill';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/i18n/format';
 import { cn } from '@/lib/utils';
@@ -14,6 +13,7 @@ import {
 } from '../api/inspection-form.queries';
 import type { FormEditor } from '../inspection-form.types';
 import { WEIGHT_TOTAL } from '../inspection-form.utils';
+import { VersionStatusPill } from './version-status-pill';
 
 type FormHeaderCardProps = {
   editor: FormEditor;
@@ -60,14 +60,9 @@ export function FormHeaderCard({
         </span>
       </div>
       {draft ? (
-        <StatusPill tone="info" shape="tag" icon={PencilIcon} label={t('status.draft')} />
+        <VersionStatusPill status="draft" />
       ) : (
-        <StatusPill
-          tone="success"
-          shape="tag"
-          icon={CircleCheckIcon}
-          label={t('status.published')}
-        />
+        <VersionStatusPill status="published" label={t('status.published')} />
       )}
       <span
         className={cn(

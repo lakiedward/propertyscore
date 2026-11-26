@@ -13,6 +13,17 @@ export function questionMediaPath(inspectionId: string, extension: string) {
   return `${inspectionId}/question/${crypto.randomUUID()}.${extension}`;
 }
 
+export function photoThumbPath(photoPath: string): string | null {
+  return photoPath.endsWith('.webp') ? photoPath.replace(/\.webp$/u, '-thumb.webp') : null;
+}
+
+export function withThumbPaths(paths: readonly string[]): string[] {
+  return paths.flatMap((path) => {
+    const thumb = photoThumbPath(path);
+    return thumb ? [path, thumb] : [path];
+  });
+}
+
 export async function uploadInspectionFile(path: string, file: Blob, contentType: string) {
   const { error } = await supabase.storage
     .from(BUCKET)
@@ -20,8 +31,8 @@ export async function uploadInspectionFile(path: string, file: Blob, contentType
   if (error) throw toAppError(error);
 }
 
-export async function removeInspectionFile(path: string) {
-  const { error } = await supabase.storage.from(BUCKET).remove([path]);
+export async function removeInspectionFiles(paths: readonly string[]) {
+  const { error } = await supabase.storage.from(BUCKET).remove([...paths]);
   if (error) throw toAppError(error);
 }
 

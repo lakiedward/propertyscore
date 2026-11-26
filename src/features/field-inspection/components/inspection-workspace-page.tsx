@@ -3,7 +3,7 @@ import { getRouteApi } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { formatDate, formatNumber } from '@/i18n/format';
 import { fieldInspectionQueries } from '../api/field-inspection.queries';
-import { CONSENT_SECTION } from '../field-inspection.types';
+import { CONSENT_SECTION, type Workspace } from '../field-inspection.types';
 import { groupQuestionsByCategory } from '@/lib/question-numbering';
 import { answerOf, firstCategoryWith } from '../field-inspection.utils';
 import { CategorySection } from './category-section';
@@ -18,7 +18,11 @@ export function InspectionWorkspacePage() {
   const { t, i18n } = useTranslation('fieldInspection');
   const { inspectionId } = route.useParams();
   const search = route.useSearch();
-  const { data: workspace } = useSuspenseQuery(fieldInspectionQueries.workspace(inspectionId));
+  const { data: state } = useSuspenseQuery(fieldInspectionQueries.workspace(inspectionId));
+  const { data: content } = useSuspenseQuery(
+    fieldInspectionQueries.content(state.formVersionId, state.consentVersionId),
+  );
+  const workspace: Workspace = { ...state, ...content };
   const { inspection, consent } = workspace;
   const isSigned = consent !== null;
   const progress = useQuery({
@@ -63,8 +67,8 @@ export function InspectionWorkspacePage() {
           ) : null}
         </div>
       </header>
-      <div className="grid grid-cols-1 items-start gap-5 w1180:grid-cols-[260px_minmax(0,1fr)_300px]">
-        <div className="sticky top-0 z-10 -mx-4 border-b border-border-subtle bg-background px-4 py-2 w1180:static w1180:mx-0 w1180:border-0 w1180:bg-transparent w1180:p-0 md:-mx-8 md:px-8">
+      <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[260px_minmax(0,1fr)_300px]">
+        <div className="sticky top-0 z-10 -mx-4 border-b border-border-subtle bg-background px-4 py-2 md:-mx-8 md:px-8 xl:static xl:mx-0 xl:border-0 xl:bg-transparent xl:p-0">
           <SectionNav
             workspace={workspace}
             groups={groups}
@@ -96,6 +100,11 @@ export function InspectionWorkspacePage() {
           workspace={workspace}
           groups={groups}
           progress={progress.data}
+          isProgressLoading={progress.isLoading}
+          hasProgressError={isSigned && progress.isError && !progress.data}
+          onRetryProgress={() => {
+            void progress.refetch();
+          }}
           language={language}
         />
       </div>

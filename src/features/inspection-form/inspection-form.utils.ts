@@ -2,26 +2,19 @@ import type { VersionItem } from './inspection-form.types';
 
 export const WEIGHT_TOTAL = 100;
 
+const WEIGHT_MAX_DIGITS = 3;
+
+export function weightDigits(value: string): string {
+  return value.replace(/\D/gu, '').slice(0, WEIGHT_MAX_DIGITS);
+}
+
 export function parseWeight(value: string): number {
-  const digits = value.replace(/\D/gu, '').slice(0, 3);
+  const digits = weightDigits(value);
   return digits === '' ? 0 : Math.min(Number(digits), WEIGHT_TOTAL);
 }
 
 export function weightSum(weights: readonly number[]): number {
   return weights.reduce((sum, weight) => sum + weight, 0);
-}
-
-export function moveItem<T>(items: readonly T[], index: number, offset: -1 | 1): T[] {
-  const target = index + offset;
-  if (target < 0 || target >= items.length) {
-    return [...items];
-  }
-  const next = [...items];
-  const [moved] = next.splice(index, 1);
-  if (moved !== undefined) {
-    next.splice(target, 0, moved);
-  }
-  return next;
 }
 
 export function moveItemTo<T>(items: readonly T[], from: number, to: number): T[] {
@@ -34,6 +27,10 @@ export function moveItemTo<T>(items: readonly T[], from: number, to: number): T[
     next.splice(to, 0, moved);
   }
   return next;
+}
+
+export function moveItem<T>(items: readonly T[], index: number, offset: -1 | 1): T[] {
+  return moveItemTo(items, index, index + offset);
 }
 
 export function orderByIds<T extends { id: string }>(
@@ -85,7 +82,7 @@ export function nextFormVersion(versions: readonly NumberedVersion[]): number {
   return nextVersionNumber(versions, 1, 0);
 }
 
-type ListedVersion = {
+export type ListedVersion = {
   id: string;
   version: number;
   status: VersionItem['status'];
@@ -108,4 +105,30 @@ export function toVersionItems(
     updatedAt: version.updated_at,
     inspectionCount: usageCounts[version.id] ?? 0,
   }));
+}
+
+type ResolvableVersion = { id: string; status: VersionItem['status'] };
+
+export function resolveVersions<Version extends ResolvableVersion>(
+  versions: readonly Version[],
+  viewedId: string | null,
+) {
+  const draft = versions.find((version) => version.status === 'draft') ?? null;
+  const published = versions.find((version) => version.status === 'published') ?? null;
+  const viewed = versions.find((version) => version.id === viewedId) ?? null;
+  return { draft, published, shown: viewed ?? draft ?? published };
+}
+
+export function toUsageCounts<IdColumn extends string>(
+  rows: readonly (Record<IdColumn, string> & { inspection_count: number })[],
+  idColumn: IdColumn,
+): Record<string, number> {
+  return Object.fromEntries(rows.map((row) => [row[idColumn], row.inspection_count]));
+}
+
+export function changedSections<Section>(
+  sections: readonly Section[],
+  dirty: readonly (object | undefined)[] | undefined,
+): Section[] {
+  return sections.filter((_, index) => Object.keys(dirty?.[index] ?? {}).length > 0);
 }

@@ -1,4 +1,5 @@
-import { isMediaMissing, scoreTone } from './field-inspection.utils';
+import { changeLocale } from '@/i18n/i18n';
+import { formatInspectionScore, isMediaMissing, scoreTone } from './field-inspection.utils';
 import type { WorkspaceMedia, WorkspaceQuestion } from './field-inspection.types';
 
 const question = (
@@ -32,5 +33,13 @@ describe('field inspection utils', () => {
     expect(scoreTone(6.5)).toBe('text-warning');
     expect(scoreTone(3)).toBe('text-destructive');
     expect(scoreTone(null)).toBe('text-muted-foreground');
+  });
+
+  it('formats a score with one decimal in the current language', async () => {
+    expect(formatInspectionScore(8)).toBe('8,0');
+    expect(formatInspectionScore(6.54)).toBe('6,5');
+    await changeLocale('en');
+    expect(formatInspectionScore(8)).toBe('8.0');
+    await changeLocale('ro');
   });
 });

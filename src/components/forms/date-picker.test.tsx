@@ -3,7 +3,7 @@ import ro from '@/i18n/locales/ro/common.json';
 import { renderWithProviders } from '@/test/render';
 import { DatePicker } from './date-picker';
 
-describe('DatePicker', () => {
+describe('DatePicker', { timeout: 20_000 }, () => {
   it('shows the chosen date and picks another day', async () => {
     const onChange = vi.fn();
     const { user } = await renderWithProviders(

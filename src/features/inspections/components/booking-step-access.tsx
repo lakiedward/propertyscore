@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import type { User } from '@supabase/supabase-js';
@@ -14,12 +15,16 @@ import {
 import { useId } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { TilePicker } from '@/components/forms/tile-picker';
+import { InitialsAvatar } from '@/components/layout/initials-avatar';
+import { Alert } from '@/components/ui/alert';
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
 import { authQueries } from '@/features/auth';
-import { initialsOf, useAccountIdentity } from '@/features/profile';
+import { useAccountIdentity } from '@/features/profile';
 import { useValidationMessage } from '@/i18n/validation';
 import { cn } from '@/lib/utils';
+import { TextField } from '@/components/forms/text-field';
 import {
   ACCESS_NOTES_MAX,
   accessFormSchema,
@@ -28,9 +33,20 @@ import {
 } from '../booking.schemas';
 import { useBookingStore } from '../booking.store';
 import { ACCESS_TAGS, type AccessMode, type AccessTag } from '../inspection.types';
-import { BookingTextField } from './booking-text-field';
 
 const NAME_AUTOCOMPLETE = 'name';
+
+const openerVariants = cva(
+  'flex items-start gap-3 rounded-lg border-2 p-3.5 text-left hover:border-primary',
+  {
+    variants: {
+      isSelected: {
+        true: 'border-primary bg-step-leaf-soft',
+        false: 'border-border bg-card',
+      },
+    },
+  },
+);
 
 const OPENERS = [
   { value: 'self', icon: UserIcon },
@@ -89,59 +105,47 @@ export function BookingStepAccess({ user, formId, onSaved }: BookingStepAccessPr
           name="mode"
           control={form.control}
           render={({ field }) => (
-            <div
-              role="radiogroup"
-              aria-label={t('booking.access.openerLabel')}
+            <TilePicker
+              value={field.value}
+              onChange={field.onChange}
+              legend={t('booking.access.openerLabel')}
+              isLegendHidden
               className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-2.5"
-            >
-              {OPENERS.map(({ value, icon: Icon }) => {
+              options={OPENERS.map(({ value, icon: Icon }) => {
                 const isSelected = field.value === value;
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    onClick={() => {
-                      field.onChange(value);
-                    }}
-                    className={cn(
-                      'flex items-start gap-3 rounded-lg border-2 p-3.5 text-left hover:border-primary',
-                      isSelected ? 'border-primary bg-step-leaf-soft' : 'border-border bg-card',
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'grid size-10 shrink-0 place-items-center rounded-full',
-                        isSelected
-                          ? 'bg-primary text-cta'
-                          : 'bg-step-leaf-surface text-step-leaf-ink',
-                      )}
-                    >
-                      <Icon aria-hidden className="size-5" />
-                    </span>
-                    <span className="flex flex-col">
-                      <strong className="text-body">
-                        {t(`booking.access.opener.${value}.title`)}
-                      </strong>
-                      <span className="text-small text-muted-foreground">
-                        {t(`booking.access.opener.${value}.text`)}
+                return {
+                  value,
+                  className: openerVariants({ isSelected }),
+                  content: (
+                    <>
+                      <span
+                        className={cn(
+                          'grid size-10 shrink-0 place-items-center rounded-full',
+                          isSelected
+                            ? 'bg-primary text-cta'
+                            : 'bg-step-leaf-surface text-step-leaf-ink',
+                        )}
+                      >
+                        <Icon aria-hidden className="size-5" />
                       </span>
-                    </span>
-                  </button>
-                );
+                      <span className="flex flex-col">
+                        <strong className="text-body">
+                          {t(`booking.access.opener.${value}.title`)}
+                        </strong>
+                        <span className="text-small text-muted-foreground">
+                          {t(`booking.access.opener.${value}.text`)}
+                        </span>
+                      </span>
+                    </>
+                  ),
+                };
               })}
-            </div>
+            />
           )}
         />
         {mode === 'self' ? (
           <div className="flex items-center gap-3 rounded-lg bg-background px-3.5 py-3">
-            <span
-              aria-hidden
-              className="grid size-10 place-items-center rounded-full bg-primary text-small font-extrabold text-primary-foreground"
-            >
-              {initialsOf(name)}
-            </span>
+            <InitialsAvatar name={name} size="lg" />
             <div className="flex flex-1 flex-col">
               <strong className="text-body-sm">{name}</strong>
               <span className="text-small text-muted-foreground tabular-nums">
@@ -151,13 +155,13 @@ export function BookingStepAccess({ user, formId, onSaved }: BookingStepAccessPr
           </div>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))] gap-3.5">
-            <BookingTextField
+            <TextField
               control={form.control}
               name="name"
               label={t('booking.access.name')}
               autoComplete={NAME_AUTOCOMPLETE}
             />
-            <BookingTextField
+            <TextField
               control={form.control}
               name="phone"
               label={t('booking.access.phone')}
@@ -238,10 +242,13 @@ export function BookingStepAccess({ user, formId, onSaved }: BookingStepAccessPr
           />
         </div>
       </form>
-      <div className="flex items-start gap-3 rounded-lg bg-step-sky-soft px-4 py-3.5 text-body-sm text-step-sky-ink">
-        <PhoneCallIcon aria-hidden className="size-5 shrink-0" />
+      <Alert
+        tone="sky"
+        className="px-4 py-3.5 text-body-sm has-[>svg]:gap-x-3 *:[svg]:translate-y-0"
+      >
+        <PhoneCallIcon aria-hidden className="size-5" />
         <span>{t('booking.access.callNote')}</span>
-      </div>
+      </Alert>
     </>
   );
 }

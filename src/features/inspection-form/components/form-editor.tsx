@@ -1,3 +1,4 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
 import { useForm, useWatch } from 'react-hook-form';
@@ -5,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { localizedText } from '@/i18n/localized';
 import { EmptyState } from '@/components/layout/empty-state';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import { groupQuestionsByCategory } from '@/lib/question-numbering';
 import {
   inspectionFormQueries,
@@ -14,17 +14,18 @@ import {
   useRestoreFormVersion,
 } from '../api/inspection-form.queries';
 import { useVersionHistory } from '../hooks/use-version-history';
+import { weightsSchema, type WeightValues } from '../inspection-form.schemas';
 import {
   nextFormVersion,
   parseWeight,
   questionWeightTotals,
-  toVersionItems,
   WEIGHT_TOTAL,
   weightSum,
 } from '../inspection-form.utils';
 import { AnswerPointsCard } from './answer-points-card';
 import { CategoryList } from './category-list';
 import { CategoryPanel } from './category-panel';
+import { CreateDraftEmptyState } from './create-draft-empty-state';
 import { FormHeaderCard } from './form-header-card';
 import { VersionBanner } from './version-banner';
 import { VersionDialogs } from './version-dialogs';
@@ -32,25 +33,21 @@ import { VersionList } from './version-list';
 
 const route = getRouteApi('/_authenticated/admin/content');
 
-export type WeightValues = { weights: Record<string, string> };
-
 export function FormEditor() {
   const { t, i18n } = useTranslation('inspectionForm');
   const search = route.useSearch();
   const viewedId = search.tab === 'form' ? (search.version ?? null) : null;
   const { data: editor } = useSuspenseQuery(inspectionFormQueries.editor(viewedId));
   const createDraft = useCreateFormDraft();
-  const defaultVersion = editor.draft ?? editor.published;
-  const label = (version: number) => t('versions.label', { version });
-  const items = toVersionItems(editor.versions, editor.usageCounts, label);
-  const nextLabel = label(nextFormVersion(editor.versions));
   const history = useVersionHistory({
-    defaultId: defaultVersion?.id ?? null,
-    nextLabel,
+    editor,
+    label: (version) => t('versions.label', { version }),
+    nextVersion: nextFormVersion,
     restore: useRestoreFormVersion(),
     remove: useDeleteFormVersion(),
   });
   const weightsForm = useForm<WeightValues>({
+    resolver: zodResolver(weightsSchema),
     values: {
       weights: Object.fromEntries(
         editor.categories.map((category) => [category.id, String(category.weight)]),
@@ -69,21 +66,14 @@ export function FormEditor() {
 
   if (!editor.shown) {
     return (
-      <EmptyState
+      <CreateDraftEmptyState
         title={t('form.empty.title')}
         description={t('form.empty.description')}
-        action={
-          <Button
-            type="button"
-            size="md"
-            disabled={createDraft.isPending}
-            onClick={() => {
-              createDraft.mutate();
-            }}
-          >
-            {t('form.createDraft')}
-          </Button>
-        }
+        actionLabel={t('form.createDraft')}
+        isPending={createDraft.isPending}
+        onCreate={() => {
+          createDraft.mutate();
+        }}
       />
     );
   }
@@ -94,22 +84,12 @@ export function FormEditor() {
     (category) =>
       questionTotals[category.id] !== undefined && questionTotals[category.id] !== WEIGHT_TOTAL,
   );
-  const isViewing = editor.shown.id !== defaultVersion?.id;
-  const shownItem = items.find((item) => item.id === editor.shown.id);
+  const { isViewing } = history;
 
   return (
     <div className="flex flex-col gap-4">
-      {isViewing && shownItem ? (
-        <VersionBanner
-          item={shownItem}
-          backLabel={t(editor.draft ? 'versions.backToDraft' : 'versions.backToPublished')}
-          onBack={() => {
-            history.view(null);
-          }}
-          onRestore={() => {
-            history.setRequest({ kind: 'restore', item: shownItem });
-          }}
-        />
+      {history.banner ? (
+        <VersionBanner {...history.banner} />
       ) : (
         <FormHeaderCard
           editor={editor}
@@ -141,7 +121,7 @@ export function FormEditor() {
           <AlertDescription>{t('form.readOnly.text')}</AlertDescription>
         </Alert>
       )}
-      <div className="grid grid-cols-1 items-start gap-4 w1180:grid-cols-[280px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
         <div className="flex flex-col gap-4">
           <CategoryList
             versionId={editor.shown.id}
@@ -152,34 +132,21 @@ export function FormEditor() {
             isEditable={isDraft}
           />
           <AnswerPointsCard key={editor.shown.id} version={editor.shown} isEditable={isDraft} />
-          <VersionList
-            items={items}
-            shownId={editor.shown.id}
-            onView={history.view}
-            onRequest={history.setRequest}
-          />
+          <VersionList {...history.list} />
         </div>
         {selected ? (
           <CategoryPanel
             versionId={editor.shown.id}
             group={selected}
             categories={editor.categories}
+            questionWeightSum={questionTotals[selected.category.id] ?? 0}
             isEditable={isDraft}
           />
         ) : (
           <EmptyState title={t('form.empty.title')} description={t('form.empty.description')} />
         )}
       </div>
-      <VersionDialogs
-        request={history.request}
-        nextLabel={nextLabel}
-        hasDraft={editor.draft !== null}
-        isPending={history.isPending}
-        onClose={() => {
-          history.setRequest(null);
-        }}
-        onConfirm={history.confirm}
-      />
+      <VersionDialogs {...history.dialogs} />
     </div>
   );
 }

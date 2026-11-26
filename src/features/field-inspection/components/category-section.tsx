@@ -1,11 +1,18 @@
+import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { localizedText } from '@/i18n/localized';
 import { Button } from '@/components/ui/button';
-import { formatNumber } from '@/i18n/format';
+import { fieldInspectionQueries } from '../api/field-inspection.queries';
 import type { CategoryProgress, Workspace } from '../field-inspection.types';
-import { answerOf, mediaOf, type CategoryGroup } from '../field-inspection.utils';
+import {
+  answerOf,
+  formatInspectionScore,
+  mediaOf,
+  type CategoryGroup,
+} from '../field-inspection.utils';
 import { QuestionCard } from './question-card';
 
 type CategorySectionProps = {
@@ -26,21 +33,24 @@ export function CategorySection({
   language,
 }: CategorySectionProps) {
   const { t } = useTranslation('fieldInspection');
+  const titleId = useId();
   const { inspection } = workspace;
+  const questionIds = new Set(group.questions.map((question) => question.id));
+  const photoPaths = workspace.media
+    .filter((item) => item.kind === 'photo' && questionIds.has(item.question_id))
+    .map((item) => item.path);
+  const photoUrls = useQuery({
+    ...fieldInspectionQueries.photoUrls(photoPaths),
+    enabled: photoPaths.length > 0,
+  });
   const isEditable = inspection.status === 'in_progress';
   const nameOf = (item: CategoryGroup) =>
     localizedText(item.category.name_ro, item.category.name_en, language);
 
   return (
-    <section
-      aria-labelledby={`section-${group.category.id}`}
-      className="flex min-w-0 flex-col gap-3.5"
-    >
+    <section aria-labelledby={titleId} className="flex min-w-0 flex-col gap-3.5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2
-          id={`section-${group.category.id}`}
-          className="text-title-xs leading-tight font-extrabold"
-        >
+        <h2 id={titleId} className="text-title-xs leading-tight font-extrabold">
           {nameOf(group)}
         </h2>
         <span className="text-small text-muted-foreground tabular-nums">
@@ -51,7 +61,7 @@ export function CategorySection({
             score:
               stats?.score === null || stats?.score === undefined
                 ? t('section.noScore')
-                : formatNumber(stats.score, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+                : formatInspectionScore(stats.score),
           })}
         </span>
       </div>
@@ -63,6 +73,7 @@ export function CategorySection({
               question={question}
               answer={answerOf(workspace.answers, question.id)}
               media={mediaOf(workspace.media, question.id)}
+              photoUrls={photoUrls.data}
               language={language}
               isEditable={isEditable}
             />

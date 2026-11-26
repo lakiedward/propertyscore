@@ -13,7 +13,7 @@ export function EmptyState({ kind = 'empty', title, description, action }: Empty
       role={kind === 'error' ? 'alert' : 'status'}
       className="flex flex-col items-center gap-2.5 rounded-xl border border-card bg-card px-6 py-10 text-center shadow-card-soft"
     >
-      <p className="text-[20px] font-bold tracking-snug-title">{title}</p>
+      <p className="text-title-2xs font-bold tracking-snug-title">{title}</p>
       {description ? (
         <p className="max-w-sm text-caption text-muted-foreground">{description}</p>
       ) : null}

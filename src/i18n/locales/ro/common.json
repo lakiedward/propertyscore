@@ -138,7 +138,10 @@
       "inspection_incomplete": "Mai sunt întrebări fără răspuns sau media obligatorie lipsă.",
       "inspector_has_open_inspection": "Inspectorul are o inspecție în lucru. Așteaptă să fie trimisă înainte să-l scoți.",
       "media_type_invalid": "Fișierul nu se potrivește cu tipul ales (foto sau video).",
-      "consent_item_invalid": "Verifică textele secțiunilor: unul e prea lung."
+      "consent_item_invalid": "Verifică textele secțiunilor: unul e prea lung.",
+      "city_not_found": "Orașul ales nu mai există. Reîncarcă pagina.",
+      "cancel_reason_required": "Scrie motivul anulării.",
+      "media_path_taken": "Fișierul aparține deja altei întrebări. Încarcă-l din nou."
     }
   },
   "validation": {
@@ -536,6 +539,15 @@
     "today": "Azi",
     "previous": "Luna anterioară",
     "next": "Luna următoare",
-    "choose": "Alege data"
+    "choose": "Alege data",
+    "weekdaysShort": {
+      "mon": "lun",
+      "tue": "mar",
+      "wed": "mie",
+      "thu": "joi",
+      "fri": "vin",
+      "sat": "sâm",
+      "sun": "dum"
+    }
   }
 }

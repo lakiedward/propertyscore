@@ -64,6 +64,9 @@ const RPC_REASONS: Readonly<Record<string, AppErrorReason>> = {
   decision_message_too_long: 'decision_message_too_long',
   favorite_limit_reached: 'favorite_limit_reached',
   outside_coverage: 'outside_coverage',
+  city_not_found: 'city_not_found',
+  cancel_reason_required: 'cancel_reason_required',
+  media_path_taken: 'media_path_taken',
   slot_taken: 'slot_taken',
   invalid_access: 'invalid_access',
   property_invalid: 'property_invalid',
@@ -123,6 +126,7 @@ const RPC_FIELDS: Readonly<Partial<Record<AppErrorReason, string>>> = {
   decision_message_too_long: 'message',
   owner_name_required: 'ownerName',
   note_too_long: 'note',
+  cancel_reason_required: 'reason',
 };
 
 const CHECK_CONSTRAINTS: Readonly<Record<string, { reason: AppErrorReason; field: string }>> = {

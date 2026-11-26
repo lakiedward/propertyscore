@@ -10,20 +10,70 @@ import {
   UserCheckIcon,
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
+import { cva } from 'class-variance-authority';
 import { useTranslation } from 'react-i18next';
 import ownerImage from '@/assets/home/hero-living.webp';
 import buyerImage from '@/assets/home/room-living.webp';
+import { TilePicker } from '@/components/forms/tile-picker';
 import { EmptyState } from '@/components/layout/empty-state';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAccountIdentity } from '@/features/profile';
 import { cn } from '@/lib/utils';
 import { inspectionQueries } from '../api/inspections.queries';
 import { useBookingStore } from '../booking.store';
+import type { BookableProperty } from '../inspection.types';
 import { homeChoiceOf, homePrefillOf, isSameChoice } from '../inspection.utils';
 import { BookingHomeCard } from './booking-home-card';
 
 const BOOKING_PATH = '/inspection';
+
+const NEW_HOME = 'new';
+
+const newHomeVariants = cva(
+  'flex min-h-85 flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center text-foreground hover:border-primary hover:bg-step-leaf-soft',
+  {
+    variants: {
+      isSelected: {
+        true: 'border-primary bg-step-leaf-soft',
+        false: 'border-border-strong bg-card',
+      },
+    },
+  },
+);
+
+const roleCardVariants = cva(
+  'flex flex-col overflow-hidden rounded-[22px] border-2 bg-card p-0 text-left text-foreground',
+  {
+    variants: {
+      isSelected: {
+        true: 'border-primary bg-step-leaf-soft shadow-[0_0_0_3px_var(--color-step-leaf-surface)]',
+        false: 'cursor-not-allowed border-border opacity-70',
+      },
+    },
+  },
+);
+
+const homeCardVariants = cva(
+  'flex flex-col overflow-hidden rounded-xl bg-card text-left text-foreground outline-none hover:border-border-strong hover:shadow-card-hover focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2',
+  {
+    variants: {
+      isSelected: {
+        true: 'border-2 border-primary shadow-[0_0_0_3px_var(--color-secondary)]',
+        false: 'border border-border',
+      },
+    },
+  },
+);
+
+function keepOwner() {
+  return undefined;
+}
+
+function homeKey(property: BookableProperty): string {
+  return property.property_id ?? property.listing_id ?? '';
+}
 
 type BookingStepRequesterProps = {
   user: User | null;
@@ -35,27 +85,42 @@ export function BookingStepRequester({ user, titleId }: BookingStepRequesterProp
 
   return (
     <>
-      <div
-        role="radiogroup"
-        aria-labelledby={titleId}
+      <TilePicker
+        value="owner"
+        onChange={keepOwner}
+        labelledBy={titleId}
         className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] gap-3.5"
-      >
-        <RoleCard
-          image={ownerImage}
-          icon={KeyRoundIcon}
-          title={t('booking.requester.owner.title')}
-          text={t('booking.requester.owner.text')}
-          isSelected
-        />
-        <RoleCard
-          image={buyerImage}
-          icon={SearchIcon}
-          title={t('booking.requester.buyer.title')}
-          text={t('booking.requester.buyer.text')}
-          badge={t('booking.requester.soon')}
-          isSelected={false}
-        />
-      </div>
+        options={[
+          {
+            value: 'owner',
+            className: roleCardVariants({ isSelected: true }),
+            content: (
+              <RoleCard
+                image={ownerImage}
+                icon={KeyRoundIcon}
+                title={t('booking.requester.owner.title')}
+                text={t('booking.requester.owner.text')}
+                isSelected
+              />
+            ),
+          },
+          {
+            value: 'buyer',
+            isDisabled: true,
+            className: roleCardVariants({ isSelected: false }),
+            content: (
+              <RoleCard
+                image={buyerImage}
+                icon={SearchIcon}
+                title={t('booking.requester.buyer.title')}
+                text={t('booking.requester.buyer.text')}
+                badge={t('booking.requester.soon')}
+                isSelected={false}
+              />
+            ),
+          },
+        ]}
+      />
       {user ? (
         <HomePicker user={user} />
       ) : (
@@ -65,7 +130,7 @@ export function BookingStepRequester({ user, titleId }: BookingStepRequesterProp
               <LogInIcon aria-hidden className="size-5" />
             </span>
             <div className="flex flex-col gap-0.5">
-              <strong className="text-[17px]">{t('booking.requester.signIn.title')}</strong>
+              <strong className="text-title-3xs">{t('booking.requester.signIn.title')}</strong>
               <span className="text-small text-muted-foreground">
                 {t('booking.requester.signIn.text')}
               </span>
@@ -101,19 +166,7 @@ type RoleCardProps = {
 
 function RoleCard({ image, icon: Icon, title, text, badge, isSelected }: RoleCardProps) {
   return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={isSelected}
-      aria-disabled={!isSelected}
-      tabIndex={isSelected ? 0 : -1}
-      className={cn(
-        'flex flex-col overflow-hidden rounded-[22px] border-2 bg-card p-0 text-left text-foreground',
-        isSelected
-          ? 'border-primary bg-step-leaf-soft shadow-[0_0_0_3px_var(--color-step-leaf-surface)]'
-          : 'cursor-not-allowed border-border opacity-70',
-      )}
-    >
+    <>
       <span className="relative block">
         <img src={image} alt="" className="block aspect-16/8 w-full object-cover" />
         <span
@@ -141,15 +194,19 @@ function RoleCard({ image, icon: Icon, title, text, badge, isSelected }: RoleCar
           <Icon aria-hidden className="size-6" />
         </span>
         <span className="flex flex-col gap-1">
-          <strong className="text-[20px] tracking-[-0.02em]">{title}</strong>
+          <strong className="text-title-2xs tracking-[-0.02em]">{title}</strong>
           <span className="text-body-sm leading-normal text-muted-foreground">{text}</span>
         </span>
       </span>
-    </button>
+    </>
   );
 }
 
-function HomePicker({ user }: { user: User }) {
+type HomePickerProps = {
+  user: User;
+};
+
+function HomePicker({ user }: HomePickerProps) {
   const { t } = useTranslation('inspections');
   const { name } = useAccountIdentity(user);
   const properties = useQuery(inspectionQueries.bookableProperties(user.id));
@@ -178,58 +235,63 @@ function HomePicker({ user }: { user: User }) {
       ) : properties.isError ? (
         <EmptyState kind="error" title={t('booking.home.error')} />
       ) : (
-        <div
-          role="radiogroup"
-          aria-label={t('booking.home.groupLabel')}
-          className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,340px),1fr))] gap-4"
-        >
-          {properties.data.map((property) => (
-            <BookingHomeCard
-              key={property.property_id ?? property.listing_id}
-              property={property}
-              isSelected={isSameChoice(choice, property)}
-              onSelect={() => {
-                chooseHome(homeChoiceOf(property), homePrefillOf(property));
-              }}
-            />
-          ))}
-          <button
-            type="button"
-            role="radio"
-            aria-checked={isNew}
-            onClick={() => {
+        <TilePicker
+          value={isNew ? NEW_HOME : picked ? homeKey(picked) : null}
+          onChange={(value) => {
+            const property = properties.data.find((item) => homeKey(item) === value);
+            if (property) {
+              chooseHome(homeChoiceOf(property), homePrefillOf(property));
+            } else {
               chooseHome({ kind: 'new' }, null);
-            }}
-            className={cn(
-              'flex min-h-85 flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center text-foreground hover:border-primary hover:bg-step-leaf-soft',
-              isNew ? 'border-primary bg-step-leaf-soft' : 'border-border-strong bg-card',
-            )}
-          >
-            <span
-              className={cn(
-                'grid size-16 place-items-center rounded-full',
-                isNew ? 'bg-primary text-cta' : 'bg-step-leaf-surface text-step-leaf-ink',
-              )}
-            >
-              <PlusIcon aria-hidden className="size-7.5" />
-            </span>
-            <strong className="text-[18px]">{t('booking.home.new.title')}</strong>
-            <span className="max-w-60 text-small text-muted-foreground">
-              {t('booking.home.new.text')}
-            </span>
-          </button>
-        </div>
+            }
+          }}
+          legend={t('booking.home.groupLabel')}
+          isLegendHidden
+          className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,340px),1fr))] gap-4"
+          options={[
+            ...properties.data.map((property) => {
+              const isSelected = isSameChoice(choice, property);
+              return {
+                value: homeKey(property),
+                className: homeCardVariants({ isSelected }),
+                content: <BookingHomeCard property={property} isSelected={isSelected} />,
+              };
+            }),
+            {
+              value: NEW_HOME,
+              className: newHomeVariants({ isSelected: isNew }),
+              content: (
+                <>
+                  <span
+                    className={cn(
+                      'grid size-16 place-items-center rounded-full',
+                      isNew ? 'bg-primary text-cta' : 'bg-step-leaf-surface text-step-leaf-ink',
+                    )}
+                  >
+                    <PlusIcon aria-hidden className="size-7.5" />
+                  </span>
+                  <strong className="text-title-2xs-sm">{t('booking.home.new.title')}</strong>
+                  <span className="max-w-60 text-small text-muted-foreground">
+                    {t('booking.home.new.text')}
+                  </span>
+                </>
+              ),
+            },
+          ]}
+        />
       )}
       {picked || isNew ? (
-        <div
-          role="status"
-          className="flex items-start gap-2.5 rounded-lg bg-step-leaf-surface px-4 py-3 text-body-sm font-bold text-step-leaf-ink"
+        <Alert
+          tone="leaf"
+          className="px-4 py-3 text-body-sm font-bold has-[>svg]:gap-x-2.5 *:[svg]:translate-y-0"
         >
-          <CircleCheckIcon aria-hidden className="size-5 shrink-0" />
-          {isNew
-            ? t('booking.home.picked.new')
-            : t('booking.home.picked.existing', { address: picked?.address_text ?? '' })}
-        </div>
+          <CircleCheckIcon aria-hidden className="size-5" />
+          <span>
+            {isNew
+              ? t('booking.home.picked.new')
+              : t('booking.home.picked.existing', { address: picked?.address_text ?? '' })}
+          </span>
+        </Alert>
       ) : null}
     </div>
   );

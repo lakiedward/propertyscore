@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { inspectionQueries } from '../api/inspections.queries';
 import type { AdminInspection } from '../inspection.types';
+import { bucharestDay } from '@/lib/bucharest-time';
 import { assignmentClash, scheduleRange } from '../schedule.utils';
-import { dateKey } from '../slots.utils';
 
 export function useFreeInspectors(inspection: AdminInspection) {
-  const { from, to } = scheduleRange(dateKey(new Date(inspection.starts_at)), 'day');
+  const { from, to } = scheduleRange(bucharestDay(new Date(inspection.starts_at)), 'day');
   const inspectors = useQuery(inspectionQueries.inspectors(inspection.city_id));
   const ids = (inspectors.data ?? []).map((inspector) => inspector.user_id);
   const ranges = useQuery({ ...inspectionQueries.workingRanges(ids), enabled: ids.length > 0 });

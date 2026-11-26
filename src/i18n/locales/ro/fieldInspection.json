@@ -5,8 +5,7 @@
     "floor": "et. {{floor}}/{{floors}}",
     "year": "{{year}}",
     "contact": "{{name}} · {{phone}}",
-    "consentSigned": "✓ consimțământ semnat {{time}}",
-    "notFound": "Inspecția nu e alocată ție sau nu mai există."
+    "consentSigned": "✓ consimțământ semnat {{time}}"
   },
   "nav": {
     "label": "Secțiuni inspecție",
@@ -62,9 +61,6 @@
     "videoRequired": "Video · obligatoriu",
     "addPhoto": "Adaugă fotografii la întrebarea {{number}}",
     "addVideo": "Adaugă un clip la întrebarea {{number}}",
-    "count_one": "{{count}} fișier",
-    "count_few": "{{count}} fișiere",
-    "count_other": "{{count}} de fișiere",
     "missingPhoto": "Lipsește fotografia obligatorie",
     "missingVideo": "Lipsește clipul obligatoriu",
     "addNote": "Adaugă notă",
@@ -72,7 +68,8 @@
     "notePlaceholder": "Ce ai observat, unde, cât de grav",
     "mediaAlt": "Fotografia {{index}} la întrebarea {{number}}",
     "videoLabel": "Clipul {{index}} la întrebarea {{number}}",
-    "removeMedia": "Șterge fișierul {{index}} de la întrebarea {{number}}",
+    "removePhoto": "Șterge fotografia {{index}} de la întrebarea {{number}}",
+    "removeVideo": "Șterge clipul {{index}} de la întrebarea {{number}}",
     "uploading": "Se încarcă…",
     "videoTooLarge": "Clipul are peste 50 MB. Filmează unul mai scurt.",
     "fileTypeInvalid": "Formatul fișierului nu e acceptat."
@@ -81,14 +78,14 @@
     "weightLine": "{{weight}}% din notă · {{done}}/{{total}} · notă {{score}}",
     "noScore": "–",
     "back": "Înapoi",
-    "next": "Următoarea: {{name}}",
-    "done": "Gata"
+    "next": "Următoarea: {{name}}"
   },
   "aside": {
     "label": "Notă și trimitere",
     "provisional": "Notă provizorie",
     "outOf": "/ 10",
     "progress": "Progres",
+    "progressError": "Nu am putut încărca nota provizorie.",
     "counters": "{{answered}}/{{total}} răspunse · {{photos}} foto · {{videos}} video",
     "howTitle": "Cum iese nota",
     "howNote": "Media ponderată a categoriilor cu răspunsuri.",

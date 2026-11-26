@@ -59,10 +59,8 @@ function tomorrowAt(hour: number, minute: number) {
   ).toISOString();
 }
 
-function continueTo(step: string) {
-  return screen.getByRole('button', {
-    name: ro.booking.summary.continue.replace('{{step}}', step),
-  });
+function continueTo(step: keyof typeof ro.booking.summary.continueTo) {
+  return screen.getByRole('button', { name: ro.booking.summary.continueTo[step] });
 }
 
 describe('BookingPage', { timeout: 20_000 }, () => {
@@ -79,7 +77,7 @@ describe('BookingPage', { timeout: 20_000 }, () => {
       name: ro.booking.requester.signIn.login,
     });
     expect(signIn).toHaveAttribute('href', '/login?redirect=%2Finspection');
-    expect(continueTo('locuința')).toBeDisabled();
+    expect(continueTo('home')).toBeDisabled();
   });
 
   it('prefills the home step from a chosen property', async () => {
@@ -88,7 +86,7 @@ describe('BookingPage', { timeout: 20_000 }, () => {
 
     const picker = await screen.findByRole('radiogroup', { name: ro.booking.home.groupLabel });
     await user.click(within(picker).getByRole('radio', { name: /Str\. Paris 3/ }));
-    await user.click(continueTo('locuința'));
+    await user.click(continueTo('home'));
 
     expect(await screen.findByLabelText(ro.booking.address.street)).toHaveValue(
       'Str. Paris 3, ap. 9',
@@ -106,10 +104,14 @@ describe('BookingPage', { timeout: 20_000 }, () => {
     );
     const { user } = await renderAppRoute('/inspection?step=3', { auth: signedInAs('user') });
 
-    await user.click(await screen.findByRole('button', { name: /Prima oră liberă/ }));
+    await user.click(
+      await screen.findByRole('button', {
+        name: new RegExp(ro.booking.date.firstFree.split('{{')[0] ?? ''),
+      }),
+    );
 
     expect(useBookingStore.getState().startsAt).toBe(tomorrowAt(9, 30));
-    expect(continueTo('acces')).toBeEnabled();
+    expect(continueTo('access')).toBeEnabled();
   });
 
   it('books with the reviewed details once the terms are accepted', async () => {

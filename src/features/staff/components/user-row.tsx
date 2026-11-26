@@ -1,9 +1,12 @@
+import { cva } from 'class-variance-authority';
 import { ChevronRightIcon, EllipsisIcon } from 'lucide-react';
 import { useId, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { StatusPill } from '@/components/feedback/status-pill';
+import { InitialsAvatar } from '@/components/layout/initials-avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,9 +16,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/features/auth';
 import { OwnerListings } from '@/features/listings';
-import { initialsOf } from '@/features/profile';
 import { formatDate } from '@/i18n/format';
 import { cn } from '@/lib/utils';
 import { useMakeAdmin, useRemoveInspector, useUnblockUser } from '../api/staff.queries';
@@ -25,11 +28,15 @@ import { InspectorCityDialog } from './inspector-city-dialog';
 
 const COLUMN_COUNT = 7;
 
-const ROLE_BADGE_CLASS = {
-  user: 'bg-surface-sunken text-foreground',
-  admin: 'bg-primary text-primary-foreground',
-  inspector: 'bg-cta text-cta-foreground',
-} as const;
+const roleBadgeVariants = cva('h-6 rounded-full border-0 px-2 text-meta font-bold', {
+  variants: {
+    role: {
+      user: 'bg-surface-sunken text-foreground',
+      admin: 'bg-primary text-primary-foreground',
+      inspector: 'bg-cta text-cta-foreground',
+    },
+  },
+});
 
 type UserRowProps = {
   user: StaffUser;
@@ -74,7 +81,7 @@ export function UserRow({ user }: UserRowProps) {
           <button
             type="button"
             aria-expanded={isExpanded}
-            aria-controls={panelId}
+            aria-controls={isExpanded ? panelId : undefined}
             aria-label={t(isExpanded ? 'users.listings.hide' : 'users.listings.show', { name })}
             onClick={() => {
               setIsExpanded((previous) => !previous);
@@ -88,12 +95,7 @@ export function UserRow({ user }: UserRowProps) {
                 isExpanded && 'rotate-90',
               )}
             />
-            <span
-              aria-hidden="true"
-              className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-meta font-extrabold text-brand"
-            >
-              {initialsOf(name)}
-            </span>
+            <InitialsAvatar name={name} tone="soft" />
             <span className="truncate text-small font-bold">{name}</span>
           </button>
         </TableCell>
@@ -104,17 +106,11 @@ export function UserRow({ user }: UserRowProps) {
         <TableCell>
           <span className="flex flex-wrap gap-1">
             {user.roles.map((role) => (
-              <span
-                key={role}
-                className={cn(
-                  'inline-flex h-6 items-center rounded-full px-2 text-meta font-bold',
-                  ROLE_BADGE_CLASS[role],
-                )}
-              >
+              <Badge key={role} className={roleBadgeVariants({ role })}>
                 {role === 'inspector' && user.inspector_city_name
                   ? t('users.inspectorCity', { city: user.inspector_city_name })
                   : t(`users.role.${role}`)}
-              </span>
+              </Badge>
             ))}
           </span>
         </TableCell>
@@ -129,12 +125,14 @@ export function UserRow({ user }: UserRowProps) {
               label={t(user.is_blocked ? 'users.state.blocked' : 'users.state.active')}
             />
             {user.is_blocked && user.block_reason ? (
-              <span
-                className="max-w-50 truncate text-meta text-muted-foreground"
-                title={user.block_reason}
-              >
-                {user.block_reason}
-              </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="max-w-50 truncate text-meta text-muted-foreground">
+                    {user.block_reason}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{user.block_reason}</TooltipContent>
+              </Tooltip>
             ) : null}
           </span>
         </TableCell>

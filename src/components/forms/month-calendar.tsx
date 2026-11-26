@@ -67,7 +67,7 @@ export function MonthCalendar({
   return (
     <div className="flex flex-col gap-3.5">
       <div className="flex items-center justify-between gap-2.5">
-        <strong className="text-[18px] tracking-[-0.02em] first-letter:uppercase">
+        <strong className="text-title-2xs-sm tracking-[-0.02em] first-letter:uppercase">
           {monthLabel}
         </strong>
         <div className="flex items-center gap-1.5">
@@ -142,8 +142,8 @@ export function MonthCalendar({
                   <span
                     className={
                       selectedKey === cell.key
-                        ? 'text-micro font-bold whitespace-nowrap text-cta sm:text-[11px]'
-                        : 'text-micro font-bold whitespace-nowrap text-muted-foreground sm:text-[11px]'
+                        ? 'text-micro font-bold whitespace-nowrap text-cta sm:text-nav-sm'
+                        : 'text-micro font-bold whitespace-nowrap text-muted-foreground sm:text-nav-sm'
                     }
                   >
                     {cell.sub}

@@ -138,7 +138,10 @@
       "inspection_incomplete": "Some questions are unanswered or required media is missing.",
       "inspector_has_open_inspection": "The inspector has an inspection in progress. Wait until it is sent before removing them.",
       "media_type_invalid": "The file does not match the chosen type (photo or video).",
-      "consent_item_invalid": "Check the section texts: one is too long."
+      "consent_item_invalid": "Check the section texts: one is too long.",
+      "city_not_found": "The chosen city no longer exists. Reload the page.",
+      "cancel_reason_required": "Write the reason for the cancellation.",
+      "media_path_taken": "The file already belongs to another question. Upload it again."
     }
   },
   "validation": {
@@ -528,6 +531,15 @@
     "today": "Today",
     "previous": "Previous month",
     "next": "Next month",
-    "choose": "Choose a date"
+    "choose": "Choose a date",
+    "weekdaysShort": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    }
   }
 }

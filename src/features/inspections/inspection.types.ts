@@ -1,4 +1,5 @@
 import type { Database, Enums } from '@/lib/supabase/database.types';
+import type { NullableColumns } from '@/lib/supabase/nullable-columns';
 
 export type InspectionStatus = Enums<'inspection_status'>;
 
@@ -26,17 +27,11 @@ type NullableAgendaColumn =
   | 'longitude'
   | 'submitted_at';
 
-export type AgendaInspection = Omit<AgendaRow, NullableAgendaColumn> & {
-  [Column in NullableAgendaColumn]: AgendaRow[Column] | null;
-};
+export type AgendaInspection = NullableColumns<AgendaRow, NullableAgendaColumn>;
 
 type Functions = Database['public']['Functions'];
 
-type Widened<Row, Column extends keyof Row> = Omit<Row, Column> & {
-  [Key in Column]: Row[Key] | null;
-};
-
-export type BookableProperty = Widened<
+export type BookableProperty = NullableColumns<
   Functions['my_bookable_properties']['Returns'][number],
   | 'property_id'
   | 'listing_id'
@@ -86,7 +81,7 @@ export type BookingRequest = {
   paymentMethod: PaymentMethod;
 };
 
-export type MyInspection = Widened<
+export type MyInspection = NullableColumns<
   Functions['my_inspections']['Returns'][number],
   | 'access_name'
   | 'access_phone'
@@ -99,7 +94,7 @@ export type MyInspection = Widened<
   | 'cancelled_at'
 >;
 
-export type InspectionEvent = Widened<
+export type InspectionEvent = NullableColumns<
   Functions['inspection_history']['Returns'][number],
   'actor_name'
 >;
@@ -108,7 +103,7 @@ export const APPOINTMENT_MODES = ['details', 'reschedule'] as const;
 
 export type AppointmentMode = (typeof APPOINTMENT_MODES)[number];
 
-export type AdminInspection = Widened<
+export type AdminInspection = NullableColumns<
   Functions['admin_inspections']['Returns'][number],
   | 'access_name'
   | 'access_phone'
@@ -122,7 +117,7 @@ export type AdminInspection = Widened<
   | 'client_phone'
 >;
 
-export type AdminInspector = Widened<
+export type AdminInspector = NullableColumns<
   Functions['admin_inspectors']['Returns'][number],
   'full_name' | 'phone'
 >;

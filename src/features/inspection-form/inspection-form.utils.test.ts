@@ -1,4 +1,5 @@
 import {
+  changedSections,
   isSameOrder,
   moveItem,
   moveItemTo,
@@ -7,7 +8,10 @@ import {
   nextFormVersion,
   parseWeight,
   questionWeightTotals,
+  resolveVersions,
+  toUsageCounts,
   toVersionItems,
+  weightDigits,
   weightSum,
 } from './inspection-form.utils';
 
@@ -17,6 +21,12 @@ describe('inspection form utils', () => {
     expect(parseWeight('')).toBe(0);
     expect(parseWeight('250')).toBe(100);
     expect(weightSum([15, 15, 70])).toBe(100);
+  });
+
+  it('keeps at most three digits while a weight is typed', () => {
+    expect(weightDigits('1a5%')).toBe('15');
+    expect(weightDigits('12345')).toBe('123');
+    expect(weightDigits('')).toBe('');
   });
 
   it('moves an item within the list and stays inside its bounds', () => {
@@ -98,5 +108,40 @@ describe('inspection form utils', () => {
         { category_id: 'b', weight: 100 },
       ]),
     ).toEqual({ a: 90, b: 100 });
+  });
+
+  it('picks the draft, the published version and the one shown', () => {
+    const versions = [
+      { id: 'd', status: 'draft' as const },
+      { id: 'p', status: 'published' as const },
+      { id: 'a', status: 'archived' as const },
+    ];
+    expect(resolveVersions(versions, null)).toEqual({
+      draft: versions[0],
+      published: versions[1],
+      shown: versions[0],
+    });
+    expect(resolveVersions(versions, 'a').shown).toBe(versions[2]);
+    expect(resolveVersions(versions, 'missing').shown).toBe(versions[0]);
+    expect(resolveVersions(versions.slice(1), null).shown).toBe(versions[1]);
+    expect(resolveVersions([], null)).toEqual({ draft: null, published: null, shown: null });
+  });
+
+  it('maps the usage rows to inspection counts per version', () => {
+    expect(
+      toUsageCounts(
+        [
+          { form_version_id: 'a', inspection_count: 3 },
+          { form_version_id: 'b', inspection_count: 1 },
+        ],
+        'form_version_id',
+      ),
+    ).toEqual({ a: 3, b: 1 });
+  });
+
+  it('keeps only the consent sections with changed fields', () => {
+    const sections = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+    expect(changedSections(sections, [undefined, { title_ro: true }, {}])).toEqual([{ id: 'b' }]);
+    expect(changedSections(sections, undefined)).toEqual([]);
   });
 });

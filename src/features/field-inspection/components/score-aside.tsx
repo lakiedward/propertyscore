@@ -4,29 +4,40 @@ import { useTranslation } from 'react-i18next';
 import { localizedText } from '@/i18n/localized';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import { formatNumber } from '@/i18n/format';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { Progress, Workspace } from '../field-inspection.types';
 import {
   answerOf,
   firstCategoryWith,
+  formatInspectionScore,
   isMediaMissing,
   scoreTone,
   type CategoryGroup,
 } from '../field-inspection.utils';
 import { OwnerConfirmDialog } from './owner-confirm-dialog';
 
-const ONE_DECIMAL = { minimumFractionDigits: 1, maximumFractionDigits: 1 } as const;
-
 type ScoreAsideProps = {
   workspace: Workspace;
   groups: readonly CategoryGroup[];
   progress: Progress | undefined;
+  isProgressLoading: boolean;
+  hasProgressError: boolean;
+  onRetryProgress: () => void;
   language: string;
 };
 
-export function ScoreAside({ workspace, groups, progress, language }: ScoreAsideProps) {
+export function ScoreAside({
+  workspace,
+  groups,
+  progress,
+  isProgressLoading,
+  hasProgressError,
+  onRetryProgress,
+  language,
+}: ScoreAsideProps) {
   const { t } = useTranslation('fieldInspection');
+  const { t: tCommon } = useTranslation('common');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const breakdownId = useId();
   const missingId = useId();
@@ -66,35 +77,52 @@ export function ScoreAside({ workspace, groups, progress, language }: ScoreAside
     <aside aria-label={t('aside.label')} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2 rounded-xl bg-surface-inverse p-4.5 text-on-inverse">
         <span className="text-caption font-bold text-on-photo-faint">{t('aside.provisional')}</span>
-        <span className="flex items-baseline gap-1">
-          <strong className="text-title-lg leading-none font-extrabold tabular-nums">
-            {progress?.score === null || progress?.score === undefined
-              ? t('section.noScore')
-              : formatNumber(progress.score, ONE_DECIMAL)}
-          </strong>
-          <span className="text-lg font-bold">{t('aside.outOf')}</span>
-        </span>
-        <div
-          role="progressbar"
-          aria-label={t('aside.progress')}
-          aria-valuemin={0}
-          aria-valuemax={total}
-          aria-valuenow={answered}
-          className="h-1.5 overflow-hidden rounded-full bg-on-inverse/20"
-        >
-          <div
-            className="h-full rounded-full bg-cta"
-            style={{ width: `${String(total === 0 ? 0 : (answered / total) * 100)}%` }}
-          />
-        </div>
-        <span className="text-caption text-on-photo-faint tabular-nums">
-          {t('aside.counters', {
-            answered,
-            total,
-            photos: progress?.photos ?? 0,
-            videos: progress?.videos ?? 0,
-          })}
-        </span>
+        {hasProgressError ? (
+          <div role="alert" className="flex flex-col items-start gap-2">
+            <span className="text-small font-bold">{t('aside.progressError')}</span>
+            <Button type="button" variant="inverse" size="sm" onClick={onRetryProgress}>
+              {tCommon('actions.retry')}
+            </Button>
+          </div>
+        ) : isProgressLoading ? (
+          <div className="flex flex-col gap-2" aria-hidden>
+            <Skeleton className="h-10 w-24 bg-on-inverse/20" />
+            <Skeleton className="h-1.5 w-full bg-on-inverse/20" />
+            <Skeleton className="h-4 w-40 bg-on-inverse/20" />
+          </div>
+        ) : (
+          <>
+            <span className="flex items-baseline gap-1">
+              <strong className="text-title-lg leading-none font-extrabold tabular-nums">
+                {progress?.score === null || progress?.score === undefined
+                  ? t('section.noScore')
+                  : formatInspectionScore(progress.score)}
+              </strong>
+              <span className="text-lg font-bold">{t('aside.outOf')}</span>
+            </span>
+            <div
+              role="progressbar"
+              aria-label={t('aside.progress')}
+              aria-valuemin={0}
+              aria-valuemax={total}
+              aria-valuenow={answered}
+              className="h-1.5 overflow-hidden rounded-full bg-on-inverse/20"
+            >
+              <div
+                className="h-full rounded-full bg-cta"
+                style={{ width: `${String(total === 0 ? 0 : (answered / total) * 100)}%` }}
+              />
+            </div>
+            <span className="text-caption text-on-photo-faint tabular-nums">
+              {t('aside.counters', {
+                answered,
+                total,
+                photos: progress?.photos ?? 0,
+                videos: progress?.videos ?? 0,
+              })}
+            </span>
+          </>
+        )}
       </div>
       <section aria-labelledby={breakdownId} className="flex flex-col">
         <h2 id={breakdownId} className="pb-1.5 text-body-sm font-bold">
@@ -117,7 +145,7 @@ export function ScoreAside({ workspace, groups, progress, language }: ScoreAside
                 <strong className={cn('text-right tabular-nums', scoreTone(stats?.score))}>
                   {stats?.score === null || stats?.score === undefined
                     ? t('section.noScore')
-                    : formatNumber(stats.score, ONE_DECIMAL)}
+                    : formatInspectionScore(stats.score)}
                 </strong>
               </li>
             );

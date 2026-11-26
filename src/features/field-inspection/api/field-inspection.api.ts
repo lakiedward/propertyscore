@@ -1,3 +1,4 @@
+import type { Locale } from '@/i18n/i18n';
 import { AppError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';
@@ -22,10 +23,14 @@ const MEDIA_COLUMNS = 'id, question_id, kind, path, created_at' as const;
 
 const CONSENT_COLUMNS = 'language, signer_name, signed_at' as const;
 
+const VERSION_ID_COLUMNS = 'id' as const;
+
+const CONSENT_VERSION_NUMBER_COLUMNS = 'version' as const;
+
 async function publishedId(table: 'inspection_form_versions' | 'consent_versions') {
   const { data, error } = await supabase
     .from(table)
-    .select('id')
+    .select(VERSION_ID_COLUMNS)
     .eq('status', 'published')
     .maybeSingle();
   if (error) throw toAppError(error);
@@ -42,69 +47,81 @@ export async function getWorkspace(inspectionId: string) {
     throw new AppError('not_found', 'Inspection not found for this inspector');
   }
 
-  const [formVersionId, consentVersionId] = await Promise.all([
+  const [formVersionId, consentVersionId, answers, media, consent] = await Promise.all([
     inspection.form_version_id === null
       ? publishedId('inspection_form_versions')
       : Promise.resolve(inspection.form_version_id),
     inspection.consent_version_id === null
       ? publishedId('consent_versions')
       : Promise.resolve(inspection.consent_version_id),
+    supabase.from('inspection_answers').select(ANSWER_COLUMNS).eq('inspection_id', inspectionId),
+    supabase
+      .from('inspection_media')
+      .select(MEDIA_COLUMNS)
+      .eq('inspection_id', inspectionId)
+      .order('created_at'),
+    supabase
+      .from('inspection_consents')
+      .select(CONSENT_COLUMNS)
+      .eq('inspection_id', inspectionId)
+      .maybeSingle(),
   ]);
-
-  const [categories, questions, sections, answers, media, consent, consentVersion] =
-    await Promise.all([
-      formVersionId
-        ? supabase
-            .from('inspection_form_categories')
-            .select(CATEGORY_COLUMNS)
-            .eq('form_version_id', formVersionId)
-            .order('position')
-        : Promise.resolve({ data: [], error: null }),
-      formVersionId
-        ? supabase
-            .from('inspection_form_questions')
-            .select(QUESTION_COLUMNS)
-            .eq('form_version_id', formVersionId)
-            .order('position')
-        : Promise.resolve({ data: [], error: null }),
-      consentVersionId
-        ? supabase
-            .from('consent_sections')
-            .select(CONSENT_SECTION_COLUMNS)
-            .eq('consent_version_id', consentVersionId)
-            .order('position')
-        : Promise.resolve({ data: [], error: null }),
-      supabase.from('inspection_answers').select(ANSWER_COLUMNS).eq('inspection_id', inspectionId),
-      supabase
-        .from('inspection_media')
-        .select(MEDIA_COLUMNS)
-        .eq('inspection_id', inspectionId)
-        .order('created_at'),
-      supabase
-        .from('inspection_consents')
-        .select(CONSENT_COLUMNS)
-        .eq('inspection_id', inspectionId)
-        .maybeSingle(),
-      consentVersionId
-        ? supabase
-            .from('consent_versions')
-            .select('version')
-            .eq('id', consentVersionId)
-            .maybeSingle()
-        : Promise.resolve({ data: null, error: null }),
-    ]);
-  for (const result of [categories, questions, sections, answers, media, consent, consentVersion]) {
+  for (const result of [answers, media, consent]) {
     if (result.error) throw toAppError(result.error);
   }
 
   return {
     inspection,
-    categories: categories.data ?? [],
-    questions: questions.data ?? [],
-    sections: sections.data ?? [],
+    formVersionId,
+    consentVersionId,
     answers: answers.data ?? [],
     media: media.data ?? [],
     consent: consent.data,
+  };
+}
+
+export async function getWorkspaceContent(
+  formVersionId: string | null,
+  consentVersionId: string | null,
+) {
+  const [categories, questions, sections, consentVersion] = await Promise.all([
+    formVersionId
+      ? supabase
+          .from('inspection_form_categories')
+          .select(CATEGORY_COLUMNS)
+          .eq('form_version_id', formVersionId)
+          .order('position')
+      : Promise.resolve({ data: [], error: null }),
+    formVersionId
+      ? supabase
+          .from('inspection_form_questions')
+          .select(QUESTION_COLUMNS)
+          .eq('form_version_id', formVersionId)
+          .order('position')
+      : Promise.resolve({ data: [], error: null }),
+    consentVersionId
+      ? supabase
+          .from('consent_sections')
+          .select(CONSENT_SECTION_COLUMNS)
+          .eq('consent_version_id', consentVersionId)
+          .order('position')
+      : Promise.resolve({ data: [], error: null }),
+    consentVersionId
+      ? supabase
+          .from('consent_versions')
+          .select(CONSENT_VERSION_NUMBER_COLUMNS)
+          .eq('id', consentVersionId)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+  for (const result of [categories, questions, sections, consentVersion]) {
+    if (result.error) throw toAppError(result.error);
+  }
+
+  return {
+    categories: categories.data ?? [],
+    questions: questions.data ?? [],
+    sections: sections.data ?? [],
     consentVersion: consentVersion.data?.version ?? null,
   };
 }
@@ -120,7 +137,7 @@ export async function getProgress(inspectionId: string) {
 export async function startInspection(input: {
   inspectionId: string;
   signerName: string;
-  language: 'ro' | 'en';
+  language: Locale;
   signaturePath: string;
   sectionIds: string[];
 }) {

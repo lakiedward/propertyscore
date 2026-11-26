@@ -6,11 +6,10 @@ import { SearchSelect } from '@/components/forms/search-select';
 import { EmptyState } from '@/components/layout/empty-state';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { initialsOf } from '@/features/profile';
 import { AvailabilityEditor } from '@/features/staff';
 import { inspectionQueries } from '../../api/inspections.queries';
-
-const ALL_CITIES = 'all';
+import { CityFilterSelect } from './city-filter-select';
+import { inspectorOption } from './inspector-option';
 
 const route = getRouteApi('/_authenticated/admin/appointments');
 
@@ -50,25 +49,15 @@ export function AdminAvailability() {
           <Label htmlFor={cityPickerId} className="shrink-0 text-label">
             {t('schedule.availability.city')}
           </Label>
-          <SearchSelect
+          <CityFilterSelect
             id={cityPickerId}
-            value={city?.id ?? ALL_CITIES}
-            options={[
-              { value: ALL_CITIES, label: t('schedule.availability.allCities') },
-              ...cities.map((item) => ({ value: item.id, label: item.name })),
-            ]}
-            onChange={(value) => {
+            cities={cities}
+            value={city?.id}
+            onChange={(cityId) => {
               void navigate({
-                search: (previous) => ({
-                  ...previous,
-                  city: value === ALL_CITIES ? undefined : value,
-                  inspector: undefined,
-                }),
+                search: (previous) => ({ ...previous, city: cityId, inspector: undefined }),
               });
             }}
-            placeholder={t('schedule.availability.allCities')}
-            searchPlaceholder={t('schedule.availability.citySearch')}
-            emptyText={t('schedule.availability.noCity')}
             className="sm:w-56"
           />
         </div>
@@ -79,21 +68,14 @@ export function AdminAvailability() {
           <SearchSelect
             id={inspectorPickerId}
             value={selected?.user_id ?? null}
-            options={options.map((inspector) => ({
-              value: inspector.user_id,
-              label: inspector.full_name ?? '',
-              description: inspector.is_active
-                ? inspector.city_name
-                : t('schedule.availability.inactiveCity', { city: inspector.city_name }),
-              leading: (
-                <span
-                  aria-hidden
-                  className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-nav-sm font-extrabold text-primary-foreground"
-                >
-                  {initialsOf(inspector.full_name ?? '')}
-                </span>
+            options={options.map((inspector) =>
+              inspectorOption(
+                inspector,
+                inspector.is_active
+                  ? inspector.city_name
+                  : t('schedule.availability.inactiveCity', { city: inspector.city_name }),
               ),
-            }))}
+            )}
             onChange={(inspectorId) => {
               void navigate({ search: (previous) => ({ ...previous, inspector: inspectorId }) });
             }}

@@ -6,11 +6,13 @@ import {
   useDroppable,
   useSensor,
   useSensors,
+  type Announcements,
   type DragEndEvent,
+  type UniqueIdentifier,
 } from '@dnd-kit/core';
 import { getRouteApi } from '@tanstack/react-router';
 import { GripVerticalIcon, PlusIcon, TriangleAlertIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Controller, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { CategoryIcon } from '@/components/inspection/category-icon';
@@ -24,11 +26,10 @@ import {
   moveItem,
   moveItemTo,
   orderByIds,
-  parseWeight,
   WEIGHT_TOTAL,
 } from '../inspection-form.utils';
+import type { WeightValues } from '../inspection-form.schemas';
 import { CategoryDialog } from './category-dialog';
-import type { WeightValues } from './form-editor';
 import { WeightInput } from './weight-input';
 
 const route = getRouteApi('/_authenticated/admin/content');
@@ -69,6 +70,30 @@ export function CategoryList({
   const dragged = shown[draggedIndex];
   const nameOf = (category: FormCategory) =>
     localizedText(category.name_ro, category.name_en, i18n.language);
+  const nameOfId = (id: UniqueIdentifier) => {
+    const category = shown.find((item) => item.id === id);
+    return category ? nameOf(category) : '';
+  };
+  const announcements: Announcements = {
+    onDragStart: ({ active }) =>
+      t('form.categories.announcements.dragStart', { name: nameOfId(active.id) }),
+    onDragOver: ({ active, over }) =>
+      over
+        ? t('form.categories.announcements.dragOver', {
+            name: nameOfId(active.id),
+            over: nameOfId(over.id),
+          })
+        : t('form.categories.announcements.dragOutside', { name: nameOfId(active.id) }),
+    onDragEnd: ({ active, over }) =>
+      over
+        ? t('form.categories.announcements.dragEnd', {
+            name: nameOfId(active.id),
+            over: nameOfId(over.id),
+          })
+        : t('form.categories.announcements.dropped', { name: nameOfId(active.id) }),
+    onDragCancel: ({ active }) =>
+      t('form.categories.announcements.dragCancel', { name: nameOfId(active.id) }),
+  };
 
   const saveOrder = (ordered: readonly FormCategory[]) => {
     const categoryIds = ordered.map((category) => category.id);
@@ -108,6 +133,7 @@ export function CategoryList({
         }}
         onDragEnd={handleDragEnd}
         accessibility={{
+          announcements,
           screenReaderInstructions: { draggable: t('form.categories.dragInstructions') },
         }}
       >
@@ -129,10 +155,7 @@ export function CategoryList({
               }
               control={control}
               onMove={(offset) => {
-                const target = index + offset;
-                if (target >= 0 && target < shown.length) {
-                  saveOrder(moveItem(shown, index, offset));
-                }
+                saveOrder(moveItem(shown, index, offset));
               }}
               onSelect={() => {
                 void navigate({
@@ -211,6 +234,7 @@ function CategoryRow({
   onSelect,
 }: CategoryRowProps) {
   const { t } = useTranslation('inspectionForm');
+  const weightId = useId();
   const updateCategory = useUpdateFormCategory();
   const draggable = useDraggable({ id: category.id, disabled: !isEditable });
   const droppable = useDroppable({ id: category.id, disabled: !isEditable });
@@ -291,14 +315,13 @@ function CategoryRow({
         control={control}
         render={({ field }) => (
           <WeightInput
-            id={`weight-${category.id}`}
+            id={weightId}
             label={t('form.categories.weightLabel', { name })}
             value={field.value}
             isEditable={isEditable}
             onChange={field.onChange}
-            onBlur={() => {
-              field.onBlur();
-              const weight = parseWeight(field.value);
+            onBlur={field.onBlur}
+            onCommit={(weight) => {
               field.onChange(String(weight));
               if (weight !== category.weight) {
                 updateCategory.mutate({ categoryId: category.id, patch: { weight } });

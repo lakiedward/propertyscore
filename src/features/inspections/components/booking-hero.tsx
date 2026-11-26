@@ -1,5 +1,5 @@
 import { CalendarCheckIcon, CheckIcon, ClockIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import inspectorImage from '@/assets/home/inspection-window.webp';
 import { BrandMark } from '@/components/brand/brand-mark';
@@ -19,6 +19,7 @@ type BookingHeroProps = {
 
 export function BookingHero({ step }: BookingHeroProps) {
   const { t } = useTranslation('inspections');
+  const titleId = useId();
   useSiteHero(step > 1 ? null : 'physical');
   const price = formatPrice(SERVICE_PRICES.physical.amount, SERVICE_PRICES.physical.currency);
   const stepperList = (
@@ -44,7 +45,7 @@ export function BookingHero({ step }: BookingHeroProps) {
             <BrandMark product="physical" size={40} className="sm:size-12" />
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <Logo product="physical" size="xs" hasMark={false} />
-              <h1 className="text-[20px] leading-tight font-extrabold tracking-[-0.025em] text-balance sm:text-[24px]">
+              <h1 className="text-title-2xs leading-tight font-extrabold tracking-[-0.025em] text-balance sm:text-h3">
                 {t('booking.hero.title')}
               </h1>
             </div>
@@ -65,14 +66,14 @@ export function BookingHero({ step }: BookingHeroProps) {
 
   return (
     <>
-      <section aria-labelledby="booking-title" className="bg-trust-physical text-on-inverse">
+      <section aria-labelledby={titleId} className="bg-trust-physical text-on-inverse">
         <div className="page-wrap grid items-center gap-9 pt-5 pb-10 w560:pt-12 w560:pb-18 w1080:grid-cols-[minmax(0,1fr)_minmax(0,560px)] w1080:gap-14">
           <div className="flex min-w-0 flex-col gap-4">
             <p className="text-caption font-bold tracking-label text-cta uppercase">
               {t('booking.hero.eyebrow')}
             </p>
             <h1
-              id="booking-title"
+              id={titleId}
               className="text-[clamp(34px,4vw,52px)] leading-[1.06] font-extrabold tracking-[-0.034em] text-balance"
             >
               {t('booking.hero.title')}
@@ -116,7 +117,7 @@ export function BookingHero({ step }: BookingHeroProps) {
                 <p className="text-meta font-extrabold tracking-label text-brand uppercase">
                   {t('booking.hero.priceLabel')}
                 </p>
-                <strong className="text-[24px] leading-[1.1] font-extrabold tracking-[-0.02em] tabular-nums w560:text-[28px]">
+                <strong className="text-h3 leading-[1.1] font-extrabold tracking-[-0.02em] tabular-nums w560:text-[28px]">
                   {price}
                 </strong>
                 <small className="text-caption leading-[1.4] text-muted-foreground">

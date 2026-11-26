@@ -1,4 +1,4 @@
-import { addDaysTo, exceptionBounds, SCHEDULE_TIMES, weeklyRangesByDay } from './staff.utils';
+import { exceptionBounds, SCHEDULE_TIMES, weeklyRangesByDay } from './staff.utils';
 
 describe('staff.utils', () => {
   it('offers half-hour times from 06:00 to 22:00', () => {
@@ -22,11 +22,6 @@ describe('staff.utils', () => {
     expect(byDay.get(1)).toBeUndefined();
   });
 
-  it('adds days across a month and a year end', () => {
-    expect(addDaysTo('2026-11-30', 1)).toBe('2026-12-01');
-    expect(addDaysTo('2026-12-31', 1)).toBe('2027-01-01');
-  });
-
   it('turns a whole-day exception into midnight to midnight after the last day', () => {
     expect(
       exceptionBounds({
@@ -46,5 +41,26 @@ describe('staff.utils', () => {
         endTime: '11:00',
       }),
     ).toEqual({ startsAt: new Date(2026, 10, 3, 8), endsAt: new Date(2026, 10, 3, 11) });
+  });
+
+  it('reads the exception dates and times as Romanian wall time', () => {
+    const bounds = exceptionBounds({
+      fromDate: '2026-07-01',
+      toDate: '2026-07-02',
+      isAllDay: true,
+      startTime: '08:00',
+      endTime: '12:00',
+    });
+    expect(bounds.startsAt.toISOString()).toBe('2026-06-30T21:00:00.000Z');
+    expect(bounds.endsAt.toISOString()).toBe('2026-07-02T21:00:00.000Z');
+    expect(
+      exceptionBounds({
+        fromDate: '2026-11-03',
+        toDate: '2026-11-03',
+        isAllDay: false,
+        startTime: '08:00',
+        endTime: '11:30',
+      }).endsAt.toISOString(),
+    ).toBe('2026-11-03T09:30:00.000Z');
   });
 });

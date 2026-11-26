@@ -17,9 +17,11 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { formatDate } from '@/i18n/format';
+import { bucharestDay, bucharestInstant, bucharestTime } from '@/lib/bucharest-time';
+import { fromDateKey } from '@/lib/date-keys';
 import { staffQueries, useRemoveException, useSetWeeklyHours } from '../api/staff.queries';
 import { WEEKDAYS, type InspectorExceptionKind, type TimeRange } from '../staff.types';
-import { localDateKey, localDateTime, weeklyRangesByDay } from '../staff.utils';
+import { weeklyRangesByDay } from '../staff.utils';
 import { ExceptionDialog } from './exception-dialog';
 import { WeeklyHoursDialog } from './weekly-hours-dialog';
 
@@ -40,7 +42,7 @@ type AvailabilityEditorProps = {
 export function AvailabilityEditor({ inspectorId, description }: AvailabilityEditorProps) {
   const { t } = useTranslation('staff');
   const [now] = useState(() => new Date());
-  const todayKey = localDateKey(now);
+  const todayKey = bucharestDay(now);
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -56,7 +58,11 @@ function weekdayName(weekday: number): string {
   return formatDate(new Date(2024, 0, weekday), { weekday: 'long' });
 }
 
-function WeeklyHours({ inspectorId }: { inspectorId: string }) {
+type WeeklyHoursProps = {
+  inspectorId: string;
+};
+
+function WeeklyHours({ inspectorId }: WeeklyHoursProps) {
   const { t } = useTranslation('staff');
   const hours = useQuery(staffQueries.weeklyHours(inspectorId));
   const setWeeklyHours = useSetWeeklyHours();
@@ -72,7 +78,11 @@ function WeeklyHours({ inspectorId }: { inspectorId: string }) {
     );
   }
 
-  const byDay = weeklyRangesByDay(hours.data ?? []);
+  if (hours.isError && !hours.data) {
+    return <EmptyState kind="error" title={t('availability.weekly.error')} />;
+  }
+
+  const byDay = weeklyRangesByDay(hours.data);
 
   return (
     <div className="flex flex-col">
@@ -182,9 +192,14 @@ function WeekdayRow({
   );
 }
 
-function Exceptions({ inspectorId, todayKey }: { inspectorId: string; todayKey: string }) {
+type ExceptionsProps = {
+  inspectorId: string;
+  todayKey: string;
+};
+
+function Exceptions({ inspectorId, todayKey }: ExceptionsProps) {
   const { t } = useTranslation('staff');
-  const from = localDateTime(todayKey, '00:00').toISOString();
+  const from = bucharestInstant(todayKey).toISOString();
   const exceptions = useQuery(staffQueries.exceptions(inspectorId, from));
   const removeException = useRemoveException(inspectorId);
   const [isAdding, setIsAdding] = useState(false);
@@ -211,16 +226,19 @@ function Exceptions({ inspectorId, todayKey }: { inspectorId: string; todayKey: 
       <div className="flex flex-col gap-2.5">
         {exceptions.isPending ? (
           <Skeleton className="h-15" />
-        ) : (exceptions.data ?? []).length === 0 ? (
+        ) : exceptions.isError && !exceptions.data ? (
+          <EmptyState kind="error" title={t('availability.exceptions.error')} />
+        ) : exceptions.data.length === 0 ? (
           <EmptyState
             title={t('availability.exceptions.empty.title')}
             description={t('availability.exceptions.empty.text')}
           />
         ) : (
           <ul className="flex flex-col gap-2.5">
-            {(exceptions.data ?? []).map((exception) => {
+            {exceptions.data.map((exception) => {
               const Icon = EXCEPTION_ICON[exception.kind];
               const kindLabel = t(`availability.exceptions.kind.${exception.kind}`);
+              const note = exception.note;
               return (
                 <li
                   key={exception.id}
@@ -232,7 +250,9 @@ function Exceptions({ inspectorId, todayKey }: { inspectorId: string; todayKey: 
                       {exceptionWhen(exception.starts_at, exception.ends_at, t)}
                     </strong>
                     <span className="text-small text-muted-foreground">
-                      {exception.note ? `${kindLabel} · ${exception.note}` : kindLabel}
+                      {note
+                        ? t('availability.exceptions.kindWithNote', { kind: kindLabel, note })
+                        : kindLabel}
                     </span>
                   </span>
                   <Button
@@ -268,7 +288,8 @@ function Exceptions({ inspectorId, todayKey }: { inspectorId: string; todayKey: 
 }
 
 function isMidnight(date: Date): boolean {
-  return date.getHours() === 0 && date.getMinutes() === 0;
+  const { hours, minutes } = bucharestTime(date);
+  return hours === 0 && minutes === 0;
 }
 
 function exceptionWhen(
@@ -281,15 +302,16 @@ function exceptionWhen(
   const dayFormat = { day: 'numeric', month: 'short', year: 'numeric' } as const;
   const timeFormat = { hour: '2-digit', minute: '2-digit' } as const;
   if (isMidnight(startsAt) && isMidnight(endsAt)) {
-    const lastDay = new Date(endsAt.getTime() - 1);
-    return localDateKey(startsAt) === localDateKey(lastDay)
-      ? formatDate(startsAt, dayFormat)
+    const firstKey = bucharestDay(startsAt);
+    const lastKey = bucharestDay(new Date(endsAt.getTime() - 1));
+    return firstKey === lastKey
+      ? formatDate(fromDateKey(firstKey), dayFormat)
       : t('availability.exceptions.range', {
-          from: formatDate(startsAt, dayFormat),
-          to: formatDate(lastDay, dayFormat),
+          from: formatDate(fromDateKey(firstKey), dayFormat),
+          to: formatDate(fromDateKey(lastKey), dayFormat),
         });
   }
-  if (localDateKey(startsAt) === localDateKey(endsAt)) {
+  if (bucharestDay(startsAt) === bucharestDay(endsAt)) {
     return t('availability.exceptions.hours', {
       day: formatDate(startsAt, dayFormat),
       from: formatDate(startsAt, timeFormat),

@@ -41,7 +41,7 @@ export function AgendaCard({ inspection, showsDay, now }: AgendaCardProps) {
               <ClockIcon aria-hidden className="size-5" />
             </span>
             <span className="flex min-w-0 flex-col">
-              <strong className="text-[21px] leading-tight font-extrabold tracking-[-0.02em] whitespace-nowrap tabular-nums first-letter:uppercase">
+              <strong className="text-title-xs leading-tight font-extrabold tracking-[-0.02em] whitespace-nowrap tabular-nums first-letter:uppercase">
                 {time}
               </strong>
               <span className="text-caption text-muted-foreground tabular-nums">
@@ -64,7 +64,7 @@ export function AgendaCard({ inspection, showsDay, now }: AgendaCardProps) {
           </span>
         </div>
         <div className="flex flex-col gap-1">
-          <h3 id={titleId} className="text-[18px] leading-[1.3] font-bold text-balance">
+          <h3 id={titleId} className="text-title-2xs-sm leading-[1.3] font-bold text-balance">
             {inspection.address_text}
           </h3>
           <span className="text-small text-muted-foreground">{facts.join(' · ')}</span>

@@ -11,9 +11,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useValidationMessage } from '@/i18n/validation';
+import { TextField } from '@/components/forms/text-field';
 import type { listCities } from '../api/my-listings.api';
 import type { ListingFormValues } from '../listing-form.schemas';
-import { ListingTextField } from './listing-text-field';
 
 type ListingAddressSectionProps = {
   control: Control<ListingFormValues>;
@@ -62,7 +62,7 @@ export function ListingAddressSection({ control, cities }: ListingAddressSection
             </Field>
           )}
         />
-        <ListingTextField
+        <TextField
           control={control}
           name="street_label"
           label={t('wizard.address.street')}

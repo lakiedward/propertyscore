@@ -62,8 +62,8 @@ export function RescheduleSection({
         </Button>
         <Button
           type="button"
-          disabled={!startsAt || reschedule.isPending}
-          aria-busy={reschedule.isPending}
+          disabled={!startsAt}
+          loading={reschedule.isPending}
           onClick={() => {
             if (!startsAt) {
               return;

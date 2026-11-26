@@ -1,6 +1,7 @@
 import { CheckIcon } from 'lucide-react';
 import { useId } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { cn } from '@/lib/utils';
 
 type ConsentSectionProps = {
@@ -56,7 +57,7 @@ export function ConsentSection({
         </div>
       </div>
       <p className="text-body-sm leading-relaxed">{text}</p>
-      <label htmlFor={checkId} className="flex items-start gap-3 text-body-sm font-semibold">
+      <Field orientation="horizontal" className="items-start gap-3">
         <Checkbox
           id={checkId}
           checked={isChecked}
@@ -66,8 +67,10 @@ export function ConsentSection({
           }}
           className="mt-0.5"
         />
-        {checkLabel}
-      </label>
+        <FieldLabel htmlFor={checkId} className="text-body-sm leading-normal font-semibold">
+          {checkLabel}
+        </FieldLabel>
+      </Field>
     </section>
   );
 }

@@ -28,10 +28,9 @@ export function VersionBanner({ item, backLabel, onBack, onRestore }: VersionBan
           <VersionStatusPill status={item.status} />
         </span>
         <span className="text-small text-muted-foreground">
-          {t('versions.banner.text')}{' '}
           {item.inspectionCount > 0
-            ? t('versions.usedIn', { count: item.inspectionCount })
-            : t('versions.unused')}
+            ? t('versions.banner.usedIn', { count: item.inspectionCount })
+            : t('versions.banner.unused')}
         </span>
       </div>
       <div className="flex flex-wrap gap-2">

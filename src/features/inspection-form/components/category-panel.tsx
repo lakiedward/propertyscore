@@ -7,7 +7,7 @@ import {
   ScaleIcon,
   Trash2Icon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { localizedText } from '@/i18n/localized';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
@@ -32,11 +32,19 @@ type CategoryPanelProps = {
   versionId: string;
   group: { category: FormCategory; questions: (FormQuestion & { number: string })[] };
   categories: readonly FormCategory[];
+  questionWeightSum: number;
   isEditable: boolean;
 };
 
-export function CategoryPanel({ versionId, group, categories, isEditable }: CategoryPanelProps) {
+export function CategoryPanel({
+  versionId,
+  group,
+  categories,
+  questionWeightSum,
+  isEditable,
+}: CategoryPanelProps) {
   const { t, i18n } = useTranslation('inspectionForm');
+  const titleId = useId();
   const navigate = route.useNavigate();
   const [dialog, setDialog] = useState<'edit' | 'remove' | null>(null);
   const reorderCategories = useReorderFormCategories();
@@ -47,7 +55,6 @@ export function CategoryPanel({ versionId, group, categories, isEditable }: Cate
   const index = categories.findIndex((item) => item.id === category.id);
   const name = localizedText(category.name_ro, category.name_en, i18n.language);
   const otherName = i18n.language === 'en' ? category.name_ro : category.name_en;
-  const questionWeightSum = questions.reduce((sum, question) => sum + question.weight, 0);
   const isQuestionWeightValid = questionWeightSum === WEIGHT_TOTAL;
 
   const move = (offset: -1 | 1) => {
@@ -58,13 +65,13 @@ export function CategoryPanel({ versionId, group, categories, isEditable }: Cate
   };
 
   return (
-    <section aria-labelledby={`category-${category.id}`} className="flex min-w-0 flex-col gap-3">
+    <section aria-labelledby={titleId} className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-card bg-card px-4 py-3.5 shadow-card-soft">
         <span className="grid size-10 shrink-0 place-items-center rounded-thumb bg-surface-alt text-brand">
           <CategoryIcon icon={category.icon} className="size-5" />
         </span>
         <div className="flex min-w-0 flex-[1_1_200px] flex-col">
-          <h2 id={`category-${category.id}`} className="text-base font-extrabold">
+          <h2 id={titleId} className="text-base font-extrabold">
             {name}
           </h2>
           <span className="text-small text-muted-foreground">

@@ -1,8 +1,10 @@
+import { bucharestDay, bucharestTime } from '@/lib/bucharest-time';
+import { monthStartKey, monthWeeks, shiftDateKey } from '@/lib/date-keys';
 import type { SlotCount } from './inspection.types';
 
 const BOOKING_DAYS_AHEAD = 90;
 
-const VISIT_HOURS = 2;
+const VISIT_MS = 2 * 3_600_000;
 
 export type DayState = 'outside' | 'past' | 'closed' | 'full' | 'open';
 
@@ -14,51 +16,22 @@ export type DayAvailability = {
 
 export type PartOfDay = 'morning' | 'midday' | 'afternoon';
 
-function pad(value: number): string {
-  return String(value).padStart(2, '0');
+export function bookingWindow(now: Date): { first: string; last: string } {
+  const first = shiftDateKey(bucharestDay(now), 1);
+  return { first, last: shiftDateKey(first, BOOKING_DAYS_AHEAD - 1) };
 }
 
-export function dateKey(date: Date): string {
-  return `${String(date.getFullYear())}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
-
-export function addDays(date: Date, days: number): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
-}
-
-export function bookingWindow(now: Date): { first: Date; last: Date } {
-  const first = addDays(now, 1);
-  return { first, last: addDays(first, BOOKING_DAYS_AHEAD - 1) };
-}
-
-export function monthStart(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-export function addMonths(date: Date, months: number): Date {
-  return new Date(date.getFullYear(), date.getMonth() + months, 1);
-}
-
-export function monthWeeks(month: Date): (Date | null)[][] {
-  const leading = (month.getDay() + 6) % 7;
-  const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  const cells: (Date | null)[] = [
-    ...Array.from({ length: leading }, () => null),
-    ...Array.from(
-      { length: daysInMonth },
-      (_, index) => new Date(month.getFullYear(), month.getMonth(), index + 1),
-    ),
-  ];
-  while (cells.length % 7 !== 0) {
-    cells.push(null);
-  }
-  return Array.from({ length: cells.length / 7 }, (_, week) => cells.slice(week * 7, week * 7 + 7));
+export function monthDays(monthKey: string): (string | null)[][] {
+  const month = monthKey.slice(0, 7);
+  return monthWeeks(monthKey).map((week) =>
+    week.map((key) => (key.startsWith(month) ? key : null)),
+  );
 }
 
 export function availabilityByDay(slots: readonly SlotCount[]): Map<string, DayAvailability> {
   const byDay = new Map<string, DayAvailability>();
   for (const slot of slots) {
-    const key = dateKey(new Date(slot.starts_at));
+    const key = bucharestDay(new Date(slot.starts_at));
     const day = byDay.get(key) ?? { working: 0, free: 0, starts: [] };
     day.working += slot.working > 0 ? 1 : 0;
     day.free += slot.free > 0 ? 1 : 0;
@@ -69,15 +42,15 @@ export function availabilityByDay(slots: readonly SlotCount[]): Map<string, DayA
 }
 
 export function dayState(
-  date: Date,
+  key: string,
   availability: DayAvailability | undefined,
   now: Date,
 ): DayState {
   const { first, last } = bookingWindow(now);
-  if (date < monthStart(first) || date > last) {
+  if (key < monthStartKey(first) || key > last) {
     return 'outside';
   }
-  if (date < first) {
+  if (key < first) {
     return 'past';
   }
   if (!availability || availability.working === 0) {
@@ -91,7 +64,7 @@ export function firstFreeSlot(slots: readonly SlotCount[]): SlotCount | undefine
 }
 
 export function partOfDay(startsAt: Date): PartOfDay {
-  const hour = startsAt.getHours();
+  const { hours: hour } = bucharestTime(startsAt);
   if (hour < 11) {
     return 'morning';
   }
@@ -99,9 +72,7 @@ export function partOfDay(startsAt: Date): PartOfDay {
 }
 
 export function visitEnd(startsAt: string): Date {
-  const end = new Date(startsAt);
-  end.setHours(end.getHours() + VISIT_HOURS);
-  return end;
+  return new Date(new Date(startsAt).getTime() + VISIT_MS);
 }
 
 function icsTime(date: Date): string {

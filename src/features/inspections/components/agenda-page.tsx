@@ -5,8 +5,9 @@ import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SegmentedControl } from '@/components/forms/segmented-control';
 import { EmptyState } from '@/components/layout/empty-state';
+import { StatCard } from '@/components/report/stat-card';
 import { Button } from '@/components/ui/button';
-import { formatDate } from '@/i18n/format';
+import { formatDate, formatNumber } from '@/i18n/format';
 import { inspectionQueries } from '../api/inspections.queries';
 import { useAgendaText } from '../hooks/use-agenda-text';
 import { AGENDA_DAYS, type AgendaInspection } from '../inspection.types';
@@ -41,24 +42,22 @@ export function AgendaPage() {
         <NextInspection inspection={next} now={now} />
         <div className="grid grid-cols-3 gap-3">
           {AGENDA_DAYS.map((statDay) => (
-            <div
+            <StatCard
               key={statDay}
-              className="flex flex-col justify-center gap-1 rounded-xl border border-card bg-card p-4 shadow-card-soft"
-            >
-              <span className="text-caption font-bold text-muted-foreground">
-                {t(`agenda.days.${statDay}`)}
-              </span>
-              <strong className="text-[30px] leading-none font-extrabold tracking-[-0.03em] tabular-nums">
-                {inspectionsOn(inspections, statDay, now).length}
-              </strong>
-              <span className="text-small text-muted-foreground">{t('agenda.statUnit')}</span>
-            </div>
+              tone="card"
+              label={t(`agenda.days.${statDay}`)}
+              value={formatNumber(inspectionsOn(inspections, statDay, now).length)}
+              hint={t('agenda.statUnit')}
+            />
           ))}
         </div>
       </div>
       <section aria-labelledby={titleId} className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id={titleId} className="text-[20px] leading-tight font-bold first-letter:uppercase">
+          <h2
+            id={titleId}
+            className="text-title-2xs leading-tight font-bold first-letter:uppercase"
+          >
             {day === 'week'
               ? t('agenda.weekRange', {
                   from: formatDate(bounds.from, { day: 'numeric', month: 'short' }),

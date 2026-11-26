@@ -1,15 +1,18 @@
-import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toWebp } from '@/lib/images';
+import { keepPreviousData, queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
+import { inspectionQueries } from '@/features/inspections';
+import type { Locale } from '@/i18n/i18n';
+import { scaledWebp } from '@/lib/images';
 import {
   PHOTO_MAX_EDGE,
+  PHOTO_THUMB_MAX_EDGE,
   type InspectionAnswer,
   type InspectionMediaKind,
-  type SignerLanguage,
-  type Workspace,
+  type WorkspaceState,
 } from '../field-inspection.types';
 import {
   getProgress,
   getWorkspace,
+  getWorkspaceContent,
   registerMedia,
   saveAnswer,
   startInspection,
@@ -17,18 +20,20 @@ import {
   unregisterMedia,
 } from './field-inspection.api';
 import {
+  photoThumbPath,
   questionMediaPath,
-  removeInspectionFile,
+  removeInspectionFiles,
   signInspectionFiles,
   signaturePath,
   uploadInspectionFile,
+  withThumbPaths,
 } from './field-inspection.storage';
-
-const INSPECTIONS_KEY = ['inspections'] as const;
 
 const FILE_URL_STALE_MS = 1_800_000;
 
 const SAVE_ANSWER_KEY = ['field-inspection', 'save-answer'] as const;
+
+const ADD_MEDIA_KEY = ['field-inspection', 'add-media'] as const;
 
 export const fieldInspectionQueries = {
   all: () => ['field-inspection'] as const,
@@ -42,11 +47,19 @@ export const fieldInspectionQueries = {
       queryKey: [...fieldInspectionQueries.all(), 'progress', inspectionId],
       queryFn: () => getProgress(inspectionId),
     }),
-  fileUrl: (path: string) =>
+  content: (formVersionId: string | null, consentVersionId: string | null) =>
     queryOptions({
-      queryKey: [...fieldInspectionQueries.all(), 'file-url', path],
-      queryFn: async () => (await signInspectionFiles([path]))[path] ?? null,
+      queryKey: [...fieldInspectionQueries.all(), 'content', formVersionId, consentVersionId],
+      queryFn: () => getWorkspaceContent(formVersionId, consentVersionId),
+      staleTime: 'static',
+    }),
+  photoUrls: (photoPaths: readonly string[]) =>
+    queryOptions({
+      queryKey: [...fieldInspectionQueries.all(), 'photo-urls', [...photoPaths].sort()],
+      queryFn: (): Promise<Partial<Record<string, string>>> =>
+        signInspectionFiles(withThumbPaths(photoPaths)),
       staleTime: FILE_URL_STALE_MS,
+      placeholderData: keepPreviousData,
     }),
 };
 
@@ -60,7 +73,7 @@ function useInvalidateInspection(inspectionId: string) {
       queryClient.invalidateQueries({
         queryKey: fieldInspectionQueries.progress(inspectionId).queryKey,
       }),
-      queryClient.invalidateQueries({ queryKey: INSPECTIONS_KEY }),
+      queryClient.invalidateQueries({ queryKey: inspectionQueries.all() }),
     ]);
 }
 
@@ -70,7 +83,7 @@ export function useStartInspection(inspectionId: string) {
     mutationFn: async (input: {
       signature: Blob;
       signerName: string;
-      language: SignerLanguage;
+      language: Locale;
       sectionIds: string[];
     }) => {
       const path = signaturePath(inspectionId);
@@ -84,7 +97,7 @@ export function useStartInspection(inspectionId: string) {
           sectionIds: input.sectionIds,
         });
       } catch (error) {
-        await removeInspectionFile(path).catch(() => undefined);
+        await removeInspectionFiles([path]).catch(() => undefined);
         throw error;
       }
     },
@@ -101,7 +114,7 @@ export function useSaveAnswer(inspectionId: string) {
       saveAnswer({ inspectionId, ...input }),
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: workspaceKey });
-      queryClient.setQueryData(workspaceKey, (current: Workspace | undefined) => {
+      queryClient.setQueryData(workspaceKey, (current: WorkspaceState | undefined) => {
         if (!current) {
           return current;
         }
@@ -125,39 +138,65 @@ export function useSaveAnswer(inspectionId: string) {
         queryKey: fieldInspectionQueries.progress(inspectionId).queryKey,
       });
       if (queryClient.isMutating({ mutationKey: [...SAVE_ANSWER_KEY, inspectionId] }) <= 1) {
-        await queryClient.invalidateQueries({ queryKey: INSPECTIONS_KEY, refetchType: 'none' });
+        await queryClient.invalidateQueries({
+          queryKey: inspectionQueries.all(),
+          refetchType: 'none',
+        });
       }
     },
   });
 }
 
+async function questionMediaFiles(kind: InspectionMediaKind, file: File) {
+  if (kind === 'video') {
+    const extension = (file.name.split('.').pop() ?? 'mp4').toLowerCase();
+    return { full: file, thumb: null, contentType: file.type, extension };
+  }
+  const bitmap = await createImageBitmap(file);
+  try {
+    const full = await scaledWebp(bitmap, PHOTO_MAX_EDGE);
+    const thumb = await scaledWebp(bitmap, PHOTO_THUMB_MAX_EDGE);
+    return { full, thumb, contentType: 'image/webp', extension: 'webp' };
+  } finally {
+    bitmap.close();
+  }
+}
+
 export function useAddMedia(inspectionId: string) {
+  const queryClient = useQueryClient();
   const invalidate = useInvalidateInspection(inspectionId);
+  const mutationKey = [...ADD_MEDIA_KEY, inspectionId];
   return useMutation({
+    mutationKey,
+    scope: { id: mutationKey.join(':') },
     mutationFn: async (input: { questionId: string; kind: InspectionMediaKind; file: File }) => {
-      const isPhoto = input.kind === 'photo';
-      const blob = isPhoto ? await toWebp(input.file, PHOTO_MAX_EDGE) : input.file;
-      const contentType = isPhoto ? 'image/webp' : input.file.type;
-      const extension = isPhoto
-        ? 'webp'
-        : (input.file.name.split('.').pop() ?? 'mp4').toLowerCase();
-      const path = questionMediaPath(inspectionId, extension);
-      await uploadInspectionFile(path, blob, contentType);
+      const files = await questionMediaFiles(input.kind, input.file);
+      const path = questionMediaPath(inspectionId, files.extension);
+      const thumbPath = photoThumbPath(path);
+      const uploaded = thumbPath && files.thumb ? [path, thumbPath] : [path];
+      await uploadInspectionFile(path, files.full, files.contentType);
       try {
+        if (thumbPath && files.thumb) {
+          await uploadInspectionFile(thumbPath, files.thumb, files.contentType);
+        }
         await registerMedia({
           inspectionId,
           questionId: input.questionId,
           kind: input.kind,
           path,
-          mimeType: contentType,
-          sizeBytes: blob.size,
+          mimeType: files.contentType,
+          sizeBytes: files.full.size,
         });
       } catch (error) {
-        await removeInspectionFile(path).catch(() => undefined);
+        await removeInspectionFiles(uploaded).catch(() => undefined);
         throw error;
       }
     },
-    onSettled: invalidate,
+    onSettled: async () => {
+      if (queryClient.isMutating({ mutationKey }) <= 1) {
+        await invalidate();
+      }
+    },
   });
 }
 
@@ -166,7 +205,7 @@ export function useRemoveMedia(inspectionId: string) {
   return useMutation({
     mutationFn: async (mediaId: string) => {
       const path = await unregisterMedia(mediaId);
-      await removeInspectionFile(path).catch(() => undefined);
+      await removeInspectionFiles(withThumbPaths([path])).catch(() => undefined);
     },
     onSettled: invalidate,
   });

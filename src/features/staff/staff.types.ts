@@ -1,4 +1,5 @@
 import type { Database, Enums } from '@/lib/supabase/database.types';
+import type { NullableColumns } from '@/lib/supabase/nullable-columns';
 
 export type AppRole = Enums<'app_role'>;
 
@@ -18,9 +19,7 @@ type StaffUserRow = Database['public']['Functions']['admin_list_users']['Returns
 type NullableUserColumn =
   'full_name' | 'phone' | 'inspector_city_id' | 'inspector_city_name' | 'block_reason';
 
-export type StaffUser = Omit<StaffUserRow, NullableUserColumn> & {
-  [Column in NullableUserColumn]: StaffUserRow[Column] | null;
-};
+export type StaffUser = NullableColumns<StaffUserRow, NullableUserColumn>;
 
 export type InspectorExceptionKind = Enums<'inspector_exception_kind'>;
 

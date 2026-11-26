@@ -4,6 +4,7 @@ import { panelPageHead } from '@/components/layout/panel-page-head';
 import {
   AdminSchedulePage,
   APPOINTMENT_MODES,
+  inspectionQueries,
   SCHEDULE_TABS,
   SCHEDULE_VIEWS,
 } from '@/features/inspections';
@@ -25,6 +26,10 @@ const scheduleSearchSchema = z.object({
 export const Route = createFileRoute('/_authenticated/admin/appointments')({
   validateSearch: scheduleSearchSchema,
   beforeLoad: () => loadFeatureNamespaces(['inspections', 'staff']),
+  loader: ({ context }) => {
+    void context.queryClient.query(inspectionQueries.unassigned(null)).catch(() => undefined);
+    void context.queryClient.query(inspectionQueries.inspectors(null)).catch(() => undefined);
+  },
   head: panelPageHead('panel.admin.nav.appointments'),
   component: AdminSchedulePage,
 });

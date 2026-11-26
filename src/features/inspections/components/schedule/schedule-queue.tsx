@@ -8,17 +8,15 @@ import {
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DatePicker } from '@/components/forms/date-picker';
-import { SearchSelect } from '@/components/forms/search-select';
 import { EmptyState } from '@/components/layout/empty-state';
 import { DashboardPanel } from '@/components/report/dashboard-panel';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/i18n/format';
+import { bucharestDay } from '@/lib/bucharest-time';
 import { cn } from '@/lib/utils';
 import type { AdminInspection } from '../../inspection.types';
-import { dateKey } from '../../slots.utils';
+import { CityFilterSelect } from './city-filter-select';
 import { ScheduleFilterField } from './schedule-filter-field';
-
-const ALL = 'all';
 
 const DAY = { weekday: 'long', day: 'numeric', month: 'short' } as const;
 
@@ -87,19 +85,11 @@ export function ScheduleQueue({
       toolbar={
         <div className="flex flex-col gap-3">
           <ScheduleFilterField label={t('schedule.queue.city')} htmlFor={cityPickerId}>
-            <SearchSelect
+            <CityFilterSelect
               id={cityPickerId}
-              value={cityId ?? ALL}
-              options={[
-                { value: ALL, label: t('schedule.availability.allCities') },
-                ...cities.map((city) => ({ value: city.id, label: city.name })),
-              ]}
-              onChange={(value) => {
-                onCityChange(value === ALL ? undefined : value);
-              }}
-              placeholder={t('schedule.availability.allCities')}
-              searchPlaceholder={t('schedule.availability.citySearch')}
-              emptyText={t('schedule.availability.noCity')}
+              cities={cities}
+              value={cityId}
+              onChange={onCityChange}
             />
           </ScheduleFilterField>
           <ScheduleFilterField label={t('schedule.queue.day')} htmlFor={dayPickerId}>
@@ -190,7 +180,7 @@ export function ScheduleQueue({
 function groupByDay(inspections: readonly AdminInspection[]) {
   const days = new Map<string, AdminInspection[]>();
   for (const inspection of inspections) {
-    const key = dateKey(new Date(inspection.starts_at));
+    const key = bucharestDay(new Date(inspection.starts_at));
     days.set(key, [...(days.get(key) ?? []), inspection]);
   }
   return Array.from(days, ([key, items]) => ({

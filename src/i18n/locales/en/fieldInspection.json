@@ -5,8 +5,7 @@
     "floor": "floor {{floor}}/{{floors}}",
     "year": "{{year}}",
     "contact": "{{name}} · {{phone}}",
-    "consentSigned": "✓ consent signed {{time}}",
-    "notFound": "This inspection is not assigned to you or no longer exists."
+    "consentSigned": "✓ consent signed {{time}}"
   },
   "nav": {
     "label": "Inspection sections",
@@ -60,8 +59,6 @@
     "videoRequired": "Video · required",
     "addPhoto": "Add photos to question {{number}}",
     "addVideo": "Add a clip to question {{number}}",
-    "count_one": "{{count}} file",
-    "count_other": "{{count}} files",
     "missingPhoto": "The required photo is missing",
     "missingVideo": "The required clip is missing",
     "addNote": "Add note",
@@ -69,7 +66,8 @@
     "notePlaceholder": "What you saw, where, how serious",
     "mediaAlt": "Photo {{index}} for question {{number}}",
     "videoLabel": "Clip {{index}} for question {{number}}",
-    "removeMedia": "Delete file {{index}} from question {{number}}",
+    "removePhoto": "Delete photo {{index}} from question {{number}}",
+    "removeVideo": "Delete clip {{index}} from question {{number}}",
     "uploading": "Uploading…",
     "videoTooLarge": "The clip is over 50 MB. Record a shorter one.",
     "fileTypeInvalid": "This file type is not accepted."
@@ -78,14 +76,14 @@
     "weightLine": "{{weight}}% of the grade · {{done}}/{{total}} · grade {{score}}",
     "noScore": "–",
     "back": "Back",
-    "next": "Next: {{name}}",
-    "done": "Done"
+    "next": "Next: {{name}}"
   },
   "aside": {
     "label": "Grade and sending",
     "provisional": "Provisional grade",
     "outOf": "/ 10",
     "progress": "Progress",
+    "progressError": "We could not load the provisional score.",
     "counters": "{{answered}}/{{total}} answered · {{photos}} photos · {{videos}} videos",
     "howTitle": "How the grade is made",
     "howNote": "Weighted mean of the categories with answers.",

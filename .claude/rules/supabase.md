@@ -15,7 +15,7 @@ paths:
 
 ## Tables and columns
 
-- Every table: `id uuid primary key default gen_random_uuid()`, `created_at` and `updated_at timestamptz not null default now()`, an `updated_at` trigger, and an owner column (`owner_id uuid not null default auth.uid() references auth.users (id) on delete cascade`) when rows belong to a user.
+- Every table: `id uuid primary key default gen_random_uuid()`, `created_at` and `updated_at timestamptz not null default now()`, an `updated_at` trigger (append-only tables such as `inspection_events`, `inspection_consents` and `inspection_media`, whose rows are never updated, have `created_at` only; a table that extends one row of another, such as `inspector_profiles`, may use that row's id as its primary key), and an owner column (`owner_id uuid not null default auth.uid() references auth.users (id) on delete cascade`) when rows belong to a user.
 - Constraints in the database (`not null`, `check`, `unique`, foreign keys) are the real validation; keep the Zod schemas aligned with them.
 - Indexes on every foreign key, every column a policy filters on, and every column the UI filters or sorts on.
 - Money is `numeric(12, 2)` plus a `currency text not null check (currency in ('RON', 'EUR'))`; never `float`, never a currency inferred from the language.
@@ -67,7 +67,7 @@ create policy "Owners can update their properties"
 ## Storage
 
 - Buckets are private unless their content is truly public; size limit and allowed MIME types are set on the bucket in a migration.
-- Object paths are `<owner_id>/<entity_id>/<filename>`; `storage.objects` policies check `(storage.foldername(name))[1] = (select auth.uid())::text`, live in migrations and have pgTAP tests.
+- Object paths are `<owner_id>/<entity_id>/<filename>`, except for a bucket whose files belong to a shared record rather than to one owner: `inspection-media` uses `<inspection_id>/<signature|question>/<filename>` and its policies check access through the inspection (the assigned inspector, an admin); `storage.objects` policies check `(storage.foldername(name))[1] = (select auth.uid())::text`, live in migrations and have pgTAP tests.
 - A server-only bucket (source files only the worker reads with a secret key, such as `source-extracts`) is private and has no `storage.objects` policies at all; its pgTAP test proves that `anon` and `authenticated` see no object in it, get `42501` on upload and change or delete nothing.
 
 ## Edge Functions

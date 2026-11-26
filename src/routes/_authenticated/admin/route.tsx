@@ -22,8 +22,8 @@ function AdminLayout() {
   const { user } = Route.useRouteContext();
   const { data: counts } = useQuery(moderationQueries.counts());
   const pending = counts?.pending_approval ?? 0;
-  const { data: unassigned } = useQuery(inspectionQueries.unassigned(null));
-  const toAssign = unassigned?.length ?? 0;
+  const { data: unassignedCount } = useQuery(inspectionQueries.unassignedCount());
+  const toAssign = unassignedCount ?? 0;
 
   return (
     <AdminShell

@@ -5,6 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
+import { EmptyState } from '@/components/layout/empty-state';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
   Select,
@@ -68,28 +69,32 @@ export function InspectorCityDialog({
       formId={formId}
     >
       <form id={formId} onSubmit={(event) => void handleSubmit(event)} noValidate>
-        <Controller
-          name="cityId"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={cityFieldId}>{t('users.inspectorDialog.city')}</FieldLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id={cityFieldId} aria-invalid={fieldState.invalid}>
-                  <SelectValue placeholder={t('users.inspectorDialog.cityPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(cities.data ?? []).map((city) => (
-                    <SelectItem key={city.id} value={city.id}>
-                      {city.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FieldError>{validationMessage(fieldState.error?.message)}</FieldError>
-            </Field>
-          )}
-        />
+        {cities.isError && !cities.data ? (
+          <EmptyState kind="error" title={t('users.inspectorDialog.citiesError')} />
+        ) : (
+          <Controller
+            name="cityId"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={cityFieldId}>{t('users.inspectorDialog.city')}</FieldLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id={cityFieldId} aria-invalid={fieldState.invalid}>
+                    <SelectValue placeholder={t('users.inspectorDialog.cityPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(cities.data ?? []).map((city) => (
+                      <SelectItem key={city.id} value={city.id}>
+                        {city.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FieldError>{validationMessage(fieldState.error?.message)}</FieldError>
+              </Field>
+            )}
+          />
+        )}
       </form>
     </ConfirmDialog>
   );
