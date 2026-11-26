@@ -123,7 +123,7 @@ export default defineConfig([
         {
           patterns: [
             {
-              group: ['**/worker/src/**', '!**/worker/src/**/*.json'],
+              regex: '(?:^|/)worker/src/(?!report-pdf/fixtures/example-report\\.json$)',
               message: 'Keep frontend runtime modules independent of the worker.',
             },
           ],
