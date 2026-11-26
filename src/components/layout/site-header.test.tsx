@@ -17,6 +17,13 @@ describe('SiteHeader', () => {
     expect(
       within(sections).getByRole('link', { name: roCommon.site.sections.pricing }),
     ).toHaveAttribute('href', '/#pricing');
+    expect(
+      within(sections).getByRole('link', { name: roCommon.site.sections.smartCheck }),
+    ).toHaveAttribute('href', '/#smart-check');
+    expect(screen.getByRole('link', { name: roCommon.site.header.smartCheck })).toHaveAttribute(
+      'href',
+      '/check',
+    );
     expect(screen.getByRole('link', { name: roCommon.site.header.signIn })).toHaveAttribute(
       'href',
       '/login',
@@ -60,7 +67,10 @@ describe('SiteHeader', () => {
     );
     expect(
       within(menu).getByRole('link', { name: roCommon.site.header.smartCheck }),
-    ).toHaveAttribute('href', '/#smart-check');
+    ).toHaveAttribute('href', '/check');
+    expect(
+      within(menu).getByRole('link', { name: new RegExp(roCommon.site.menu.services.smartCheck) }),
+    ).toHaveAttribute('href', '/check');
     expect(
       within(menu).getAllByRole('link', { name: roCommon.site.header.publish })[0],
     ).toHaveAttribute('href', '/publish');

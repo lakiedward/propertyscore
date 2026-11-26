@@ -4,10 +4,15 @@ import { BrandMark } from '@/components/brand/brand-mark';
 import { Logo } from '@/components/brand/logo';
 import { PillLink } from '@/components/navigation/pill-link';
 import { ctaLinkOptions, type CtaTarget } from '../home.constants';
+import type { PriceLinkProps } from './smart-check-price-link';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
 
 type Product = 'physical' | 'smartcheck';
+
+const DefaultActionLink = PillLink;
+
+const HOME_LINK = { to: '/' } as const;
 
 const boxVariants = cva('w-full overflow-hidden rounded-xl text-on-inverse', {
   variants: { product: { physical: 'bg-primary', smartcheck: 'bg-info' } },
@@ -39,7 +44,7 @@ const CTA_TONE = { physical: 'cta', smartcheck: 'inverse' } as const satisfies R
   'cta' | 'inverse'
 >;
 
-type ProductPriceBoxProps = {
+type SectionProductPriceBoxProps = {
   product: Product;
   label: string;
   kind: string;
@@ -50,6 +55,8 @@ type ProductPriceBoxProps = {
   ctaTarget: CtaTarget;
 };
 
+type ProductPriceBoxProps = PriceLinkProps<SectionProductPriceBoxProps>;
+
 export function ProductPriceBox({
   product,
   label,
@@ -59,6 +66,7 @@ export function ProductPriceBox({
   footer,
   ctaLabel,
   ctaTarget,
+  actionLink: PillLink = DefaultActionLink,
 }: ProductPriceBoxProps) {
   return (
     <div role="group" aria-label={label} className={boxVariants({ product })}>
@@ -77,7 +85,11 @@ export function ProductPriceBox({
       </div>
       <div className={footerVariants({ product })}>
         <span className={footerTextVariants({ product })}>{footer}</span>
-        <PillLink {...ctaLinkOptions(ctaTarget)} tone={CTA_TONE[product]} size="sm">
+        <PillLink
+          {...(ctaTarget === undefined ? HOME_LINK : ctaLinkOptions(ctaTarget))}
+          tone={CTA_TONE[product]}
+          size="sm"
+        >
           {ctaLabel}
         </PillLink>
       </div>

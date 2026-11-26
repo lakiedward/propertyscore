@@ -53,7 +53,7 @@
     "servicesLabel": "Cele două servicii PropertyScore",
     "smartCheck": {
       "text": "<strong>Scor de siguranță, chirii și prețuri medii cerute.</strong> Șase capitole despre zonă, facilități și trasee pietonale, cu surse și date lipsă explicate.",
-      "action": "Vezi exemplul online"
+      "action": "Verifică o adresă"
     },
     "physical": {
       "included": "inclus în preț · raportul online de {{price}}",

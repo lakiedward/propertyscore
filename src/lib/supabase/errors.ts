@@ -1,4 +1,9 @@
-import { isAuthError } from '@supabase/supabase-js';
+import {
+  FunctionsFetchError,
+  FunctionsHttpError,
+  FunctionsRelayError,
+  isAuthError,
+} from '@supabase/supabase-js';
 import { AppError, isAppError, type AppErrorCode, type AppErrorReason } from '@/lib/errors';
 
 const POSTGREST_CODES: Readonly<Record<string, AppErrorCode>> = {
@@ -228,12 +233,18 @@ function fromAuthError(error: {
   return new AppError('unknown', error.message, { cause: error });
 }
 
-function fromPostgrestError(error: PostgrestLikeError) {
+function fromPostgrestError(
+  error: PostgrestLikeError,
+  rpcReasons: ReadonlyMap<string, AppErrorReason> | undefined,
+) {
   const checkViolation = error.code === '23514' ? fromCheckViolation(error) : undefined;
   if (checkViolation) {
     return checkViolation;
   }
-  const reason = error.code === 'P0001' ? RPC_REASONS[error.message] : undefined;
+  const reason =
+    error.code === 'P0001'
+      ? (rpcReasons?.get(error.message) ?? RPC_REASONS[error.message])
+      : undefined;
   if (reason) {
     return new AppError('validation', error.message, {
       cause: error,
@@ -251,7 +262,34 @@ function fromPostgrestError(error: PostgrestLikeError) {
   return new AppError('unknown', error.message, { cause: error });
 }
 
-export function toAppError(error: unknown): AppError {
+const FUNCTION_STATUS_CODES: Readonly<Record<number, AppErrorCode>> = {
+  400: 'validation',
+  401: 'unauthenticated',
+  403: 'forbidden',
+  404: 'not_found',
+};
+
+function functionResponseStatus(error: FunctionsHttpError): number | undefined {
+  const context: unknown = error.context;
+  return context instanceof Response ? context.status : undefined;
+}
+
+function fromFunctionsError(error: FunctionsHttpError | FunctionsFetchError | FunctionsRelayError) {
+  if (error instanceof FunctionsHttpError) {
+    const status = functionResponseStatus(error);
+    const code = status === undefined ? undefined : FUNCTION_STATUS_CODES[status];
+    return new AppError(code ?? 'unknown', error.message, { cause: error });
+  }
+  if (error instanceof FunctionsFetchError) {
+    return new AppError('network', error.message, { cause: error });
+  }
+  return new AppError('unknown', error.message, { cause: error });
+}
+
+export function toAppError(
+  error: unknown,
+  rpcReasons?: ReadonlyMap<string, AppErrorReason>,
+): AppError {
   if (isAppError(error)) {
     return error;
   }
@@ -259,7 +297,14 @@ export function toAppError(error: unknown): AppError {
     return fromAuthError(error);
   }
   if (isPostgrestLikeError(error)) {
-    return fromPostgrestError(error);
+    return fromPostgrestError(error, rpcReasons);
+  }
+  if (
+    error instanceof FunctionsHttpError ||
+    error instanceof FunctionsFetchError ||
+    error instanceof FunctionsRelayError
+  ) {
+    return fromFunctionsError(error);
   }
   if (error instanceof Error) {
     const code: AppErrorCode = isNetworkFailure(error.message) ? 'network' : 'unknown';

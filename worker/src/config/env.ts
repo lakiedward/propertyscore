@@ -23,6 +23,8 @@ const envSchema = z
     AIR_EEA_NO2_MAP_URL: z.url({ protocol: /^https$/ }).optional(),
     MARKET_SOURCE_CONTACT: z.email().optional(),
     CHROMIUM_PATH: z.string().min(1).optional(),
+    SUPABASE_URL: z.url({ protocol: /^https?$/ }).optional(),
+    SUPABASE_SECRET_KEY: z.string().min(1).optional(),
   })
   .refine((env) => !env.SOURCE_MIRROR_URL || env.OSM_EXTRACT_API_KEY, {
     path: ['OSM_EXTRACT_API_KEY'],

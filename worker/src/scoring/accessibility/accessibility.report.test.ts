@@ -1,8 +1,90 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { accessibilitySection } from './accessibility.report.ts';
+import type { Sql } from '../../db/sql.ts';
+import { createLogger } from '../../lib/logger.ts';
+import type { ValhallaClient } from '../../routing/valhalla.ts';
+import { accessibilityReportSection, accessibilitySection } from './accessibility.report.ts';
+
+const routeFromTestAddress = { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' };
+
+function withoutTransit() {
+  const sql = vi.fn((parts: TemplateStringsArray, ...values: unknown[]) => {
+    const query = parts.join(' ');
+    if (query.includes('from private.cell_scores')) {
+      return [{ score: null, inputs: { reason: 'no_transit_data' }, city_id: 'test-city' }];
+    }
+    if (query.includes('from public.cities')) {
+      expect(query).toContain('d.is_active');
+      expect(values).toEqual(['test-city']);
+      return query;
+    }
+    if (query.includes('from private.key_destinations')) {
+      return [
+        {
+          id: 'test-station',
+          kind: 'station',
+          label_ro: 'Gară de test',
+          label_en: 'Test station',
+          longitude: 21.224,
+          latitude: 45.753,
+        },
+      ];
+    }
+    throw new Error(`Unexpected test query: ${query}`);
+  });
+  const route = vi.fn<ValhallaClient['route']>();
+  const router: ValhallaClient = {
+    route,
+    matrix: vi.fn<ValhallaClient['matrix']>(),
+    isochrones: vi.fn<ValhallaClient['isochrones']>(),
+    tilesetDate: vi.fn<ValhallaClient['tilesetDate']>(),
+  };
+  return {
+    route,
+    context: {
+      sql: sql as unknown as Sql,
+      snapshotId: 'test-snapshot',
+      cellId: 'test-cell',
+      citySlug: 'test-city',
+      latitude: 45.75,
+      longitude: 21.22,
+      params: {},
+      logger: createLogger('error'),
+      router,
+    },
+  };
+}
 
 describe('accessibilitySection', () => {
+  it('builds driving routes from the address without a transit score or transit row', async () => {
+    const { context, route } = withoutTransit();
+    route.mockResolvedValueOnce(routeFromTestAddress);
+
+    const section = await accessibilityReportSection.build(context);
+    expect(route).toHaveBeenCalledExactlyOnceWith({
+      origin: { lng: 21.22, lat: 45.75 },
+      destination: { lng: 21.224, lat: 45.753 },
+      costing: 'auto',
+      signal: expect.any(AbortSignal) as AbortSignal,
+    });
+    expect(section).toMatchObject({
+      status: 'car_only',
+      destinations: [{ car_route: routeFromTestAddress, minutes: null, route: null, path: [] }],
+    });
+    expect(section).not.toHaveProperty('components');
+    expect(section).not.toHaveProperty('stops');
+    expect(section).not.toHaveProperty('data_quality');
+  });
+
+  it('keeps the no-data state when driving also has no route', async () => {
+    const { context, route } = withoutTransit();
+    route.mockResolvedValueOnce(null);
+    await expect(accessibilityReportSection.build(context)).resolves.toEqual({
+      schema_version: 1,
+      status: 'no_data',
+    });
+  });
+
   it('names the stops, the lines and the key destinations of the cell', () => {
     const section = accessibilitySection({
       inputs: {
@@ -102,6 +184,9 @@ describe('accessibilitySection', () => {
       stops: [],
       routes: [],
       destinations: [label('gara'), label('far')],
+      carRoutes: new Map([
+        ['far', { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' }],
+      ]),
       addressTrips: new Map([
         [
           'gara',
@@ -126,7 +211,174 @@ describe('accessibilitySection', () => {
 
     expect(section.destinations).toMatchObject([
       { id: 'gara', walk: 7, wait: 1, ride: 4, transfers: 0, route: { ref: '18' } },
-      { id: 'far', minutes: null, walk: null, wait: null, ride: null, route: null },
+      {
+        id: 'far',
+        minutes: null,
+        walk: null,
+        wait: null,
+        ride: null,
+        route: null,
+        car_route: { seconds: 480, meters: 3500 },
+      },
     ]);
+  });
+
+  it('lists the high schools and faculties by time, walking where it is faster', () => {
+    const section = accessibilitySection({
+      inputs: {
+        s_access: 0.8,
+        s_travel: 0.6,
+        s_coverage: 0.5,
+        directions: 3,
+        weights: { access: 40, travel: 45, coverage: 15 },
+        data_quality: 'gtfs',
+        reference_date: '2026-11-03',
+      },
+      transit: { stops: [], destinations: [] },
+      stops: [],
+      routes: [],
+      destinations: [],
+      education: [
+        {
+          id: 'high_school:a1',
+          kind: 'high_school',
+          name: 'Liceul Far',
+          group: null,
+          lng: 21.3,
+          lat: 45.8,
+        },
+        {
+          id: 'high_school:a2',
+          kind: 'high_school',
+          name: 'Colegiul Near',
+          group: null,
+          lng: 21.2,
+          lat: 45.75,
+        },
+        {
+          id: 'high_school:a3',
+          kind: 'high_school',
+          name: 'Liceul Unreached',
+          group: null,
+          lng: 22,
+          lat: 46,
+        },
+        {
+          id: 'faculty:n4',
+          kind: 'faculty',
+          name: 'Mecanică',
+          group: 'UPT',
+          lng: 21.23,
+          lat: 45.74,
+        },
+      ],
+      addressTimings: new Map([
+        ['high_school:a1', { transitMinutes: 24.4, walkMinutes: 51 }],
+        ['high_school:a2', { transitMinutes: 12, walkMinutes: 9.6 }],
+        ['high_school:a3', { transitMinutes: null, walkMinutes: null }],
+        ['faculty:n4', { transitMinutes: 18, walkMinutes: 30 }],
+      ]),
+      carRoutes: new Map([
+        ['high_school:a3', { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' }],
+      ]),
+      addressTrips: new Map([
+        [
+          'high_school:a1',
+          {
+            walkMinutes: 8.2,
+            waitMinutes: 4,
+            rideMinutes: 12.2,
+            transfers: 0,
+            routeId: 'r4',
+            legs: [
+              {
+                mode: 'walk' as const,
+                routeId: null,
+                coordinates: [
+                  [21.2, 45.75],
+                  [21.21, 45.76],
+                ],
+              },
+              {
+                mode: 'transit' as const,
+                routeId: 'r4',
+                coordinates: [
+                  [21.21, 45.76],
+                  [21.3, 45.8],
+                ],
+              },
+            ],
+          },
+        ],
+        [
+          'high_school:a2',
+          {
+            walkMinutes: 3,
+            waitMinutes: 4,
+            rideMinutes: 5,
+            transfers: 0,
+            routeId: 'r4',
+            walkLegs: [
+              {
+                mode: 'walk' as const,
+                routeId: null,
+                coordinates: [
+                  [21.2, 45.75],
+                  [21.2, 45.76],
+                ],
+              },
+            ],
+          },
+        ],
+      ]),
+      tripRoutes: [
+        {
+          route_key: 'gtfs:4',
+          ref: '4',
+          mode: 'tram',
+          long_name: null,
+          colour: '#E3A900',
+          text_colour: null,
+          stop_keys: [],
+          peak_per_hour: null,
+        },
+      ],
+      routeKeyOf: (routeId) => (routeId === 'r4' ? 'gtfs:4' : null),
+    });
+
+    expect(section.destination_groups).toMatchObject({
+      high_schools: [
+        {
+          id: 'high_school:a2',
+          minutes: 10,
+          by_walking: true,
+          walk: 10,
+          wait: null,
+          route: null,
+          path: [{ mode: 'walk' }],
+        },
+        {
+          id: 'high_school:a1',
+          kind: 'high_school',
+          label: { ro: 'Liceul Far', en: 'Liceul Far' },
+          minutes: 24,
+          by_walking: false,
+          walk: 8,
+          wait: 4,
+          ride: 12,
+          route: { ref: '4', colour: '#E3A900' },
+          path: [{ mode: 'walk' }, { mode: 'transit', route: { ref: '4' } }],
+        },
+        {
+          id: 'high_school:a3',
+          minutes: null,
+          path: [],
+          car_route: { seconds: 480, meters: 3500 },
+        },
+      ],
+      faculties: [
+        { id: 'faculty:n4', group: 'UPT', minutes: 18, by_walking: false, walk: null, path: [] },
+      ],
+    });
   });
 });

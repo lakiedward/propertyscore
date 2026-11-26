@@ -112,6 +112,26 @@ export default defineConfig([
     },
   },
   {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: [
+      'src/features/smart-check/investment.utils.ts',
+      'src/features/smart-check/sections/investment.schemas.ts',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '(?:^|/)worker/src/(?!report-pdf/fixtures/example-report\\.json$)',
+              message: 'Keep frontend runtime modules independent of the worker.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['src/config/env.ts'],
     rules: { 'no-restricted-syntax': 'off' },
   },

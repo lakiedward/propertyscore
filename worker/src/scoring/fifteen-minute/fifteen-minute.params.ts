@@ -38,7 +38,6 @@ export const fifteenMinuteParamsSchema = z.object({
     isochrone_minutes: z.array(z.number().int().min(1).max(60)).min(1).max(4),
     candidates_per_category: z.number().int().min(1).max(100),
     places_per_category: z.number().int().min(1).max(50),
-    routes: z.number().int().min(0).max(50),
   }),
   categories: z
     .array(categorySchema)

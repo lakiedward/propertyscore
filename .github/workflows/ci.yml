@@ -46,7 +46,40 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec supabase start
+      - name: Allocate Supabase ports outside the runner's ephemeral range
+        run: |
+          python3 - <<'PY'
+          import errno
+          import os
+          import socket
+          from pathlib import Path
+
+          ephemeral_start = int(Path("/proc/sys/net/ipv4/ip_local_port_range").read_text().split()[0])
+
+          def available_ports():
+              for port in range(15420, ephemeral_start):
+                  try:
+                      with socket.create_server(("::", port), family=socket.AF_INET6, dualstack_ipv6=True):
+                          pass
+                  except OSError as error:
+                      if error.errno != errno.EADDRINUSE:
+                          raise
+                  else:
+                      yield port
+              raise RuntimeError("Not enough available Supabase ports below the ephemeral range")
+
+          ports = available_ports()
+          with open(os.environ["GITHUB_ENV"], "a") as env:
+              for setting in ("DB_PORT", "DB_SHADOW_PORT", "API_PORT", "STUDIO_PORT", "LOCAL_SMTP_PORT", "EDGE_RUNTIME_INSPECTOR_PORT"):
+                  env.write(f"SUPABASE_{setting}={next(ports)}\n")
+          PY
+      - name: Start Supabase
+        id: supabase
+        shell: bash
+        run: |
+          pnpm exec supabase start
+          db_url=$(pnpm exec supabase status -o json | jq -er '.DB_URL')
+          printf 'db_url=%s\n' "$db_url" >> "$GITHUB_OUTPUT"
       - run: pnpm db:lint
       - run: pnpm db:test
       - name: Restore the apt packages of the worker tests
@@ -77,7 +110,7 @@ jobs:
       - name: Worker tests against the local database
         run: pnpm test:worker
         env:
-          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          DATABASE_URL: ${{ steps.supabase.outputs.db_url }}
       - name: Generated types match the migrations
         run: |
           pnpm db:types

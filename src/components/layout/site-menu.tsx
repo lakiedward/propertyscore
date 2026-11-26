@@ -23,7 +23,7 @@ type SiteMenuProps = {
 
 type MenuLink =
   | { key: string; label: string; hash: HomeSectionId; meta?: string }
-  | { key: string; label: string; to: '/publish'; meta?: string }
+  | { key: string; label: string; to: '/check' | '/publish'; meta?: string }
   | { key: string; label: string; to: '/listings'; transaction: 'sale' | 'rent'; meta?: string };
 
 export function SiteMenu({
@@ -75,7 +75,7 @@ export function SiteMenu({
         {
           key: 'smart-check',
           label: t('site.menu.services.smartCheck'),
-          hash: HOME_SECTION.smartCheck,
+          to: '/check',
           meta: formatPrice(SERVICE_PRICES.smartCheck.amount, SERVICE_PRICES.smartCheck.currency),
         },
         {
@@ -170,12 +170,7 @@ export function SiteMenu({
               </Link>
             </Button>
             <Button asChild variant="info" size="nav">
-              <Link
-                to="/"
-                hash={HOME_SECTION.smartCheck}
-                onClick={handleNavigate}
-                aria-label={t('site.header.smartCheck')}
-              >
+              <Link to="/check" onClick={handleNavigate} aria-label={t('site.header.smartCheck')}>
                 <BrandMark product="smartcheck" tone="inverse" size={18} />
                 <Logo product="smartcheck" tone="inverse" size="2xs" hasMark={false} isDecorative />
               </Link>

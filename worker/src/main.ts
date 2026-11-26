@@ -8,7 +8,21 @@ import { createLogger, type Logger } from './lib/logger.ts';
 import { generateReport } from './report/generate-report.ts';
 import { insertReport } from './report/report.db.ts';
 import { REPORT_SECTIONS } from './report/sections.ts';
-import { renderReportPdf } from './report-pdf/render-report-pdf.ts';
+import {
+  refreshReportPdf,
+  renderReportDocument,
+  renderReportPdf,
+} from './report-pdf/render-report-pdf.ts';
+import { processReport } from './report-queue/process-report.ts';
+import { createReportPdfStorage } from './report-queue/report-pdf-storage.ts';
+import {
+  processNextReportPdfVariant,
+  type RenderReport,
+} from './report-queue/report-pdf-variants.ts';
+import { claimNextReport, REPORT_QUEUE_CHANNEL } from './report-queue/report-queue.db.ts';
+import { serveSavedReportWalkRoutes } from './report-queue/saved-report-walk-routes.ts';
+import { serveReports } from './report-queue/serve-reports.ts';
+import { createWorkSignal } from './report-queue/work-signal.ts';
 import { importHealthSources } from './scoring/health/import-health-sources.ts';
 import { createValhallaClient, type ValhallaClient } from './routing/valhalla.ts';
 import { importAreaStatistics } from './scoring/investment/area-statistics-import.ts';
@@ -32,6 +46,69 @@ function sourceMirror(env: Env): SourceMirror | undefined {
 
 function reportRouter(env: Env): ValhallaClient | null {
   return env.VALHALLA_URL ? createValhallaClient(env.VALHALLA_URL) : null;
+}
+
+function stopOnSignals(logger: Logger): AbortController {
+  const controller = new AbortController();
+  const stop = (signal: NodeJS.Signals) => {
+    logger.info('serve-reports stopping', { signal });
+    controller.abort();
+  };
+  process.once('SIGTERM', stop);
+  process.once('SIGINT', stop);
+  return controller;
+}
+
+function reportStorage(env: Env, command: 'serve-reports' | 'refresh-report-pdf') {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SECRET_KEY) {
+    throw new WorkerError(
+      'report_storage_not_configured',
+      `${command} needs SUPABASE_URL and SUPABASE_SECRET_KEY`,
+    );
+  }
+  return createReportPdfStorage({
+    supabaseUrl: env.SUPABASE_URL,
+    secretKey: env.SUPABASE_SECRET_KEY,
+  });
+}
+
+async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<void> {
+  const storage = reportStorage(env, 'serve-reports');
+  const renderReport: RenderReport = async (raw, locale) =>
+    (await renderReportDocument(raw, { chromiumPath: env.CHROMIUM_PATH, logger, locale })).pdf;
+  const work = createWorkSignal();
+  const shutdown = stopOnSignals(logger);
+  const stop = shutdown.signal;
+  const router = reportRouter(env);
+  const listener = await sql.listen(REPORT_QUEUE_CHANNEL, () => {
+    work.notify();
+  });
+  logger.info('serve-reports listening', { channel: REPORT_QUEUE_CHANNEL });
+  const savedRoutes = router ? serveSavedReportWalkRoutes(sql, router.route, stop, logger) : null;
+  try {
+    const result = await serveReports({
+      claim: () => claimNextReport(sql),
+      process: (reportId) =>
+        processReport({
+          sql,
+          reportId,
+          sections: REPORT_SECTIONS,
+          router,
+          earthquakes: createEarthquakeCatalog(),
+          renderReport,
+          storage,
+          logger,
+        }),
+      processPdfVariant: () => processNextReportPdfVariant(sql, renderReport, storage, logger),
+      waitForWork: work.wait,
+      stop,
+      logger,
+    });
+    logger.info('serve-reports done', { completed: result.completed, failed: result.failed });
+  } finally {
+    shutdown.abort();
+    await Promise.all([listener.unlisten(), savedRoutes]);
+  }
 }
 
 async function runCommand(
@@ -72,10 +149,22 @@ async function runCommand(
         logger,
       });
       return;
+    case 'serve-reports':
+      await runReportService(sql, env, logger);
+      return;
     case 'render-report-pdf':
       await renderReportPdf({
         source: 'reportId' in command.source ? { ...command.source, sql } : command.source,
         outputPath: command.outputPath,
+        chromiumPath: env.CHROMIUM_PATH,
+        logger,
+      });
+      return;
+    case 'refresh-report-pdf':
+      await refreshReportPdf({
+        sql,
+        reportId: command.reportId,
+        storage: reportStorage(env, command.command),
         chromiumPath: env.CHROMIUM_PATH,
         logger,
       });

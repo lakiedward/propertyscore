@@ -1,4 +1,4 @@
-import { CheckIcon, ChevronDownIcon } from 'lucide-react';
+import { CheckIcon, ChevronDownIcon, SearchIcon } from 'lucide-react';
 import { useId, useState, type ReactNode } from 'react';
 import {
   Command,
@@ -94,10 +94,19 @@ export function SearchSelect({
         align="start"
         className="w-(--radix-popover-trigger-width) min-w-72 gap-0 overflow-hidden p-0"
       >
-        <Command filter={matchScore} label={searchPlaceholder}>
-          <CommandInput placeholder={searchPlaceholder} />
-          <CommandList>
-            <CommandEmpty>{emptyText}</CommandEmpty>
+        <Command
+          filter={matchScore}
+          label={searchPlaceholder}
+          className="size-full overflow-hidden bg-popover"
+        >
+          <div className="flex h-11 items-center gap-2 border-b border-border-subtle px-3">
+            <SearchIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+            <CommandInput placeholder={searchPlaceholder} className="h-full text-body-sm" />
+          </div>
+          <CommandList className="max-h-72 scroll-py-1.5 p-1.5 outline-none">
+            <CommandEmpty className="py-5 text-center text-muted-foreground">
+              {emptyText}
+            </CommandEmpty>
             {options.map((option) => {
               const isSelected = option.value === value;
               return (
@@ -109,7 +118,10 @@ export function SearchSelect({
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className={cn('pr-10', isSelected && 'font-bold text-brand')}
+                  className={cn(
+                    'pr-10 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50',
+                    isSelected && 'font-bold text-brand',
+                  )}
                 >
                   {option.leading}
                   <span className="flex min-w-0 flex-col">

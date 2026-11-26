@@ -8,12 +8,12 @@ import {
   scoreCard,
   sourceDate,
 } from '../components.ts';
-import { esc, formatNumber } from '../format.ts';
+import { esc, reportFormat, type Copy, labelFor, localize } from '../format.ts';
 import { NOISE_CLASSES, NOISE_KINDS, NOISE_REFERENCES } from '../labels.ts';
 import { addressDot, around, mapHtml, type FeatureCollection, type MapSpec } from '../maps.ts';
 import { bandRaster } from '../band-grid.ts';
-import type { ReportData } from '../report-data.ts';
-import { CATEGORY_THEME, NOISE_BAND_OPACITY, NOISE_BANDS } from '../theme.ts';
+import type { ReportData, ReportLocale } from '../report-data.ts';
+import { categoryTheme, NOISE_BAND_OPACITY, NOISE_BANDS } from '../theme.ts';
 
 const BAND_DB = 5;
 const MAP_RADIUS_M = 500;
@@ -27,19 +27,19 @@ const LOUD_ROADS = ['motorway', 'trunk', 'primary'];
 const BUSY_ROADS = ['secondary'];
 const BAND_PIXEL_M = 4;
 const BAND_FLOOR_DB = 50;
-const MAP_KEY = [
-  { label: 'sub 55 dB', swatch: 'background:#EFEDE3;border:1px solid #DCD8C7' },
-  { label: '55–60', swatch: 'background:#F6E3A8' },
-  { label: '60–65', swatch: 'background:#F0B877' },
-  { label: '65–70', swatch: 'background:#E07F55' },
-  { label: 'peste 70', swatch: 'background:#B8432B' },
+const MAP_KEY: readonly { label: Copy; swatch: string }[] = [
+  { label: ['sub 55 dB', 'under 55 dB'], swatch: 'background:#EFEDE3;border:1px solid #DCD8C7' },
+  { label: ['55–60', '55–60'], swatch: 'background:#F6E3A8' },
+  { label: ['60–65', '60–65'], swatch: 'background:#F0B877' },
+  { label: ['65–70', '65–70'], swatch: 'background:#E07F55' },
+  { label: ['peste 70', 'above 70'], swatch: 'background:#B8432B' },
 ];
 
-const LINES_KEY = [
-  { label: 'drum mare', color: LOUD },
-  { label: 'bulevard, tramvai', color: BUSY },
-  { label: 'stradă', color: MODERATE },
-  { label: 'cale ferată', color: RAIL },
+const LINES_KEY: readonly { label: Copy; color: string }[] = [
+  { label: ['drum mare', 'major road'], color: LOUD },
+  { label: ['bulevard, tramvai', 'main road, tram'], color: BUSY },
+  { label: ['stradă', 'street'], color: MODERATE },
+  { label: ['cale ferată', 'railway'], color: RAIL },
 ];
 
 function decibelBand(value: number): string {
@@ -47,11 +47,12 @@ function decibelBand(value: number): string {
   return `${String(low)}–${String(low + BAND_DB)} dB`;
 }
 
-function reference(value: number): string {
+function reference(locale: ReportLocale, value: number): string {
+  const { t } = reportFormat(locale);
   const closest = [...NOISE_REFERENCES].sort(
     (left, right) => Math.abs(left.db - value) - Math.abs(right.db - value),
   )[0];
-  return closest ? `cât o ${closest.label}` : '';
+  return closest ? t('cât o {0}', 'comparable to {0}', localize(locale, closest.label)) : '';
 }
 
 function sourceColor(kind: string, sourceClass: string): string {
@@ -100,18 +101,21 @@ function heatLayers(
 }
 
 export const noiseChapter: ChapterBuilder = (report) => {
+  const { t, formatNumber } = reportFormat(report.locale);
   const summary = report.categories.noise;
   const section = report.sections.noise;
-  const theme = CATEGORY_THEME.noise;
+  const theme = categoryTheme(report.locale, 'noise');
   const sourcesNote = chapterSources(report, ['noise']);
   if (section?.lden == null) {
-    const head = chapterHead({
-      eyebrow: categoryEyebrow('noise', summary),
+    const head = chapterHead(report.locale, {
+      eyebrow: categoryEyebrow(report.locale, 'noise', summary),
       color: theme.color,
-      title: 'Zgomotul din jurul adresei',
+      title: t('Zgomotul din jurul adresei', 'Noise around the address'),
     });
     return {
-      html: chapter(head + scoreCard('noise', report, { better: 'Mai liniștit' }) + sourcesNote),
+      html: chapter(
+        head + scoreCard('noise', report, { better: t('Mai liniștit', 'Quieter') }) + sourcesNote,
+      ),
       maps: [],
     };
   }
@@ -121,16 +125,40 @@ export const noiseChapter: ChapterBuilder = (report) => {
   const average =
     summary.city_avg === null || summary.score === null
       ? ''
-      : ` Zona are scorul ${String(Math.round(summary.score))}, ${summary.score < summary.city_avg ? 'sub' : 'peste'} media orașului (${String(Math.round(summary.city_avg))}).`;
+      : t(
+          ' Zona are scorul {0}, {1} media orașului ({2}).',
+          ' The area scores {0}, {1} the city average ({2}).',
+          String(Math.round(summary.score)),
+          summary.score < summary.city_avg ? t('sub', 'below') : t('peste', 'above'),
+          String(Math.round(summary.city_avg)),
+        );
   const loudest = sources[0];
-  const head = chapterHead({
-    eyebrow: categoryEyebrow('noise', summary),
+  const head = chapterHead(report.locale, {
+    eyebrow: categoryEyebrow(report.locale, 'noise', summary),
     color: theme.color,
-    precision: section.precision === 'street' ? 'hărți strategice de zgomot' : theme.precision,
-    title: `Cam ${decibelBand(section.lden)} la adresă, ${reference(section.lden)}`,
+    precision:
+      section.precision === 'street'
+        ? t('hărți strategice de zgomot', 'strategic noise maps')
+        : theme.precision,
+    title: t(
+      'Cam {0} la adresă, {1}',
+      'Around {0} at the address, {1}',
+      decibelBand(section.lden),
+      reference(report.locale, section.lden),
+    ),
     lead: loudest
-      ? `Cea mai apropiată sursă de zgomot e ${loudest.name ?? NOISE_KINDS[loudest.kind] ?? loudest.kind}, la ${formatNumber(loudest.distance_m)} m.${average}`
-      : `Nu am găsit surse mari de zgomot în apropiere.${average}`,
+      ? t(
+          'Cea mai apropiată sursă de zgomot e {0}, la {1} m.{2}',
+          'The closest source of noise is {0}, {1} m away.{2}',
+          loudest.name ?? labelFor(report.locale, NOISE_KINDS, loudest.kind),
+          formatNumber(loudest.distance_m),
+          average,
+        )
+      : t(
+          'Nu am găsit surse mari de zgomot în apropiere.{0}',
+          'We found no major noise sources nearby.{0}',
+          average,
+        ),
   });
   const center: [number, number] = [report.longitude, report.latitude];
   const heat = section.map.heat ?? null;
@@ -151,35 +179,44 @@ export const noiseChapter: ChapterBuilder = (report) => {
     markers: [addressDot(center)],
   };
   const keyItems = heat
-    ? `${MAP_KEY.map((item) => `<span><i style="${item.swatch}"></i>${item.label}</span>`).join('')}<span class="zg-est">estimare ziua</span>`
+    ? `${MAP_KEY.map((item) => `<span><i style="${item.swatch}"></i>${localize(report.locale, item.label)}</span>`).join('')}<span class="zg-est">${t('estimare ziua', 'daytime estimate')}</span>`
     : LINES_KEY.map(
-        (item) => `<span><i style="background:${item.color}"></i>${item.label}</span>`,
+        (item) =>
+          `<span><i style="background:${item.color}"></i>${localize(report.locale, item.label)}</span>`,
       ).join('');
   const key = heat || lines ? `<div class="gz-key zg-key">${keyItems}</div>` : '';
   const night =
     section.lnight === null
       ? ''
-      : `<div class="fqx-big g"><b>${decibelBand(section.lnight)}</b><span>noaptea</span></div>`;
+      : `<div class="fqx-big g"><b>${decibelBand(section.lnight)}</b><span>${t('noaptea', 'at night')}</span></div>`;
   const list =
     sources.length === 0
-      ? '<p class="hint">Nu am găsit surse mari de zgomot în apropiere.</p>'
+      ? `<p class="hint">${t('Nu am găsit surse mari de zgomot în apropiere.', 'We found no major noise sources nearby.')}</p>`
       : `<ul class="zg-src">${sources
           .map(
             (source) =>
-              `<li><span class="zg-dot" style="background:${sourceColor(source.kind, source.source_class)}"></span><span class="zg-src-t"><b>${esc(source.name ?? NOISE_KINDS[source.kind] ?? source.kind)}</b><small>${esc(NOISE_CLASSES[source.source_class] ?? NOISE_KINDS[source.kind] ?? source.kind)}</small></span><span class="zg-src-m"><b>${formatNumber(source.distance_m)}</b> m</span></li>`,
+              `<li><span class="zg-dot" style="background:${sourceColor(source.kind, source.source_class)}"></span><span class="zg-src-t"><b>${esc(source.name ?? labelFor(report.locale, NOISE_KINDS, source.kind))}</b><small>${esc(labelFor(report.locale, NOISE_CLASSES, source.source_class, labelFor(report.locale, NOISE_KINDS, source.kind)))}</small></span><span class="zg-src-m"><b>${formatNumber(source.distance_m)}</b> m</span></li>`,
           )
           .join('')}</ul>`;
   const scale = NOISE_REFERENCES.map(
-    (item) => `<span><b>${String(item.db)} dB</b>${esc(item.label)}</span>`,
+    (item) =>
+      `<span><b>${String(item.db)} dB</b>${esc(localize(report.locale, item.label))}</span>`,
   ).join('');
   const osm = sourceDate(report, 'osm');
   const method =
     section.precision === 'street'
-      ? 'Valoarea vine din hărțile strategice de zgomot ale orașului.'
-      : `Estimare din străzile, liniile de tramvai, calea ferată și clădirile din OpenStreetMap${osm ? `, ${osm}` : ''}.`;
+      ? t(
+          'Valoarea vine din hărțile strategice de zgomot ale orașului.',
+          "This value comes from the city's strategic noise maps.",
+        )
+      : t(
+          'Estimare din străzile, liniile de tramvai, calea ferată și clădirile din OpenStreetMap{0}.',
+          'Estimate based on roads, tram lines, railways and buildings from OpenStreetMap{0}.',
+          osm ? `, ${osm}` : '',
+        );
   return {
     html: chapter(
-      `${head}<section class="gzA zgA"><div class="gzA-m">${mapHtml(map)}${key}</div><aside class="gzA-p"><div class="eyebrow">La adresă</div><div class="gzA-t"><div class="fqx-big zgb"><b>${decibelBand(section.lden)}</b><span>ziua, ${reference(section.lden)}</span></div>${night}</div><h3 class="zg-h3">Ce se aude cel mai tare</h3>${list}</aside></section><div class="zg-eq">${scale}</div>${footnote(method)}<div class="sfB-rest">${scoreCard('noise', report, { better: 'Mai liniștit' })}${sourcesNote}</div>`,
+      `${head}<section class="gzA zgA"><div class="gzA-m">${mapHtml(report.locale, map)}${key}</div><aside class="gzA-p"><div class="eyebrow">${t('La adresă', 'At the address')}</div><div class="gzA-t"><div class="fqx-big zgb"><b>${decibelBand(section.lden)}</b><span>${t('ziua, {0}', 'during the day, {0}', reference(report.locale, section.lden))}</span></div>${night}</div><h3 class="zg-h3">${t('Ce se aude cel mai tare', 'The loudest sources')}</h3>${list}</aside></section><div class="zg-eq">${scale}</div>${footnote(method)}<div class="sfB-rest">${scoreCard('noise', report, { better: t('Mai liniștit', 'Quieter') })}${sourcesNote}</div>`,
     ),
     maps: [map],
   };

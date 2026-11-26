@@ -4,11 +4,16 @@ import type { ReactNode } from 'react';
 import type { HomeSectionId } from '@/components/layout/site-navigation';
 import { PillLink } from '@/components/navigation/pill-link';
 import { ctaLinkOptions, type CtaTarget } from '../home.constants';
+import type { PriceLinkProps } from './smart-check-price-link';
 import { TextLink } from '@/components/navigation/text-link';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
 
 type PriceCardTone = 'physical' | 'smartcheck';
+
+const DefaultActionLink = PillLink;
+
+const HOME_LINK = { to: '/' } as const;
 
 const priceCardVariants = cva('flex flex-col gap-4.5 rounded-2xl p-6 text-on-inverse w520:p-10', {
   variants: { tone: { physical: 'bg-primary shadow-price', smartcheck: 'bg-info' } },
@@ -19,7 +24,7 @@ const CTA_TONE = { physical: 'cta', smartcheck: 'inverse' } as const satisfies R
   'cta' | 'inverse'
 >;
 
-type PriceCardProps = {
+type SectionPriceCardProps = {
   tone: PriceCardTone;
   brand: ReactNode;
   amount: number;
@@ -33,6 +38,8 @@ type PriceCardProps = {
   secondaryHash: HomeSectionId;
 };
 
+type PriceCardProps = PriceLinkProps<SectionPriceCardProps>;
+
 export function PriceCard({
   tone,
   brand,
@@ -43,6 +50,7 @@ export function PriceCard({
   features,
   cta,
   ctaTarget,
+  actionLink: PillLink = DefaultActionLink,
   secondary,
   secondaryHash,
 }: PriceCardProps) {
@@ -71,7 +79,10 @@ export function PriceCard({
         ))}
       </ul>
       <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-2">
-        <PillLink {...ctaLinkOptions(ctaTarget)} tone={CTA_TONE[tone]}>
+        <PillLink
+          {...(ctaTarget === undefined ? HOME_LINK : ctaLinkOptions(ctaTarget))}
+          tone={CTA_TONE[tone]}
+        >
           {cta}
         </PillLink>
         <TextLink to="/" hash={secondaryHash} tone="inverse">

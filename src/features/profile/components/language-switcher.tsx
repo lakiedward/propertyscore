@@ -37,12 +37,14 @@ type LanguageSwitcherProps = {
   userId?: string | undefined;
   variant?: 'menu' | 'segmented';
   tone?: 'dark' | 'light';
+  label?: string;
 };
 
 export function LanguageSwitcher({
   userId,
   variant = 'menu',
   tone = 'dark',
+  label,
 }: LanguageSwitcherProps) {
   const { t } = useTranslation();
   const locale = useLocale();
@@ -55,7 +57,7 @@ export function LanguageSwitcher({
         type="single"
         value={locale}
         onValueChange={handleChange}
-        aria-label={t('language.label')}
+        aria-label={label ?? t('language.label')}
         className={segmentedGroupVariants({ tone })}
       >
         {SUPPORTED_LOCALES.map((option) => (

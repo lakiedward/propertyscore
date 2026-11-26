@@ -96,6 +96,25 @@ describe('parseCommand for reports', () => {
     ).toThrow(expect.objectContaining({ code: 'invalid_render_report_pdf' }));
   });
 
+  it('requires explicit approval and exactly one report to refresh a stored PDF', () => {
+    const reportId = 'd0000000-0000-4000-8000-000000000001';
+    const args = ['refresh-report-pdf', '--report', reportId];
+
+    expect(parseCommand([...args, '--apply'], NOW)).toEqual({
+      command: 'refresh-report-pdf',
+      reportId,
+    });
+    expect(() => parseCommand(args, NOW)).toThrow(
+      expect.objectContaining({ code: 'invalid_refresh_report_pdf' }),
+    );
+    expect(() => parseCommand([...args, '--report', reportId, '--apply'], NOW)).toThrow(
+      expect.objectContaining({ code: 'invalid_report_id' }),
+    );
+    expect(() => parseCommand(['refresh-report-pdf', '--report', '42', '--apply'], NOW)).toThrow(
+      expect.objectContaining({ code: 'invalid_report_id' }),
+    );
+  });
+
   it('reads a report request with Romanian as the default language', () => {
     expect(
       parseCommand(

@@ -1,4 +1,4 @@
-import { AuthApiError } from '@supabase/supabase-js';
+import { AuthApiError, FunctionsFetchError, FunctionsHttpError } from '@supabase/supabase-js';
 import { AppError } from '@/lib/errors';
 import { toAppError } from './errors';
 
@@ -136,6 +136,12 @@ describe('toAppError', () => {
     expect(toAppError(postgrestError('P0001', 'report_not_found')).reason).toBe(undefined);
   });
 
+  it('does not assign the SmartCheck coverage reason to other RPC calls', () => {
+    const error = toAppError(postgrestError('P0001', 'outside_coverage'));
+
+    expect(error.reason).not.toBe('smartCheckOutsideCoverage');
+  });
+
   it('maps an unknown PostgREST code to unknown', () => {
     expect(toAppError(postgrestError('XX000')).code).toBe('unknown');
   });
@@ -212,5 +218,20 @@ describe('toAppError', () => {
     const appError = toAppError('boom');
     expect(appError.code).toBe('unknown');
     expect(appError.cause).toBe('boom');
+  });
+
+  it.each([
+    [400, 'validation'],
+    [401, 'unauthenticated'],
+    [403, 'forbidden'],
+    [404, 'not_found'],
+    [500, 'unknown'],
+  ] as const)('maps an Edge Function response with status %i to %s', (status, code) => {
+    const error = new FunctionsHttpError(new Response(null, { status }));
+    expect(toAppError(error).code).toBe(code);
+  });
+
+  it('maps an Edge Function that could not be reached to network', () => {
+    expect(toAppError(new FunctionsFetchError(new TypeError('fetch failed'))).code).toBe('network');
   });
 });

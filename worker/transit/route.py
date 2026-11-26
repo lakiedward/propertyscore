@@ -9,6 +9,7 @@ import sys
 import zipfile
 
 UNREACHABLE = 65535
+DETAIL_THREADS = 1
 
 
 def read_points(path):
@@ -187,6 +188,7 @@ def detailed_itineraries(network, origins, destinations, job, transit_modes, max
 
     rows = []
     paths = []
+    r5py.DetailedItineraries.NUM_THREADS = DETAIL_THREADS
     detailed = r5py.DetailedItineraries(
         network,
         origins=frame(origins),

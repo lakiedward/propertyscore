@@ -12,6 +12,8 @@ export const HOME_SECTION = {
 
 export type HomeSectionId = (typeof HOME_SECTION)[keyof typeof HOME_SECTION];
 
+export type HomeServiceDestination = { to: '/'; hash: HomeSectionId } | { to: '/check' };
+
 const HOME_SECTION_LINKS = [
   { id: 'smart-check', labelKey: 'site.sections.smartCheck' },
   { id: 'physical', labelKey: 'site.sections.physical' },

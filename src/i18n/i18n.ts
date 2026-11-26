@@ -26,6 +26,7 @@ export const resources = {
 const BUNDLED_NAMESPACES = ['common', 'auth'] as const;
 export const FEATURE_NAMESPACES = [
   'home',
+  'smartCheck',
   'listings',
   'publish',
   'moderation',

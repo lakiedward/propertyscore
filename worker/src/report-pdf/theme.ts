@@ -3,89 +3,101 @@ import type { BandStep } from './band-grid.ts';
 import type { HeatStop } from './heat-grid.ts';
 import type { IconName } from './icons.ts';
 
-export type CategoryTheme = {
-  name: string;
+import { localize, type Copy } from './format.ts';
+import type { ReportLocale } from './report-data.ts';
+
+type CategoryTheme = {
+  name: Copy;
   icon: IconName;
   color: string;
   tint: string;
   wash: string;
-  precision: string;
+  precision: Copy;
 };
 
 export const CATEGORY_THEME: Record<CategoryKey, CategoryTheme> = {
   safety: {
-    name: 'Siguranță',
+    name: ['Siguranță', 'Safety'],
     icon: 'shield',
     color: '#1F6B9A',
     tint: '#D4EAF8',
     wash: '#EDF6FC',
-    precision: 'zonă (celulă)',
+    precision: ['zonă (celulă)', 'area (grid cell)'],
   },
   accessibility: {
-    name: 'Accesibilitate',
+    name: ['Accesibilitate', 'Accessibility'],
     icon: 'bus',
     color: '#7E5F00',
     tint: '#FDEBA6',
     wash: '#FFF8DC',
-    precision: 'adresă · transport public',
+    precision: ['adresă · transport public', 'address · public transport'],
   },
   fifteen_minute: {
-    name: '15 minute',
+    name: ['15 minute', '15-minute city'],
     icon: 'map',
     color: '#8A356F',
     tint: '#F0D7E7',
     wash: '#F9EFF5',
-    precision: 'adresă · pe străzi reale',
+    precision: ['adresă · pe străzi reale', 'address · street network'],
   },
   green: {
-    name: 'Green',
+    name: ['Spații verzi', 'Green spaces'],
     icon: 'leaf',
     color: '#3F6E1B',
     tint: '#DCEDC6',
     wash: '#F0F7E7',
-    precision: 'adresă',
+    precision: ['adresă', 'address'],
   },
   noise: {
-    name: 'Zgomot',
+    name: ['Zgomot', 'Noise'],
     icon: 'vol',
     color: '#1C6B67',
     tint: '#CBE7E3',
     wash: '#E9F5F3',
-    precision: 'estimare din străzi',
+    precision: ['estimare din străzi', 'estimate based on streets'],
   },
   air: {
-    name: 'Aer',
+    name: ['Aer', 'Air'],
     icon: 'wind',
     color: '#5B4BA0',
     tint: '#E5E0F5',
     wash: '#F3F0FB',
-    precision: 'oraș, nu adresă',
+    precision: ['oraș, nu adresă', 'citywide, not address-level'],
   },
   industry: {
-    name: 'Industrie',
+    name: ['Industrie', 'Industry'],
     icon: 'fac',
     color: '#55607A',
     tint: '#E1E5EE',
     wash: '#F1F3F7',
-    precision: 'adresă',
+    precision: ['adresă', 'address'],
   },
   education: {
-    name: 'Educație',
+    name: ['Educație', 'Education'],
     icon: 'cap',
     color: '#9A5412',
     tint: '#FAE3CC',
     wash: '#FDF3E8',
-    precision: 'adresă',
+    precision: ['adresă', 'address'],
   },
   health: {
-    name: 'Sănătate',
+    name: ['Sănătate', 'Healthcare'],
     icon: 'heart',
     color: '#A8323F',
     tint: '#F8DCE0',
     wash: '#FDF0F2',
-    precision: 'adresă',
+    precision: ['adresă', 'address'],
   },
 };
+
+export function categoryTheme(locale: ReportLocale, key: CategoryKey) {
+  const theme = CATEGORY_THEME[key];
+  return {
+    ...theme,
+    name: localize(locale, theme.name),
+    precision: localize(locale, theme.precision),
+  };
+}
 
 export const CONTEXT_THEME = {
   seismic: { color: '#7B5B3A', tint: '#EFE3D4' },

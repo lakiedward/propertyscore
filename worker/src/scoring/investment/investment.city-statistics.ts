@@ -1,3 +1,4 @@
+import type { InvestmentYieldBasis, MarketCountKind } from '../../report/investment-contract.ts';
 import { monthEnd, monthStart, shiftDate, shiftMonths } from './investment.dates.ts';
 
 export type CityStatistic = {
@@ -41,6 +42,7 @@ export type CityStatisticsSaleBlock = {
   property_type: 'apartment';
   price_kind: PriceKind;
   count: number | null;
+  count_kind: MarketCountKind;
   median_eur_m2: number;
   p25_eur_m2: number | null;
   p75_eur_m2: number | null;
@@ -56,6 +58,7 @@ export type CityStatisticsRentBlock = {
   property_type: 'apartment';
   price_kind: PriceKind;
   count: number | null;
+  count_kind: MarketCountKind;
   basis: 'per_m2' | 'median_over_area' | 'all';
   median_eur: number | null;
   median_eur_m2: number | null;
@@ -67,6 +70,7 @@ export type NearbyLocality = {
   slug: string;
   name: string;
   count: number | null;
+  count_kind: MarketCountKind;
   median_eur_m2: number;
   p25_eur_m2: number | null;
   p75_eur_m2: number | null;
@@ -84,6 +88,7 @@ export type CityStatisticsMarket = {
   sale: CityStatisticsSaleBlock;
   rent: CityStatisticsRentBlock | null;
   grossYieldPct: number | null;
+  yieldBasis: InvestmentYieldBasis | undefined;
   nearby: NearbyLocality[];
   history: SaleHistory | null;
   sources: StatisticSource[];
@@ -124,6 +129,12 @@ function sourceOf(statistic: CityStatistic): StatisticSource {
 
 function countOf(statistic: CityStatistic): number | null {
   return statistic.listingCount ?? statistic.apartmentCount;
+}
+
+function countKindOf(statistic: CityStatistic): MarketCountKind {
+  return statistic.listingCount === null && statistic.apartmentCount !== null
+    ? 'apartments'
+    : 'listings';
 }
 
 function hasInterval(statistic: CityStatistic): boolean {
@@ -167,6 +178,7 @@ function saleBlock(query: CityStatisticsQuery, row: CityStatistic, medianEurM2: 
     property_type: PROPERTY_TYPE,
     price_kind: 'asking',
     count: countOf(row),
+    count_kind: countKindOf(row),
     median_eur_m2: Math.round(medianEurM2),
     p25_eur_m2: hasInterval(row) ? Math.round(row.p25EurM2 ?? 0) : null,
     p75_eur_m2: hasInterval(row) ? Math.round(row.p75EurM2 ?? 0) : null,
@@ -208,6 +220,7 @@ function selectRent(
       property_type: PROPERTY_TYPE,
       price_kind: 'asking',
       count: countOf(row),
+      count_kind: countKindOf(row),
       basis: perM2?.basis ?? 'all',
       median_eur: row.medianEur === null ? null : Math.round(row.medianEur),
       median_eur_m2: eurM2 === null ? null : roundDecimals(eurM2, 2),
@@ -218,13 +231,13 @@ function selectRent(
   };
 }
 
-function grossYield(
+function yieldBasis(
   query: CityStatisticsQuery,
   sale: CityStatistic,
   rent: { row: CityStatistic; eurM2: number | null } | null,
-): number | null {
+): InvestmentYieldBasis | undefined {
   const rentEurM2 = rent?.eurM2 ?? null;
-  if (!rent || rentEurM2 === null) return null;
+  if (!rent || rentEurM2 === null) return undefined;
   const sameSource = wholeMarket(query, 'sale').find(
     (statistic) =>
       statistic.zoneSlug === null &&
@@ -233,8 +246,13 @@ function grossYield(
       statistic.medianEurM2 !== null,
   );
   const basis = sameSource ?? (sale.period === rent.row.period ? sale : null);
-  if (!basis?.medianEurM2) return null;
-  return roundDecimals(((12 * rentEurM2) / basis.medianEurM2) * 100, 1);
+  if (!basis?.medianEurM2) return undefined;
+  return {
+    sale_eur_m2: basis.medianEurM2,
+    rent_eur_m2: rentEurM2,
+    sale_source: sourceOf(basis),
+    rent_source: sourceOf(rent.row),
+  };
 }
 
 function nearbyLocalities(query: CityStatisticsQuery, saleSource: string): NearbyLocality[] {
@@ -257,6 +275,7 @@ function nearbyLocalities(query: CityStatisticsQuery, saleSource: string): Nearb
       slug: statistic.zoneSlug ?? '',
       name: statistic.zoneName ?? '',
       count: countOf(statistic),
+      count_kind: countKindOf(statistic),
       median_eur_m2: Math.round(statistic.medianEurM2 ?? 0),
       p25_eur_m2: hasInterval(statistic) ? Math.round(statistic.p25EurM2 ?? 0) : null,
       p75_eur_m2: hasInterval(statistic) ? Math.round(statistic.p75EurM2 ?? 0) : null,
@@ -318,13 +337,15 @@ export function assessCityStatistics(query: CityStatisticsQuery): CityStatistics
   if (!row || medianEurM2 === null) return null;
   const sale = saleBlock(query, row, medianEurM2);
   const rent = selectRent(query);
+  const basis = yieldBasis(query, row, rent);
   const nearby = nearbyLocalities(query, row.source);
   const described = row.observedOn ?? monthEnd(row.period);
   return {
     referenceDate: described < query.cutoffDate ? described : query.cutoffDate,
     sale,
     rent: rent?.block ?? null,
-    grossYieldPct: grossYield(query, row, rent),
+    grossYieldPct: basis ? roundDecimals((1200 * basis.rent_eur_m2) / basis.sale_eur_m2, 1) : null,
+    yieldBasis: basis,
     nearby,
     history: saleHistory(query, row.source),
     sources: distinctSources([

@@ -30,6 +30,7 @@ type SiteHeaderProps = {
 export function SiteHeader({ account, menuLanguageSwitcher, heroTone = null }: SiteHeaderProps) {
   const { t } = useTranslation();
   const isOnHero = heroTone !== null;
+  const isOnPhysicalHero = heroTone === 'physical';
   const headerRef = useRef<HTMLElement>(null);
   const sectionNav = useSectionNav();
   const activeSection = useActiveSection(sectionNav?.links.map((link) => link.id) ?? []);
@@ -140,7 +141,7 @@ export function SiteHeader({ account, menuLanguageSwitcher, heroTone = null }: S
               size="nav"
               className={cn(isOnHero ? 'border-card' : 'border-info')}
             >
-              <Link to="/" hash={HOME_SECTION.smartCheck} aria-label={t('site.header.smartCheck')}>
+              <Link to="/check" aria-label={t('site.header.smartCheck')}>
                 <BrandMark product="smartcheck" tone={isOnHero ? 'color' : 'inverse'} size={18} />
                 <Logo
                   product="smartcheck"
@@ -153,15 +154,17 @@ export function SiteHeader({ account, menuLanguageSwitcher, heroTone = null }: S
             </Button>
             <Button
               asChild
-              variant={isOnHero ? 'cta' : 'default'}
+              variant={isOnPhysicalHero ? 'cta' : 'default'}
               size="nav"
-              className={cn(isOnHero ? 'border-cta' : 'border-primary hover:bg-primary-pressed')}
+              className={cn(
+                isOnPhysicalHero ? 'border-cta' : 'border-primary hover:bg-primary-pressed',
+              )}
             >
               <Link to="/inspection" aria-label={t('site.header.physical')}>
                 <BrandMark product="physical" size={18} />
                 <Logo
                   product="physical"
-                  tone={isOnHero ? 'color' : 'inverse'}
+                  tone={isOnPhysicalHero ? 'color' : 'inverse'}
                   size="2xs"
                   hasMark={false}
                   isDecorative

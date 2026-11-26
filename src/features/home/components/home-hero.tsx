@@ -40,7 +40,7 @@ export function HomeHero() {
           >
             <ServiceCard
               tone="online"
-              hash={HOME_SECTION.smartCheck}
+              destination={{ to: '/check' }}
               amount={SERVICE_PRICES.smartCheck.amount}
               currency={SERVICE_PRICES.smartCheck.currency}
               action={t('hero.smartCheck.action')}
@@ -50,7 +50,7 @@ export function HomeHero() {
             </ServiceCard>
             <ServiceCard
               tone="forest"
-              hash={HOME_SECTION.physical}
+              destination={{ to: '/', hash: HOME_SECTION.physical }}
               amount={SERVICE_PRICES.physical.amount}
               currency={SERVICE_PRICES.physical.currency}
               action={t('hero.physical.action')}

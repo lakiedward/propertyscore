@@ -1,0 +1,1325 @@
+{
+  "check": {
+    "pageTitle": "Smart Check",
+    "title": "Verifică o adresă cu Smart Check",
+    "eyebrow": "Raport online {{price}} · Pasul {{number}} din {{total}}",
+    "steps": {
+      "label": "Pașii comenzii",
+      "item": "{{number}}. {{label}}",
+      "done": "Raport",
+      "address": "Adresă",
+      "confirm": "Confirmare",
+      "details": "Detalii",
+      "payment": "Plată",
+      "completed": "{{label}}, gata"
+    },
+    "heading": {
+      "address": {
+        "title": "Unde e locuința?",
+        "badge": "9 orașe acoperite"
+      },
+      "confirm": {
+        "title": "Asta e locuința?",
+        "badge": "Verifică pinul pe hartă"
+      },
+      "details": {
+        "title": "Ce știi despre locuință",
+        "badge": "Opțional · durează un minut"
+      },
+      "payment": {
+        "title": "Plată",
+        "badge": "Plata cu cardul vine în curând"
+      },
+      "done": {
+        "title": "Pregătim raportul",
+        "badge": "Durează de obicei sub un minut"
+      }
+    },
+    "address": {
+      "label": "Unde este proprietatea?",
+      "placeholder": "Strada, numărul și orașul",
+      "empty": "Nu găsim „{{query}}”. Verifică scrierea sau adaugă orașul, de ex. „Strada Mărășești 6, Timișoara”.",
+      "searchError": "Căutarea adreselor nu răspunde acum. Pune pinul pe hartă și scrie adresa de mână.",
+      "locate": "Folosește locația mea",
+      "locateError": "Nu am putut afla locația ta. Caută adresa sau apasă pe hartă.",
+      "mapLabel": "Harta cu pinul locuinței",
+      "mapHint": "Trage pinul sau apasă pe hartă",
+      "mapError": "Harta nu se poate încărca acum. Reîncarcă pagina.",
+      "pinLabel": "Locuința ta",
+      "coordinates": "{{lat}}, {{lng}}",
+      "resolving": "Căutăm adresa pinului…",
+      "noReverse": "Nu am găsit o adresă exact aici. Scrie-o de mână.",
+      "manualHint": "Poți corecta adresa de mână, de exemplu numărul blocului. Pinul rămâne unde l-ai pus.",
+      "noPin": "Caută adresa sau apasă pe hartă, pe clădirea locuinței.",
+      "required": "Scrie adresa locuinței.",
+      "pinRequired": "Pune pinul pe hartă, pe clădirea locuinței.",
+      "outside": {
+        "title": "Adresa nu este într-un oraș acoperit",
+        "description": "Raportul online funcționează în: {{cities}}. Nu îți cerem nicio plată pentru această adresă."
+      },
+      "continue": "Continuă",
+      "addressMissing": "Fără adresă"
+    },
+    "includes": {
+      "title": "Ce primești pentru {{price}}",
+      "items": {
+        "score": "Scor de zonă din 9 criterii, fiecare explicat",
+        "transit": "Accesibilitate: linii, frecvență și direcții, nu doar distanța",
+        "fifteen": "Oraș de 15 minute: ce ai aproape pe jos",
+        "green": "Spații verzi pe 500 m și 1 km",
+        "environment": "Siguranță, zgomot, aer, zone industriale, risc seismic",
+        "market": "Prețuri, chirii și randament în zonă",
+        "share": "PDF și link de partajare"
+      },
+      "note": "Scorul descrie zona, nu starea locuinței. Pentru asta e inspecția fizică.",
+      "citiesTitle": "Disponibil în 9 orașe"
+    },
+    "confirm": {
+      "question": "Asta e locuința?",
+      "helper": "Verifică pinul. Distanțele și scorurile se calculează de aici.",
+      "movingQuestion": "Mută pinul pe clădire",
+      "movingHelper": "Atinge sau trage pe hartă. Raportul folosește exact acest punct.",
+      "move": "Mută pinul",
+      "stopMoving": "Gata, am mutat pinul",
+      "continue": "Da, continuă",
+      "back": "Înapoi la adresă"
+    },
+    "details": {
+      "intro": "Completează ce știi din anunț sau din discuția cu vânzătorul. Poți continua și fără aceste detalii.",
+      "requiredNote": "Localizarea este singura informație obligatorie.",
+      "unknown": "Nu știu",
+      "size": {
+        "legend": "Camere și suprafață",
+        "rooms": "Camere",
+        "roomsPlaceholder": "ex. 3",
+        "area": "Suprafață aprox.",
+        "areaPlaceholder": "ex. 84",
+        "areaUnit": "m²"
+      },
+      "floor": {
+        "legend": "Etaj",
+        "floor": "Etajul",
+        "floorPlaceholder": "ex. 3",
+        "floorHint": "0 pentru parter, -1 pentru demisol",
+        "floors": "din câte",
+        "floorsPlaceholder": "ex. 8",
+        "floorsUnit": "etaje"
+      },
+      "elevator": {
+        "legend": "Lift",
+        "yes": "Da",
+        "no": "Nu",
+        "unknown": "Nu știu"
+      },
+      "year": {
+        "legend": "Anul construcției",
+        "label": "Anul",
+        "placeholder": "ex. 1978"
+      },
+      "why": {
+        "title": "De ce te întrebăm",
+        "text": "Răspunsurile nu schimbă scorul zonei. Le folosim pentru prețurile comparabile și randament. În raport apar marcate „declarat”.",
+        "progress_one": "{{count}} din {{total}} răspunsuri completate",
+        "progress_few": "{{count}} din {{total}} răspunsuri completate",
+        "progress_other": "{{count}} din {{total}} de răspunsuri completate"
+      },
+      "back": "Înapoi",
+      "skip": "Sari peste",
+      "continue": "Continuă la plată · {{price}}"
+    },
+    "payment": {
+      "title": "Plata",
+      "signedOut": {
+        "title": "Intră în cont ca să comanzi raportul",
+        "description": "Raportul rămâne în contul tău, la „Rapoarte”, cu PDF și link de partajare. Adresa și detaliile completate rămân aici.",
+        "signIn": "Intră în cont",
+        "signUp": "Creează cont"
+      },
+      "unlimited": {
+        "title": "Cont de test: Smart Check nelimitat",
+        "description": "Poți genera oricâte rapoarte, fără plată."
+      },
+      "comingSoon": {
+        "title": "Plata cu cardul vine în curând",
+        "description": "Deocamdată raportul se poate genera doar din conturile de test. Comanda rămâne aici: adresa și detaliile nu se pierd."
+      },
+      "accessError": "Nu am putut verifica accesul contului. Reîncarcă pagina.",
+      "generate": "Generează raportul",
+      "generating": "Trimitem comanda…",
+      "changeAddress": "Schimbă adresa",
+      "back": "Înapoi la detalii"
+    },
+    "summary": {
+      "eyebrow": "Comanda ta",
+      "product": "Raport online",
+      "includesTitle": "Ce primești",
+      "items": {
+        "scores": "9 scoruri pe categorii, de la 0 la 100",
+        "market": "Prețuri cerute și chirii în zonă, cu €/m²",
+        "nearby": "Facilități din apropiere și trasee pe jos",
+        "account": "Acces în cont, PDF și link de partajare"
+      },
+      "note": "Raportul descrie zona. Nu poate vedea starea locuinței.",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "vat": "TVA inclus."
+    },
+    "done": {
+      "title": "Pregătim raportul",
+      "description": "Calculăm scorurile pentru {{address}}. Durează de obicei sub un minut, iar pagina se actualizează singură.",
+      "queued": "Comanda e în coadă și începe în câteva secunde.",
+      "failedTitle": "Raportul nu a putut fi generat",
+      "failedDescription": "Nu te costă nimic. Încearcă din nou, iar dacă se repetă, scrie-ne.",
+      "retry": "Încearcă din nou",
+      "loadError": "Nu putem citi starea raportului acum. Reîncercăm automat.",
+      "myReports": "Vezi rapoartele mele",
+      "newCheck": "Verifică altă adresă",
+      "slow": "Durează mai mult decât de obicei. Poți închide pagina: raportul apare în Rapoartele mele când e gata.",
+      "stopped": "Nu mai verificăm automat. Raportul apare în Rapoartele mele când e gata."
+    }
+  },
+  "status": {
+    "pending_payment": "Așteaptă plata",
+    "queued": "În așteptare",
+    "generating": "Se generează",
+    "ready": "Gata",
+    "failed": "Eșuat"
+  },
+  "myReports": {
+    "count_one": "{{count}} raport",
+    "count_few": "{{count}} rapoarte",
+    "count_other": "{{count}} de rapoarte",
+    "meta": "Raportul nr. {{number}} · {{date}}",
+    "more": "Arată mai multe rapoarte",
+    "empty": {
+      "title": "Nu ai încă rapoarte Smart Check",
+      "description": "Verifică o adresă și raportul apare aici, cu PDF și link de partajare.",
+      "action": "Verifică o adresă"
+    },
+    "score": "{{score}} / 100",
+    "scoreLabel": "Scor de zonă {{score}} din 100",
+    "open": "Deschide",
+    "note": {
+      "pending_payment": "Așteaptă plata.",
+      "queued": "La rând. Începem în câteva secunde.",
+      "generating": "Gata în câteva minute.",
+      "ready": "PDF și link de partajare incluse.",
+      "failed": "Nu a putut fi generat. Ne ocupăm de el."
+    }
+  },
+  "report": {
+    "pageTitle": "Raport Smart Check",
+    "state": {
+      "pending_payment": {
+        "title": "Raportul așteaptă plata",
+        "description": "Îl pregătim imediat ce comanda este confirmată."
+      },
+      "queued": {
+        "title": "Raportul este la rând",
+        "description": "Începem să îl pregătim în câteva secunde. Pagina se actualizează singură."
+      },
+      "generating": {
+        "title": "Pregătim raportul",
+        "description": "Durează de obicei mai puțin de un minut. Pagina se actualizează singură."
+      },
+      "ready": {
+        "title": "Raportul nu poate fi afișat",
+        "description": "Încearcă din nou peste câteva minute."
+      },
+      "failed": {
+        "title": "Raportul nu a putut fi generat",
+        "description": "Ne ocupăm de el. Încearcă din nou mai târziu sau scrie-ne."
+      },
+      "backToReports": "Înapoi la rapoartele mele"
+    },
+    "chapters": {
+      "summary": {
+        "title": "Pe scurt",
+        "eyebrow": "Pe scurt",
+        "badge": "{{scores}} · {{contexts}}",
+        "badgeScores_one": "{{count}} scor",
+        "badgeScores_few": "{{count}} scoruri",
+        "badgeScores_other": "{{count}} de scoruri",
+        "badgeContexts_one": "{{count}} context",
+        "badgeContexts_few": "{{count}} contexte",
+        "badgeContexts_other": "{{count}} de contexte",
+        "lead_one": "Am calculat {{count}} scor pe o rază de până la {{radius}} km, plus {{contexts}} ca și context.",
+        "lead_few": "Am calculat {{count}} scoruri pe o rază de până la {{radius}} km, plus {{contexts}} ca și context.",
+        "lead_other": "Am calculat {{count}} de scoruri pe o rază de până la {{radius}} km, plus {{contexts}} ca și context.",
+        "leadNoContext_one": "Am calculat {{count}} scor pe o rază de până la {{radius}} km.",
+        "leadNoContext_few": "Am calculat {{count}} scoruri pe o rază de până la {{radius}} km.",
+        "leadNoContext_other": "Am calculat {{count}} de scoruri pe o rază de până la {{radius}} km.",
+        "contexts": {
+          "seismic": "riscul seismic",
+          "investment": "investiția",
+          "both": "riscul seismic și investiția"
+        },
+        "position": {
+          "unknown": "Zona adresei, în {{city}}",
+          "top": "Una dintre cele mai bune zone din {{city}}",
+          "above": "O zonă peste media din {{city}}",
+          "average": "O zonă în media din {{city}}",
+          "below": "O zonă sub media din {{city}}"
+        },
+        "headlineWeak": "{{position}}, cu un singur punct slab: <mark>{{weak}}</mark>",
+        "headlineNoScores": "Scoruri indisponibile pentru această adresă",
+        "leadContextOnly": "Raportul include {{contexts}} ca informații de context.",
+        "leadZone": "Zona primește {{score}} din 100, față de {{average}} media orașului.",
+        "leadEnd": "Fiecare scor are capitolul lui.",
+        "good": "Ce e bun",
+        "watch": "La ce să fii atent",
+        "cardTitle": {
+          "flat": "{{topic}}: la fel în tot orașul",
+          "farAbove": "{{topic}} mult peste oraș",
+          "above": "{{topic}} peste media orașului",
+          "below": "{{topic}} sub media orașului",
+          "atAverage": "{{topic}} la media orașului"
+        },
+        "standing": {
+          "flat": "Estimare la nivel de oraș, la fel pentru toate zonele.",
+          "best": "Printre cele mai bune zone din oraș.",
+          "worst": "Printre cele mai slabe zone din oraș.",
+          "better": "Mai bine decât {{percent}}% din zonele din {{city}}."
+        },
+        "cardAverage": "Media orașului: {{average}}.",
+        "openChapter": "Deschide capitolul",
+        "mapBand": {
+          "eyebrow": "Harta zonei",
+          "title": "Explorează zona pe hartă",
+          "textWithRoutes": "Explorează traseele către destinații și straturile disponibile pe hartă.",
+          "textWithoutRoutes": "Vezi adresa pe hartă și explorează straturile disponibile.",
+          "walk": "locuri pe jos",
+          "transit": "destinații cu transportul",
+          "layers": "straturi",
+          "open": "Deschide harta"
+        },
+        "scores": {
+          "eyebrow": "Toate scorurile · ponderea în scor lângă nume",
+          "title": "Toate scorurile, față de tot orașul",
+          "legendAddress": "adresa",
+          "legendAverage": "media orașului",
+          "hint": "Fiecare bară pornește de la 0 și se oprește la scorul adresei. Linia neagră e media orașului.",
+          "groups": {
+            "mostImportant": "Contează cel mai mult",
+            "environment": "Mediu și liniște",
+            "services": "Servicii"
+          },
+          "weight": "{{weight}}%",
+          "difference": {
+            "flat": "la fel în tot orașul",
+            "atAverage": "la media orașului",
+            "up": "+{{points}} față de oraș",
+            "down": "−{{points}} față de oraș"
+          },
+          "rowLabel": "{{name}}: {{score}} din 100, media orașului {{average}}. Deschide capitolul.",
+          "note_one": "Scorul de zonă ({{score}}) este media ponderată a celui {{count}} scor. Riscul seismic și investiția sunt context și nu intră în scor.",
+          "note_few": "Scorul de zonă ({{score}}) este media ponderată a celor {{count}} scoruri. Riscul seismic și investiția sunt context și nu intră în scor.",
+          "note_other": "Scorul de zonă ({{score}}) este media ponderată a celor {{count}} de scoruri. Riscul seismic și investiția sunt context și nu intră în scor."
+        },
+        "formation": {
+          "eyebrow": "Scorul zonei",
+          "aboveAverage": "<b>+{{points}}</b> față de media orașului",
+          "belowAverage": "<b>−{{points}}</b> față de media orașului",
+          "lowerShare": "<b>{{percent}}%</b> din zone au un scor mai mic",
+          "atLeast": "doar <b>{{count}}</b> zone din {{total}} au {{from}}+",
+          "histTitle": "Unde se află zona față de tot orașul",
+          "histHint": "Fiecare coloană e un grup de zone cu scoruri apropiate.",
+          "histLabel": "Distribuția scorului în cele {{count}} zone din {{city}}",
+          "histAverage": "media orașului · {{average}}",
+          "histAddress": "adresa · {{score}}",
+          "histBar": "{{count}} zone cu scor între {{from}} și {{to}}",
+          "sumTitle": "Din ce se adună cele {{score}} de puncte",
+          "lost": "pierdut",
+          "partLabel": "{{name}}: {{points}} puncte",
+          "lostLabel": "Puncte pierdute: {{points}}"
+        },
+        "explorer": {
+          "title": "Harta zonei",
+          "heading": "Ce ai în jurul adresei",
+          "close": "Închide harta",
+          "walk": "Pe jos",
+          "transit": "Transport",
+          "layers": "Straturi",
+          "modes": "Ce arată harta",
+          "walkNote": {
+            "routed": "Traseele afișate urmează rețeaua pietonală.",
+            "estimated": "Timpii din capitolul „15 minute” sunt estimați din distanța în linie dreaptă. Nu sunt trasee pietonale salvate pe această hartă.",
+            "unavailable": "Nu sunt trasee pietonale salvate pe această hartă."
+          },
+          "transitNote": "Mers până la stație, așteptare, drum cu linia.",
+          "layersNote": "Pornește un strat ca să vezi ce a contat în scor.",
+          "footer": "Selectează un traseu ca să-l vezi pe hartă. Timpul apare în listă. Desen din OpenStreetMap.",
+          "minutes": "{{minutes}} min",
+          "routeLabel": "{{name}}, {{minutes}} minute",
+          "mapLabel": "Harta zonei din jurul adresei",
+          "placeKinds": {
+            "shops": "Magazin",
+            "food_drink": "Restaurant sau cafenea",
+            "services": "Servicii",
+            "pharmacies": "Farmacie",
+            "medical": "Cabinet medical",
+            "schools": "Școală",
+            "parks": "Parc",
+            "sport": "Sport",
+            "culture": "Cultură"
+          },
+          "layerNames": {
+            "green": "Spații verzi",
+            "fifteen": "15 minute pe jos",
+            "ring": "Raza de 500 m"
+          },
+          "empty": "Nu avem trasee pentru adresa asta.",
+          "legendTitle": "Pe hartă",
+          "legendAddress": "Adresa"
+        }
+      },
+      "safety": {
+        "title": "Siguranță",
+        "eyebrow": "Siguranță · {{score}} / 100 · {{band}}",
+        "precision": "Precizie: zonă (celulă)",
+        "headline": "Lumină, magazine deschise și lume pe stradă în jurul adresei",
+        "lead": "Harta arată unde e mai puțin sigur și unde e mai sigur în jurul adresei, ziua și noaptea, și fiecare element pe care l-am luat în calcul: felinare, magazine, non-stop, poliție, pompieri, baruri, parcuri, pasaje.",
+        "noData": "Nu avem date de siguranță pentru această adresă.",
+        "map": {
+          "label": "Harta siguranței în jurul adresei · OpenStreetMap",
+          "moment": "Momentul zilei",
+          "day": "Ziua",
+          "night": "Noaptea",
+          "elements": "Elemente pe hartă",
+          "heat": "Heat map",
+          "legendLess": "mai puțin sigur",
+          "legendMore": "mai sigur",
+          "distance": "{{distance}}",
+          "source": "Elementele de pe hartă sunt din OpenStreetMap (extras din {{date}}).",
+          "sourceNoDate": "Elementele de pe hartă sunt din OpenStreetMap."
+        },
+        "types": {
+          "lighting": "Iluminat",
+          "shop": "Magazine",
+          "nonstop": "Non-stop",
+          "mixed_use": "Clădiri cu parter comercial",
+          "police": "Poliție",
+          "fire_station": "Pompieri",
+          "diplomatic": "Consulate",
+          "bar": "Baruri, cluburi",
+          "park": "Parcuri",
+          "park_lit": "Parcuri iluminate",
+          "isolated_passage": "Pasaje, căi ferate",
+          "train_station": "Gări",
+          "train_halt": "Halte",
+          "transit_stop": "Stații",
+          "other": "Alt element"
+        },
+        "waterfall": {
+          "titleDay": "De ce are adresa {{score}} ziua",
+          "titleNight": "De ce are adresa {{score}} noaptea",
+          "equation": "<strong>{{start}}</strong> punct de pornire <up>+{{up}}</up> ce ridică <down>−{{down}}</down> ce coboară = <strong>{{score}}</strong>",
+          "raises": "Ce ridică scorul",
+          "lowers": "Ce coboară scorul",
+          "empty": "Nimic din jur.",
+          "detailBoth": "{{count}} în jur · cel mai aproape la {{distance}}",
+          "detailCount": "{{count}} în jur",
+          "detailNearest": "cel mai aproape la {{distance}}",
+          "far": "<strong>Prea departe ca să conteze:</strong> {{list}}. Le arătăm pe hartă, dar nu schimbă scorul.",
+          "hint": "Apasă pe un rând: pe hartă rămân doar elementele lui."
+        },
+        "score": {
+          "better": "Mai bine decât <strong>{{percent}}%</strong> din zonele din {{city}}",
+          "best": "Printre cele mai bune zone din {{city}}",
+          "worst": "Printre cele mai slabe zone din {{city}}",
+          "flat": "În {{city}} toate zonele au același scor, între {{min}} și {{max}}. Scorul nu poate deosebi adresele între ele.",
+          "none": "Fără comparație cu restul orașului",
+          "you": "Tu · {{score}}",
+          "average": "Media {{average}}",
+          "range": "Zonele orașului: {{min}}–{{max}}",
+          "included": "<strong>Ține cont de</strong> lumină, lume pe stradă, magazine deschise, poliție și pompieri",
+          "excluded": "<strong>Nu ține cont de</strong> infracțiuni: nu există date publice pe stradă"
+        },
+        "help": {
+          "eyebrow": "Dacă ai nevoie de ajutor",
+          "title": "Cât de departe e ajutorul",
+          "emergency": "Urgențe <strong>112</strong>",
+          "emergencyLabel": "Sună la 112",
+          "nonstop": "Magazin non-stop",
+          "police": "Poliție",
+          "fire_station": "Pompieri",
+          "h5": "Farmacie non-stop",
+          "h4": "Urgențe pentru adulți",
+          "walk": "{{minutes}} pe jos",
+          "car": "cu mașina",
+          "minutes": "{{count}} min",
+          "listLabel": "Cât de departe sunt serviciile de urgență"
+        },
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Rutare pe jos"
+        }
+      },
+      "accessibility": {
+        "title": "{{stops}} și {{lines}} care te duc în tot orașul",
+        "titleNoStops": "Nicio stație de transport public lângă adresă",
+        "headlineNoData": "Datele despre transportul public nu sunt disponibile pentru această adresă",
+        "stopsPhrase_one": "{{count}} stație la {{minutes}} minute pe jos",
+        "stopsPhrase_few": "{{count}} stații la {{minutes}} minute pe jos",
+        "stopsPhrase_other": "{{count}} de stații la {{minutes}} minute pe jos",
+        "linesPhrase_one": "{{count}} linie",
+        "linesPhrase_few": "{{count}} linii",
+        "linesPhrase_other": "{{count}} de linii",
+        "eyebrow": "Accesibilitate · {{score}} / 100 · {{band}}",
+        "badge": "Precizie: adresă · transport public",
+        "lead": "Media orașului e {{average}}. De aici ajungi cu transportul public mai ușor decât din {{percent}}% din zonele orașului.",
+        "leadPlain": "Stațiile din jur și drumurile de aici către punctele importante ale orașului.",
+        "mapLabel": "Harta drumurilor cu transportul public",
+        "mapChip": "Trasee transport",
+        "legendTitle": "Pe hartă",
+        "legendAddress": "Adresa",
+        "legendVehicle": "Cu vehiculul",
+        "legendWalk": "Pe jos până la stație",
+        "minutes": "{{minutes}} min",
+        "min": "min",
+        "routesTitle": "Cât faci până acolo, dimineața la 8",
+        "travelMode": "Mod de deplasare",
+        "transitMode": "Transport public și pe jos",
+        "car": {
+          "mode": "Mașină personală",
+          "mapLabel": "Harta traseelor cu mașina personală",
+          "mapChip": "Trasee cu mașina",
+          "departureAddress": "Adresa de plecare: {{address}}",
+          "legend": "Traseu rutier",
+          "routesTitle": "Cât faci cu mașina personală",
+          "rowLabel": "{{name}}, {{minutes}} min cu mașina, {{distance}}",
+          "unavailable": "Nu sunt disponibile trasee cu mașina către locurile importante pentru acest raport.",
+          "source": "Sunt afișate doar traseele calculate pe drumuri din OpenStreetMap (Valhalla). Duratele nu includ traficul în timp real sau parcarea și nu influențează scorul."
+        },
+        "rowLabel": "{{name}}, {{minutes}} minute",
+        "walkFaster": "{{minutes}} min pe jos, mai repede decât cu linia",
+        "walkDistance": "{{distance}} pe jos",
+        "fromStop": "din stația {{stop}}",
+        "legs": {
+          "walk": "{{minutes}} min pe jos",
+          "wait": "{{minutes}} min așteptare",
+          "ride": "{{minutes}} min cu linia"
+        },
+        "legKey": {
+          "walk": "pe jos",
+          "wait": "așteptare",
+          "ride": "cu linia"
+        },
+        "sourceTimetable": "Liniile, stațiile și orarul vin din datele de transport public (GTFS) pentru {{date}}, o zi lucrătoare. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "sourceTimetableUndated": "Liniile, stațiile și orarul vin din datele de transport public (GTFS). Data orarului nu este disponibilă în raport. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "sourceOsm": "Liniile și stațiile vin din OpenStreetMap. Raportul nu a folosit orarul operatorului, iar timpul de așteptare este estimat. Drumurile pe jos urmează străzile din OpenStreetMap.",
+        "groupLabel": "Tipul destinațiilor",
+        "groups": {
+          "places": "Locuri importante",
+          "highSchools": "Licee",
+          "faculties": "Facultăți"
+        },
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "osm": "OpenStreetMap",
+          "gtfs": "Orar transport public",
+          "walk_routing": "Rutare pe jos"
+        },
+        "scoreHeadline": "Mai bine decât <b>{{percent}}%</b> din zonele orașului",
+        "scoreYou": "Tu · {{score}}",
+        "scoreAverage": "Media {{average}}",
+        "scoreRange": "Zonele orașului: {{min}}–{{max}}",
+        "measuresIncluded": "<b>Ține cont de</b> stațiile din jur, câte linii trec, cât de des și cât faci până în oraș",
+        "measuresExcluded": "<b>Nu ține cont de</b> aglomerația din vehicule și întârzieri",
+        "reach": {
+          "eyebrow": "Cât de departe ajungi",
+          "title": "Orașul, în minute de la ușa ta",
+          "timeLabel": "În cât timp",
+          "option": "{{minutes}} min",
+          "ofCity": "din oraș",
+          "sentence": "În <b>{{minutes}} de minute</b>, cu transportul public și pe jos, ajungi în {{scale}}.",
+          "scales": {
+            "all": "aproape tot orașul",
+            "twoThirds": "peste două treimi din oraș",
+            "half": "aproape jumătate din oraș",
+            "third": "peste o treime din oraș",
+            "centre": "centru și cartierele vecine"
+          },
+          "neighbourhoods": "<b>{{reached}} din {{total}}</b> cartiere, plecând la 8 dimineața.",
+          "key": {
+            "under15": "sub 15 min",
+            "from15": "15–30 min",
+            "from30": "30–45 min"
+          },
+          "mapLabel": "Harta orașului: cât de departe ajungi cu transportul public"
+        },
+        "search": {
+          "label": "Caută",
+          "highSchools": "Caută un liceu",
+          "faculties": "Caută o facultate",
+          "empty": "Nu am găsit nimic cu „{{query}}”.",
+          "hint": "Apasă pe un rând ca să vezi drumul pe hartă. Pe jos, unde e mai repede decât cu linia."
+        }
+      },
+      "fifteenMinute": {
+        "eyebrow": "15 minute · {{score}} / 100 · {{band}}",
+        "precision": {
+          "routed": "Precizie: adresă · pe străzi reale",
+          "estimated": "Precizie: adresă · estimare în linie dreaptă"
+        },
+        "headline": {
+          "all": "Toate cele {{count}} lucruri de zi cu zi, la cel mult {{limit}} minute pe jos",
+          "some": "{{covered}} din {{total}} lucruri de zi cu zi, la cel mult {{limit}} minute pe jos",
+          "none": "Ce ai la {{limit}} minute pe jos"
+        },
+        "lead": {
+          "average": "Media orașului e {{average}}.",
+          "better": "Aici ai mai multe la îndemână decât în {{percent}}% din zonele din {{city}}."
+        },
+        "noData": "Nu avem date despre locurile de la 15 minute pentru această adresă.",
+        "map": {
+          "label": "Harta locurilor la 15 minute pe jos · OpenStreetMap",
+          "panelLabel": "Harta și lista",
+          "routeStatus": {
+            "pending": "Se caută traseul pietonal…",
+            "ready": "Traseu după rețeaua pietonală disponibilă. Timpul afișat rămâne cel din raportul salvat.",
+            "unavailable": "Traseul pietonal nu a putut fi afișat. Timpul afișat rămâne cel din raportul salvat."
+          },
+          "chip": "{{limit}} minute pe jos",
+          "key": {
+            "title": "Pe hartă",
+            "address": "Adresa",
+            "zone": "{{limit}} minute pe jos",
+            "places": "Locuri de zi cu zi"
+          },
+          "source": "Locurile: OpenStreetMap, {{date}}.",
+          "sourceNoDate": "Locurile: OpenStreetMap.",
+          "method": {
+            "routed": "Timpii pe jos sunt calculați pe rețeaua pietonală (străzi și alei).",
+            "routedWithSpeed": "Timpii pe jos sunt calculați pe rețeaua pietonală (străzi și alei), la {{speed}} m/min.",
+            "estimated": "Timpii pe jos sunt estimați din distanța în linie dreaptă, ajustată pentru ocoluri."
+          },
+          "minutes": "{{minutes}} min"
+        },
+        "checklist": {
+          "eyebrow": "Lista ta de zi cu zi",
+          "title": "{{covered}} din {{total}} la {{limit}} minute pe jos",
+          "only": "singurul în {{limit}} min",
+          "count": "{{count}} în {{limit}} min",
+          "farther": "mai departe de {{limit}} minute",
+          "min": "min"
+        },
+        "categories": {
+          "supermarket": "Supermarket",
+          "convenience": "Magazin de cartier",
+          "bakery": "Brutărie",
+          "greengrocer_market": "Piață sau aprozar",
+          "butcher": "Măcelărie",
+          "drugstore": "Drogerie",
+          "restaurant": "Restaurant",
+          "cafe": "Cafenea",
+          "bank_atm": "Bancă sau bancomat",
+          "post": "Poștă sau easybox",
+          "hairdresser": "Frizerie sau coafor",
+          "laundry": "Curățătorie",
+          "car_service": "Service auto",
+          "public_office": "Instituție publică",
+          "pharmacy": "Farmacie",
+          "doctor": "Medic de familie",
+          "dentist": "Stomatolog",
+          "clinic": "Clinică",
+          "veterinary": "Cabinet veterinar",
+          "kindergarten": "Grădiniță",
+          "school": "Școală",
+          "high_school": "Liceu",
+          "park": "Parc",
+          "playground": "Loc de joacă",
+          "fitness": "Sală de fitness",
+          "sports_ground": "Teren de sport",
+          "swimming_pool": "Piscină",
+          "library": "Bibliotecă",
+          "cinema_theatre": "Cinema sau teatru",
+          "place_of_worship": "Lăcaș de cult",
+          "other": "Alt serviciu"
+        },
+        "groups": {
+          "shops": "magazine",
+          "food_drink": "restaurante și cafenele",
+          "services": "bănci, poștă și alte servicii",
+          "pharmacies": "farmacii",
+          "medical": "medici și clinici",
+          "schools": "școli și grădinițe",
+          "parks": "parcuri și locuri de joacă",
+          "sport": "săli și terenuri de sport",
+          "culture": "cinematografe, teatre, biblioteci",
+          "other": "alte locuri"
+        },
+        "tiles": {
+          "eyebrow": "Ai de unde alege",
+          "title": "Nu doar un loc aproape, ci mai multe din care alegi",
+          "many": "de {{ratio}} ori mai multe",
+          "rare": "rar în alte cartiere",
+          "fewer": "mai puține decât de obicei",
+          "same": "cam cât într-un cartier obișnuit",
+          "typical": "cartier obișnuit: {{count}}",
+          "typicalNone": "cartier obișnuit: niciunul",
+          "fewerItem": "{{label}}, {{count}} (un cartier obișnuit are {{typical}})",
+          "fewerNote": "Mai puține decât de obicei: {{list}}."
+        },
+        "score": {
+          "better": "Mai bine decât <strong>{{percent}}%</strong> din zonele din {{city}}",
+          "best": "Printre cele mai bune zone din {{city}}",
+          "worst": "Printre cele mai slabe zone din {{city}}",
+          "flat": "În {{city}} toate zonele au același scor, între {{min}} și {{max}}. Scorul nu poate deosebi adresele între ele.",
+          "none": "Fără comparație cu restul orașului",
+          "you": "Tu · {{score}}",
+          "average": "Media {{average}}",
+          "range": "Zonele orașului: {{min}}–{{max}}",
+          "included": "<strong>Ține cont de</strong> magazine, sănătate, școli, parcuri și servicii la cel mult {{limit}} minute pe jos",
+          "excluded": "<strong>Nu ține cont de</strong> cât de bun e fiecare loc"
+        },
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Rutare pe jos",
+          "siiir": "SIIIR",
+          "cnas_upu": "CNAS și UPU"
+        },
+        "title": "Orașul de 15 minute"
+      },
+      "green": {
+        "title": "Spații verzi",
+        "eyebrow": "Spații verzi · {{score}} / 100 · {{band}}",
+        "precision": "Precizie: adresă",
+        "headline_one": "{{count}} parc mare, la cel mult {{minutes}} min pe jos",
+        "headline_few": "{{count}} parcuri mari, la cel mult {{minutes}} min pe jos",
+        "headline_other": "{{count}} de parcuri mari, la cel mult {{minutes}} min pe jos",
+        "headlineApprox_one": "{{count}} parc mare, până la circa {{minutes}} min pe jos",
+        "headlineApprox_few": "{{count}} parcuri mari, până la circa {{minutes}} min pe jos",
+        "headlineApprox_other": "{{count}} de parcuri mari, până la circa {{minutes}} min pe jos",
+        "headlineNone": "Niciun parc la o plimbare de adresă",
+        "headlineNoData": "Parcurile și spațiile verzi din jurul adresei",
+        "lead": "Împreună au {{total}} ha. Cel mai mare, {{name}}, are {{area}} ha.",
+        "share": "{{share}}% din suprafața pe {{radius}} m e spațiu verde, față de {{average}}% media orașului.",
+        "shareNoAverage": "{{share}}% din suprafața pe {{radius}} m e spațiu verde.",
+        "noData": "Nu avem date despre spațiile verzi pentru această adresă.",
+        "map": {
+          "label": "Harta spațiilor verzi din jurul adresei · OpenStreetMap"
+        },
+        "parks": {
+          "label": "Parcurile din jur",
+          "list": "Parcurile din jur, apasă pe unul ca să-l vezi pe hartă",
+          "unnamed": "Spațiu verde fără nume",
+          "unnamedLower": "un spațiu verde fără nume",
+          "hectares": "ha",
+          "walk": "{{minutes}} min pe jos",
+          "walkApprox": "circa {{minutes}} min pe jos",
+          "source": "Parcuri, iarbă, păduri și alei: OpenStreetMap, extras din {{date}}.",
+          "sourceNoDate": "Parcuri, iarbă, păduri și alei: OpenStreetMap."
+        },
+        "amenities": {
+          "playground": "Loc de joacă",
+          "dog_park": "Loc pentru câini",
+          "sports": "Teren de sport"
+        },
+        "score": {
+          "better": "Mai bine decât <strong>{{percent}}%</strong> din zonele din {{city}}",
+          "best": "Printre cele mai bune zone din {{city}}",
+          "worst": "Printre cele mai slabe zone din {{city}}",
+          "flat": "În {{city}} toate zonele au același scor, între {{min}} și {{max}}. Scorul nu poate deosebi adresele între ele.",
+          "none": "Fără comparație cu restul orașului",
+          "you": "Tu · {{score}}",
+          "average": "Media {{average}}",
+          "range": "Zonele orașului: {{min}}–{{max}}",
+          "included": "<strong>Ține cont de</strong> cât verde e în jur și cât de aproape sunt parcurile mari",
+          "excluded": "<strong>Nu ține cont de</strong> cât de îngrijite sunt parcurile sau de curțile private"
+        },
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "osm": "OpenStreetMap",
+          "walk_routing": "Rutare pe jos"
+        }
+      },
+      "noise": {
+        "title": "Zgomot",
+        "eyebrow": "Zgomot · {{score}} / 100 · {{band}}",
+        "precision": "Precizie: estimare din străzi",
+        "precisionStreet": "Precizie: hărți strategice de zgomot",
+        "headline": "Cam {{band}} la adresă, cât o {{reference}}",
+        "headlineNone": "Zgomotul din jurul adresei",
+        "leadSource": "Cea mai apropiată sursă de zgomot e {{name}}, la {{distance}} m.",
+        "leadNone": "Nu am găsit surse mari de zgomot în apropiere.",
+        "averageBelow": "Zona are scorul {{score}}, sub media orașului ({{average}}).",
+        "averageAbove": "Zona are scorul {{score}}, peste media orașului ({{average}}).",
+        "noData": "Nu avem date de zgomot pentru această adresă.",
+        "map": {
+          "label": "Harta zgomotului estimat în jurul adresei · OpenStreetMap",
+          "below": "sub 55 dB",
+          "range": "{{from}}–{{to}}",
+          "above": "peste {{from}}",
+          "estimate": "estimare ziua",
+          "lines": {
+            "loud": "drum mare",
+            "busy": "bulevard, tramvai",
+            "moderate": "stradă",
+            "rail": "cale ferată"
+          },
+          "method": "Estimare din străzile, liniile de tramvai, calea ferată și clădirile din OpenStreetMap, extras din {{date}}.",
+          "methodNoDate": "Estimare din străzile, liniile de tramvai, calea ferată și clădirile din OpenStreetMap.",
+          "methodStreet": "Valoarea vine din hărțile strategice de zgomot ale orașului."
+        },
+        "address": {
+          "eyebrow": "La adresă",
+          "day": "ziua, cât o {{reference}}",
+          "night": "noaptea"
+        },
+        "references": {
+          "40": "cameră liniștită",
+          "50": "stradă liniștită",
+          "60": "conversație",
+          "70": "trafic intens"
+        },
+        "kinds": {
+          "road": "stradă",
+          "tram": "tramvai",
+          "rail": "cale ferată",
+          "air": "aeroport",
+          "industry": "industrie",
+          "aggregate": "mai multe surse"
+        },
+        "classes": {
+          "motorway": "autostradă",
+          "trunk": "drum expres",
+          "primary": "bulevard",
+          "secondary": "stradă circulată",
+          "tertiary": "stradă de cartier",
+          "residential": "stradă liniștită",
+          "tram": "tramvai",
+          "rail": "cale ferată"
+        },
+        "sources": {
+          "loudest": "Ce se aude cel mai tare",
+          "none": "Nu am găsit surse mari de zgomot în apropiere.",
+          "metres": "m",
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "osm": "OpenStreetMap (străzi, tramvai, cale ferată)"
+        },
+        "score": {
+          "better": "Mai liniștit decât <strong>{{percent}}%</strong> din zonele din {{city}}",
+          "best": "Printre cele mai liniștite zone din {{city}}",
+          "worst": "Printre cele mai zgomotoase zone din {{city}}",
+          "flat": "În {{city}} toate zonele au același scor, între {{min}} și {{max}}. Scorul nu poate deosebi adresele între ele.",
+          "none": "Fără comparație cu restul orașului",
+          "you": "Tu · {{score}}",
+          "average": "Media {{average}}",
+          "range": "Zonele orașului: {{min}}–{{max}}",
+          "included": "<strong>Ține cont de</strong> străzile, tramvaiul și calea ferată din jur",
+          "excluded": "<strong>Nu ține cont de</strong> ferestre, izolație sau vecini"
+        },
+        "decibels": "{{value}} dB",
+        "names": {
+          "tram": "Linii de tramvai",
+          "rail": "Calea ferată"
+        }
+      },
+      "airIndustry": {
+        "title": "Aer și industrie",
+        "headlineNoData": "Datele despre aer și industrie nu sunt disponibile pentru această adresă",
+        "eyebrowPart": "{{name}} · {{score}} / 100",
+        "eyebrowPartNoScore": "{{name}} · fără date",
+        "badge": "Precizie: aer la nivel de oraș, industrie la adresă",
+        "verdict": {
+          "clean_all_year": "Aer curat tot anul",
+          "winter_peaks": "Aer bun vara, mai încărcat iarna",
+          "above_limit_most_year": "Aer peste limita UE în cea mai mare parte a anului",
+          "default": "Aer ca în tot orașul"
+        },
+        "headline": {
+          "withNearest": "{{air}}, fabrici la peste {{distance}}",
+          "noSites": "{{air}}, nicio fabrică în registru aproape",
+          "airOnly": "{{air}}",
+          "industryNearest": "Fabrici la peste {{distance}}",
+          "industryNone": "Nicio fabrică în registru aproape"
+        },
+        "lead": {
+          "noAirData": "Datele despre aer nu sunt disponibile pentru această adresă.",
+          "noIndustryData": "Datele despre industrie nu sunt disponibile pentru această adresă.",
+          "winter": "Iarna crește praful din aer, ca peste tot în {{city}}.",
+          "nearest": "Cea mai apropiată instalație industrială e la {{distance}}."
+        },
+        "months": {
+          "eyebrow": "Praful din aer, lună cu lună",
+          "title_one": "O lună din 12 peste limita UE din 2030",
+          "title_few": "{{count}} luni din 12 peste limita UE din 2030",
+          "title_other": "{{count}} de luni din 12 peste limita UE din 2030",
+          "titleNone": "Nicio lună peste limita UE din 2030",
+          "titleUnknown": "Praful fin din aer, pe 12 luni",
+          "legendPm25": "PM2,5, µg/m³",
+          "legendLimit": "limita UE din 2030",
+          "chartLabel": "Praful fin din aer (PM2,5) în fiecare lună din ultimul an, față de limita UE din 2030",
+          "annual": "Media pe an: {{value}} µg/m³.",
+          "annualCity": "Media pe an: {{value}} µg/m³, față de {{average}} media orașului."
+        },
+        "sites": {
+          "eyebrow": "Industria din jur",
+          "title": "Cele mai apropiate instalații din registrul european",
+          "empty": "Nicio instalație raportată pe o rază de {{distance}}.",
+          "sectors": {
+            "energy": "energie",
+            "metals": "metalurgie",
+            "minerals": "materiale de construcții",
+            "chemicals": "chimie",
+            "waste_water": "deșeuri și ape uzate",
+            "paper_wood": "hârtie și lemn",
+            "livestock": "fermă de animale",
+            "food": "industrie alimentară",
+            "other": "altă activitate"
+          },
+          "impacts": {
+            "air": "emisii în aer",
+            "water": "emisii în apă",
+            "odour": "poate produce mirosuri",
+            "seasonal_winter": "mai ales iarna"
+          }
+        },
+        "score": {
+          "air": {
+            "kicker": "Aer",
+            "included": "<strong>Ține cont de</strong> praful fin din aer, media pe un an, la nivel de oraș",
+            "excluded": "<strong>Nu ține cont de</strong> diferențele de la o stradă la alta"
+          },
+          "industry": {
+            "kicker": "Industrie",
+            "included": "<strong>Ține cont de</strong> instalațiile industriale din registrul european, până la 5 km",
+            "excluded": "<strong>Nu ține cont de</strong> atelierele mici care nu intră în registru"
+          },
+          "cityAverage": "Media orașului: <strong>{{average}}</strong>",
+          "you": "Tu · {{score}}",
+          "average": "Media {{average}}",
+          "range": "Zonele orașului: {{min}}–{{max}}"
+        },
+        "note": {
+          "air": "Aer: modelul european Copernicus, corectat cu stațiile din oraș, {{period}}.",
+          "airNoPeriod": "Aer: modelul european Copernicus, corectat cu stațiile din oraș.",
+          "industry": "Industrie: registrul industrial european, raportările din {{year}}."
+        },
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> {{sources}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> {{name}} {{weight}}% din 100. Adresa ta aduce {{points}} puncte din {{weight}}.",
+          "same": "Aceeași adresă primește același scor, oricând o verifici.",
+          "cams": "Copernicus CAMS",
+          "eea_stations": "Stații EEA",
+          "eea_industrial": "Registrul industrial EEA"
+        }
+      },
+      "seismic": {
+        "title": "Risc seismic",
+        "eyebrow": "Risc seismic · context, nu intră în scor",
+        "precision": {
+          "address": "Precizie: zona adresei",
+          "city": "Precizie: oraș"
+        },
+        "headline": {
+          "withQuakes": "Cel mai puternic cutremur din jur: {{magnitude}}, în {{year}}",
+          "withoutQuakes": "Accelerația de proiectare e {{value}} g: nivel {{level}}",
+          "nearModerate": "Cutremurele din zonă sunt aproape, dar moderate"
+        },
+        "lead": {
+          "withQuakes_one": "Din {{since}} încoace, {{count}} cutremur de cel puțin {{min}} la mai puțin de {{radius}} km de {{city}}.",
+          "withQuakes_few": "Din {{since}} încoace, {{count}} cutremure de cel puțin {{min}} la mai puțin de {{radius}} km de {{city}}.",
+          "withQuakes_other": "Din {{since}} încoace, {{count}} de cutremure de cel puțin {{min}} la mai puțin de {{radius}} km de {{city}}.",
+          "withoutQuakes": "Valoarea vine din codul seismic {{code}} și arată pentru ce cutremur se proiectează clădirile din {{city}}.",
+          "nearModerate": "{{city}} are cutremurele ei, la {{min}}–{{max}} km, rar peste {{floor}}. Cel mai puternic: {{magnitude}}, în {{year}}."
+        },
+        "noData": "Nu avem valoarea din codul seismic pentru această adresă.",
+        "levels": {
+          "low": "Scăzut",
+          "moderate": "Moderat",
+          "high": "Ridicat",
+          "very_high": "Foarte ridicat"
+        },
+        "map": {
+          "label": "Cutremurele din jurul adresei, din {{since}} încoace",
+          "keyQuake": "cutremur, cu cât mai mare cercul, cu atât mai puternic",
+          "keyTop": "cele mai puternice {{count}}, cu numărul din listă",
+          "quakeLabel": "Cutremur de magnitudine {{magnitude}}",
+          "ring": "{{km}} km"
+        },
+        "list": {
+          "eyebrow": "Din {{since}} încoace",
+          "title": "Cele mai puternice cutremure la mai puțin de {{radius}} km",
+          "label": "Cele mai puternice cutremure",
+          "near": "lângă {{place}}",
+          "distance": "{{km}} <unit>km</unit>",
+          "rank": "{{rank}}"
+        },
+        "conclusion": {
+          "low": {
+            "title": "Pe scurt: risc scăzut",
+            "body": "Codul seismic cere aici cea mai mică accelerație de proiectare din țară. Contează în continuare cât de bine e construit și întreținut blocul."
+          },
+          "moderate": {
+            "title": "Pe scurt: risc moderat, nu ridicat",
+            "body": "Zona e la mijlocul scalei din codul seismic. Cutremurele mari ale țării vin din Vrancea și ajung aici slăbite. Ce contează mai departe e cât de bine e construit și întreținut blocul.",
+            "bodyQuakes": "Din {{since}} încoace, niciun cutremur din jur n-a trecut de {{max}}. Cutremurele mari ale țării vin din Vrancea, de la circa {{vrancea}} km, și ajung aici slăbite. Ce contează mai departe e cât de bine e construit și întreținut blocul."
+          },
+          "high": {
+            "title": "Pe scurt: risc ridicat",
+            "body": "Zona e în partea de sus a scalei din codul seismic. Cere anul construcției, expertiza tehnică și dacă blocul a fost consolidat."
+          },
+          "very_high": {
+            "title": "Pe scurt: risc foarte ridicat",
+            "body": "Zona are cea mai mare accelerație de proiectare din codul seismic. Cere anul construcției, expertiza tehnică, clasa de risc seismic și dacă blocul a fost consolidat."
+          },
+          "year": "Anul declarat al construcției: {{year}}. Întreabă după ce normativ a fost proiectat blocul și dacă are expertiză tehnică.",
+          "yearCodes": "Anul declarat al construcției: {{year}}. Blocurile din această perioadă au fost proiectate după {{codes}}. Întreabă dacă are expertiză tehnică.",
+          "yearBeforeCode": "Anul declarat al construcției: {{year}}, înainte de primul cod de proiectare seismică din România (1963). Întreabă dacă are expertiză tehnică și dacă a fost consolidat."
+        },
+        "source": "Cutremure: {{catalogue}}, din {{since}} încoace, magnitudine de cel puțin {{min}}{{retrieved}}. Hartă: OpenStreetMap.",
+        "retrieved": ", citite pe {{date}}",
+        "catalogue": {
+          "both": "catalogul USGS și EMSC",
+          "usgs": "catalogul USGS",
+          "emsc": "catalogul EMSC"
+        },
+        "sourceNames": {
+          "usgs": "U.S. Geological Survey, catalogul ComCat, domeniu public",
+          "emsc": "EMSC (European-Mediterranean Seismological Centre), CC BY 4.0"
+        },
+        "scale": {
+          "keyword": "Seismic",
+          "pill": "Nivel: {{level}}",
+          "title": "Cum stă {{city}} față de celelalte {{count}} orașe",
+          "track": "Accelerația de proiectare a orașelor, între 0,05 g și 0,35 g",
+          "included": "<strong>Ține cont de</strong> accelerația de proiectare din codul seismic {{code}}",
+          "excluded": "<strong>Nu ține cont de</strong> starea clădirii și de consolidări",
+          "unit": "g"
+        },
+        "sources": {
+          "title": "Surse și date",
+          "list": "<strong>Surse:</strong> Cod seismic {{code}}{{catalogue}}",
+          "weight": "<strong>Pondere în scorul de zonă:</strong> nu intră în scor. E context."
+        },
+        "cities": {
+          "bucuresti": "București",
+          "cluj-napoca": "Cluj-Napoca",
+          "timisoara": "Timișoara",
+          "iasi": "Iași",
+          "constanta": "Constanța",
+          "craiova": "Craiova",
+          "sibiu": "Sibiu",
+          "oradea": "Oradea",
+          "targu-mures": "Târgu Mureș"
+        }
+      },
+      "investment": {
+        "title": "Investiție",
+        "eyebrow": "Investiție · context, nu intră în scor",
+        "badgeCity": "Precizie: oraș",
+        "badgeNoData": "Fără date încă",
+        "example": "exemplu",
+        "perM2": "{{value}} €/m²",
+        "offers_one": "{{amount}} ofertă",
+        "offers_few": "{{amount}} oferte",
+        "offers_other": "{{amount}} de oferte",
+        "note": "Nu intră în scorul de zonă. Investiția e context pentru cine cumpără ca să închirieze.",
+        "headline": {
+          "city": "În {{city}} se cer în jur de {{value}} € pe metru pătrat",
+          "radius": "În jurul adresei se cer în jur de {{value}} € pe metru pătrat"
+        },
+        "lead": {
+          "declared": "Pentru {{area}} m², cam {{price}}, preț cerut.",
+          "asking": "Preț cerut în anunțuri, nu preț de vânzare."
+        },
+        "empty": {
+          "headline": "Prețuri, chirii și randament, când avem date de piață",
+          "lead": "Prețul cerut pe metru pătrat, chiria și randamentul față de oraș apar aici când avem date pentru orașul tău.",
+          "title": "Încă nu avem prețuri cerute pentru orașul acesta",
+          "text": "Fără cifre, nu estimăm: n-ar fi cinstit."
+        },
+        "price": {
+          "eyebrow": "Preț cerut pe metru pătrat",
+          "titleRange": "Jumătate din apartamente se cer între {{low}} și {{high}} €/m²",
+          "titleMedian": "Prețul cerut din mijloc: {{value}} €/m²",
+          "cityWide": "{{city}}, tot orașul",
+          "nearby": "{{name}}, lângă oraș",
+          "typical": "Apartamentul tipic din anunțuri: {{area}} m², {{price}} €",
+          "legendRange": "intervalul tipic",
+          "legendMedian": "prețul din mijloc",
+          "radius": "În jurul adresei"
+        },
+        "home": {
+          "eyebrow": "Pentru apartamentul tău",
+          "declaredArea": "Suprafața declarată",
+          "chosenArea": "Suprafața aleasă",
+          "area": "{{area}} m²",
+          "sliderLabel": "Suprafața apartamentului",
+          "resetArea": "Revino la {{area}} m²",
+          "price": "Preț cerut estimat",
+          "approx": "≈ {{value}}",
+          "between": "între {{low}} și {{high}}",
+          "rent": "Chirie estimată",
+          "rentBasis": {
+            "sameRooms": "Mediana chiriilor pentru același număr de camere.",
+            "perM2": "Estimare pe m² pentru această suprafață."
+          },
+          "perMonth": "pe lună"
+        },
+        "yield": {
+          "eyebrow": "Randament brut pe an",
+          "title": "Chiria pe un an înseamnă {{value}}% din preț",
+          "value": "{{value}}%",
+          "scope": {
+            "address": "În jurul adresei",
+            "addressSaleCityRent": "Preț în jurul adresei · chirie la nivelul orașului",
+            "citySaleAddressRent": "Preț la nivelul orașului · chirie în jurul adresei",
+            "unknown": "Date de piață"
+          },
+          "note": "Chiria pe 12 luni împărțită la preț, înainte de taxe, reparații și luni fără chiriaș.",
+          "legacyTitle": "Randament brut: {{value}}% (baza nu este disponibilă)",
+          "declaredBasis": "Calcul pentru suprafața declarată: 12 × {{rent}} pe lună ÷ {{sale}}.",
+          "basis": "Calcul: 12 × {{rent}} €/m² pe lună ({{rentSource}}, {{rentPeriod}}) ÷ {{sale}} €/m² ({{saleSource}}, {{salePeriod}})."
+        },
+        "history": {
+          "eyebrow": "Istoric · {{first}} – {{last}}",
+          "title": {
+            "up": "Din {{month}}, prețul cerut a urcat cu {{value}} €/m²",
+            "down": "Din {{month}}, prețul cerut a scăzut cu {{value}} €/m²",
+            "flat": "Din {{month}}, prețul cerut a rămas la fel"
+          },
+          "chartLabel": "Prețul cerut pe metru pătrat în lunile pentru care avem date",
+          "forArea": "Pentru {{area}} m², față de {{month}}",
+          "span_one": "{{percent}} în {{count}} lună",
+          "span_few": "{{percent}} în {{count}} luni",
+          "span_other": "{{percent}} în {{count}} de luni"
+        },
+        "sources": {
+          "eyebrow": "Sursa cifrelor{{date}}",
+          "open": "Deschide",
+          "note": "Sunt prețuri cerute în anunțuri, nu prețuri de vânzare.",
+          "exampleNote": "Cifrele marcate „exemplu” se înlocuiesc la primul import.",
+          "names": {
+            "apartamente_org": "apartamente.org, prețuri apartamente",
+            "apartamente_org_index": "apartamente.org, indicele lunar",
+            "imospot_index": "Indicele Imospot (CC BY 4.0)"
+          },
+          "roles": {
+            "sale": "{{place}} · vânzare",
+            "rent": "{{place}} · închiriere",
+            "history": "Istoricul prețurilor cerute",
+            "yield_sale": "Prețul folosit pentru randament",
+            "yield_rent": "Chiria folosită pentru randament"
+          }
+        },
+        "badgeRadius": "Precizie: în jurul adresei",
+        "apartments_one": "{{amount}} apartament",
+        "apartments_few": "{{amount}} apartamente",
+        "apartments_other": "{{amount}} de apartamente"
+      },
+      "closing": {
+        "title": "Înainte de vizionare",
+        "next": {
+          "eyebrow": "Pasul următor",
+          "title": "Raportul descrie zona. Verifică și apartamentul.",
+          "physicalLabel": "Property Fizic",
+          "includedPrefix": "Raportul online e inclus",
+          "text": "<strong>Starea apartamentului o verifică un inspector,</strong> la fața locului: întrebări, fotografii, plan și tur 360°.",
+          "book": "Programează inspecția",
+          "titleGood": "Zona arată bine. Verifică și apartamentul.",
+          "textGood": "<strong>Zona arată bine. Starea apartamentului o verifică un inspector.</strong> La fața locului: întrebări, fotografii, plan și tur 360°. Raportul online e inclus."
+        },
+        "method": {
+          "eyebrow": "Surse și date",
+          "title": "Aceeași adresă primește același scor, oricând o verifici.",
+          "lead": "Unde nu avem date bune, îți spunem.",
+          "snapshot": "Date din {{month}} · {{city}}.",
+          "groups": {
+            "map": "Hartă și străzi",
+            "transit": "Transport",
+            "air": "Aer și industrie",
+            "services": "Servicii",
+            "seismic": "Seismic"
+          },
+          "sources": {
+            "osm": "OpenStreetMap",
+            "walk_routing": "Rutare pe jos",
+            "noise": "Zgomot",
+            "gtfs": "GTFS transport public",
+            "cams": "Copernicus CAMS",
+            "eea_stations": "Stații EEA (calitatea aerului)",
+            "eea_air_map": "Harta aerului EEA",
+            "eea_industrial": "Registrul industrial EEA",
+            "siiir": "SIIIR (educație)",
+            "cnas": "Furnizori CNAS",
+            "ms_upu": "Unități de urgență (UPU/CPU)",
+            "seismic": "Cod seismic P100-1/2013",
+            "earthquakes": "Cutremure USGS și EMSC"
+          }
+        }
+      }
+    },
+    "frame": {
+      "hero": {
+        "eyebrow": "Smart Check · raport nr. {{number}} · {{date}}",
+        "leadNoStrengths": "Scorurile descriu zona din jurul adresei.",
+        "leadNoScores": "Nu avem suficiente date pentru a calcula scorurile acestei adrese.",
+        "leadWeak": "Punctul slab e {{weak}}.",
+        "leadNoWeak": "Niciunul dintre scorurile disponibile nu e slab.",
+        "meta": "Calculat pe datele din {{date}} · rază de până la {{radius}} km",
+        "ready": "Raport gata",
+        "noDetails": "Fără detalii declarate",
+        "declaredArea": "Suprafață declarată: {{area}} m²",
+        "zoneScore": "Scor de zonă",
+        "zoneScoreLabel": "Scor de zonă {{score}} din 100",
+        "zoneAverage": "Media orașului {{average}}.",
+        "zoneBest": "Cel mai bun scor {{best}}.",
+        "noScore": "Fără date",
+        "mapLabel": "Spații verzi în jurul adresei · OpenStreetMap",
+        "mapTitle": "Harta spațiilor verzi din jurul adresei",
+        "mapError": "Harta nu s-a putut încărca.",
+        "leadOneStrength": "Zona stă cel mai bine la {{first}}.",
+        "leadTwoStrengths": "Zona stă cel mai bine la {{first}} și {{second}}."
+      },
+      "tabs": {
+        "label": "Capitolele raportului",
+        "names": {
+          "summary": "Pe scurt",
+          "safety": "Siguranță",
+          "accessibility": "Accesibilitate",
+          "fifteenMinute": "15 minute",
+          "green": "Green",
+          "noise": "Zgomot",
+          "airIndustry": "Aer și industrie",
+          "seismic": "Seismic",
+          "investment": "Investiție"
+        },
+        "noValue": "–",
+        "seismicValue": "{{value}} g",
+        "investmentValue": "{{value}} €/m²"
+      },
+      "next": {
+        "eyebrow": "Capitolul următor",
+        "score": "Scor {{score}} din 100 · media orașului {{average}}",
+        "open": "Deschide"
+      },
+      "outOf": "/100"
+    },
+    "categories": {
+      "safety": {
+        "name": "Siguranță",
+        "topic": "Siguranța",
+        "weakness": "siguranța",
+        "strength": "siguranță"
+      },
+      "accessibility": {
+        "name": "Accesibilitate",
+        "topic": "Transportul public",
+        "weakness": "transportul public",
+        "strength": "transport public"
+      },
+      "fifteen_minute": {
+        "name": "15 minute",
+        "topic": "Locurile la 15 minute",
+        "weakness": "locurile la 15 minute pe jos",
+        "strength": "locuri la 15 minute pe jos"
+      },
+      "green": {
+        "name": "Green",
+        "topic": "Spațiile verzi",
+        "weakness": "spațiile verzi",
+        "strength": "spații verzi"
+      },
+      "noise": {
+        "name": "Zgomot",
+        "topic": "Zgomotul",
+        "weakness": "zgomotul",
+        "strength": "liniște"
+      },
+      "air": {
+        "name": "Aer",
+        "topic": "Aerul",
+        "weakness": "aerul",
+        "strength": "aer"
+      },
+      "industry": {
+        "name": "Industrie",
+        "topic": "Industria",
+        "weakness": "industria din jur",
+        "strength": "distanța față de industrie"
+      },
+      "education": {
+        "name": "Educație",
+        "topic": "Școlile",
+        "weakness": "școlile",
+        "strength": "școli"
+      },
+      "health": {
+        "name": "Sănătate",
+        "topic": "Serviciile de sănătate",
+        "weakness": "serviciile de sănătate",
+        "strength": "servicii de sănătate"
+      }
+    },
+    "bands": {
+      "low": "Scăzut",
+      "below": "Sub medie",
+      "mid": "Mediu",
+      "good": "Bun",
+      "top": "Foarte bun"
+    },
+    "language": "Limba raportului",
+    "pdf": {
+      "download": {
+        "ro": "Descarcă PDF (RO)",
+        "en": "Descarcă PDF (EN)"
+      },
+      "preparing": {
+        "ro": "Se pregătește PDF-ul (RO)",
+        "en": "Se pregătește PDF-ul (EN)"
+      },
+      "failed": "PDF-ul nu s-a putut descărca. Încearcă din nou.",
+      "missing": "PDF-ul acestui raport nu este disponibil încă."
+    },
+    "share": {
+      "action": "Partajează",
+      "title": "Partajează raportul",
+      "description": "Linkul arată raportul fără contul tău. Îl poți revoca oricând.",
+      "validity": "Valabil",
+      "options": {
+        "7": "7 zile",
+        "30": "30 de zile",
+        "never": "Fără expirare"
+      },
+      "create": "Creează link",
+      "replace": "Creează un link nou",
+      "replaceNote": "Linkul nou îl înlocuiește pe cel activ, care nu va mai merge.",
+      "newLink": "Linkul nou",
+      "newLinkNote": "Linkul se vede întreg doar acum. Copiază-l înainte să închizi.",
+      "copy": "Copiază linkul",
+      "copied": "Linkul a fost copiat.",
+      "copyFailed": "Nu am putut copia linkul. Selectează-l și copiază-l manual.",
+      "active": "Link activ",
+      "createdOn": "Creat pe {{date}}",
+      "expiresOn": "expiră pe {{date}}",
+      "noExpiry": "fără expirare",
+      "revoke": "Revocă",
+      "revoked": "Linkul a fost revocat și nu mai deschide raportul.",
+      "none": "Niciun link activ.",
+      "createFailed": "Nu am putut crea linkul. Încearcă din nou.",
+      "revokeFailed": "Nu am putut revoca linkul. Încearcă din nou.",
+      "loadFailed": "Nu am putut încărca linkul activ."
+    }
+  }
+}

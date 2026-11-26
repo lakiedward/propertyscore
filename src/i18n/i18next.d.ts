@@ -1,6 +1,7 @@
 import 'i18next';
 import type { resources } from './i18n';
 import type roFieldInspection from './locales/ro/fieldInspection.json';
+import type roSmartCheck from './locales/ro/smartCheck.json';
 import type roHome from './locales/ro/home.json';
 import type roInspectionForm from './locales/ro/inspectionForm.json';
 import type roInspections from './locales/ro/inspections.json';
@@ -15,6 +16,7 @@ declare module 'i18next' {
     defaultNS: 'common';
     resources: (typeof resources)['ro'] & {
       home: typeof roHome;
+      smartCheck: typeof roSmartCheck;
       listings: typeof roListings;
       publish: typeof roPublish;
       moderation: typeof roModeration;

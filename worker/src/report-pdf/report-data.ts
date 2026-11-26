@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { carRouteSchema } from '../report/car-route-contract.ts';
+import { investmentSectionSchema } from '../report/investment-contract.ts';
 import { CATEGORY_KEYS, type CategoryKey } from '../scoring/categories.ts';
 
 const score = z.number().min(0).max(100);
@@ -66,10 +68,10 @@ const safetySchema = z.object({
     .optional(),
 });
 
-const accessibilitySchema = z.object({
+const scoredAccessibilitySchema = z.object({
   status: z.literal('scored'),
   data_quality: z.enum(['gtfs', 'osm_only']),
-  reference_date: z.string().nullable(),
+  reference_date: z.iso.date().nullable().catch(null),
   stops: z.array(
     z.object({
       id: z.string(),
@@ -93,6 +95,7 @@ const accessibilitySchema = z.object({
       kind: z.string(),
       label: z.object({ ro: z.string(), en: z.string() }),
       location: position,
+      car_route: carRouteSchema.nullable().default(null).catch(null),
       minutes: z.number().nullable(),
       by_walking: z.boolean(),
       walk: z.number().nullable(),
@@ -131,11 +134,17 @@ const accessibilitySchema = z.object({
     .default(null),
 });
 
+const accessibilitySchema = z.discriminatedUnion('status', [
+  scoredAccessibilitySchema,
+  scoredAccessibilitySchema.pick({ destinations: true }).extend({ status: z.literal('car_only') }),
+]);
+
 const fifteenMinuteSchema = z.object({
   status: z.literal('scored'),
   covered: z.number(),
   total: z.number(),
   distance_method: z.string(),
+  walk_speed_kmh: z.number().nullable().default(null),
   groups: z.array(
     z.object({ key: z.string(), n15: z.number(), typical_n15: z.number().nullable().optional() }),
   ),
@@ -174,6 +183,7 @@ const greenSchema = z.object({
       area_ha: z.number(),
       amenities: z.array(z.string()),
       walk_m: z.number(),
+      walk_seconds: z.number().nonnegative().optional(),
       center: position,
     }),
   ),
@@ -303,64 +313,6 @@ const seismicSchema = z.object({
     .default(null),
 });
 
-const marketSource = z.object({
-  source: z.string(),
-  period: z.string(),
-  url: z
-    .string()
-    .nullable()
-    .transform((value) => (value?.startsWith('https://') ? value : null)),
-  observed_on: z.string().nullable().optional(),
-  label: z.string().optional(),
-});
-
-const investmentSchema = z.object({
-  status: z.literal('context'),
-  reference_date: z.string().nullable(),
-  declared: z.object({ area_m2: z.number().nullable() }),
-  sale: z
-    .looseObject({
-      precision: z.string(),
-      count: z.number().nullable().optional(),
-      median_eur_m2: z.number(),
-      p25_eur_m2: z.number().nullable().optional(),
-      p75_eur_m2: z.number().nullable().optional(),
-      typical: z.object({ area_m2: z.number(), price_eur: z.number() }).nullable().optional(),
-      estimate_eur: z.number().nullable().optional(),
-      estimate_low_eur: z.number().nullable().optional(),
-      estimate_high_eur: z.number().nullable().optional(),
-    })
-    .nullable(),
-  rent: z
-    .looseObject({
-      median_eur: z.number().nullable().optional(),
-      estimate_eur: z.number().nullable().optional(),
-      is_example: z.boolean().optional(),
-    })
-    .nullable(),
-  yield: z.object({ gross_pct: z.number().nullable(), is_example: z.boolean().optional() }),
-  nearby: z
-    .array(
-      z.object({
-        name: z.string(),
-        count: z.number().nullable(),
-        median_eur_m2: z.number(),
-        p25_eur_m2: z.number().nullable(),
-        p75_eur_m2: z.number().nullable(),
-      }),
-    )
-    .default([]),
-  history: z
-    .object({ months: z.array(z.object({ period: z.string(), median_eur_m2: z.number() })) })
-    .nullable()
-    .default(null),
-  sources: z.array(marketSource).default([]),
-});
-
-const questionsSchema = z.object({
-  codes: z.array(z.string()),
-});
-
 const SECTION_SCHEMAS = {
   safety: safetySchema,
   accessibility: accessibilitySchema,
@@ -372,8 +324,7 @@ const SECTION_SCHEMAS = {
   education: educationSchema,
   health: healthSchema,
   seismic: seismicSchema,
-  investment: investmentSchema,
-  questions: questionsSchema,
+  investment: investmentSectionSchema,
 } as const;
 
 type SectionKey = keyof typeof SECTION_SCHEMAS;
@@ -396,12 +347,17 @@ const summarySchema = z.looseObject({
   categories: z.record(z.enum(CATEGORY_KEYS), categorySummarySchema),
 });
 
+const reportLocaleSchema = z.enum(['ro', 'en']);
+
+export type ReportLocale = z.infer<typeof reportLocaleSchema>;
+
 export const reportInputSchema = z.object({
   number: z.number().int().positive(),
   address_text: z.string().min(1),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   generated_at: z.string().min(1),
+  locale: reportLocaleSchema.default('ro'),
   result: summarySchema,
 });
 
@@ -413,6 +369,7 @@ export type ReportData = {
   latitude: number;
   longitude: number;
   generatedAt: string;
+  locale: ReportLocale;
   city: { slug: string; name: string };
   snapshot: { period: string; sourceDates: Record<string, string> };
   zone: z.infer<typeof summarySchema>['zone'];
@@ -447,6 +404,7 @@ export function toReportData(input: z.infer<typeof reportInputSchema>): ReportDa
     latitude: input.latitude,
     longitude: input.longitude,
     generatedAt: input.generated_at,
+    locale: input.locale,
     city: result.city,
     snapshot: { period: result.snapshot.period, sourceDates: result.snapshot.source_dates },
     zone: result.zone,
@@ -463,7 +421,6 @@ export function toReportData(input: z.infer<typeof reportInputSchema>): ReportDa
       health: section('health'),
       seismic: section('seismic'),
       investment: section('investment'),
-      questions: section('questions'),
     },
     unreadableSections,
   };

@@ -10,7 +10,7 @@ import { HOME_SECTION, type HomeSectionId } from './site-navigation';
 type FooterLink =
   | { key: string; label: string; hash: HomeSectionId }
   | { key: string; label: string; to: '/listings'; transaction: 'sale' | 'rent' }
-  | { key: string; label: string; to: '/login' | '/account' | '/publish' };
+  | { key: string; label: string; to: '/login' | '/account' | '/check' | '/publish' };
 
 const LEGAL_KEYS = ['terms', 'privacy', 'cookies'] as const;
 
@@ -40,7 +40,7 @@ export function SiteFooter() {
         {
           key: 'smart-check',
           label: t('site.footer.services.smartCheck', { price: smartCheckPrice }),
-          hash: HOME_SECTION.smartCheck,
+          to: '/check',
         },
         {
           key: 'deliverables',
@@ -119,7 +119,7 @@ export function SiteFooter() {
               shape="pill"
               className="gap-2 pr-4 pl-2.5 text-small font-extrabold focus-visible:ring-focus-inverse focus-visible:ring-offset-surface-inverse"
             >
-              <Link to="/" hash={HOME_SECTION.smartCheck}>
+              <Link to="/check">
                 <BrandMark product="smartcheck" tone="inverse" size={22} />
                 {t('site.footer.smartCheckCta')}
               </Link>
