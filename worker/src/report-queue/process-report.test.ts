@@ -111,7 +111,16 @@ describe.skipIf(!databaseUrl)('processReport against the local database', () => 
     `;
     await sql`select private.compute_overall_scores(${snapshotId})`;
     await sql`select private.compute_snapshot_stats(${snapshotId})`;
-    await sql`select private.publish_score_snapshot(${snapshotId}, '{"osm": "2026-10-31"}')`;
+    await sql`
+      update public.score_snapshots
+      set status = 'superseded'
+      where status = 'ready'
+    `;
+    await sql`
+      update public.score_snapshots
+      set status = 'ready', finished_at = now(), source_dates = '{"osm": "2026-10-31"}'
+      where id = ${snapshotId}
+    `;
   });
 
   afterAll(async () => {

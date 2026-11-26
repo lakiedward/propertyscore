@@ -6,6 +6,7 @@ import { createSql, type Sql } from '../../db/sql.ts';
 import { createLogger } from '../../lib/logger.ts';
 import { buildSnapshot } from '../../snapshot/build-snapshot.ts';
 import { hasOsmium, prepareSourcesDir } from '../../test/osm-fixture.ts';
+import { limitCoveredCities } from '../../test/coverage-fixture.ts';
 import type { ScoreModule } from '../score-module.ts';
 import { runAir } from './air.module.ts';
 import type { AirSources } from './air.sources.ts';
@@ -78,6 +79,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 describe.skipIf(!databaseUrl || !hasOsmium())('air module against the local database', () => {
   let sql: Sql;
+  let restoreCoverage: (() => Promise<void>) | undefined;
   let sourcesDir = '';
   let previousReady: string | undefined;
   let hadSibiuCells = false;
@@ -96,6 +98,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('air module against the local data
       ) as has_cells
     `;
     hadSibiuCells = cells?.has_cells ?? false;
+    restoreCoverage = await limitCoveredCities(sql, 'sibiu');
 
     const result = await buildSnapshot({
       sql,
@@ -112,6 +115,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('air module against the local data
   });
 
   afterAll(async () => {
+    await restoreCoverage?.();
     if (snapshotId) await sql`delete from public.score_snapshots where id = ${snapshotId}`;
     await sql`delete from private.air_stations where eoi_code in ('RO9990A', 'RO9991A')`;
     if (!hadSibiuCells) {

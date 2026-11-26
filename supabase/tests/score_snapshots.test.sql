@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(19);
+select plan(24);
 
 select results_eq(
   $$ select label, (select sum(value::numeric) from jsonb_each_text(weights)), params ->> 'cell_size_m' from public.scoring_versions where kind = 'online' and is_active $$,
@@ -59,9 +59,27 @@ select lives_ok(
   'A used formula version can still be touched without changing its formula'
 );
 
+select private.build_grid_cells(c.id, 175)
+from public.cities c
+where c.has_online_coverage;
+
+create temporary table station_cells as
+select c.slug, private.find_grid_cell(d.location, 175) as cell_id
+from public.cities c
+join private.key_destinations d on d.city_id = c.id and d.kind = 'station' and d.is_active
+where c.has_online_coverage;
+
+select is(count(cell_id), 9::bigint, 'All nine reference stations resolve to grid cells')
+from station_cells;
+
+insert into private.cell_scores (snapshot_id, cell_id, categories)
+select :'first_id', cell_id, '{"green": 60}' from station_cells;
+select private.compute_overall_scores(:'first_id');
+select private.compute_snapshot_stats(:'first_id');
+
 select lives_ok(
   format($$ select private.publish_score_snapshot(%L, '{"osm": "2026-11-01"}') $$, :'first_id'),
-  'A building snapshot can be published'
+  'A snapshot with a score at all nine stations can be published'
 );
 
 select results_eq(
@@ -78,6 +96,65 @@ select throws_ok(
 );
 
 select private.start_score_snapshot('2026-12-01') as second_id \gset
+
+insert into private.cell_scores (snapshot_id, cell_id, categories)
+select :'second_id', cell_id, '{"green": 60}' from station_cells where slug <> 'sibiu';
+select private.compute_overall_scores(:'second_id');
+select private.compute_snapshot_stats(:'second_id');
+
+select throws_ok(
+  format($$ select private.publish_score_snapshot(%L, '{}') $$, :'second_id'),
+  'P0001',
+  'snapshot_incomplete_city_coverage',
+  'A candidate missing a supported city cannot publish'
+);
+
+insert into private.cell_scores (snapshot_id, cell_id)
+select :'second_id', g.id
+from private.grid_cells g
+join public.cities c on c.id = g.city_id
+where c.slug = 'sibiu' and g.size_m = 175
+  and g.id <> (select cell_id from station_cells where slug = 'sibiu')
+order by g.cell_key
+limit 1;
+select private.compute_snapshot_stats(:'second_id');
+
+select throws_ok(
+  format($$ select private.publish_score_snapshot(%L, '{}') $$, :'second_id'),
+  'P0001',
+  'snapshot_incomplete_city_coverage',
+  'A supported city with only empty score rows cannot publish'
+);
+
+update private.cell_scores cs
+set categories = '{"green": 60}'
+from private.grid_cells g
+join public.cities c on c.id = g.city_id
+where cs.snapshot_id = :'second_id' and cs.cell_id = g.id and c.slug = 'sibiu';
+
+insert into private.cell_scores (snapshot_id, cell_id)
+select :'second_id', cell_id from station_cells where slug = 'sibiu';
+select private.compute_overall_scores(:'second_id');
+select private.compute_snapshot_stats(:'second_id');
+
+select throws_ok(
+  format($$ select private.publish_score_snapshot(%L, '{}') $$, :'second_id'),
+  'P0001',
+  'snapshot_unscored_reference_points',
+  'All cities have scores but an unscored reference station blocks publication'
+);
+
+select results_eq(
+  format($$ select status::text from public.score_snapshots where id in (%L, %L) order by period $$, :'first_id', :'second_id'),
+  $$ values ('ready'::text), ('building') $$,
+  'A rejected candidate never replaces the current ready snapshot'
+);
+
+update private.cell_scores
+set categories = '{"green": 60}'
+where snapshot_id = :'second_id' and cell_id = (select cell_id from station_cells where slug = 'sibiu');
+select private.compute_overall_scores(:'second_id');
+select private.compute_snapshot_stats(:'second_id');
 select private.publish_score_snapshot(:'second_id', '{}');
 
 select results_eq(

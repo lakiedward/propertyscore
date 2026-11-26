@@ -78,7 +78,9 @@ reset role;
 
 select private.compute_overall_scores(:'snapshot_id');
 select private.compute_snapshot_stats(:'snapshot_id');
-select private.publish_score_snapshot(:'snapshot_id', '{"osm": "2026-10-31"}');
+update public.score_snapshots
+set status = 'ready', finished_at = now(), source_dates = '{"osm": "2026-10-31"}'
+where id = :'snapshot_id';
 
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "22222222-2222-2222-2222-222222222222", "role": "authenticated", "user_roles": ["user"]}';

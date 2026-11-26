@@ -7,6 +7,7 @@ import { createLogger } from '../../lib/logger.ts';
 import type { ValhallaClient } from '../../routing/valhalla.ts';
 import { buildSnapshot } from '../../snapshot/build-snapshot.ts';
 import { hasOsmium, prepareSourcesDir } from '../../test/osm-fixture.ts';
+import { limitCoveredCities } from '../../test/coverage-fixture.ts';
 import { greenModule, routedWalks, scoreGreenCell } from './green.module.ts';
 import { greenReportSection, walkedParks } from './green.report.ts';
 
@@ -179,6 +180,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 describe.skipIf(!databaseUrl || !hasOsmium())('greenModule against the local database', () => {
   let sql: Sql;
+  let restoreCoverage: (() => Promise<void>) | undefined;
   let sourcesDir = '';
   let previousReady: string | undefined;
   let hadSibiuCells = false;
@@ -199,6 +201,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('greenModule against the local dat
       ) as has_cells
     `;
     hadSibiuCells = cells?.has_cells ?? false;
+    restoreCoverage = await limitCoveredCities(sql, 'sibiu');
 
     const result = await buildSnapshot({
       sql,
@@ -215,6 +218,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('greenModule against the local dat
   });
 
   afterAll(async () => {
+    await restoreCoverage?.();
     if (snapshotId) await sql`delete from public.score_snapshots where id = ${snapshotId}`;
     if (!hadSibiuCells) {
       await sql`
