@@ -45,11 +45,13 @@ describe('CheckPaymentStep', () => {
 
       expect(await screen.findByText(copy.payment.unlimited.description)).toBeVisible();
       expect(screen.getByRole('button', { name: copy.payment.generate })).toBeEnabled();
-      const summary = within(screen.getByRole('complementary', { name: copy.summary.product }));
+      const summary = within(screen.getByRole('complementary', { name: 'Smart Check' }));
       expect(await summary.findByText(copy.summary.total)).toBeVisible();
       expect(summary.getAllByText(freePrice)).toHaveLength(3);
       expect(summary.queryByText(standardPrice)).not.toBeInTheDocument();
-      expect(screen.getByText(checkoutEyebrow(copy.eyebrow, freePrice))).toBeVisible();
+      expect(screen.getByText(checkoutEyebrow(copy.eyebrow, freePrice))).toHaveTextContent(
+        /^Smart Check /,
+      );
       expect(
         screen.queryByText(checkoutEyebrow(copy.eyebrow, standardPrice)),
       ).not.toBeInTheDocument();
@@ -71,6 +73,8 @@ describe('CheckPaymentStep', () => {
       );
       await renderPaymentStep({ auth: signedInAs('user'), locale });
 
+      const step = locale === 'ro' ? 'Pasul 4 din 4' : 'Step 4 of 4';
+      expect(screen.getByText(`Smart Check · ${step}`)).toBeVisible();
       expect(screen.queryByText(copy.summary.total)).not.toBeInTheDocument();
       resolveAccess();
 

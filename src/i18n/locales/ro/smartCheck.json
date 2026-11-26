@@ -2,8 +2,8 @@
   "check": {
     "pageTitle": "Smart Check",
     "title": "Verifică o adresă cu Smart Check",
-    "eyebrow": "Raport online {{price}} · Pasul {{number}} din {{total}}",
-    "eyebrowWithoutPrice": "Raport online · Pasul {{number}} din {{total}}",
+    "eyebrow": "Smart Check {{price}} · Pasul {{number}} din {{total}}",
+    "eyebrowWithoutPrice": "Smart Check · Pasul {{number}} din {{total}}",
     "steps": {
       "label": "Pașii comenzii",
       "item": "{{number}}. {{label}}",
@@ -152,7 +152,7 @@
     },
     "summary": {
       "eyebrow": "Comanda ta",
-      "product": "Raport online",
+      "product": "Smart Check",
       "includesTitle": "Ce primești",
       "items": {
         "scores": "9 scoruri pe categorii, de la 0 la 100",
