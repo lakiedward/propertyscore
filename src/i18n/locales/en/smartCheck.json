@@ -479,6 +479,7 @@
           "mode": "Private car",
           "mapLabel": "Map of routes by private car",
           "mapChip": "Driving routes",
+          "departureAddress": "Departure address: {{address}}",
           "legend": "Driving route",
           "routesTitle": "How long it takes by private car",
           "rowLabel": "{{name}}, {{minutes}} min by car, {{distance}}",

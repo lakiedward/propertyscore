@@ -488,6 +488,7 @@
           "mode": "Mașină personală",
           "mapLabel": "Harta traseelor cu mașina personală",
           "mapChip": "Trasee cu mașina",
+          "departureAddress": "Adresa de plecare: {{address}}",
           "legend": "Traseu rutier",
           "routesTitle": "Cât faci cu mașina personală",
           "rowLabel": "{{name}}, {{minutes}} min cu mașina, {{distance}}",

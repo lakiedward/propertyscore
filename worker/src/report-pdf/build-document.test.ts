@@ -124,14 +124,23 @@ describe('buildReportDocument', () => {
       '3,5 km',
       'Gară de test',
       'Datele despre transportul public nu sunt disponibile',
+      'Adresa de plecare',
     ],
-    ['en', 'Private car', '3.5 km', 'Test station', 'Public transport data is not available'],
+    [
+      'en',
+      'Private car',
+      '3.5 km',
+      'Test station',
+      'Public transport data is not available',
+      'Departure address',
+    ],
   ] as const)(
     'prints only the driving map when transit is missing in %s',
-    async (locale, title, distance, destination, noData) => {
+    async (locale, title, distance, destination, noData, departure) => {
       const example = reportInputSchema.parse({ ...(await exampleInput()), locale });
       const report = toReportData({
         ...example,
+        address_text: 'Example & Test Street, Test City',
         result: {
           ...example.result,
           categories: {
@@ -174,6 +183,9 @@ describe('buildReportDocument', () => {
       expect(chapter?.html).toContain(title);
       expect(chapter?.html).toContain(distance);
       expect(chapter?.html).toContain(destination);
+      expect(chapter?.html).toContain(
+        `${departure}: Example &amp; Test Street, Test City</p></div></div><div class="map`,
+      );
       expect(chapter?.html).not.toContain('class="card scv');
       expect(chapter?.maps.map(({ id }) => id)).toEqual(['map-accessibility-car']);
     },

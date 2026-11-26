@@ -166,9 +166,10 @@ function carCard(
     'Sunt afișate doar traseele calculate pe drumuri din OpenStreetMap (Valhalla). Duratele nu includ traficul în timp real sau parcarea și nu influențează scorul.',
     'Only routes calculated on OpenStreetMap roads (Valhalla) are shown. Travel times do not include live traffic or parking and do not affect the score.',
   );
+  const departure = t('Adresa de plecare: {0}', 'Departure address: {0}', report.addressText);
   return {
     map,
-    html: `<section class="acW-l"><div class="ac-h"><h3>${title}</h3></div>${mapHtml(report.locale, map)}<div class="acd">${rows}</div>${footnote(note)}</section>`,
+    html: `<section class="acW-l"><div class="ac-h"><div><h3>${title}</h3><p class="hint">${esc(departure)}</p></div></div>${mapHtml(report.locale, map)}<div class="acd">${rows}</div>${footnote(note)}</section>`,
   };
 }
 

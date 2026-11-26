@@ -97,18 +97,22 @@ export function AccessibilityRouteCard({
         </ToggleGroup>
       ) : null}
       {isCar ? (
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1 text-small">
-          <b>{t('report.chapters.accessibility.car.mapChip')}</b>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
-            <span className="flex items-center gap-2">
-              <i aria-hidden="true" className="size-2.5 rounded-full bg-primary" />
-              {t('report.chapters.accessibility.legendAddress')}
-            </span>
-            <span className="flex items-center gap-2">
-              <i aria-hidden="true" className="h-1 w-4 rounded-full bg-report-noise" />
+        <div className="grid min-w-0 gap-1 px-1 text-small">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+            <b>{t('report.chapters.accessibility.car.mapChip')}</b>
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <i aria-hidden="true" className="h-1 w-4 shrink-0 rounded-full bg-report-noise" />
               {t('report.chapters.accessibility.car.legend')}
             </span>
           </div>
+          <p className="flex min-w-0 items-start gap-2">
+            <i aria-hidden="true" className="mt-1 size-2.5 shrink-0 rounded-full bg-primary" />
+            <span className="min-w-0 wrap-anywhere">
+              {t('report.chapters.accessibility.car.departureAddress', {
+                address: report.address_text,
+              })}
+            </span>
+          </p>
         </div>
       ) : null}
       <div className="relative h-130 overflow-hidden rounded-xl border border-border bg-report-map-land w760:h-140">
