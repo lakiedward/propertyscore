@@ -10,7 +10,7 @@ type CheckOrderSummaryProps = {
 };
 
 export function CheckOrderSummary({ address, priceRon }: CheckOrderSummaryProps) {
-  const { t, i18n } = useTranslation('smartCheck');
+  const { t, i18n } = useTranslation(['smartCheck', 'common']);
   const price = priceRon === null ? null : formatPrice(priceRon, 'RON', i18n.resolvedLanguage);
 
   return (

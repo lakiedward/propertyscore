@@ -21,7 +21,7 @@ type CheckHeroProps = {
 };
 
 export function CheckHero({ step, priceRon }: CheckHeroProps) {
-  const { t, i18n } = useTranslation('smartCheck');
+  const { t, i18n } = useTranslation(['smartCheck', 'common']);
   const current = CHECK_STEPS.indexOf(step);
   const BadgeIcon = BADGE_ICONS[step];
   const progress = {
