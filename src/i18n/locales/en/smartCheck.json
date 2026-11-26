@@ -2,8 +2,8 @@
   "check": {
     "pageTitle": "Smart Check",
     "title": "Check an address with Smart Check",
-    "eyebrow": "Smart Check {{price}} · Step {{number}} of {{total}}",
-    "eyebrowWithoutPrice": "Smart Check · Step {{number}} of {{total}}",
+    "eyebrow": "{{product}} {{price}} · Step {{number}} of {{total}}",
+    "eyebrowWithoutPrice": "{{product}} · Step {{number}} of {{total}}",
     "steps": {
       "label": "Order steps",
       "item": "{{number}}. {{label}}",
@@ -153,7 +153,6 @@
     },
     "summary": {
       "eyebrow": "Your order",
-      "product": "Smart Check",
       "includesTitle": "What you get",
       "items": {
         "scores": "9 category scores from 0 to 100",

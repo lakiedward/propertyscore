@@ -24,7 +24,7 @@ export function CheckOrderSummary({ address, priceRon }: CheckOrderSummaryProps)
         </p>
         <div className="flex items-baseline justify-between gap-4">
           <h2 id="check-summary-title" className="text-h4 font-bold">
-            {t('check.summary.product')}
+            {t('common:brand.smartcheck')}
           </h2>
           {price !== null ? (
             <span className="text-h4 font-extrabold tabular-nums">{price}</span>

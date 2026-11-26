@@ -23,6 +23,7 @@ const locales = [
 
 function checkoutEyebrow(template: string, price: string, stepNumber = 4) {
   return template
+    .replace('{{product}}', 'Smart Check')
     .replace('{{price}}', price)
     .replace('{{number}}', String(stepNumber))
     .replace('{{total}}', '4');
@@ -90,7 +91,7 @@ describe('CheckPage', () => {
       resolveAccess();
 
       expect(await screen.findByText(copy.payment.comingSoon.title)).toBeVisible();
-      const summary = within(screen.getByRole('complementary', { name: copy.summary.product }));
+      const summary = within(screen.getByRole('complementary', { name: 'Smart Check' }));
       expect(await summary.findByText(copy.summary.total)).toBeVisible();
       expect(summary.getAllByText(standardPrice)).toHaveLength(3);
       expect(screen.getByText(checkoutEyebrow(copy.eyebrow, standardPrice))).toBeVisible();
@@ -103,7 +104,7 @@ describe('CheckPage', () => {
 
     const main = within(screen.getByRole('main'));
     expect(main.getByRole('link', { name: ro.check.payment.signedOut.signIn })).toBeVisible();
-    const summary = within(screen.getByRole('complementary', { name: ro.check.summary.product }));
+    const summary = within(screen.getByRole('complementary', { name: 'Smart Check' }));
     expect(summary.getByText(ro.check.summary.total)).toBeVisible();
     expect(summary.getAllByText('30 lei')).toHaveLength(3);
     expect(
@@ -115,14 +116,14 @@ describe('CheckPage', () => {
     server.use(http.get(unlimitedAccessUrl, () => HttpResponse.json([{ user_id: TEST_USER_ID }])));
     await renderCheckout('payment', { auth: signedInAs('user') });
 
-    const romanian = within(screen.getByRole('complementary', { name: ro.check.summary.product }));
+    const romanian = within(screen.getByRole('complementary', { name: 'Smart Check' }));
     expect(await romanian.findAllByText('0 lei')).toHaveLength(3);
 
     await act(async () => {
       await changeLocale('en');
     });
 
-    const english = within(screen.getByRole('complementary', { name: en.check.summary.product }));
+    const english = within(screen.getByRole('complementary', { name: 'Smart Check' }));
     expect(english.getAllByText('RON 0')).toHaveLength(3);
     expect(english.queryByText('0 lei')).not.toBeInTheDocument();
     expect(screen.getByText(checkoutEyebrow(en.check.eyebrow, 'RON 0'))).toBeVisible();

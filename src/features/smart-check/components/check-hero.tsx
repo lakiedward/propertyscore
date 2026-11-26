@@ -24,7 +24,11 @@ export function CheckHero({ step, priceRon }: CheckHeroProps) {
   const { t, i18n } = useTranslation('smartCheck');
   const current = CHECK_STEPS.indexOf(step);
   const BadgeIcon = BADGE_ICONS[step];
-  const progress = { number: Math.min(current + 1, ORDER_STEP_COUNT), total: ORDER_STEP_COUNT };
+  const progress = {
+    product: t('common:brand.smartcheck'),
+    number: Math.min(current + 1, ORDER_STEP_COUNT),
+    total: ORDER_STEP_COUNT,
+  };
 
   return (
     <section aria-labelledby="check-title" className="bg-info text-info-foreground">
