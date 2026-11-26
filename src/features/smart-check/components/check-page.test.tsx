@@ -1,7 +1,9 @@
 import { act, screen, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { changeLocale } from '@/i18n/i18n';
+import enCommon from '@/i18n/locales/en/common.json';
 import en from '@/i18n/locales/en/smartCheck.json';
+import roCommon from '@/i18n/locales/ro/common.json';
 import ro from '@/i18n/locales/ro/smartCheck.json';
 import { signedInAs, TEST_USER_ID } from '@/test/factories/auth';
 import { buildProfile } from '@/test/factories/profile';
@@ -17,14 +19,31 @@ const { address, latitude: lat, longitude: lng } = buildCheckOrder();
 const location = { address, lat, lng };
 
 const locales = [
-  { locale: 'ro', copy: ro.check, freePrice: '0 lei', standardPrice: '30 lei' },
-  { locale: 'en', copy: en.check, freePrice: 'RON 0', standardPrice: 'RON 30' },
+  {
+    locale: 'ro',
+    copy: ro.check,
+    product: roCommon.brand.smartcheck,
+    freePrice: '0 lei',
+    standardPrice: '30 lei',
+  },
+  {
+    locale: 'en',
+    copy: en.check,
+    product: enCommon.brand.smartcheck,
+    freePrice: 'RON 0',
+    standardPrice: 'RON 30',
+  },
 ] as const;
 
-function checkoutEyebrow(template: string, price: string, stepNumber = 4) {
+function checkoutEyebrow(
+  { copy, product }: Pick<(typeof locales)[number], 'copy' | 'product'>,
+  price: string | null,
+  stepNumber = 4,
+) {
+  const template = price === null ? copy.eyebrowWithoutPrice : copy.eyebrow;
   return template
-    .replace('{{product}}', 'Smart Check')
-    .replace('{{price}}', price)
+    .replace('{{product}}', product)
+    .replace('{{price}}', price ?? '')
     .replace('{{number}}', String(stepNumber))
     .replace('{{total}}', '4');
 }
@@ -48,7 +67,8 @@ function renderCheckout(step: 'address' | 'payment', options: RenderOptions = {}
 describe('CheckPage', () => {
   it.each(locales)(
     'quotes zero throughout checkout for unlimited access in $locale',
-    async ({ locale, copy, freePrice, standardPrice }) => {
+    async (fixture) => {
+      const { locale, copy, product, freePrice, standardPrice } = fixture;
       server.use(
         http.get(unlimitedAccessUrl, () => HttpResponse.json([{ user_id: TEST_USER_ID }])),
       );
@@ -57,22 +77,19 @@ describe('CheckPage', () => {
 
       expect(await screen.findByText(copy.payment.unlimited.description)).toBeVisible();
       expect(screen.getByRole('button', { name: copy.payment.generate })).toBeEnabled();
-      const summary = within(screen.getByRole('complementary', { name: 'Smart Check' }));
+      const summary = within(screen.getByRole('complementary', { name: product }));
       expect(await summary.findByText(copy.summary.total)).toBeVisible();
       expect(summary.getAllByText(freePrice)).toHaveLength(3);
       expect(summary.queryByText(standardPrice)).not.toBeInTheDocument();
-      expect(screen.getByText(checkoutEyebrow(copy.eyebrow, freePrice))).toHaveTextContent(
-        /^Smart Check /,
-      );
-      expect(
-        screen.queryByText(checkoutEyebrow(copy.eyebrow, standardPrice)),
-      ).not.toBeInTheDocument();
+      expect(screen.getByText(checkoutEyebrow(fixture, freePrice))).toBeVisible();
+      expect(screen.queryByText(checkoutEyebrow(fixture, standardPrice))).not.toBeInTheDocument();
     },
   );
 
   it.each(locales)(
     'keeps the standard price and unavailable payment in $locale',
-    async ({ locale, copy, standardPrice }) => {
+    async (fixture) => {
+      const { locale, copy, product, standardPrice } = fixture;
       let resolveAccess: () => void = () => undefined;
       const access = new Promise<void>((resolve) => {
         resolveAccess = resolve;
@@ -85,16 +102,15 @@ describe('CheckPage', () => {
       );
       await renderCheckout('payment', { auth: signedInAs('user'), locale });
 
-      const step = locale === 'ro' ? 'Pasul 4 din 4' : 'Step 4 of 4';
-      expect(screen.getByText(`Smart Check · ${step}`)).toBeVisible();
+      expect(screen.getByText(checkoutEyebrow(fixture, null))).toBeVisible();
       expect(screen.queryByText(copy.summary.total)).not.toBeInTheDocument();
       resolveAccess();
 
       expect(await screen.findByText(copy.payment.comingSoon.title)).toBeVisible();
-      const summary = within(screen.getByRole('complementary', { name: 'Smart Check' }));
+      const summary = within(screen.getByRole('complementary', { name: product }));
       expect(await summary.findByText(copy.summary.total)).toBeVisible();
       expect(summary.getAllByText(standardPrice)).toHaveLength(3);
-      expect(screen.getByText(checkoutEyebrow(copy.eyebrow, standardPrice))).toBeVisible();
+      expect(screen.getByText(checkoutEyebrow(fixture, standardPrice))).toBeVisible();
       expect(screen.queryByRole('button', { name: copy.payment.generate })).not.toBeInTheDocument();
     },
   );
@@ -104,7 +120,7 @@ describe('CheckPage', () => {
 
     const main = within(screen.getByRole('main'));
     expect(main.getByRole('link', { name: ro.check.payment.signedOut.signIn })).toBeVisible();
-    const summary = within(screen.getByRole('complementary', { name: 'Smart Check' }));
+    const summary = within(screen.getByRole('complementary', { name: roCommon.brand.smartcheck }));
     expect(summary.getByText(ro.check.summary.total)).toBeVisible();
     expect(summary.getAllByText('30 lei')).toHaveLength(3);
     expect(
@@ -116,17 +132,17 @@ describe('CheckPage', () => {
     server.use(http.get(unlimitedAccessUrl, () => HttpResponse.json([{ user_id: TEST_USER_ID }])));
     await renderCheckout('payment', { auth: signedInAs('user') });
 
-    const romanian = within(screen.getByRole('complementary', { name: 'Smart Check' }));
+    const romanian = within(screen.getByRole('complementary', { name: roCommon.brand.smartcheck }));
     expect(await romanian.findAllByText('0 lei')).toHaveLength(3);
 
     await act(async () => {
       await changeLocale('en');
     });
 
-    const english = within(screen.getByRole('complementary', { name: 'Smart Check' }));
+    const english = within(screen.getByRole('complementary', { name: enCommon.brand.smartcheck }));
     expect(english.getAllByText('RON 0')).toHaveLength(3);
     expect(english.queryByText('0 lei')).not.toBeInTheDocument();
-    expect(screen.getByText(checkoutEyebrow(en.check.eyebrow, 'RON 0'))).toBeVisible();
+    expect(screen.getByText(checkoutEyebrow(locales[1], 'RON 0'))).toBeVisible();
   });
 
   it('does not quote a total or offer generation when access cannot be checked', async () => {
@@ -142,80 +158,75 @@ describe('CheckPage', () => {
   });
 
   it.each(
-    locales.flatMap(({ locale, copy, freePrice, standardPrice }) => [
-      { locale, copy, access: 'unlimited', price: freePrice },
-      { locale, copy, access: 'standard', price: standardPrice },
-      { locale, copy, access: 'error', price: null },
+    locales.flatMap((fixture) => [
+      { ...fixture, access: 'unlimited', price: fixture.freePrice },
+      { ...fixture, access: 'standard', price: fixture.standardPrice },
+      { ...fixture, access: 'error', price: null },
     ]),
-  )(
-    'keeps all stages consistent for $access access in $locale',
-    async ({ locale, copy, access, price }) => {
-      const report = buildReportRow({ status: 'queued', result: null });
-      server.use(
-        http.get(unlimitedAccessUrl, () =>
-          access === 'error'
-            ? new HttpResponse(null, { status: 500 })
-            : HttpResponse.json(access === 'unlimited' ? [{ user_id: TEST_USER_ID }] : []),
-        ),
-        http.get(supabaseUrl('/rest/v1/online_reports'), () => HttpResponse.json([report])),
-      );
+  )('keeps all stages consistent for $access access in $locale', async (fixture) => {
+    const { locale, copy, product, access, price } = fixture;
+    const report = buildReportRow({ status: 'queued', result: null });
+    server.use(
+      http.get(unlimitedAccessUrl, () =>
+        access === 'error'
+          ? new HttpResponse(null, { status: 500 })
+          : HttpResponse.json(access === 'unlimited' ? [{ user_id: TEST_USER_ID }] : []),
+      ),
+      http.get(supabaseUrl('/rest/v1/online_reports'), () => HttpResponse.json([report])),
+    );
 
-      const { router } = await renderCheckout('address', { auth: signedInAs('user'), locale });
-      const eyebrow = (step: number) =>
-        price === null
-          ? checkoutEyebrow(copy.eyebrowWithoutPrice, '', step)
-          : checkoutEyebrow(copy.eyebrow, price, step);
-      const includes =
-        price === null
-          ? copy.includes.titleWithoutPrice
-          : copy.includes.title.replace('{{price}}', price);
-      const continueLabel =
-        price === null
-          ? copy.details.continueWithoutPrice
-          : copy.details.continue.replace('{{price}}', price);
-      const assertNoIncorrectPrice = () => {
-        const main = screen.getByRole('main');
-        if (access !== 'standard') expect(main).not.toHaveTextContent(/30\s+lei|RON\s+30/);
-        if (access !== 'unlimited') expect(main).not.toHaveTextContent(/(?:^|\D)0\s+lei|RON\s+0/);
-      };
+    const { router } = await renderCheckout('address', { auth: signedInAs('user'), locale });
+    const eyebrow = (step: number) => checkoutEyebrow(fixture, price, step);
+    const includes =
+      price === null
+        ? copy.includes.titleWithoutPrice
+        : copy.includes.title.replace('{{price}}', price);
+    const continueLabel =
+      price === null
+        ? copy.details.continueWithoutPrice
+        : copy.details.continue.replace('{{price}}', price);
+    const assertNoIncorrectPrice = () => {
+      const main = screen.getByRole('main');
+      if (access !== 'standard') expect(main).not.toHaveTextContent(/30\s+lei|RON\s+30/);
+      if (access !== 'unlimited') expect(main).not.toHaveTextContent(/(?:^|\D)0\s+lei|RON\s+0/);
+    };
 
-      expect(await within(screen.getByRole('main')).findByText(includes)).toBeVisible();
-      expect(screen.getByText(eyebrow(1))).toBeVisible();
-      assertNoIncorrectPrice();
+    expect(await within(screen.getByRole('main')).findByText(includes)).toBeVisible();
+    expect(screen.getByText(eyebrow(1))).toBeVisible();
+    assertNoIncorrectPrice();
 
-      for (const [step, number] of [
-        ['confirm', 2],
-        ['details', 3],
-        ['payment', 4],
-        ['done', 4],
-      ] as const) {
-        await act(async () => {
-          await router.navigate({
-            to: '/check',
-            search: { ...location, step, report: step === 'done' ? report.id : undefined },
-          });
+    for (const [step, number] of [
+      ['confirm', 2],
+      ['details', 3],
+      ['payment', 4],
+      ['done', 4],
+    ] as const) {
+      await act(async () => {
+        await router.navigate({
+          to: '/check',
+          search: { ...location, step, report: step === 'done' ? report.id : undefined },
         });
+      });
 
-        expect(screen.getByText(eyebrow(number))).toBeVisible();
-        assertNoIncorrectPrice();
-        if (step === 'details') {
-          expect(
-            screen.getByRole('button', {
-              name: (name) => name.replaceAll(/\s+/g, ' ') === continueLabel,
-            }),
-          ).toBeEnabled();
-        }
-        if (step === 'payment') {
-          const summary = within(screen.getByRole('complementary', { name: 'Smart Check' }));
-          if (price === null) {
-            expect(await screen.findByText(copy.payment.accessError)).toBeVisible();
-            expect(summary.queryByText(copy.summary.total)).not.toBeInTheDocument();
-          } else {
-            expect(summary.getAllByText(price)).toHaveLength(3);
-          }
-        }
-        if (step === 'done') expect(await screen.findByText(copy.done.queued)).toBeVisible();
+      expect(screen.getByText(eyebrow(number))).toBeVisible();
+      assertNoIncorrectPrice();
+      if (step === 'details') {
+        expect(
+          screen.getByRole('button', {
+            name: (name) => name.replaceAll(/\s+/g, ' ') === continueLabel,
+          }),
+        ).toBeEnabled();
       }
-    },
-  );
+      if (step === 'payment') {
+        const summary = within(screen.getByRole('complementary', { name: product }));
+        if (price === null) {
+          expect(await screen.findByText(copy.payment.accessError)).toBeVisible();
+          expect(summary.queryByText(copy.summary.total)).not.toBeInTheDocument();
+        } else {
+          expect(summary.getAllByText(price)).toHaveLength(3);
+        }
+      }
+      if (step === 'done') expect(await screen.findByText(copy.done.queued)).toBeVisible();
+    }
+  });
 });
