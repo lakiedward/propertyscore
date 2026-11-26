@@ -13,6 +13,7 @@ import {
 import { esc, reportFormat, labelFor } from '../format.ts';
 import { DESTINATION_KINDS, TRANSIT_MODES } from '../labels.ts';
 import {
+  addressDot,
   addressMarker,
   collection,
   mapHtml,
@@ -135,25 +136,25 @@ function carCard(
   const map: MapSpec = {
     id: 'map-accessibility-car',
     center,
-    fit: routes.flatMap(({ coordinates }) => coordinates),
+    fit: [center, ...routes.flatMap(({ coordinates }) => coordinates)],
     padding: 64,
     maxZoom: 16,
-    layers: routes.flatMap(({ destination, coordinates }) => {
-      const data = collection([{ type: 'LineString', coordinates }]);
-      return [
-        { kind: 'line', data, color: '#FFFFFF', width: 7 },
-        { kind: 'line', data, color: kindOf(destination).color, width: 4 },
-      ];
-    }),
-    markers: [
-      addressMarker(center, report.addressText.split(',')[0]),
-      ...routes.map(({ destination, route, coordinates }): MapMarker => ({
-        position: coordinates.at(-1) ?? destination.location,
-        html: `<span class="rp" style="--c:${kindOf(destination).color}"><b>${minutesLabel(route.seconds)} min</b></span>`,
-        anchor: 'left',
-        offset: [6, 0],
+    layers: [
+      ...routes.flatMap(({ destination, coordinates }) => {
+        const data = collection([{ type: 'LineString', coordinates }]);
+        return [
+          { kind: 'line' as const, data, color: '#FFFFFF', width: 7 },
+          { kind: 'line' as const, data, color: kindOf(destination).color, width: 4 },
+        ];
+      }),
+      ...routes.map(({ destination, coordinates }) => ({
+        kind: 'circle' as const,
+        data: points([coordinates.at(-1) ?? destination.location]),
+        color: kindOf(destination).color,
+        radius: 4,
       })),
     ],
+    markers: [addressDot(center)],
   };
   const rows = routes
     .map(({ destination, route }) => {

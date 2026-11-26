@@ -168,6 +168,10 @@ describe('AccessibilityChapter', () => {
         { locale },
       );
       expect(await screen.findByRole('heading', { name: labels.headlineNoData })).toBeVisible();
+      const map = await screen.findByRole('region', { name: labels.car.mapLabel });
+      const line = within(map).getByRole('img', { name: 'accessibility-car-test-station' });
+      expect(line).toBeVisible();
+      expect(map).not.toHaveTextContent(/\S/);
       await user.click(
         screen.getByRole('button', {
           name: labels.car.rowLabel
@@ -176,10 +180,8 @@ describe('AccessibilityChapter', () => {
             .replace('{{distance}}', distance),
         }),
       );
-      const map = await screen.findByRole('region', { name: labels.car.mapLabel });
-      expect(
-        within(map).getByRole('img', { name: 'accessibility-car-test-station' }),
-      ).toBeVisible();
+      expect(line).toBeVisible();
+      expect(map).not.toHaveTextContent(/\S/);
       expect(screen.queryByText(labels.routesTitle)).not.toBeInTheDocument();
       expect(screen.queryByText(labels.badge)).not.toBeInTheDocument();
       expect(screen.queryByRole('radio', { name: labels.transitMode })).not.toBeInTheDocument();

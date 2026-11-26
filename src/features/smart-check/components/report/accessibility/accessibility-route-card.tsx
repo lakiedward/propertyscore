@@ -96,6 +96,21 @@ export function AccessibilityRouteCard({
           ))}
         </ToggleGroup>
       ) : null}
+      {isCar ? (
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1 text-small">
+          <b>{t('report.chapters.accessibility.car.mapChip')}</b>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <i aria-hidden="true" className="size-2.5 rounded-full bg-primary" />
+              {t('report.chapters.accessibility.legendAddress')}
+            </span>
+            <span className="flex items-center gap-2">
+              <i aria-hidden="true" className="h-1 w-4 rounded-full bg-report-noise" />
+              {t('report.chapters.accessibility.car.legend')}
+            </span>
+          </div>
+        </div>
+      ) : null}
       <div className="relative h-130 overflow-hidden rounded-xl border border-border bg-report-map-land w760:h-140">
         <AccessibilityRouteMap
           report={report}
@@ -105,38 +120,32 @@ export function AccessibilityRouteCard({
           mode={mode}
           selectedId={selectedId}
         />
-        <span className="pointer-events-none absolute top-2.5 left-2.5 z-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/96 px-2.75 py-1.25 text-[12.5px] font-bold text-foreground shadow-report-label">
-          <i aria-hidden="true" className="size-2.25 rounded-full bg-report-noise" />
-          {t(
-            isCar
-              ? 'report.chapters.accessibility.car.mapChip'
-              : 'report.chapters.accessibility.mapChip',
-          )}
-        </span>
-        <div className="pointer-events-none absolute bottom-9 left-2.5 z-3 grid gap-0.75 rounded-thumb border border-border bg-card/96 px-3 py-2 text-[12px] text-muted-foreground shadow-report-label min-[560px]:bottom-2.5">
-          <b className="text-foreground">{t('report.chapters.accessibility.legendTitle')}</b>
-          <span className="flex items-center gap-2">
-            <i aria-hidden="true" className="size-2.5 rounded-full bg-primary" />
-            {t('report.chapters.accessibility.legendAddress')}
-          </span>
-          <span className="flex items-center gap-2">
-            <i aria-hidden="true" className="h-2 w-4 rounded-[3px] bg-report-noise" />
-            {t(
-              isCar
-                ? 'report.chapters.accessibility.car.legend'
-                : 'report.chapters.accessibility.legendVehicle',
-            )}
-          </span>
-          {isCar ? null : (
-            <span className="flex items-center gap-2">
-              <i
-                aria-hidden="true"
-                className="h-0.75 w-4 bg-[radial-gradient(circle,var(--report-noise)_1.5px,transparent_1.6px)] bg-size-[5px_3px]"
-              />
-              {t('report.chapters.accessibility.legendWalk')}
+        {!isCar ? (
+          <>
+            <span className="pointer-events-none absolute top-2.5 left-2.5 z-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/96 px-2.75 py-1.25 text-[12.5px] font-bold text-foreground shadow-report-label">
+              <i aria-hidden="true" className="size-2.25 rounded-full bg-report-noise" />
+              {t('report.chapters.accessibility.mapChip')}
             </span>
-          )}
-        </div>
+            <div className="pointer-events-none absolute bottom-9 left-2.5 z-3 grid gap-0.75 rounded-thumb border border-border bg-card/96 px-3 py-2 text-[12px] text-muted-foreground shadow-report-label min-[560px]:bottom-2.5">
+              <b className="text-foreground">{t('report.chapters.accessibility.legendTitle')}</b>
+              <span className="flex items-center gap-2">
+                <i aria-hidden="true" className="size-2.5 rounded-full bg-primary" />
+                {t('report.chapters.accessibility.legendAddress')}
+              </span>
+              <span className="flex items-center gap-2">
+                <i aria-hidden="true" className="h-2 w-4 rounded-[3px] bg-report-noise" />
+                {t('report.chapters.accessibility.legendVehicle')}
+              </span>
+              <span className="flex items-center gap-2">
+                <i
+                  aria-hidden="true"
+                  className="h-0.75 w-4 bg-[radial-gradient(circle,var(--report-noise)_1.5px,transparent_1.6px)] bg-size-[5px_3px]"
+                />
+                {t('report.chapters.accessibility.legendWalk')}
+              </span>
+            </div>
+          </>
+        ) : null}
       </div>
 
       <ul className="flex flex-wrap gap-x-5 gap-y-2 px-1 text-small font-semibold">
