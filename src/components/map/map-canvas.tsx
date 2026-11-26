@@ -148,6 +148,7 @@ type MapCanvasProps = {
   bounds?: LngLatBounds | undefined;
   boundsPadding?: number;
   boundsRequestId?: number;
+  refitsBoundsOnResize?: boolean;
   focus?: MapFocus | undefined;
   markers: readonly MapMarkerItem[];
   overlays?: readonly MapOverlay[];
@@ -211,6 +212,7 @@ export function MapCanvas({
   bounds,
   boundsPadding = DEFAULT_BOUNDS_PADDING,
   boundsRequestId = 0,
+  refitsBoundsOnResize = false,
   focus,
   markers,
   overlays = [],
@@ -264,6 +266,25 @@ export function MapCanvas({
     onError();
   });
   const readLabels = useEffectEvent(() => labels);
+  const fitToBounds = useEffectEvent((target: MapLibreMap) => {
+    if (!bounds) {
+      return;
+    }
+    if (isConfinedToBounds) {
+      target.setMaxBounds(null);
+      target.setMinZoom(null);
+    }
+    target.fitBounds(bounds, { padding: boundsPadding, maxZoom: 15, duration: 0 });
+    if (isConfinedToBounds) {
+      target.setMinZoom(target.getZoom());
+      target.setMaxBounds(target.getBounds());
+    }
+  });
+  const refitAfterResize = useEffectEvent((target: MapLibreMap) => {
+    if (refitsBoundsOnResize) {
+      fitToBounds(target);
+    }
+  });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -343,8 +364,18 @@ export function MapCanvas({
         reportError();
       }
     });
+    let width = container.clientWidth;
+    let height = container.clientHeight;
     const resizeObserver = new ResizeObserver(() => {
+      const nextWidth = container.clientWidth;
+      const nextHeight = container.clientHeight;
+      const hasResized = nextWidth !== width || nextHeight !== height;
+      width = nextWidth;
+      height = nextHeight;
       instance.resize();
+      if (hasResized && width > 0 && height > 0) {
+        refitAfterResize(instance);
+      }
     });
     resizeObserver.observe(container);
     setMap(instance);
@@ -402,20 +433,6 @@ export function MapCanvas({
     syncImageOverlays(map, imageOverlays, appliedImageOverlays.current);
   }, [map, isStyleReady, imageOverlays]);
 
-  const fitToBounds = useEffectEvent((target: MapLibreMap) => {
-    if (!bounds) {
-      return;
-    }
-    if (isConfinedToBounds) {
-      target.setMaxBounds(null);
-      target.setMinZoom(null);
-    }
-    target.fitBounds(bounds, { padding: boundsPadding, maxZoom: 15, duration: 0 });
-    if (isConfinedToBounds) {
-      target.setMinZoom(target.getZoom());
-      target.setMaxBounds(target.getBounds());
-    }
-  });
   const boundsKey = bounds ? bounds.flat().join(',') : '';
   useEffect(() => {
     if (map) {

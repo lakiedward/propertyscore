@@ -192,6 +192,7 @@ export function AccessibilityRouteMap({
       zoom={14}
       bounds={routeBounds(center, isCar ? visibleRows : rows, mode)}
       boundsPadding={56}
+      refitsBoundsOnResize={isCar}
       hasNavigationControl
       overlays={overlays}
       markers={markers}

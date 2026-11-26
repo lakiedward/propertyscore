@@ -40,7 +40,7 @@ describe('destinationRows', () => {
   });
 
   it('shows a road route even when the same destination is not reachable without a car', () => {
-    const withCar = {
+    const withCar = accessibilitySectionSchema.parse({
       ...section,
       destinations: section.destinations.map((destination, index) =>
         index === 0
@@ -51,7 +51,7 @@ describe('destinationRows', () => {
             }
           : destination,
       ),
-    };
+    });
 
     expect(destinationRows(withCar, 'places', 'car')).toMatchObject([
       {
@@ -76,6 +76,25 @@ describe('destinationRows', () => {
     ]);
     expect(destinationRows(withCar)).toHaveLength(section.destinations.length - 1);
     expect(destinationRows(section, 'places', 'car')).toEqual([]);
+  });
+
+  it.each([
+    { seconds: 0, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' },
+    { seconds: 480, meters: -1, polyline6: '_njgvA_idng@o}@ozD_|Bo}@' },
+    { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@' },
+    { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@o}@ozD_|Bo}@~' },
+    { seconds: 480, meters: 3500, polyline6: '_njgvA_idng@!?' },
+  ])('omits malformed driving data without losing the transit trips (%j)', (carRoute) => {
+    const parsed = accessibilitySectionSchema.parse({
+      ...section,
+      destinations: section.destinations.map((destination) => ({
+        ...destination,
+        car_route: carRoute,
+      })),
+    });
+
+    expect(destinationRows(parsed, 'places', 'car')).toEqual([]);
+    expect(destinationRows(parsed)).toEqual(rows);
   });
 });
 

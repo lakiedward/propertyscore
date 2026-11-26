@@ -1,6 +1,12 @@
 import { z } from 'zod';
-import { carRouteSchema } from '../../../../worker/src/report/car-route-contract';
+import { decodePolyline6, isDrawableLine } from '@/components/report/report-map.utils';
 import { isochroneSchema, positionSchema } from './shared.schemas';
+
+const carRouteSchema = z.object({
+  seconds: z.int().positive(),
+  meters: z.int().positive(),
+  polyline6: z.string().refine((encoded) => isDrawableLine(decodePolyline6(encoded))),
+});
 
 const destinationSchema = z.object({
   id: z.string(),

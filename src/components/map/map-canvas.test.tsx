@@ -60,6 +60,8 @@ const maplibre = vi.hoisted(() => {
       return this;
     }
     fitBounds = vi.fn();
+    setMaxBounds = vi.fn();
+    setMinZoom = vi.fn();
     easeTo = vi.fn();
     flyTo = vi.fn();
     zoomIn = vi.fn();
@@ -282,7 +284,7 @@ function lastMap() {
   return map;
 }
 
-function MapHarness() {
+function MapHarness({ refitsBoundsOnResize = false }: { refitsBoundsOnResize?: boolean }) {
   const [step, setStep] = useState(0);
   const overlays =
     step === 0
@@ -305,6 +307,8 @@ function MapHarness() {
         center={CENTER}
         zoom={14}
         bounds={step === 0 ? FIRST_BOUNDS : SECOND_BOUNDS}
+        refitsBoundsOnResize={refitsBoundsOnResize}
+        isConfinedToBounds={refitsBoundsOnResize}
         focus={step === 0 ? undefined : { position: CENTER, requestId: step }}
         markers={[]}
         overlays={overlays}
@@ -385,6 +389,7 @@ describe('MapCanvas', () => {
   afterEach(() => {
     maplibre.control.shouldThrow = false;
     maplibre.FakeMap.instances = [];
+    vi.restoreAllMocks();
   });
 
   it('reports an error when the map cannot be created', async () => {
@@ -497,6 +502,53 @@ describe('MapCanvas', () => {
     expect(map.easeTo).toHaveBeenCalledTimes(2);
     expect(map.layers.size).toBe(0);
     expect(map.sources.size).toBe(0);
+  });
+
+  it('refits the active bounds after resizing a confined route map without remounting', async () => {
+    let notifyResize: (() => void) | undefined;
+    vi.spyOn(globalThis, 'ResizeObserver').mockImplementation(
+      class {
+        constructor(callback: () => void) {
+          notifyResize = callback;
+        }
+        observe = vi.fn();
+        unobserve = vi.fn();
+        disconnect = vi.fn();
+      },
+    );
+    const { user } = await renderWithProviders(<MapHarness refitsBoundsOnResize />);
+    const map = lastMap();
+    let width = 375;
+    let height = 520;
+    Object.defineProperties(map.options.container, {
+      clientWidth: { get: () => width },
+      clientHeight: { get: () => height },
+    });
+    act(() => notifyResize?.());
+    expect(map.fitBounds).toHaveBeenLastCalledWith(FIRST_BOUNDS, expect.anything());
+    await user.click(screen.getByRole('button', { name: 'next' }));
+    map.fitBounds.mockClear();
+    map.resize.mockClear();
+    map.setMaxBounds.mockClear();
+    map.setMinZoom.mockClear();
+
+    width = 900;
+    height = 560;
+    act(() => notifyResize?.());
+
+    expect(map.resize).toHaveBeenCalledBefore(map.fitBounds);
+    expect(map.fitBounds).toHaveBeenCalledExactlyOnceWith(SECOND_BOUNDS, {
+      padding: 48,
+      maxZoom: 15,
+      duration: 0,
+    });
+    expect(map.setMaxBounds).toHaveBeenNthCalledWith(1, null);
+    expect(map.setMinZoom).toHaveBeenNthCalledWith(1, null);
+    expect(map.setMaxBounds).toHaveBeenLastCalledWith(map.getBounds());
+    expect(maplibre.FakeMap.instances).toHaveLength(1);
+
+    act(() => notifyResize?.());
+    expect(map.fitBounds).toHaveBeenCalledOnce();
   });
 
   it('draws filled areas with an outline', async () => {
