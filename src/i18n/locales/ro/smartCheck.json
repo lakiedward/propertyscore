@@ -3,6 +3,7 @@
     "pageTitle": "Smart Check",
     "title": "Verifică o adresă cu Smart Check",
     "eyebrow": "Raport online {{price}} · Pasul {{number}} din {{total}}",
+    "eyebrowWithoutPrice": "Raport online · Pasul {{number}} din {{total}}",
     "steps": {
       "label": "Pașii comenzii",
       "item": "{{number}}. {{label}}",

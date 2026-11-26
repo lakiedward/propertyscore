@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { Link, useLocation } from '@tanstack/react-router';
 import {
   ArrowLeftIcon,
@@ -16,7 +16,9 @@ import { useAuth } from '@/features/auth';
 import { useErrorMessage } from '@/i18n/error-message';
 import { isAppError } from '@/lib/errors';
 import { smartCheckQueries, useCreateOnlineReport } from '../api/smart-check.queries';
+import { CHECK_PRICE_RON } from '../check.utils';
 import type { CheckOrder } from '../smart-check.schemas';
+import { CheckHero } from './check-hero';
 import { CheckOrderSummary } from './check-order-summary';
 
 const ADDRESS_REASONS = new Set([
@@ -40,35 +42,40 @@ export function CheckPaymentStep({
 }: CheckPaymentStepProps) {
   const { t } = useTranslation('smartCheck');
   const { user } = useAuth();
+  const access = useQuery(smartCheckQueries.unlimitedAccess(user?.id ?? null));
+  const priceRon = user && !access.isSuccess ? null : access.data ? 0 : CHECK_PRICE_RON;
 
   return (
-    <div className="page-wrap grid max-w-default grid-cols-1 items-start gap-6 py-8 w767:py-10 w1059:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
-      <section
-        aria-labelledby="check-payment-title"
-        className="flex flex-col gap-5 rounded-lg border border-card bg-card p-5 shadow-card-soft w767:p-7"
-      >
-        <h2 id="check-payment-title" className="text-h3 font-extrabold">
-          {t('check.payment.title')}
-        </h2>
-        {user ? (
-          <SignedInPayment
-            userId={user.id}
-            order={order}
-            onChangeAddress={onChangeAddress}
-            onCreated={onCreated}
-          />
-        ) : (
-          <SignedOutPayment />
-        )}
-        <div className="border-t border-border-subtle pt-4">
-          <Button type="button" variant="ghost" size="lg" onClick={onBack}>
-            <ArrowLeftIcon aria-hidden />
-            {t('check.payment.back')}
-          </Button>
-        </div>
-      </section>
-      <CheckOrderSummary address={order.address} />
-    </div>
+    <>
+      <CheckHero step="payment" priceRon={priceRon} />
+      <div className="page-wrap grid max-w-default grid-cols-1 items-start gap-6 py-8 w767:py-10 w1059:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
+        <section
+          aria-labelledby="check-payment-title"
+          className="flex flex-col gap-5 rounded-lg border border-card bg-card p-5 shadow-card-soft w767:p-7"
+        >
+          <h2 id="check-payment-title" className="text-h3 font-extrabold">
+            {t('check.payment.title')}
+          </h2>
+          {user ? (
+            <SignedInPayment
+              access={access}
+              order={order}
+              onChangeAddress={onChangeAddress}
+              onCreated={onCreated}
+            />
+          ) : (
+            <SignedOutPayment />
+          )}
+          <div className="border-t border-border-subtle pt-4">
+            <Button type="button" variant="ghost" size="lg" onClick={onBack}>
+              <ArrowLeftIcon aria-hidden />
+              {t('check.payment.back')}
+            </Button>
+          </div>
+        </section>
+        <CheckOrderSummary address={order.address} priceRon={priceRon} />
+      </div>
+    </>
   );
 }
 
@@ -104,16 +111,15 @@ function SignedOutPayment() {
 }
 
 type SignedInPaymentProps = {
-  userId: string;
+  access: UseQueryResult<boolean>;
   order: CheckOrder;
   onChangeAddress: () => void;
   onCreated: (reportId: string) => void;
 };
 
-function SignedInPayment({ userId, order, onChangeAddress, onCreated }: SignedInPaymentProps) {
+function SignedInPayment({ access, order, onChangeAddress, onCreated }: SignedInPaymentProps) {
   const { t } = useTranslation('smartCheck');
   const errorMessage = useErrorMessage();
-  const access = useQuery(smartCheckQueries.unlimitedAccess(userId));
   const createReport = useCreateOnlineReport();
   const reason = isAppError(createReport.error) ? createReport.error.reason : undefined;
 

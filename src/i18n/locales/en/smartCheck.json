@@ -3,6 +3,7 @@
     "pageTitle": "Smart Check",
     "title": "Check an address with Smart Check",
     "eyebrow": "Online report {{price}} · Step {{number}} of {{total}}",
+    "eyebrowWithoutPrice": "Online report · Step {{number}} of {{total}}",
     "steps": {
       "label": "Order steps",
       "item": "{{number}}. {{label}}",

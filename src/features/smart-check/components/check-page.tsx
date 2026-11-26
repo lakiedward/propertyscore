@@ -77,6 +77,23 @@ export function CheckPage() {
       }
     : undefined;
 
+  if (step === 'payment' && order) {
+    return (
+      <CheckPaymentStep
+        order={order}
+        onBack={() => {
+          goTo('details');
+        }}
+        onChangeAddress={() => {
+          goTo('address');
+        }}
+        onCreated={(reportId) => {
+          goTo('done', { report: reportId });
+        }}
+      />
+    );
+  }
+
   return (
     <>
       <CheckHero step={step} />
@@ -114,19 +131,6 @@ export function CheckPage() {
               elevator: next.elevator,
               year: next.year,
             });
-          }}
-        />
-      ) : step === 'payment' ? (
-        <CheckPaymentStep
-          order={order}
-          onBack={() => {
-            goTo('details');
-          }}
-          onChangeAddress={() => {
-            goTo('address');
-          }}
-          onCreated={(reportId) => {
-            goTo('done', { report: reportId });
           }}
         />
       ) : search.report ? (
