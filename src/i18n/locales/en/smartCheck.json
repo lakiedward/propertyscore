@@ -63,6 +63,7 @@
     },
     "includes": {
       "title": "What you get for {{price}}",
+      "titleWithoutPrice": "What you get",
       "items": {
         "score": "Area score from 9 criteria, each explained",
         "transit": "Accessibility: lines, frequency and directions, not just distance",
@@ -125,7 +126,8 @@
       },
       "back": "Back",
       "skip": "Skip",
-      "continue": "Continue to payment · {{price}}"
+      "continue": "Continue to payment · {{price}}",
+      "continueWithoutPrice": "Continue to payment"
     },
     "payment": {
       "title": "Payment",

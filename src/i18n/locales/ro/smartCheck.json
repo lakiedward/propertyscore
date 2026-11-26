@@ -63,6 +63,7 @@
     },
     "includes": {
       "title": "Ce primești pentru {{price}}",
+      "titleWithoutPrice": "Ce primești",
       "items": {
         "score": "Scor de zonă din 9 criterii, fiecare explicat",
         "transit": "Accesibilitate: linii, frecvență și direcții, nu doar distanța",
@@ -126,7 +127,8 @@
       },
       "back": "Înapoi",
       "skip": "Sari peste",
-      "continue": "Continuă la plată · {{price}}"
+      "continue": "Continuă la plată · {{price}}",
+      "continueWithoutPrice": "Continuă la plată"
     },
     "payment": {
       "title": "Plata",

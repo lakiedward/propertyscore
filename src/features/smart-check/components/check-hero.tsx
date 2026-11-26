@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Logo } from '@/components/brand/logo';
 import { formatPrice } from '@/i18n/format';
 import { cn } from '@/lib/utils';
-import { CHECK_PRICE_RON } from '../check.utils';
 import { CHECK_STEPS, type CheckStep } from '../smart-check.schemas';
 
 const BADGE_ICONS = {
@@ -18,10 +17,10 @@ const ORDER_STEP_COUNT = 4;
 
 type CheckHeroProps = {
   step: CheckStep;
-  priceRon?: number | null;
+  priceRon: number | null;
 };
 
-export function CheckHero({ step, priceRon = CHECK_PRICE_RON }: CheckHeroProps) {
+export function CheckHero({ step, priceRon }: CheckHeroProps) {
   const { t, i18n } = useTranslation('smartCheck');
   const current = CHECK_STEPS.indexOf(step);
   const BadgeIcon = BADGE_ICONS[step];
