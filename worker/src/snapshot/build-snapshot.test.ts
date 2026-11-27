@@ -6,6 +6,7 @@ import { createSql, type Sql } from '../db/sql.ts';
 import { createLogger } from '../lib/logger.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
 import { cityBoundingBox } from '../sources/osm.ts';
+import { limitCoveredCities } from '../test/coverage-fixture.ts';
 import { hasOsmium, prepareSourcesDir } from '../test/osm-fixture.ts';
 import { writeCategoryScores } from '../scoring/write-category-scores.ts';
 import { buildSnapshot, selectModules } from './build-snapshot.ts';
@@ -14,11 +15,17 @@ const silentLogger = createLogger('error', () => undefined);
 
 const fakeGreenModule: ScoreModule = {
   key: 'green',
-  run: async ({ sql, snapshotId }) => {
+  run: async ({ sql, snapshotId, cellSizeM }) => {
     const cells = await sql<{ cell_id: string; position: number }[]>`
-      select cell_id, (row_number() over (order by cell_id))::integer as position
-      from private.cell_scores
-      where snapshot_id = ${snapshotId}
+      with reference as (
+        select private.find_grid_cell(d.location, ${cellSizeM}) as cell_id
+        from private.key_destinations d
+        join public.cities c on c.id = d.city_id
+        where c.slug = 'sibiu' and d.kind = 'station' and d.is_active
+      )
+      select cs.cell_id, (row_number() over (order by (cs.cell_id = r.cell_id) desc, cs.cell_id) - 1)::integer as position
+      from private.cell_scores cs cross join reference r
+      where cs.snapshot_id = ${snapshotId}
     `;
     await writeCategoryScores(
       sql,
@@ -53,6 +60,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local database', () => {
   let sql: Sql;
+  let restoreCoverage: (() => Promise<void>) | undefined;
   let previousReady: string | undefined;
   let hadSibiuCells = false;
   let sourcesDir = '';
@@ -73,9 +81,11 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       ) as has_cells
     `;
     hadSibiuCells = cells?.has_cells ?? false;
+    restoreCoverage = await limitCoveredCities(sql, 'sibiu');
   });
 
   afterAll(async () => {
+    await restoreCoverage?.();
     if (created.length > 0) {
       await sql`delete from public.score_snapshots where id in ${sql(created)}`;
     }
@@ -122,7 +132,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     expect(snapshot?.source_dates).toEqual({ osm: '2026-11-01' });
     expect(snapshot?.sibiu).toMatchObject({
       cells: result.cells,
-      categories: { green: { avg: 80, no_data: Math.ceil(result.cells / 2) } },
+      categories: { green: { avg: 80, no_data: Math.floor(result.cells / 2) } },
     });
     const residentialCells = Number(snapshot?.sibiu.residential_cells);
     expect(residentialCells).toBeGreaterThan(10);
