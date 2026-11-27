@@ -34,6 +34,10 @@ function categoryKey(key: string): CategoryKey | null {
   return CATEGORY_KEYS.find((candidate) => candidate === key) ?? null;
 }
 
+function readsSnapshotRegisters(section: ReportSection): boolean {
+  return section.key === 'industry' || section.key === 'education';
+}
+
 async function addressScores(
   sql: Sql,
   started: StartedReport,
@@ -50,15 +54,34 @@ export async function generateReport(options: GenerateReportOptions): Promise<vo
     const started = await beginReport(sql, reportId);
     const built: JsonObject = {};
     const exact = new Map<CategoryKey, number>();
+    const context = {
+      ...started,
+      reportId,
+      sql,
+      logger,
+      router: options.router ?? null,
+      earthquakes: options.earthquakes ?? null,
+    };
+    let registerSections: Map<ReportSection, JsonObject | null> | undefined;
     for (const section of options.sections) {
-      const payload = await section.build({
-        ...started,
-        reportId,
-        sql,
-        logger,
-        router: options.router ?? null,
-        earthquakes: options.earthquakes ?? null,
-      });
+      if (readsSnapshotRegisters(section) && registerSections === undefined) {
+        registerSections = await sql.begin(
+          'isolation level repeatable read read only',
+          async (registrySql) => {
+            const prepared = new Map<ReportSection, JsonObject | null>();
+            for (const registerSection of options.sections.filter(readsSnapshotRegisters)) {
+              prepared.set(
+                registerSection,
+                await registerSection.build({ ...context, registrySql }),
+              );
+            }
+            return prepared;
+          },
+        );
+      }
+      const payload = readsSnapshotRegisters(section)
+        ? (registerSections?.get(section) ?? null)
+        : await section.build(context);
       if (payload === null) continue;
       built[section.key] = payload;
       const score = section.addressScore?.(payload) ?? null;

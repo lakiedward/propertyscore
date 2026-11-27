@@ -248,19 +248,13 @@ export function createSnapshotJournal(sql: Sql, snapshotId: string, executionId:
     },
 
     async publish(sourceDates: Record<string, string>) {
-      return write(async (tx) => {
-        const [pending] = await tx<{ present: boolean }[]>`
-          select exists (
-            select 1 from private.score_snapshot_steps
-            where snapshot_id = ${snapshotId} and completed_at is null
-          ) as present
-        `;
-        if (pending?.present !== false) cannotContinue('snapshot_steps_missing');
+      await sql.begin(async (tx) => {
         await tx`select set_config('statement_timeout', '3h', true)`;
-        await tx`select private.compute_overall_scores(${snapshotId})`;
-        await tx`select private.compute_snapshot_stats(${snapshotId})`;
-        await tx`select private.publish_score_snapshot(${snapshotId}, ${tx.json(sourceDates)}::jsonb)`;
-        await tx`update public.score_snapshots set routing_pending = false where id = ${snapshotId}`;
+        await tx`
+          select private.publish_checkpointed_score_snapshot(
+            ${snapshotId}, ${executionId}, ${tx.json(sourceDates)}::jsonb
+          )
+        `;
       });
     },
 

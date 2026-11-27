@@ -1,7 +1,12 @@
-import type { JsonObject, Sql } from '../../db/sql.ts';
+import type { JsonObject, SqlQueries } from '../../db/sql.ts';
 import { readCellCategory, sectionParams } from '../../report/cell-category.ts';
 import type { ReportSection } from '../../report/report-section.ts';
-import { importedReportingYear, listSitesNear, type NearbySite } from './industry.db.ts';
+import {
+  importedReportingYear,
+  listSitesNear,
+  listSnapshotSitesNear,
+  type NearbySite,
+} from './industry.db.ts';
 import {
   industryPressure,
   industryScore,
@@ -32,7 +37,12 @@ export type IndustryReport = {
   near_m: number;
   radius_m: number;
   sites: IndustryReportSite[];
-  source: { dataset: 'eea_ied_eprtr'; version: string; reporting_year: number | null };
+  source: {
+    dataset: 'eea_ied_eprtr';
+    version: string;
+    reporting_year: number | null;
+    legacy_observed_at?: string;
+  };
 };
 
 export function industryReportFromSites(input: {
@@ -93,10 +103,34 @@ export function industryReportFromSites(input: {
 }
 
 export async function buildIndustryReport(
-  sql: Sql,
-  input: { longitude: number; latitude: number; cellScore: number | null; params: unknown },
+  sql: SqlQueries,
+  input: {
+    snapshotId?: string;
+    longitude: number;
+    latitude: number;
+    cellScore: number | null;
+    params: unknown;
+  },
 ): Promise<IndustryReport> {
   const params = parseIndustryParams(input.params);
+  if (input.snapshotId !== undefined) {
+    const captured = await listSnapshotSitesNear(sql, {
+      ...input,
+      snapshotId: input.snapshotId,
+      radiusM: params.radius_m,
+    });
+    if (captured) {
+      const { reportingYear, legacyObservedAt, sites } = captured;
+      const report = industryReportFromSites({
+        sites,
+        cellScore: input.cellScore,
+        params,
+        reportingYear,
+      });
+      if (legacyObservedAt) report.source.legacy_observed_at = legacyObservedAt;
+      return report;
+    }
+  }
   const reportingYear = await importedReportingYear(sql, params.dataset.version);
   const sites =
     reportingYear === null
@@ -114,10 +148,12 @@ export async function buildIndustryReport(
 export const industryReportSection: ReportSection = {
   key: 'industry',
   addressScore: (section) => (typeof section.score === 'number' ? section.score : null),
-  build: async ({ sql, snapshotId, cellId, latitude, longitude, params }) => {
+  build: async ({ sql: pool, registrySql, snapshotId, cellId, latitude, longitude, params }) => {
+    const sql = registrySql ?? pool;
     const cell = await readCellCategory(sql, snapshotId, cellId, 'industry');
     if (!cell) return null;
     const report = await buildIndustryReport(sql, {
+      snapshotId,
       longitude,
       latitude,
       cellScore: cell.score,

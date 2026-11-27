@@ -114,6 +114,8 @@ export function footnote(text: string): string {
 
 export function sourceDate(report: ReportData, key: string): string | null {
   const { formatSourceDate } = reportFormat(report.locale);
+  if (key === 'eea_industrial' && report.sections.industry?.source.legacy_observed_at) return null;
+  if (key === 'siiir' && report.sections.education?.legacy_observed_at) return null;
   if (key === 'gtfs') {
     const section = report.sections.accessibility;
     return section?.status === 'scored' && section.data_quality === 'gtfs' && section.reference_date

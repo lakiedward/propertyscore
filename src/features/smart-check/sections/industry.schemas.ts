@@ -16,5 +16,8 @@ export const industrySectionSchema = z.object({
       location: positionSchema,
     }),
   ),
-  source: z.object({ reporting_year: z.number().nullable() }),
+  source: z.object({
+    reporting_year: z.number().nullable(),
+    legacy_observed_at: z.iso.datetime().optional(),
+  }),
 });

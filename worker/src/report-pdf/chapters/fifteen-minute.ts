@@ -204,11 +204,21 @@ function walkingTimeNote(locale: ReportLocale, section: FifteenMinute): string {
 }
 
 export const fifteenMinuteChapter: ChapterBuilder = (report) => {
-  const { t } = reportFormat(report.locale);
+  const { t, longDate } = reportFormat(report.locale);
   const summary = report.categories.fifteen_minute;
   const section = report.sections.fifteen_minute;
   const theme = categoryTheme(report.locale, 'fifteen_minute');
-  const sources = chapterSources(report, ['fifteen_minute', 'education', 'health']);
+  const observedAt = report.sections.education?.legacy_observed_at;
+  const educationCopy = observedAt
+    ? footnote(
+        t(
+          'Educație: detaliile școlilor au fost copiate la {0} pentru tranziție, nu provin din registrul folosit la calculul istoric. Scorurile și timpii rămân cei din snapshot.',
+          'Education: school details were copied on {0} for the transition, not taken from the register used for the historical calculation. Scores and travel times are unchanged.',
+          longDate(observedAt),
+        ),
+      )
+    : '';
+  const sources = educationCopy + chapterSources(report, ['fifteen_minute', 'education', 'health']);
   if (!section) {
     const head = chapterHead(report.locale, {
       eyebrow: categoryEyebrow(report.locale, 'fifteen_minute', summary),

@@ -60,6 +60,27 @@ describe('AirIndustryChapter', () => {
     expect(screen.getByText('8 months out of 12 above the 2030 EU limit')).toBeInTheDocument();
   });
 
+  it.each([
+    ['ro', 'registrul a fost copiat la 27 noiembrie 2026 pentru tranziție'],
+    ['en', 'register copied on 27 November 2026 for the transition'],
+  ] as const)(
+    'labels the registry copy date in %s, not the older source year',
+    async (locale, copy) => {
+      const report = readyReport();
+      const industry = report.result.sections.industry;
+      if (!industry) throw new Error('Industry fixture is required');
+      industry.source.legacy_observed_at = '2026-11-27T23:30:00Z';
+      report.result.snapshot.source_dates.eea_industrial_year = '2022';
+
+      await renderWithProviders(<AirIndustryChapter report={report} onOpenChapter={vi.fn()} />, {
+        locale,
+      });
+
+      expect(await screen.findByText(copy, { exact: false })).toBeVisible();
+      expect(screen.queryByText('2022', { exact: false })).not.toBeInTheDocument();
+    },
+  );
+
   it('shows the available industry result and discloses missing air data', async () => {
     const report = readyReport();
     report.result.sections.air = null;

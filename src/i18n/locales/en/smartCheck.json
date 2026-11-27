@@ -681,6 +681,7 @@
           "osm": "OpenStreetMap",
           "walk_routing": "Walking routing",
           "siiir": "SIIIR",
+          "educationLegacy": "Education: school details were copied on {{date}} for the transition, not taken from the register used for the historical calculation. Scores and travel times are unchanged.",
           "cnas_upu": "CNAS and UPU"
         },
         "title": "The 15-minute city"
@@ -902,7 +903,8 @@
         "note": {
           "air": "Air: the European Copernicus model, corrected with the stations in the city, {{period}}.",
           "airNoPeriod": "Air: the European Copernicus model, corrected with the stations in the city.",
-          "industry": "Industry: the European industrial register, reports from {{year}}."
+          "industry": "Industry: the European industrial register, reports from {{year}}.",
+          "industryLegacy": "Industry: register copied on {{date}} for the transition; this is not historical data used to calculate the scores."
         },
         "sources": {
           "title": "Sources and data",

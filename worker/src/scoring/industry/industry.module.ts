@@ -16,6 +16,7 @@ import {
 } from './eea-register.ts';
 import {
   finishRegisterImport,
+  freezeIndustryInputs,
   importedReportingYear,
   listCellSitePairs,
   listCityCells,
@@ -178,10 +179,11 @@ export const industryModule: ScoreModule = {
     const params = parseIndustryParams(context.params);
     const { version } = params.dataset;
 
-    const reportingYear = await ensureRegister(context, params);
+    const importedYear = await ensureRegister(context, params);
+    const reportingYear = await freezeIndustryInputs(sql, snapshotId, importedYear);
     const reason = 'no_source_data';
 
-    const sites = reportingYear === null ? [] : await listStoredSites(sql, version, reportingYear);
+    const sites = reportingYear === null ? [] : await listStoredSites(sql, snapshotId);
     const siteMap = new Map(sites.map((site) => [site.id, site]));
     const stats: JsonObject = {};
 
@@ -195,8 +197,6 @@ export const industryModule: ScoreModule = {
               pairs: await listCellSitePairs(sql, {
                 snapshotId,
                 cityId: city.id,
-                reportingYear,
-                version,
                 radiusM: params.radius_m,
               }),
               sites: siteMap,

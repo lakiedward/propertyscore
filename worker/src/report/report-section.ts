@@ -1,4 +1,4 @@
-import type { JsonObject, Sql } from '../db/sql.ts';
+import type { JsonObject, Sql, SqlQueries } from '../db/sql.ts';
 import type { Logger } from '../lib/logger.ts';
 import type { ValhallaClient } from '../routing/valhalla.ts';
 import type { CategoryKey, ContextKey } from '../scoring/categories.ts';
@@ -6,6 +6,7 @@ import type { EarthquakeCatalog } from '../scoring/seismic/earthquake-catalog.ts
 
 type ReportSectionContext = {
   sql: Sql;
+  registrySql?: SqlQueries;
   reportId?: string;
   snapshotId: string;
   cellId: string;

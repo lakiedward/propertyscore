@@ -75,6 +75,9 @@ export function ClosingMethod({ report }: ClosingMethodProps) {
   const { t } = useTranslation('smartCheck');
   const dates = report.result.snapshot.source_dates;
   const formatted = (source: SourceKey): Row[] => {
+    if (source === 'eea_industrial' && report.result.sections.industry?.source.legacy_observed_at)
+      return [];
+    if (source === 'siiir' && report.result.sections.education?.legacy_observed_at) return [];
     if (source === 'gtfs') {
       const date = gtfsReferenceDate(report.result.sections.accessibility);
       return date

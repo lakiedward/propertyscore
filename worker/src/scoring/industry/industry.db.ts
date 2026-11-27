@@ -1,4 +1,4 @@
-import { type JsonObject, type Sql, withLongStatements } from '../../db/sql.ts';
+import { type JsonObject, type Sql, type SqlQueries, withLongStatements } from '../../db/sql.ts';
 import type { RegisterSite } from './eea-register.ts';
 import type { SectorCode } from './industry.formula.ts';
 
@@ -26,7 +26,10 @@ export type CellSitePair = {
 
 const BATCH_SIZE = 500;
 
-export async function importedReportingYear(sql: Sql, version: string): Promise<number | null> {
+export async function importedReportingYear(
+  sql: SqlQueries,
+  version: string,
+): Promise<number | null> {
   const [row] = await sql<{ year: number | null }[]>`
     select max(reporting_year)::integer as year
     from private.industrial_sites
@@ -113,21 +116,16 @@ export async function finishRegisterImport(
   return summary?.summary ?? { sites: 0, in_city_buffers: 0, suspect: 0, corrected: 0 };
 }
 
-export async function listStoredSites(
-  sql: Sql,
-  version: string,
-  reportingYear: number,
-): Promise<StoredSite[]> {
+export async function listStoredSites(sql: Sql, snapshotId: string): Promise<StoredSite[]> {
   const rows = await sql<StoredSite[]>`
     select
-      id,
+      site_id as id,
       sector_code,
       is_top_emitter,
-      air_releases <> '{}'::jsonb as has_air_releases,
+      has_air_releases,
       city_id,
       coordinate_status
-    from private.industrial_sites
-    where source_version = ${version} and reporting_year = ${reportingYear}
+    from private.report_industry_snapshot_inputs where snapshot_id = ${snapshotId}
   `;
   return [...rows];
 }
@@ -137,23 +135,28 @@ export async function listCellSitePairs(
   options: {
     snapshotId: string;
     cityId: string;
-    reportingYear: number;
-    version: string;
     radiusM: number;
   },
 ): Promise<CellSitePair[]> {
   return withLongStatements(sql, async (transaction) => {
     const rows = await transaction<CellSitePair[]>`
-      select cell_id, site_id, distance_m
-      from private.industrial_sites_near_cells(
-        ${options.snapshotId},
-        ${options.cityId},
-        ${options.reportingYear}::smallint,
-        ${options.version},
-        ${options.radiusM}
-      )
+      select cs.cell_id, s.site_id, extensions.st_distance(g.center,s.location) as distance_m
+      from private.cell_scores cs join private.grid_cells g on g.id=cs.cell_id
+      join private.report_industry_snapshot_inputs s on s.snapshot_id=cs.snapshot_id
+        and extensions.st_dwithin(g.center,s.location,${options.radiusM})
+      where cs.snapshot_id=${options.snapshotId} and g.city_id=${options.cityId}
+      order by cs.cell_id,distance_m
     `;
     return [...rows];
+  });
+}
+
+export async function freezeIndustryInputs(sql: Sql, snapshotId: string, year: number | null) {
+  return withLongStatements(sql, async (tx) => {
+    const [row] = await tx<{ year: number | null }[]>`
+      select private.freeze_checkpoint_industry_inputs(${snapshotId},${year}::smallint)::integer as year
+    `;
+    return row?.year ?? null;
   });
 }
 
@@ -197,8 +200,40 @@ export type NearbySite = {
   latitude: number;
 };
 
+export async function listSnapshotSitesNear(
+  sql: SqlQueries,
+  options: { snapshotId: string; longitude: number; latitude: number; radiusM: number },
+): Promise<{
+  reportingYear: number | null;
+  legacyObservedAt: string | null;
+  sites: NearbySite[];
+} | null> {
+  const [source] = await sql<{ reporting_year: number | null; legacy_observed_at: Date | null }[]>`
+    select reporting_year::integer as reporting_year, legacy_observed_at
+    from private.industry_snapshot_source where snapshot_id = ${options.snapshotId}
+  `;
+  if (!source) return null;
+  const sites = await sql<NearbySite[]>`
+    with address as (
+      select extensions.st_point(${options.longitude}, ${options.latitude}, 4326)::extensions.geography as location
+    )
+    select s.site_id, s.name, s.sector_code, s.impact_codes, s.is_top_emitter, s.has_air_releases,
+      s.reporting_year::integer, extensions.st_distance(a.location,s.location) as distance_m,
+      degrees(extensions.st_azimuth(a.location,s.location)) as bearing_deg,
+      extensions.st_x(s.location::extensions.geometry) as longitude,
+      extensions.st_y(s.location::extensions.geometry) as latitude
+    from private.report_industry_snapshot_inputs s cross join address a
+    where s.snapshot_id = ${options.snapshotId} and extensions.st_dwithin(a.location,s.location,${options.radiusM})
+  `;
+  return {
+    reportingYear: source.reporting_year,
+    legacyObservedAt: source.legacy_observed_at?.toISOString() ?? null,
+    sites: [...sites],
+  };
+}
+
 export async function listSitesNear(
-  sql: Sql,
+  sql: SqlQueries,
   options: {
     longitude: number;
     latitude: number;

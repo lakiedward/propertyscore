@@ -14,6 +14,7 @@ const VERSION = 'vitest';
 describe.skipIf(!databaseUrl)('industryModule against the local database', () => {
   let sql: Sql;
   let params: Record<string, unknown>;
+  let formulaId = '';
   let snapshotId = '';
   let city = { id: '', slug: 'craiova', name: 'Craiova' };
   let hadCityCells = false;
@@ -38,11 +39,18 @@ describe.skipIf(!databaseUrl)('industryModule against the local database', () =>
       ...row.params,
       dataset: { ...(row.params.dataset as object), version: VERSION },
     };
-    const [snapshot] = await sql<{ id: string }[]>`
-      insert into public.score_snapshots (scoring_version_id, period, status, finished_at, error_code)
-      select id, '2026-11-01', 'failed', now(), 'industry_test_fixture'
+    const [formula] = await sql<{ id: string }[]>`
+      insert into public.scoring_versions (kind, label, params, weights)
+      select kind, 'vitest-industry', jsonb_set(params, '{industry,dataset,version}', to_jsonb(${VERSION}::text)), weights
       from public.scoring_versions
       where kind = 'online' and label = 'v1'
+      returning id
+    `;
+    if (!formula) throw new Error('Could not create the industry test formula');
+    formulaId = formula.id;
+    const [snapshot] = await sql<{ id: string }[]>`
+      insert into public.score_snapshots (scoring_version_id, period)
+      values (${formulaId}, '2026-11-01')
       returning id
     `;
     snapshotId = snapshot?.id ?? '';
@@ -53,6 +61,9 @@ describe.skipIf(!databaseUrl)('industryModule against the local database', () =>
     await sql`delete from private.industrial_sites where source_version = ${VERSION}`;
     if (snapshotId) {
       await sql`delete from public.score_snapshots where id = ${snapshotId}`;
+    }
+    if (formulaId) {
+      await sql`delete from public.scoring_versions where id = ${formulaId}`;
     }
     if (!hadCityCells) {
       await sql`delete from private.grid_cells where city_id = ${city.id}`;
@@ -127,7 +138,9 @@ describe.skipIf(!databaseUrl)('industryModule against the local database', () =>
     `;
     expect(stats?.industry).toEqual({ craiova: { sites_in_buffer: 1, suspect: 0, corrected: 0 } });
 
+    await sql`delete from private.industrial_sites where source_version = ${VERSION}`;
     const report = await buildIndustryReport(sql, {
+      snapshotId,
       longitude: 23.81,
       latitude: 44.33,
       cellScore: 85,
