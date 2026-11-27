@@ -150,7 +150,7 @@ export async function buildCheckpointedSnapshot(options: Options): Promise<Build
   const replicaId = settings.SNAPSHOT_REPLICA_ID;
   async function register() {
     signal.throwIfAborted();
-    const id = randomUUID();
+    const id = settings.SNAPSHOT_EXECUTION_ID ?? randomUUID();
     const state = await routing.control(id, 'register', signal);
     if (
       state.state !== 'idle' ||

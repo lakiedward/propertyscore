@@ -13,6 +13,7 @@ const settingsSchema = z
     SNAPSHOT_SESSION_DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
     SNAPSHOT_INPUT_REVISION: z.string().regex(/^[0-9a-f]{64}$/),
     SNAPSHOT_REPLICA_ID: z.string().min(1).max(255),
+    SNAPSHOT_EXECUTION_ID: z.uuid().optional(),
     SNAPSHOT_VALHALLA_URL: endpoint,
     SNAPSHOT_VALHALLA_CONTROL_TOKEN: valhallaToken,
     SNAPSHOT_VALHALLA_ROUTING_TOKEN: valhallaToken,
