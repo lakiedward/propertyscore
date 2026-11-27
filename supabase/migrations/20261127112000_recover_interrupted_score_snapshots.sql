@@ -1,6 +1,20 @@
 alter table public.score_snapshots
   add column uses_worker_lock boolean not null default false;
 
+create function private.score_snapshot_lock_holders()
+returns setof integer
+language sql
+set search_path = ''
+as $$
+  select pid from pg_locks
+  where locktype = 'advisory'
+    and database = (select oid from pg_database where datname = current_database())
+    and classid = (hashtext('propertyscore.snapshot') & 2147483647)::oid
+    and objid = 1
+    and objsubid = 2
+    and granted;
+$$;
+
 create function private.start_score_snapshot(p_period date, p_uses_worker_lock boolean)
 returns uuid
 language plpgsql
@@ -15,15 +29,7 @@ begin
     raise exception using errcode = 'P0001', message = 'snapshot_already_building';
   end if;
 
-  if exists (
-    select 1 from pg_locks
-    where locktype = 'advisory'
-      and database = (select oid from pg_database where datname = current_database())
-      and classid = v_namespace::oid
-      and objid = 1
-      and objsubid = 2
-      and granted
-  ) then
+  if exists (select 1 from private.score_snapshot_lock_holders()) then
     raise exception using errcode = 'P0001', message = 'snapshot_already_building';
   end if;
 
@@ -49,10 +55,33 @@ begin
   returning id into v_snapshot_id;
 
   if p_uses_worker_lock then
-    perform pg_advisory_lock(v_namespace, 1);
+    perform pg_advisory_lock_shared(v_namespace, 1);
   end if;
 
   return v_snapshot_id;
+end;
+$$;
+
+create function private.hold_score_snapshot(p_snapshot_id uuid, p_owner_pid integer)
+returns void
+language plpgsql
+set search_path = ''
+as $$
+declare
+  v_namespace constant integer := hashtext('propertyscore.snapshot') & 2147483647;
+begin
+  perform pg_advisory_xact_lock(v_namespace, 0);
+  if not exists (
+    select 1 from public.score_snapshots
+    where id = p_snapshot_id and status = 'building' and uses_worker_lock
+  ) or not exists (
+    select 1 from private.score_snapshot_lock_holders() holder(pid)
+    where holder.pid = p_owner_pid and holder.pid <> pg_backend_pid()
+  ) then
+    raise exception using errcode = 'P0001', message = 'snapshot_connection_lost';
+  end if;
+
+  perform pg_advisory_lock_shared(v_namespace, 1);
 end;
 $$;
 
@@ -65,3 +94,5 @@ as $$
 $$;
 
 revoke execute on function private.start_score_snapshot(date, boolean) from public, anon, authenticated;
+revoke execute on function private.score_snapshot_lock_holders() from public, anon, authenticated;
+revoke execute on function private.hold_score_snapshot(uuid, integer) from public, anon, authenticated;

@@ -290,6 +290,7 @@ export const accessibilityModule: ScoreModule = {
         withMatrix: true,
         withItineraries: false,
         workDir,
+        signal: context.signal,
       });
 
       await saveRoutingBundle(sql, snapshotId, city.id, {

@@ -37,6 +37,7 @@ export type RoutingJob = {
   withMatrix: boolean;
   withItineraries: boolean;
   workDir: string;
+  signal?: AbortSignal;
 };
 
 export type RoutingSettings = Pick<
@@ -93,10 +94,30 @@ export type RoutingResult = {
   gtfsArchives: string[];
 };
 
-export type RoutingRunner = (command: string, args: readonly string[]) => Promise<void>;
+export type RoutingRunner = (
+  command: string,
+  args: readonly string[],
+  signal?: AbortSignal,
+) => Promise<void>;
 
-async function defaultRunner(command: string, args: readonly string[]): Promise<void> {
-  await run(command, [...args], { maxBuffer: 64 * 1024 * 1024 });
+async function defaultRunner(
+  command: string,
+  args: readonly string[],
+  signal?: AbortSignal,
+): Promise<void> {
+  signal?.throwIfAborted();
+  const execution = run(command, [...args], {
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  const stop = () => execution.child.kill('SIGKILL');
+  signal?.addEventListener('abort', stop, { once: true });
+  const closed = new Promise<void>((resolve) => execution.child.once('close', () => resolve()));
+  try {
+    await execution;
+  } finally {
+    await closed;
+    signal?.removeEventListener('abort', stop);
+  }
 }
 
 function pointsCsv(points: readonly RoutingPoint[]): string {
@@ -197,6 +218,7 @@ export async function runTransitRouting(
   job: RoutingJob,
   runner: RoutingRunner = defaultRunner,
 ): Promise<RoutingResult> {
+  job.signal?.throwIfAborted();
   const outputDir = join(job.workDir, 'routing');
   await mkdir(outputDir, { recursive: true });
   const files = {
@@ -233,8 +255,11 @@ export async function runTransitRouting(
     'utf8',
   );
   try {
-    await runner('python3', [ROUTE_SCRIPT, jobPath]);
+    job.signal?.throwIfAborted();
+    await runner('python3', [ROUTE_SCRIPT, jobPath], job.signal);
+    job.signal?.throwIfAborted();
   } catch (error) {
+    job.signal?.throwIfAborted();
     throw new WorkerError('transit_routing_failed', 'The r5py routing job failed', {
       cause: error,
     });

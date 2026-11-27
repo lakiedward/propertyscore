@@ -1,15 +1,18 @@
-import { rm } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { delimiter, join } from 'node:path';
 
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { createSql, type Sql } from '../db/sql.ts';
+import { createSnapshotSql, createSql, type Sql } from '../db/sql.ts';
 import { createLogger } from '../lib/logger.ts';
+import { runTransitRouting } from '../scoring/accessibility/routing.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
 import { cityBoundingBox } from '../sources/osm.ts';
 import { limitCoveredCities } from '../test/coverage-fixture.ts';
 import { hasOsmium, prepareSourcesDir } from '../test/osm-fixture.ts';
 import { writeCategoryScores } from '../scoring/write-category-scores.ts';
 import { buildSnapshot, selectModules } from './build-snapshot.ts';
+import { startSnapshot } from './snapshot.db.ts';
 
 const silentLogger = createLogger('error', () => undefined);
 
@@ -156,6 +159,132 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     expect(box.north).toBeGreaterThan(45.79833);
     expect(box.east - box.west).toBeLessThan(0.2);
   });
+
+  it.skipIf(process.platform === 'win32')(
+    'stops a running transit child after SQL disconnect before allowing a replacement',
+    async () => {
+      const bin = join(sourcesDir, 'bin');
+      const routePidFile = join(sourcesDir, 'route.pid');
+      await mkdir(bin);
+      await writeFile(
+        join(bin, 'python3'),
+        [
+          '#!/usr/bin/env node',
+          "const { writeFileSync } = require('node:fs');",
+          `writeFileSync(${JSON.stringify(routePidFile)}, String(process.pid));`,
+          'setInterval(() => undefined, 1000);',
+        ].join('\n'),
+        { mode: 0o755 },
+      );
+      const [ready] = await sql<{ id: string | null }[]>`
+        select private.current_score_snapshot_id() as id
+      `;
+      const owner = Promise.withResolvers<{ pid: number; snapshotId: string }>();
+      const releaseBuild = Promise.withResolvers<undefined>();
+      let routeHasStopped = false;
+      const retry = createSnapshotSql(databaseUrl ?? '');
+      vi.stubEnv('PATH', [bin, process.env.PATH ?? ''].join(delimiter));
+      const old = buildSnapshot({
+        databaseUrl: databaseUrl ?? '',
+        modules: [
+          {
+            key: 'accessibility',
+            run: async ({ sql: workerSql, snapshotId, signal }) => {
+              created.push(snapshotId);
+              const [session] = await workerSql<{ pid: number }[]>`select pg_backend_pid() as pid`;
+              if (!session) throw new Error('Missing build session');
+              owner.resolve({ pid: session.pid, snapshotId });
+              try {
+                await runTransitRouting({
+                  osmPbf: 'unused',
+                  gtfs: [],
+                  date: '2026-11-01',
+                  windowStart: '07:45',
+                  windowMinutes: 30,
+                  detailDeparture: '08:00',
+                  walkSpeedKmh: 4.5,
+                  maxMinutes: 90,
+                  maxRides: 3,
+                  stopWalkMaxMinutes: 11,
+                  origins: [],
+                  stops: [],
+                  destinations: [],
+                  withMatrix: true,
+                  withItineraries: false,
+                  workDir: join(sourcesDir, 'disconnect-routing'),
+                  signal,
+                });
+              } finally {
+                routeHasStopped = true;
+                await releaseBuild.promise;
+              }
+              return { sourceDates: {} };
+            },
+          },
+        ],
+        period: '2026-11-01',
+        citySlugs: ['sibiu'],
+        scoreKeys: [],
+        sourcesDir,
+        osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
+        router: null,
+        logger: silentLogger,
+      }).then(
+        () => ({ error: null }),
+        (error: unknown) => ({ error }),
+      );
+      let ownerPid: number | undefined;
+      let childPid: number | undefined;
+      try {
+        const { pid, snapshotId } = await Promise.race([
+          owner.promise,
+          old.then(({ error }) => {
+            throw new Error('Build ended before routing', { cause: error });
+          }),
+        ]);
+        ownerPid = pid;
+        await expect.poll(() => readFile(routePidFile, 'utf8')).toMatch(/^\d+$/);
+        const routePid = Number(await readFile(routePidFile, 'utf8'));
+        childPid = routePid;
+        expect(process.kill(routePid, 0)).toBe(true);
+
+        const [terminated] = await sql<{ ok: boolean }[]>`
+          select pg_terminate_backend(${ownerPid}, 5000) as ok
+        `;
+        expect(terminated?.ok).toBe(true);
+        ownerPid = undefined;
+        await expect.poll(() => routeHasStopped).toBe(true);
+        expect(() => process.kill(routePid, 0)).toThrow(expect.objectContaining({ code: 'ESRCH' }));
+        childPid = undefined;
+        await expect(startSnapshot(retry, '2026-11-01')).rejects.toMatchObject({
+          message: 'snapshot_already_building',
+        });
+
+        releaseBuild.resolve(undefined);
+        expect((await old).error).toMatchObject({ code: 'snapshot_connection_lost' });
+        const replacement = await startSnapshot(retry, '2026-11-01');
+        created.push(replacement.snapshotId);
+        const [state] = await sql<{ ready_id: string | null; abandoned: string | null }[]>`
+          select private.current_score_snapshot_id() as ready_id,
+            (select error_code from public.score_snapshots where id = ${snapshotId}) as abandoned
+        `;
+        expect(state).toEqual({ ready_id: ready?.id ?? null, abandoned: 'abandoned' });
+      } finally {
+        releaseBuild.resolve(undefined);
+        if (childPid !== undefined) {
+          try {
+            process.kill(childPid, 'SIGKILL');
+          } catch (error) {
+            expect(error).toMatchObject({ code: 'ESRCH' });
+          }
+        }
+        if (ownerPid !== undefined) await sql`select pg_terminate_backend(${ownerPid}, 5000)`;
+        await old;
+        await retry.end({ timeout: 5 });
+        vi.unstubAllEnvs();
+      }
+    },
+  );
 
   it('logs the city selection and refuses a partial one before starting a snapshot', async () => {
     const lines: string[] = [];

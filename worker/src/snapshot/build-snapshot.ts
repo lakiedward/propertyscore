@@ -16,6 +16,7 @@ import {
   type CoveredCity,
   failSnapshot,
   finishSnapshot,
+  holdSnapshot,
   listCoveredCities,
   prepareCityCells,
   startSnapshot,
@@ -60,16 +61,24 @@ export function selectModules(
 }
 
 export async function buildSnapshot(options: BuildSnapshotOptions): Promise<BuildSnapshotResult> {
-  const sql = createSnapshotSql(options.databaseUrl);
+  const lifetime = new AbortController();
+  const onDisconnect = () =>
+    lifetime.abort(
+      new WorkerError('snapshot_connection_lost', 'A snapshot database session closed'),
+    );
+  const sql = createSnapshotSql(options.databaseUrl, onDisconnect);
+  const guard = createSnapshotSql(options.databaseUrl, onDisconnect);
   try {
-    return await buildSnapshotInSession(sql, options);
+    return await buildSnapshotInSession(sql, guard, lifetime.signal, options);
   } finally {
-    await sql.end({ timeout: 5 });
+    await Promise.all([sql.end({ timeout: 5 }), guard.end({ timeout: 5 })]);
   }
 }
 
 async function buildSnapshotInSession(
   sql: Sql,
+  guard: Sql,
+  signal: AbortSignal,
   options: BuildSnapshotOptions,
 ): Promise<BuildSnapshotResult> {
   const { logger } = options;
@@ -82,6 +91,8 @@ async function buildSnapshotInSession(
     logger.info(message, { snapshot_id: version.snapshotId, ...fields });
 
   try {
+    await holdSnapshot(guard, version);
+    signal.throwIfAborted();
     const params = versionParamsSchema.safeParse(version.params);
     if (!params.success) {
       throw new WorkerError(
@@ -113,6 +124,7 @@ async function buildSnapshotInSession(
 
     const sourceDates: Record<string, string> = {};
     for (const module of modules) {
+      signal.throwIfAborted();
       log('score started', { score: module.key });
       const result = await module.run({
         sql,
@@ -126,11 +138,13 @@ async function buildSnapshotInSession(
         sourceMirror: options.sourceMirror,
         router: options.router,
         logger,
+        signal,
       });
       Object.assign(sourceDates, result.sourceDates);
       log('score finished', { score: module.key });
     }
 
+    signal.throwIfAborted();
     await finishSnapshot(sql, version.snapshotId, sourceDates);
     log('snapshot ready', { cities: cities.length, cells });
     return {
@@ -142,7 +156,7 @@ async function buildSnapshotInSession(
   } catch (error) {
     const code = errorCode(error);
     logger.error('snapshot failed', { snapshot_id: version.snapshotId, code });
-    await failSnapshot(sql, version.snapshotId, code);
+    if (!signal.aborted) await failSnapshot(sql, version.snapshotId, code);
     throw error;
   } finally {
     await rm(workDir, { recursive: true, force: true });

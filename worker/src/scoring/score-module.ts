@@ -18,6 +18,7 @@ export type ScoreContext = {
   sourceMirror?: SourceMirror;
   router: ValhallaClient | null;
   logger: Logger;
+  signal?: AbortSignal;
 };
 
 type ScoreModuleResult = {

@@ -11,6 +11,7 @@ export type SnapshotVersion = {
   snapshotId: string;
   period: string;
   params: Record<string, unknown>;
+  lockOwnerPid: number | null;
 };
 
 export async function listCoveredCities(
@@ -40,19 +41,29 @@ export async function startSnapshot(sql: Sql, period: string): Promise<SnapshotV
   if (!started)
     throw new WorkerError('snapshot_not_started', 'start_score_snapshot returned no snapshot');
   try {
-    const [row] = await sql<{ period: string; params: Record<string, unknown> }[]>`
-      select to_char(s.period, 'YYYY-MM-DD') as period, v.params
+    const [row] = await sql<{ period: string; params: Record<string, unknown>; pid: number }[]>`
+      select to_char(s.period, 'YYYY-MM-DD') as period, v.params, pg_backend_pid() as pid
       from public.score_snapshots s
       join public.scoring_versions v on v.id = s.scoring_version_id
       where s.id = ${started.id}
     `;
     if (!row)
       throw new WorkerError('snapshot_not_readable', 'The started snapshot is not readable');
-    return { snapshotId: started.id, period: row.period, params: row.params };
+    return {
+      snapshotId: started.id,
+      period: row.period,
+      params: row.params,
+      lockOwnerPid: features?.worker_lock ? row.pid : null,
+    };
   } catch (error) {
     await failSnapshot(sql, started.id, 'start_failed');
     throw error;
   }
+}
+
+export async function holdSnapshot(sql: Sql, version: SnapshotVersion): Promise<void> {
+  if (version.lockOwnerPid === null) return;
+  await sql`select private.hold_score_snapshot(${version.snapshotId}, ${version.lockOwnerPid})`;
 }
 
 export async function prepareCityCells(

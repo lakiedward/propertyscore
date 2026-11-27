@@ -22,13 +22,14 @@ export function createSql(databaseUrl: string): Sql {
   return postgres(databaseUrl, { ...connectionOptions, max: 4, idle_timeout: 20 });
 }
 
-export function createSnapshotSql(databaseUrl: string): Sql {
+export function createSnapshotSql(databaseUrl: string, onDisconnect?: () => void): Sql {
   const sql = postgres(databaseUrl, {
     ...connectionOptions,
     max: 1,
     idle_timeout: 0,
     max_lifetime: null,
     onclose: () => {
+      onDisconnect?.();
       void sql.end({ timeout: 0 });
     },
   });
