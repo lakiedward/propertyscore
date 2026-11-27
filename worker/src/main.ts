@@ -125,6 +125,7 @@ async function runCommand(
         period: command.period,
         citySlugs: command.citySlugs,
         scoreKeys: command.scoreKeys,
+        allowPartialCities: command.allowPartialCities,
         sourcesDir: env.SOURCES_DIR,
         osmExtract: osmExtractSource(env),
         sourceMirror: sourceMirror(env),

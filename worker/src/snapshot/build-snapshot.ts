@@ -13,6 +13,7 @@ import type { SourceMirror } from '../sources/mirror.ts';
 import { downloadOsmExtract, type OsmExtractSource } from '../sources/osm.ts';
 import { markResidentialCells } from './residential.ts';
 import {
+  type CoveredCity,
   failSnapshot,
   finishSnapshot,
   listCoveredCities,
@@ -26,6 +27,7 @@ export type BuildSnapshotOptions = {
   period: string;
   citySlugs: readonly string[];
   scoreKeys: readonly CategoryKey[];
+  allowPartialCities?: boolean;
   sourcesDir: string;
   osmExtract: OsmExtractSource;
   sourceMirror?: SourceMirror;
@@ -60,10 +62,7 @@ export function selectModules(
 export async function buildSnapshot(options: BuildSnapshotOptions): Promise<BuildSnapshotResult> {
   const { sql, logger } = options;
   const modules = selectModules(options.modules, options.scoreKeys);
-  const cities = await listCoveredCities(sql, options.citySlugs);
-  if (cities.length === 0) {
-    throw new WorkerError('no_covered_cities', 'No covered city matches the request');
-  }
+  const cities = await selectCities(sql, logger, options);
 
   const version = await startSnapshot(sql, options.period);
   const workDir = join(options.sourcesDir, 'work', version.snapshotId);
@@ -136,4 +135,39 @@ export async function buildSnapshot(options: BuildSnapshotOptions): Promise<Buil
   } finally {
     await rm(workDir, { recursive: true, force: true });
   }
+}
+
+async function selectCities(
+  sql: Sql,
+  logger: Logger,
+  options: Pick<BuildSnapshotOptions, 'citySlugs' | 'allowPartialCities'>,
+): Promise<CoveredCity[]> {
+  const covered = await listCoveredCities(sql, []);
+  const cities =
+    options.citySlugs.length === 0
+      ? covered
+      : covered.filter((city) => options.citySlugs.includes(city.slug));
+  const selected = new Set(cities.map((city) => city.slug));
+  const missing = covered.filter((city) => !selected.has(city.slug)).map((city) => city.slug);
+  const unknown = options.citySlugs.filter((slug) => !selected.has(slug));
+  const fields = {
+    city_filter: options.citySlugs.length === 0 ? 'all' : options.citySlugs.join(','),
+    covered_cities: covered.length,
+    selected_cities: cities.length,
+    selected: cities.map((city) => city.slug).join(','),
+    missing: missing.join(','),
+    unknown: unknown.join(','),
+  };
+  logger.info('snapshot cities selected', fields);
+  if (cities.length === 0) {
+    throw new WorkerError('no_covered_cities', 'No covered city matches the request');
+  }
+  if ((missing.length > 0 || unknown.length > 0) && !options.allowPartialCities) {
+    throw new WorkerError(
+      'snapshot_partial_city_selection',
+      `Selected ${cities.length} of ${covered.length} covered cities; pass --allow-partial for a local partial run`,
+    );
+  }
+  if (missing.length > 0) logger.warn('snapshot partial city selection', fields);
+  return cities;
 }

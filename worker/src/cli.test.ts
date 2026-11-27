@@ -11,6 +11,7 @@ describe('parseCommand', () => {
       period: '2026-11-01',
       citySlugs: [],
       scoreKeys: [],
+      allowPartialCities: false,
     });
   });
 
@@ -27,6 +28,7 @@ describe('parseCommand', () => {
           'iasi',
           '--score',
           'green',
+          '--allow-partial',
         ],
         NOW,
       ),
@@ -35,6 +37,7 @@ describe('parseCommand', () => {
       period: '2026-10-01',
       citySlugs: ['timisoara', 'iasi'],
       scoreKeys: ['green'],
+      allowPartialCities: true,
     });
   });
 
