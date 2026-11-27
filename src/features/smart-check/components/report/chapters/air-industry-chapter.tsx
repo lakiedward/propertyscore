@@ -82,13 +82,25 @@ export function AirIndustryChapter({ report }: ReportChapterProps) {
 
   const period = formatPeriod(dates.cams);
   const year = industry?.source.reporting_year;
+  const observedAt = industry?.source.legacy_observed_at;
   const note = [
     air
       ? period
         ? t('report.chapters.airIndustry.note.air', { period })
         : t('report.chapters.airIndustry.note.airNoPeriod')
       : null,
-    year ? t('report.chapters.airIndustry.note.industry', { year }) : null,
+    observedAt
+      ? t('report.chapters.airIndustry.note.industryLegacy', {
+          date: formatDate(observedAt, {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'UTC',
+          }),
+        })
+      : year
+        ? t('report.chapters.airIndustry.note.industry', { year })
+        : null,
   ]
     .filter(Boolean)
     .join(' ');
@@ -99,7 +111,10 @@ export function AirIndustryChapter({ report }: ReportChapterProps) {
       ['eea_stations', formatPeriod(dates.eea_stations) ?? dates.eea_stations],
       [
         'eea_industrial',
-        [dates.eea_industrial_year, dates.eea_industrial && `(${dates.eea_industrial})`]
+        (observedAt
+          ? []
+          : [dates.eea_industrial_year, dates.eea_industrial && `(${dates.eea_industrial})`]
+        )
           .filter(Boolean)
           .join(' '),
       ],

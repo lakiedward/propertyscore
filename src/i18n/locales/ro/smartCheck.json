@@ -690,6 +690,7 @@
           "osm": "OpenStreetMap",
           "walk_routing": "Rutare pe jos",
           "siiir": "SIIIR",
+          "educationLegacy": "Educație: detaliile școlilor au fost copiate la {{date}} pentru tranziție, nu provin din registrul folosit la calculul istoric. Scorurile și timpii rămân cei din snapshot.",
           "cnas_upu": "CNAS și UPU"
         },
         "title": "Orașul de 15 minute"
@@ -914,7 +915,8 @@
         "note": {
           "air": "Aer: modelul european Copernicus, corectat cu stațiile din oraș, {{period}}.",
           "airNoPeriod": "Aer: modelul european Copernicus, corectat cu stațiile din oraș.",
-          "industry": "Industrie: registrul industrial european, raportările din {{year}}."
+          "industry": "Industrie: registrul industrial european, raportările din {{year}}.",
+          "industryLegacy": "Industrie: registrul a fost copiat la {{date}} pentru tranziție; copia nu reprezintă datele istorice folosite la calculul scorurilor."
         },
         "sources": {
           "title": "Surse și date",

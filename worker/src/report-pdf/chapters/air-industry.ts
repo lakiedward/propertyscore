@@ -119,7 +119,7 @@ function eyebrowPart(
 }
 
 export const airIndustryChapter: ChapterBuilder = (report) => {
-  const { t, formatDistance } = reportFormat(report.locale);
+  const { t, formatDistance, longDate } = reportFormat(report.locale);
   const { air, industry } = report.sections;
   const airTheme = CATEGORY_THEME.air;
   const industryTheme = CATEGORY_THEME.industry;
@@ -154,6 +154,7 @@ export const airIndustryChapter: ChapterBuilder = (report) => {
   const cards = `${air ? monthsCard(report.locale, air) : ''}${industry ? sitesCard(report.locale, industry) : ''}`;
   const period = sourceDate(report, 'cams');
   const year = industry?.source.reporting_year;
+  const observedAt = industry?.source.legacy_observed_at;
   const note = [
     air
       ? t(
@@ -162,13 +163,19 @@ export const airIndustryChapter: ChapterBuilder = (report) => {
           period ? `, ${period}` : '',
         )
       : '',
-    year
+    observedAt
       ? t(
-          'Industrie: registrul industrial european, raportările din {0}.',
-          'Industry: European industrial register, reporting year {0}.',
-          String(year),
+          'Industrie: registrul a fost copiat la {0} pentru tranziție; copia nu reprezintă datele istorice folosite la calculul scorurilor.',
+          'Industry: register copied on {0} for the transition; this is not historical data used to calculate the scores.',
+          longDate(observedAt),
         )
-      : '',
+      : year
+        ? t(
+            'Industrie: registrul industrial european, raportările din {0}.',
+            'Industry: European industrial register, reporting year {0}.',
+            String(year),
+          )
+        : '',
   ]
     .filter(Boolean)
     .join(' ');

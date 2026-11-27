@@ -3,7 +3,7 @@ import { ChapterScoreCard } from '@/components/report/chapter-score-card';
 import { ChapterSources } from '@/components/report/chapter-sources';
 import { ReportChapterHead } from '@/components/report/report-chapter-head';
 import { scoreBand } from '@/components/report/score-bands';
-import { formatList, formatNumber } from '@/i18n/format';
+import { formatDate, formatList, formatNumber } from '@/i18n/format';
 import { WALK_LIMIT_MIN, formatSourceDate, walkingTimeMethod } from '../../../fifteen-minute.utils';
 import { scoredCategories, standing } from '../../../report-summary.utils';
 import type { ReportChapterProps } from '../report-chapter-props';
@@ -76,6 +76,7 @@ export function FifteenMinuteChapter({ report, shareToken }: ReportChapterProps)
   const weightTotal = scored.reduce((sum, entry) => sum + entry.weight, 0) || 1;
   const weight = item ? (item.weight / weightTotal) * 100 : null;
   const dates = result.snapshot.source_dates;
+  const observedAt = result.sections.education?.legacy_observed_at;
   const upuDates = [dates.cnas, dates.ms_upu].flatMap((date) =>
     date ? [formatSourceDate(date)] : [],
   );
@@ -88,7 +89,7 @@ export function FifteenMinuteChapter({ report, shareToken }: ReportChapterProps)
           `${t('report.chapters.fifteenMinute.sources.walk_routing')} · ${formatSourceDate(dates.walk_routing)}`,
         ]
       : []),
-    ...(dates.siiir
+    ...(dates.siiir && !observedAt
       ? [`${t('report.chapters.fifteenMinute.sources.siiir')} · ${formatSourceDate(dates.siiir)}`]
       : []),
     ...(upuDates.length > 0
@@ -170,6 +171,13 @@ export function FifteenMinuteChapter({ report, shareToken }: ReportChapterProps)
             ),
           }}
         />
+      ) : null}
+      {observedAt ? (
+        <p className="text-[12.5px] leading-[1.45] text-muted-foreground">
+          {t('report.chapters.fifteenMinute.sources.educationLegacy', {
+            date: formatDate(observedAt, { dateStyle: 'long', timeZone: 'UTC' }),
+          })}
+        </p>
       ) : null}
       <ChapterSources title={t('report.chapters.fifteenMinute.sources.title')}>
         {sources.length > 0 ? (

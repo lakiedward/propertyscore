@@ -244,11 +244,15 @@ const industrySchema = z.object({
       location: position,
     }),
   ),
-  source: z.object({ reporting_year: z.number().nullable() }),
+  source: z.object({
+    reporting_year: z.number().nullable(),
+    legacy_observed_at: z.iso.datetime().optional(),
+  }),
 });
 
 const educationSchema = z.object({
   status: z.literal('scored'),
+  legacy_observed_at: z.iso.datetime().optional(),
   levels: z.array(z.object({ key: z.string(), nearest_min: z.number().nullable() })),
   institutions: z.array(
     z.object({

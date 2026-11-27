@@ -200,8 +200,13 @@ export async function claimSnapshotResume(options: ResumeOptions) {
 
 export function createSnapshotJournal(sql: Sql, snapshotId: string, executionId: string) {
   requireDedicatedConnection(sql);
-  async function write<T>(operation: (tx: SqlTransaction) => Promise<T>): Promise<T> {
+  async function write<T>(
+    operation: (tx: SqlTransaction) => Promise<T>,
+    publication = false,
+  ): Promise<T> {
     const result = await sql.begin(async (tx) => {
+      if (publication)
+        await tx`select pg_advisory_xact_lock(hashtext('propertyscore.snapshot') & 2147483647, 3)`;
       await requireGuard(tx, snapshotId, 'held');
       if ((await getCurrentGeneration(tx, snapshotId)).id !== executionId) {
         cannotContinue('snapshot_generation_changed');
@@ -261,7 +266,7 @@ export function createSnapshotJournal(sql: Sql, snapshotId: string, executionId:
         await tx`select private.compute_snapshot_stats(${snapshotId})`;
         await tx`select private.publish_score_snapshot(${snapshotId}, ${tx.json(sourceDates)}::jsonb)`;
         await tx`update public.score_snapshots set routing_pending = false where id = ${snapshotId}`;
-      });
+      }, true);
     },
 
     async recordValhallaLedger(ledgerId: string) {

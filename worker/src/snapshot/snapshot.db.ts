@@ -73,6 +73,7 @@ export async function finishSnapshot(
   sourceDates: Record<string, string>,
 ): Promise<void> {
   await withLongStatements(sql, async (transaction) => {
+    await transaction`select pg_advisory_xact_lock(hashtext('propertyscore.snapshot') & 2147483647, 3)`;
     await transaction`select private.compute_overall_scores(${snapshotId})`;
     await transaction`select private.compute_snapshot_stats(${snapshotId})`;
     await transaction`select private.publish_score_snapshot(${snapshotId}, ${transaction.json(sourceDates)}::jsonb)`;
