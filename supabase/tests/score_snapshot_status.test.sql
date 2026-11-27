@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(12);
+select plan(16);
 
 select ok(
   has_schema_privilege('snapshot_status_reader', 'snapshot_diagnostics', 'USAGE'),
@@ -51,6 +51,38 @@ select ok(
 select ok(
   not has_table_privilege('anon', 'private.score_snapshot_executions', 'SELECT'),
   'Execution identities are not visible to anonymous users'
+);
+
+set local role anon;
+set local request.jwt.claims = '{"role": "anon"}';
+
+select throws_ok(
+  $$ select snapshot_id from private.score_snapshot_executions $$,
+  '42501',
+  null,
+  'A visitor cannot read execution identities'
+);
+select throws_ok(
+  $$ select job_id from private.score_snapshot_cams_attempts $$,
+  '42501',
+  null,
+  'A visitor cannot read ADS attempts'
+);
+
+set local role authenticated;
+set local request.jwt.claims = '{"role": "authenticated", "sub": "11111111-1111-1111-1111-111111111111"}';
+
+select throws_ok(
+  $$ select snapshot_id from private.score_snapshot_executions $$,
+  '42501',
+  null,
+  'A signed-in user cannot read execution identities'
+);
+select throws_ok(
+  $$ select job_id from private.score_snapshot_cams_attempts $$,
+  '42501',
+  null,
+  'A signed-in user cannot read ADS attempts'
 );
 
 select * from finish();
