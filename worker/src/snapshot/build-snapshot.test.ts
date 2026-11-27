@@ -13,6 +13,7 @@ import { downloadOnce, SourceUnavailableError } from '../sources/download.ts';
 import { cityBoundingBox, osmExtractPath } from '../sources/osm.ts';
 import { limitCoveredCities } from '../test/coverage-fixture.ts';
 import { hasOsmium, prepareSourcesDir } from '../test/osm-fixture.ts';
+import { launchSnapshotDockerFixture } from '../test/snapshot-docker-fixture.ts';
 import { writeCategoryScores } from '../scoring/write-category-scores.ts';
 import { buildCheckpointedSnapshot } from './build-checkpointed-snapshot.ts';
 import { buildSnapshot, selectModules } from './build-snapshot.ts';
@@ -64,6 +65,13 @@ describe('selectModules', () => {
 });
 
 const databaseUrl = process.env.DATABASE_URL;
+const dockerObserverImage = process.env.SNAPSHOT_TEST_DOCKER_IMAGE;
+if (
+  dockerObserverImage &&
+  (!databaseUrl || !['127.0.0.1', 'localhost', '[::1]'].includes(new URL(databaseUrl).hostname))
+) {
+  throw new Error('The Docker observer proof requires an isolated loopback database');
+}
 
 describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local database', () => {
   let sql: Sql;
@@ -173,6 +181,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     const replicaId = 'test-replica';
     const runs = new Set<string>();
     const routingRequests: string[] = [];
+    let fences = 0;
     let adsSubmissions = 0;
     let osmAvailable = false;
     let invalidMatrix = true;
@@ -184,10 +193,20 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     let observation = 'active';
     const period = '2026-11-01';
     const extract = await readFile(osmExtractPath(sourcesDir, period));
+    const observerToken = randomUUID();
+    const docker = dockerObserverImage
+      ? await launchSnapshotDockerFixture(dockerObserverImage, observerToken)
+      : null;
+    const mockObserver = 'https://observer.example.test';
+    let observerUrl = docker?.url ?? mockObserver;
+    const nativeFetch = fetch;
     vi.stubGlobal(
       'fetch',
-      vi.fn((input: string, init?: RequestInit): Response => {
+      vi.fn((input: string, init?: RequestInit): Response | Promise<Response> => {
         const url = new URL(input);
+        if (docker && url.origin === observerUrl && observerUrl !== mockObserver) {
+          return nativeFetch(input, init);
+        }
         if (url.hostname === 'sources.example.test') {
           sourceReads++;
           if (url.pathname === '/missing') return new Response(null, { status: 404 });
@@ -211,7 +230,8 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
           const [, , runId, action] = url.pathname.split('/');
           if (!runId) throw new Error('Missing run');
           if (init?.method === 'PUT') {
-            if (action !== 'fence') runs.add(runId);
+            if (action === 'fence') fences++;
+            else runs.add(runId);
             return Response.json({
               run_id: runId,
               ledger_id: ledgerId,
@@ -306,8 +326,8 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       SNAPSHOT_VALHALLA_URL: 'https://valhalla.example.test',
       SNAPSHOT_VALHALLA_CONTROL_TOKEN: 'c'.repeat(64),
       SNAPSHOT_VALHALLA_ROUTING_TOKEN: 'r'.repeat(64),
-      SNAPSHOT_REPLICA_INSPECTOR_URL: 'https://observer.example.test',
-      SNAPSHOT_REPLICA_INSPECTOR_TOKEN: 'o'.repeat(32),
+      SNAPSHOT_REPLICA_INSPECTOR_URL: mockObserver,
+      SNAPSHOT_REPLICA_INSPECTOR_TOKEN: observerToken,
     };
     const options = {
       modules: [{ ...fakeGreenModule, run: green }, air],
@@ -327,6 +347,16 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       try {
         return await buildCheckpointedSnapshot({
           ...options,
+          settings: {
+            ...settings,
+            SNAPSHOT_REPLICA_INSPECTOR_URL: observerUrl,
+            ...(docker && resumeId === null
+              ? {
+                  SNAPSHOT_EXECUTION_ID: docker.identity.run_id,
+                  SNAPSHOT_REPLICA_ID: docker.identity.replica_id,
+                }
+              : {}),
+          },
           ads: { ...options.ads, apiKey: adsKey },
           resumeId,
           sql,
@@ -354,16 +384,56 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       );
       osmAvailable = true;
       expect(await sql`select private.current_score_snapshot_id() as id`).toEqual([active]);
-      await expect(run(interrupted.id)).rejects.toMatchObject({
-        code: 'snapshot_stop_unconfirmed',
-      });
-      expect(runs.size).toBe(1);
-      expect(sourceReads).toBe(1);
-      expect(routingRequests).toHaveLength(0);
-      expect(adsSubmissions).toBe(0);
+      const expectBlocked = async () => {
+        await expect(run(interrupted.id)).rejects.toMatchObject({
+          code: 'snapshot_stop_unconfirmed',
+        });
+        const progress = await readSnapshotProgress(sql, interrupted.id);
+        expect(progress?.generations).toHaveLength(1);
+        expect(await sql`select private.current_score_snapshot_id() as id`).toEqual([active]);
+        expect(runs.size).toBe(1);
+        expect(sourceReads).toBe(1);
+        expect(routingRequests).toHaveLength(0);
+        expect(fences).toBe(0);
+        expect(adsSubmissions).toBe(0);
+      };
+      if (docker) {
+        await expect
+          .poll(async () => (await docker.descendants()).length)
+          .toBeGreaterThanOrEqual(4);
+        const progress = await readSnapshotProgress(sql, interrupted.id);
+        expect(progress?.generations[0]).toMatchObject({
+          id: docker.identity.run_id,
+          replica_id: docker.identity.replica_id,
+        });
+      }
+      await expectBlocked();
+      if (docker) {
+        const processes = await docker.descendants();
+        expect(processes).toHaveLength(4);
+        expect(processes.every(({ identity }) => typeof identity === 'string')).toBe(true);
+        expect(await docker.killRunner()).toBe('exited 0');
+        for (const { pid, identity } of processes) {
+          await expect.poll(() => docker.processIdentity(pid)).not.toBe(identity);
+        }
+        await expectBlocked();
+        await docker.disconnectEngine();
+        await expect(docker.retire()).rejects.toThrow('Docker did not confirm the operation');
+        await expectBlocked();
+        await docker.restoreEngine();
+        await docker.retire();
+        await expect(docker.restartRunner()).rejects.toThrow('No such container');
+        await docker.disconnectEngine();
+        await expectBlocked();
+        await docker.restoreEngine();
+        await docker.stopObserver();
+        await expectBlocked();
+        observerUrl = await docker.startObserver();
+      }
 
       observation = 'stopped';
       await expect(run(interrupted.id)).rejects.toMatchObject({ code: 'walk_routing_invalid' });
+      observerUrl = mockObserver;
       expect(await readSnapshotRequests(sql, interrupted.id, null)).toContainEqual(
         expect.objectContaining({
           provider: 'valhalla',
@@ -449,6 +519,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       ]);
     } finally {
       vi.unstubAllGlobals();
+      await docker?.cleanup();
     }
   });
 

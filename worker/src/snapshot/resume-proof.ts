@@ -19,14 +19,20 @@ export async function readWorkerStopProof(
 ): Promise<WorkerStopProof> {
   const unconfirmed = () =>
     new WorkerError('snapshot_stop_unconfirmed', 'Previous Smart Check worker stop is unconfirmed');
-  const response = await fetch(`${url.replace(/\/+$/, '')}/runs/${expected.id}`, {
-    headers: { authorization: `Bearer ${token}` },
-    cache: 'no-store',
-    redirect: 'error',
-    signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),
-  });
-  if (response.status !== 200) throw unconfirmed();
-  const proof = stoppedSchema.safeParse(await response.json());
+  let proof;
+  try {
+    const response = await fetch(`${url.replace(/\/+$/, '')}/runs/${expected.id}`, {
+      headers: { authorization: `Bearer ${token}` },
+      cache: 'no-store',
+      redirect: 'error',
+      signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),
+    });
+    if (response.status !== 200) throw unconfirmed();
+    proof = stoppedSchema.safeParse(await response.json());
+  } catch {
+    signal.throwIfAborted();
+    throw unconfirmed();
+  }
   if (
     !proof.success ||
     proof.data.run_id !== expected.id ||
