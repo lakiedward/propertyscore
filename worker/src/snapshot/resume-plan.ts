@@ -36,7 +36,7 @@ export const requestSchema = z.object({
   id: z.uuid(),
   execution_id: z.uuid(),
   step_key: z.string(),
-  provider: z.enum(['ads', 'valhalla']),
+  provider: z.enum(['ads', 'source', 'valhalla']),
   operation_key: z.string(),
   fingerprint: sha256,
   attempt: z.number().int().positive(),

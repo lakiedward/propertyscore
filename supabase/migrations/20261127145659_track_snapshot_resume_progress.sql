@@ -49,7 +49,7 @@ create table private.score_snapshot_requests (
   snapshot_id uuid not null,
   execution_id uuid not null,
   step_key text not null,
-  provider text not null check (provider in ('valhalla', 'ads')),
+  provider text not null check (provider in ('valhalla', 'ads', 'source')),
   operation_key text not null check (operation_key ~ '^[a-zA-Z0-9:_-]{1,160}$'),
   fingerprint text not null check (fingerprint ~ '^[0-9a-f]{64}$'),
   attempt integer not null check (attempt > 0),
@@ -66,7 +66,7 @@ create table private.score_snapshot_requests (
   foreign key (snapshot_id, execution_id) references private.score_snapshot_generations(snapshot_id, id)
     deferrable initially deferred,
   check (state = 'discarded' or ((state = 'unconfirmed') = (upstream_id is null))),
-  check (state <> 'discarded' or provider = 'valhalla'),
+  check (state <> 'discarded' or provider in ('valhalla', 'source')),
   check ((state = 'succeeded') = (artifact_sha256 is not null))
 );
 

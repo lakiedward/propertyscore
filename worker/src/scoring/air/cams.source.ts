@@ -158,6 +158,7 @@ async function downloadCamsResult(options: AdsClientOptions, jobUrl: string, des
   try {
     return await downloadOnce(results.data.asset.value.href, destination, {
       signal: options.signal,
+      trackSource: false,
     });
   } catch {
     options.signal?.throwIfAborted();
@@ -216,6 +217,7 @@ async function downloadCheckpointedCams(options: CamsDownloadOptions, checkpoint
     if ((await snapshotFileDigest(file, signal)) !== pending.artifactSha256) artifactUnconfirmed();
     return file;
   }
+  if (pending.outcome !== 'submit') artifactUnconfirmed();
   const job = await submitCams(client);
   await journal.acceptRequest(pending.requestId, job.jobID);
   const jobUrl = camsJobUrl(client, job.jobID);

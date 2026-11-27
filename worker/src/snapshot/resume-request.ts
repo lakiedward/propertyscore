@@ -31,6 +31,7 @@ export async function runCheckpointedRequest(
     if (bytes === null || snapshotDigest(bytes) !== attempt.artifactSha256) artifactUnconfirmed();
     return bytes;
   }
+  if (attempt.outcome !== 'submit') artifactUnconfirmed();
 
   const upstreamId = await provider.submit(attempt.requestId, signal);
   await journal.acceptRequest(attempt.requestId, upstreamId);

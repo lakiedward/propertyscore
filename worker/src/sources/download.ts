@@ -6,12 +6,14 @@ import { pipeline } from 'node:stream/promises';
 import { setTimeout as delay } from 'node:timers/promises';
 
 import { WorkerError } from '../lib/errors.ts';
+import { checkpointSourceFile } from '../snapshot/resume-source.ts';
 
 export type DownloadOptions = {
   attempts?: number;
   backoffMs?: number;
   headers?: Readonly<Record<string, string>>;
   signal?: AbortSignal;
+  trackSource?: boolean;
 };
 
 const DEFAULT_ATTEMPTS = 4;
@@ -88,7 +90,7 @@ async function downloadAttempt(
   }
 }
 
-export async function downloadOnce(
+async function downloadFile(
   url: string,
   destination: string,
   options: DownloadOptions = {},
@@ -107,4 +109,18 @@ export async function downloadOnce(
       await delay(backoffMs * 2 ** (attempt - 1), undefined, { signal: options.signal });
     }
   }
+}
+
+export function downloadOnce(url: string, destination: string, options: DownloadOptions = {}) {
+  if (options.trackSource === false) return downloadFile(url, destination, options);
+  return checkpointSourceFile(
+    url,
+    destination,
+    (signal) =>
+      downloadFile(url, destination, signal ? { ...options, signal, attempts: 1 } : options),
+    (error) => error instanceof SourceUnavailableError,
+    () => {
+      throw new SourceUnavailableError('source_download_failed', 'Saved source was unavailable');
+    },
+  );
 }

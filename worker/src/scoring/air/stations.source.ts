@@ -5,6 +5,7 @@ import { asyncBufferFromFile, parquetReadObjects } from 'hyparquet';
 import { z } from 'zod';
 
 import { WorkerError } from '../../lib/errors.ts';
+import { checkpointSourceText } from '../../snapshot/resume-source.ts';
 import { downloadOnce } from '../../sources/download.ts';
 import { monthlyMean } from './air.formula.ts';
 import type { Pollutant } from './air.params.ts';
@@ -178,24 +179,30 @@ export async function listStationFiles(options: {
   start: string;
   end: string;
 }): Promise<string[]> {
-  const response = await fetch(`${EEA_DOWNLOAD_API_URL}/ParquetFile/urls`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      countries: [options.countryCode],
-      cities: [],
-      pollutants: options.pollutants.map((pollutant) => POLLUTANT_NOTATIONS[pollutant]),
-      dataset: DATASET_NUMBERS[options.dataset],
-      dateTimeStart: `${options.start}T00:00:00Z`,
-      dateTimeEnd: `${options.end}T00:00:00Z`,
-    }),
+  const url = `${EEA_DOWNLOAD_API_URL}/ParquetFile/urls`;
+  const body = JSON.stringify({
+    countries: [options.countryCode],
+    cities: [],
+    pollutants: options.pollutants.map((pollutant) => POLLUTANT_NOTATIONS[pollutant]),
+    dataset: DATASET_NUMBERS[options.dataset],
+    dateTimeStart: `${options.start}T00:00:00Z`,
+    dateTimeEnd: `${options.end}T00:00:00Z`,
   });
-  if (!response.ok)
-    throw new WorkerError(
-      'station_list_failed',
-      `EEA download service answered ${response.status}`,
-    );
-  return parseParquetUrlList(await response.text());
+  const listing = await checkpointSourceText(['POST', url, body], async (signal) => {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      signal,
+    });
+    if (!response.ok)
+      throw new WorkerError(
+        'station_list_failed',
+        `EEA download service answered ${response.status}`,
+      );
+    return response.text();
+  });
+  return parseParquetUrlList(listing);
 }
 
 export async function downloadStationFile(

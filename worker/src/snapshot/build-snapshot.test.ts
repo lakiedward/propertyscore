@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { readFile, rm } from 'node:fs/promises';
+import { join } from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -7,6 +8,8 @@ import { createSnapshotResumeConnection, createSql, type Sql } from '../db/sql.t
 import { createLogger } from '../lib/logger.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
 import { downloadCamsMonth } from '../scoring/air/cams.source.ts';
+import { listStationFiles } from '../scoring/air/stations.source.ts';
+import { downloadOnce, SourceUnavailableError } from '../sources/download.ts';
 import { cityBoundingBox, osmExtractPath } from '../sources/osm.ts';
 import { limitCoveredCities } from '../test/coverage-fixture.ts';
 import { hasOsmium, prepareSourcesDir } from '../test/osm-fixture.ts';
@@ -171,6 +174,9 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     const runs = new Set<string>();
     const routingRequests: string[] = [];
     let adsSubmissions = 0;
+    let sourceReads = 0;
+    let stationReads = 0;
+    const stationFile = 'https://sources.example.test/station.parquet';
     let observation = 'active';
     const period = '2026-11-01';
     const extract = await readFile(osmExtractPath(sourcesDir, period));
@@ -178,7 +184,16 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       'fetch',
       vi.fn((input: string, init?: RequestInit): Response => {
         const url = new URL(input);
-        if (url.hostname === 'sources.example.test') return new Response(extract);
+        if (url.hostname === 'sources.example.test') {
+          sourceReads++;
+          if (url.pathname === '/missing') return new Response(null, { status: 404 });
+          if (url.href === stationFile) return new Response('test-station');
+          return new Response(extract);
+        }
+        if (url.hostname === 'eeadmz1-downloads-api-appservice.azurewebsites.net') {
+          stationReads++;
+          return new Response(stationFile);
+        }
         if (url.hostname === 'observer.example.test') {
           return Response.json({
             run_id: url.pathname.split('/')[2],
@@ -244,6 +259,25 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
           })),
         );
         expect(context.camsCheckpoint).toBeDefined();
+        expect(
+          await listStationFiles({
+            dataset: 'eea_e1a',
+            countryCode: 'RO',
+            pollutants: ['pm25'],
+            start: '2026-10-01',
+            end: period,
+          }),
+        ).toEqual([stationFile]);
+        const stationPath = join(context.sourcesDir, 'station.parquet');
+        await expect(
+          Promise.all([
+            downloadOnce(stationFile, stationPath),
+            downloadOnce(stationFile, stationPath),
+          ]),
+        ).resolves.toEqual([stationPath, stationPath]);
+        await expect(
+          downloadOnce('https://sources.example.test/missing', join(context.sourcesDir, 'missing')),
+        ).rejects.toBeInstanceOf(SourceUnavailableError);
         const file = await downloadCamsMonth({
           apiUrl: 'https://ads.example.test/api',
           apiKey: 'test-key',
@@ -309,7 +343,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       expect(progress).toMatchObject({
         snapshot_status: 'ready',
         routing_pending: false,
-        requests: { accepted: 0, succeeded: 2 },
+        requests: { accepted: 0, failed: 1, succeeded: 5 },
       });
       expect(progress?.generations).toHaveLength(2);
       expect(progress?.steps.map((step) => step.completed_by)).toEqual([
@@ -323,6 +357,13 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         requests.find((request) => request.provider === 'valhalla')?.id,
       ]);
       expect(adsSubmissions).toBe(1);
+      expect(sourceReads).toBe(3);
+      expect(stationReads).toBe(1);
+      expect(requests.find(({ step_key }) => step_key === 'source:osm')).toMatchObject({
+        step_key: 'source:osm',
+        state: 'succeeded',
+        artifact_sha256: expect.stringMatching(/^[a-f0-9]{64}$/) as unknown,
+      });
       expect(green).toHaveBeenCalledOnce();
       expect(await sql`select private.current_score_snapshot_id() as id`).toEqual([
         { id: interrupted.id },

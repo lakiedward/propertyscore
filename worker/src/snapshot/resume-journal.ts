@@ -183,7 +183,7 @@ export async function claimSnapshotResume(options: ResumeOptions) {
       update private.score_snapshot_requests
       set state = 'discarded'
       where snapshot_id = ${snapshotId} and execution_id = ${current.id}
-        and provider = 'valhalla' and state in ('unconfirmed', 'accepted')
+        and provider in ('source', 'valhalla') and state in ('unconfirmed', 'accepted')
     `;
     const [pending] = await tx<{ present: boolean }[]>`
       select exists (
@@ -310,6 +310,9 @@ export function createSnapshotJournal(sql: Sql, snapshotId: string, executionId:
         `;
         if (last && last.fingerprint !== key.fingerprint)
           cannotContinue('snapshot_request_changed');
+        if (last?.state === 'failed' && key.provider === 'source') {
+          return { outcome: 'unavailable' } as const;
+        }
         if (
           last?.state === 'succeeded' &&
           last.artifact_sha256 !== null &&
@@ -374,6 +377,7 @@ export function createSnapshotJournal(sql: Sql, snapshotId: string, executionId:
               select 1 from private.score_snapshot_requests r
               where r.snapshot_id = s.snapshot_id and r.step_key = s.step_key
                 and r.state <> 'succeeded'
+                and not (r.provider = 'source' and r.state = 'failed')
                 and not exists (
                   select 1 from private.score_snapshot_requests later
                   where later.snapshot_id = r.snapshot_id and later.step_key = r.step_key

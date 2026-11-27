@@ -31,6 +31,7 @@ import {
 import { readWorkerStopProof } from './resume-proof.ts';
 import { createResumeRouting, routingUnconfirmed } from './resume-routing.ts';
 import type { ResumeSettings } from './resume-settings.ts';
+import { withCheckpointedSources } from './resume-source.ts';
 import { runMissingSnapshotSteps, type StepJournal } from './resume-steps.ts';
 import { prepareCityCells } from './snapshot.db.ts';
 
@@ -242,6 +243,7 @@ export async function buildCheckpointedSnapshot(options: Options): Promise<Build
   const sourcesDir = join(options.sourcesDir, 'snapshots', snapshotId);
   const workDir = join(sourcesDir, 'work', snapshotId);
   const extractPath = osmExtractPath(sourcesDir, inputs.period);
+  const sourceArtifacts = join(sourcesDir, 'source-responses');
   logger.info('snapshot checkpoint execution', {
     snapshot_id: snapshotId,
     execution_id: execution.id,
@@ -251,8 +253,16 @@ export async function buildCheckpointedSnapshot(options: Options): Promise<Build
       [
         {
           key: 'source:osm',
-          async run() {
-            await downloadOsmExtract(options.osmExtract, sourcesDir, inputs.period);
+          async run(stepJournal, stepSignal) {
+            await withCheckpointedSources(
+              {
+                journal: stepJournal,
+                step: 'source:osm',
+                signal: stepSignal,
+                directory: sourceArtifacts,
+              },
+              () => downloadOsmExtract(options.osmExtract, sourcesDir, inputs.period),
+            );
             return { sha256: await snapshotFileDigest(extractPath, signal) };
           },
         },
@@ -275,27 +285,31 @@ export async function buildCheckpointedSnapshot(options: Options): Promise<Build
           key: `score:${module.key}`,
           async run(stepJournal: StepJournal, stepSignal: AbortSignal) {
             const step = `score:${module.key}`;
-            const result = await module.run({
-              sql,
-              snapshotId,
-              period: inputs.period,
-              cellSizeM: params.data.cell_size_m,
-              cities,
-              params: inputs.params[module.key],
-              sourcesDir,
-              osmExtract: options.osmExtract,
-              sourceMirror: options.sourceMirror,
-              router: routing.router({
-                runId: execution.id,
-                ledgerId: execution.ledgerId,
-                step,
-                journal: stepJournal,
-                artifactsDir: join(sourcesDir, 'valhalla-results'),
-                signal: stepSignal,
-              }),
-              camsCheckpoint: { journal: stepJournal, step, signal: stepSignal },
-              logger,
-            });
+            const result = await withCheckpointedSources(
+              { journal: stepJournal, step, signal: stepSignal, directory: sourceArtifacts },
+              () =>
+                module.run({
+                  sql,
+                  snapshotId,
+                  period: inputs.period,
+                  cellSizeM: params.data.cell_size_m,
+                  cities,
+                  params: inputs.params[module.key],
+                  sourcesDir,
+                  osmExtract: options.osmExtract,
+                  sourceMirror: options.sourceMirror,
+                  router: routing.router({
+                    runId: execution.id,
+                    ledgerId: execution.ledgerId,
+                    step,
+                    journal: stepJournal,
+                    artifactsDir: join(sourcesDir, 'valhalla-results'),
+                    signal: stepSignal,
+                  }),
+                  camsCheckpoint: { journal: stepJournal, step, signal: stepSignal },
+                  logger,
+                }),
+            );
             return result.sourceDates;
           },
         })),
