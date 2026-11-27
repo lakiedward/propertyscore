@@ -16,6 +16,7 @@ export type BuildSnapshotCommand = {
   period: string;
   citySlugs: string[];
   scoreKeys: CategoryKey[];
+  allowPartialCities: boolean;
 };
 
 export type GenerateReportCommand = {
@@ -157,6 +158,7 @@ function parseBuildSnapshot(argv: readonly string[], now: Date): BuildSnapshotCo
       period: { type: 'string' },
       city: { type: 'string', multiple: true },
       score: { type: 'string', multiple: true },
+      'allow-partial': { type: 'boolean' },
     },
   });
 
@@ -176,6 +178,7 @@ function parseBuildSnapshot(argv: readonly string[], now: Date): BuildSnapshotCo
     period: `${period}-01`,
     citySlugs: values.city ?? [],
     scoreKeys: scoreKeys.filter(isCategoryKey),
+    allowPartialCities: values['allow-partial'] ?? false,
   };
 }
 
