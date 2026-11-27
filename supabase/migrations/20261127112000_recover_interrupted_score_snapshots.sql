@@ -23,6 +23,7 @@ set search_path = ''
 as $$
 declare
   v_namespace constant integer := hashtext('propertyscore.snapshot') & 2147483647;
+  v_blocker text;
   v_version_id uuid;
   v_snapshot_id uuid;
 begin
@@ -30,18 +31,16 @@ begin
     raise exception using errcode = 'P0001', message = 'snapshot_already_building';
   end if;
 
-  if exists (select 1 from private.score_snapshot_lock_holders()) then
-    raise exception using errcode = 'P0001', message = 'snapshot_already_building';
-  end if;
+  select case
+    when exists (select 1 from private.score_snapshot_lock_holders()) then 'snapshot_already_building'
+    when exists (select 1 from public.score_snapshots where routing_pending) then 'snapshot_routing_unconfirmed'
+    when exists (
+      select 1 from public.score_snapshots where status = 'building' and not uses_worker_lock
+    ) then 'snapshot_legacy_unconfirmed'
+  end into v_blocker;
 
-  if exists (select 1 from public.score_snapshots where routing_pending) then
-    raise exception using errcode = 'P0001', message = 'snapshot_routing_unconfirmed';
-  end if;
-
-  if exists (
-    select 1 from public.score_snapshots where status = 'building' and not uses_worker_lock
-  ) then
-    raise exception using errcode = 'P0001', message = 'snapshot_legacy_unconfirmed';
+  if v_blocker is not null then
+    raise exception using errcode = 'P0001', message = v_blocker;
   end if;
 
   select v.id into v_version_id
@@ -109,6 +108,8 @@ language plpgsql
 set search_path = ''
 as $$
 begin
+  perform pg_advisory_xact_lock(hashtext('propertyscore.snapshot') & 2147483647, 0);
+
   update public.score_snapshots
   set status = 'failed',
       finished_at = now(),

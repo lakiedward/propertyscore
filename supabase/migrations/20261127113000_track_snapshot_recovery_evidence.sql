@@ -2,18 +2,30 @@ create table private.score_snapshot_executions (
   snapshot_id uuid primary key references public.score_snapshots(id) on delete cascade,
   replica_id text not null check (length(replica_id) > 0),
   valhalla_url text not null,
-  valhalla_ledger_id uuid not null
+  valhalla_ledger_id uuid not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create table private.score_snapshot_cams_attempts (
   id uuid primary key default gen_random_uuid(),
   snapshot_id uuid not null references private.score_snapshot_executions(snapshot_id) on delete cascade,
   ads_url text not null,
-  job_id text
+  job_id text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create index score_snapshot_cams_attempts_snapshot_id_idx
   on private.score_snapshot_cams_attempts(snapshot_id);
+
+create trigger score_snapshot_executions_set_updated_at
+  before update on private.score_snapshot_executions
+  for each row execute function private.set_updated_at();
+
+create trigger score_snapshot_cams_attempts_set_updated_at
+  before update on private.score_snapshot_cams_attempts
+  for each row execute function private.set_updated_at();
 
 alter table private.score_snapshot_executions enable row level security;
 alter table private.score_snapshot_cams_attempts enable row level security;
