@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { z } from 'zod';
 
-import type { Sql } from '../db/sql.ts';
+import { createSnapshotSql, type Sql } from '../db/sql.ts';
 import { errorCode, WorkerError } from '../lib/errors.ts';
 import type { Logger } from '../lib/logger.ts';
 import type { ValhallaClient } from '../routing/valhalla.ts';
@@ -22,7 +22,7 @@ import {
 } from './snapshot.db.ts';
 
 export type BuildSnapshotOptions = {
-  sql: Sql;
+  databaseUrl: string;
   modules: readonly ScoreModule[];
   period: string;
   citySlugs: readonly string[];
@@ -60,7 +60,19 @@ export function selectModules(
 }
 
 export async function buildSnapshot(options: BuildSnapshotOptions): Promise<BuildSnapshotResult> {
-  const { sql, logger } = options;
+  const sql = createSnapshotSql(options.databaseUrl);
+  try {
+    return await buildSnapshotInSession(sql, options);
+  } finally {
+    await sql.end({ timeout: 5 });
+  }
+}
+
+async function buildSnapshotInSession(
+  sql: Sql,
+  options: BuildSnapshotOptions,
+): Promise<BuildSnapshotResult> {
+  const { logger } = options;
   const modules = selectModules(options.modules, options.scoreKeys);
   const cities = await selectCities(sql, logger, options);
 

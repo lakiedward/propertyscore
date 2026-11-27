@@ -106,7 +106,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
 
   it('publishes a snapshot with the module scores, zone scores and city stats', async () => {
     const result = await buildSnapshot({
-      sql,
+      databaseUrl: databaseUrl ?? '',
       modules: [fakeGreenModule],
       period: '2026-11-01',
       citySlugs: ['sibiu'],
@@ -164,7 +164,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     >`select count(*)::int as count from public.score_snapshots`;
     await expect(
       buildSnapshot({
-        sql,
+        databaseUrl: databaseUrl ?? '',
         modules: [fakeGreenModule],
         period: '2026-11-01',
         citySlugs: ['sibiu', 'timisoara'],
@@ -198,7 +198,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       >`select count(*)::int as count from public.score_snapshots`;
       await expect(
         buildSnapshot({
-          sql,
+          databaseUrl: databaseUrl ?? '',
           modules: [fakeGreenModule],
           period: '2026-11-01',
           citySlugs: ['sibiu'],
@@ -237,7 +237,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
 
     await expect(
       buildSnapshot({
-        sql,
+        databaseUrl: databaseUrl ?? '',
         modules: [failing],
         period: '2026-11-01',
         citySlugs: ['sibiu'],

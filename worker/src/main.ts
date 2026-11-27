@@ -120,7 +120,7 @@ async function runCommand(
   switch (command.command) {
     case 'build-snapshot': {
       const result = await buildSnapshot({
-        sql,
+        databaseUrl: env.DATABASE_URL,
         modules: SCORE_MODULES,
         period: command.period,
         citySlugs: command.citySlugs,

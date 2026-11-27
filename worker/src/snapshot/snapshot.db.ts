@@ -31,9 +31,12 @@ export async function listCoveredCities(
 }
 
 export async function startSnapshot(sql: Sql, period: string): Promise<SnapshotVersion> {
-  const [started] = await sql<{ id: string }[]>`
-    select private.start_score_snapshot(${period}::date) as id
+  const [features] = await sql<{ worker_lock: boolean }[]>`
+    select to_regprocedure('private.start_score_snapshot(date,boolean)') is not null as worker_lock
   `;
+  const [started] = features?.worker_lock
+    ? await sql<{ id: string }[]>`select private.start_score_snapshot(${period}::date, true) as id`
+    : await sql<{ id: string }[]>`select private.start_score_snapshot(${period}::date) as id`;
   if (!started)
     throw new WorkerError('snapshot_not_started', 'start_score_snapshot returned no snapshot');
   try {
