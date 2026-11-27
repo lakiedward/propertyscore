@@ -1,12 +1,9 @@
-import { execFile } from 'node:child_process';
 import { createReadStream } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline';
-import { promisify } from 'node:util';
 
-import { WorkerError } from '../../lib/errors.ts';
-import type { BoundingBox } from '../../sources/osm.ts';
+import { type BoundingBox, runOsmium } from '../../sources/osm.ts';
 import type { AccessibilityParams } from './accessibility.params.ts';
 import { distanceMeters } from './geo.ts';
 import { centroid, groupStops, type StopPoint } from './transit-network.ts';
@@ -20,8 +17,6 @@ import {
   type TransitStop,
 } from './transit.types.ts';
 
-const run = promisify(execFile);
-
 type OplNode = LngLat & { id: string; tags: Record<string, string> };
 type OplWay = { id: string; nodeIds: string[] };
 type OplMember = { type: 'n' | 'w' | 'r'; id: string; role: string };
@@ -33,49 +28,57 @@ export type OplData = {
   relations: OplRelation[];
 };
 
-async function osmium(args: readonly string[]): Promise<void> {
-  try {
-    await run('osmium', [...args], { maxBuffer: 16 * 1024 * 1024 });
-  } catch (error) {
-    throw new WorkerError('osmium_failed', `osmium ${args[0] ?? ''} failed`, { cause: error });
-  }
-}
-
 export async function clipOsmExtract(options: {
   extractPath: string;
   bbox: BoundingBox;
   workDir: string;
   name: string;
+  signal?: AbortSignal;
 }): Promise<string> {
+  options.signal?.throwIfAborted();
   await mkdir(options.workDir, { recursive: true });
   const clipped = join(options.workDir, `${options.name}.osm.pbf`);
   const { bbox } = options;
-  await osmium([
-    'extract',
-    '--bbox',
-    [bbox.west, bbox.south, bbox.east, bbox.north].join(','),
-    '--strategy',
-    'complete_ways',
-    '--overwrite',
-    '--output',
-    clipped,
-    options.extractPath,
-  ]);
+  await runOsmium(
+    [
+      'extract',
+      '--bbox',
+      [bbox.west, bbox.south, bbox.east, bbox.north].join(','),
+      '--strategy',
+      'complete_ways',
+      '--overwrite',
+      '--output',
+      clipped,
+      options.extractPath,
+    ],
+    options.signal,
+  );
   return clipped;
 }
 
-export async function exportTransitOpl(clippedPath: string, workDir: string, name: string) {
+export async function exportTransitOpl(
+  clippedPath: string,
+  workDir: string,
+  name: string,
+  signal?: AbortSignal,
+) {
   const filtered = join(workDir, `${name}.transit.osm.pbf`);
   const opl = join(workDir, `${name}.transit.opl`);
-  await osmium([
-    'tags-filter',
-    '--overwrite',
-    '--output',
-    filtered,
-    clippedPath,
-    `r/route=${TRANSIT_MODES.join(',')}`,
-  ]);
-  await osmium(['cat', '--overwrite', '--output-format', 'opl', '--output', opl, filtered]);
+  await runOsmium(
+    [
+      'tags-filter',
+      '--overwrite',
+      '--output',
+      filtered,
+      clippedPath,
+      `r/route=${TRANSIT_MODES.join(',')}`,
+    ],
+    signal,
+  );
+  await runOsmium(
+    ['cat', '--overwrite', '--output-format', 'opl', '--output', opl, filtered],
+    signal,
+  );
   return opl;
 }
 
@@ -89,7 +92,7 @@ export async function exportNeighbourhoodPlaces(
 ): Promise<NeighbourhoodPlace[]> {
   const filtered = join(workDir, 'places.osm.pbf');
   const opl = join(workDir, 'places.opl');
-  await osmium([
+  await runOsmium([
     'tags-filter',
     '--overwrite',
     '--output',
@@ -97,7 +100,7 @@ export async function exportNeighbourhoodPlaces(
     clippedPath,
     `n/place=${NEIGHBOURHOOD_PLACES.join(',')}`,
   ]);
-  await osmium(['cat', '--overwrite', '--output-format', 'opl', '--output', opl, filtered]);
+  await runOsmium(['cat', '--overwrite', '--output-format', 'opl', '--output', opl, filtered]);
   return neighbourhoodPlaces(await readOpl(opl));
 }
 

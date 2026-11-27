@@ -126,8 +126,9 @@ export const noiseModule: ScoreModule = {
       context.osmExtract,
       context.sourcesDir,
       context.period,
+      context.signal,
     );
-    const osmDate = await osmExtractDate(extractPath, context.period);
+    const osmDate = await osmExtractDate(extractPath, context.period, context.signal);
 
     const stats: Record<string, JsonObject> = {};
     const rounds = new Set<number>();
@@ -141,6 +142,7 @@ export const noiseModule: ScoreModule = {
         geometryTypes: ['linestring'],
         workDir,
         name: 'noise-sources',
+        signal: context.signal,
       });
       const sources = await replaceNoiseSources(
         sql,
@@ -155,6 +157,7 @@ export const noiseModule: ScoreModule = {
         geometryTypes: ['polygon'],
         workDir,
         name: 'noise-buildings',
+        signal: context.signal,
       });
       const buildings = await replaceNoiseBuildings(
         sql,

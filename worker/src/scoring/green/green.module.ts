@@ -201,6 +201,7 @@ async function importCity(
     geometryTypes: ['point', 'polygon'],
     workDir: join(context.sourcesDir, 'work', snapshotId),
     name: `${city.slug}-green`,
+    signal: context.signal,
   });
 
   let areas: GreenSourceRow[] = [];
@@ -242,6 +243,7 @@ export const greenModule: ScoreModule = {
       context.osmExtract,
       context.sourcesDir,
       context.period,
+      context.signal,
     );
 
     for (const city of context.cities) {
@@ -280,6 +282,8 @@ export const greenModule: ScoreModule = {
       });
     }
 
-    return { sourceDates: { osm: await osmExtractDate(extractPath, context.period) } };
+    return {
+      sourceDates: { osm: await osmExtractDate(extractPath, context.period, context.signal) },
+    };
   },
 };

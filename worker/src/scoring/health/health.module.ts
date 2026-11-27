@@ -92,6 +92,7 @@ export const healthModule: ScoreModule = {
       context.osmExtract,
       context.sourcesDir,
       context.period,
+      context.signal,
     );
     const cityStats: Record<string, JsonObject> = {};
     const cnasDates: string[] = [];
@@ -105,6 +106,7 @@ export const healthModule: ScoreModule = {
         geometryTypes: ['point', 'polygon'],
         workDir: join(context.sourcesDir, 'work', context.period, city.slug),
         name: 'health',
+        signal: context.signal,
       });
       const osmPois: HealthPoi[] = [];
       for await (const feature of readOsmFeatures(exported)) {
@@ -211,7 +213,7 @@ export const healthModule: ScoreModule = {
     await writeHealthCityStats(sql, snapshotId, cityStats);
 
     const sourceDates: Record<string, string> = {
-      osm: await osmExtractDate(extractPath, context.period),
+      osm: await osmExtractDate(extractPath, context.period, context.signal),
     };
     const oldestCnas = cnasDates.sort()[0];
     if (oldestCnas) sourceDates.cnas = oldestCnas;

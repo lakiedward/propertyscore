@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { createSql, type Sql } from '../../db/sql.ts';
+import { createSnapshotSql, type Sql } from '../../db/sql.ts';
 import { computeWalkAccess } from '../../routing/walk-access.ts';
 import { computeCarAccess, readWalkAccess } from './health.access.ts';
 import {
@@ -37,7 +37,7 @@ describe.skipIf(!databaseUrl)('Health access against the local database', () => 
   let hadCells = false;
 
   beforeAll(async () => {
-    sql = createSql(databaseUrl ?? '');
+    sql = createSnapshotSql(databaseUrl ?? '');
     const [city] = await sql<{ id: string }[]>`select id from public.cities where slug = 'sibiu'`;
     cityId = city?.id ?? '';
     const [cells] = await sql<{ has_cells: boolean }[]>`
@@ -46,7 +46,7 @@ describe.skipIf(!databaseUrl)('Health access against the local database', () => 
     hadCells = cells?.has_cells ?? false;
     await sql`select private.build_grid_cells(${cityId}, 175)`;
     const [started] = await sql<{ id: string }[]>`
-      select private.start_score_snapshot('2026-11-01') as id
+      select private.start_score_snapshot('2026-11-01', true) as id
     `;
     snapshotId = started?.id ?? '';
     await sql`select private.seed_cell_scores(${snapshotId}, ${cityId})`;
@@ -89,7 +89,7 @@ describe.skipIf(!databaseUrl)('Health access against the local database', () => 
       ]),
     ).toEqual({ health_pharmacy: 2, health_pharmacy_night: 1, health_clinic: 0 });
 
-    await computeWalkAccess({
+    const written = await computeWalkAccess({
       sql,
       router: null,
       snapshotId,
@@ -106,6 +106,8 @@ describe.skipIf(!databaseUrl)('Health access against the local database', () => 
       ],
     });
     const walk = await readWalkAccess(sql, snapshotId, cityId, ['health_pharmacy']);
+    expect(written).toBeGreaterThan(200);
+    expect(walk).toHaveLength(written);
     const center = walk.find((record) => record.cellId === centerCell);
     expect(center).toMatchObject({ distanceMethod: 'straight_line', n15: 2 });
     expect(center?.tNearestS).toBeLessThan(300);

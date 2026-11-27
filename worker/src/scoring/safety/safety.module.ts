@@ -101,8 +101,9 @@ export const safetyModule: ScoreModule = {
       context.osmExtract,
       context.sourcesDir,
       context.period,
+      context.signal,
     );
-    const osmDate = await osmExtractDate(extract, context.period);
+    const osmDate = await osmExtractDate(extract, context.period, context.signal);
     const nightRule = { minute: params.night_check_minute, minOpenNights: params.min_open_nights };
 
     const imports: CityImport[] = [];
@@ -114,6 +115,7 @@ export const safetyModule: ScoreModule = {
         geometryTypes: ['point', 'linestring', 'polygon'],
         workDir: join(context.sourcesDir, 'work', snapshotId, 'safety'),
         name: city.slug,
+        signal: context.signal,
       });
       await clearSafetyFeatures(sql, snapshotId, city.id);
       const counts: Partial<Record<SafetyType, number>> = {};

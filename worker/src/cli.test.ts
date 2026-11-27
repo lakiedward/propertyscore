@@ -5,6 +5,13 @@ import { currentPeriod, parseCommand } from './cli.ts';
 const NOW = new Date('2026-11-03T09:00:00Z');
 
 describe('parseCommand', () => {
+  it('starts a dedicated reader with no mutation options', () => {
+    expect(parseCommand(['serve-snapshot-status'], NOW)).toEqual({
+      command: 'serve-snapshot-status',
+    });
+    expect(() => parseCommand(['serve-snapshot-status', '--apply'], NOW)).toThrow();
+  });
+
   it('builds the current month for every city and score by default', () => {
     expect(parseCommand(['build-snapshot'], NOW)).toEqual({
       command: 'build-snapshot',

@@ -204,14 +204,13 @@ describe.skipIf(!databaseUrl || !hasOsmium())('greenModule against the local dat
     restoreCoverage = await limitCoveredCities(sql, 'sibiu');
 
     const result = await buildSnapshot({
-      sql,
+      databaseUrl: databaseUrl ?? '',
       modules: [greenModule],
       period: '2026-11-01',
       citySlugs: ['sibiu'],
       scoreKeys: [],
       sourcesDir,
       osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
-      router: null,
       logger: createLogger('error', () => undefined),
     });
     snapshotId = result.snapshotId;

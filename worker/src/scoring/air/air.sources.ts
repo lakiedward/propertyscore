@@ -2,6 +2,7 @@ import { extname, join } from 'node:path';
 
 import { WorkerError } from '../../lib/errors.ts';
 import type { Logger } from '../../lib/logger.ts';
+import type { RoutingScope } from '../../routing/scope.ts';
 import { downloadOnce } from '../../sources/download.ts';
 import {
   readRaster,
@@ -11,7 +12,7 @@ import {
   type RasterGrid,
 } from '../../sources/gdal.ts';
 import type { AirParams, Pollutant } from './air.params.ts';
-import { camsMonthlyField, downloadCamsMonth } from './cams.source.ts';
+import { camsMonthlyField, downloadCamsMonth, type RecordCamsAttempt } from './cams.source.ts';
 import {
   dailyMeans,
   downloadStationFile,
@@ -59,6 +60,9 @@ type SourceContext = {
   sourcesDir: string;
   period: string;
   logger: Logger;
+  signal?: AbortSignal;
+  routingScope?: Pick<RoutingScope, 'run'>;
+  recordCamsAttempt?: RecordCamsAttempt;
 };
 
 function fieldSampler(grid: Omit<RasterGrid, 'bands'>, field: Float32Array): ModelField {
@@ -99,6 +103,9 @@ export function createAirSources(
         pollutant,
         month,
         logger,
+        signal: context.signal,
+        requestScope: context.routingScope,
+        recordAttempt: context.recordCamsAttempt,
       });
       const grid = await readRaster(path, workDir);
       const field = camsMonthlyField(grid, params.min_valid_hours_per_day, params.min_valid_days);

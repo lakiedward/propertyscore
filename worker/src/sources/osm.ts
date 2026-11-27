@@ -1,18 +1,15 @@
-import { execFile } from 'node:child_process';
 import { createReadStream } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline';
-import { promisify } from 'node:util';
 
 import { z } from 'zod';
 
 import type { Sql } from '../db/sql.ts';
+import { runChildProcess } from '../lib/child-process.ts';
 import { WorkerError } from '../lib/errors.ts';
 import { downloadOnce } from './download.ts';
 import { privateSourceHeaders } from './mirror.ts';
-
-const run = promisify(execFile);
 
 export type BoundingBox = {
   west: number;
@@ -46,27 +43,25 @@ export async function downloadOsmExtract(
   source: OsmExtractSource,
   sourcesDir: string,
   period: string,
+  signal?: AbortSignal,
 ): Promise<string> {
   return downloadOnce(
     source.url,
     join(sourcesDir, 'osm', `romania-${period.slice(0, 7)}.osm.pbf`),
-    { headers: privateSourceHeaders(source.apiKey) },
+    { headers: privateSourceHeaders(source.apiKey), signal },
   );
 }
 
-export async function osmExtractDate(extractPath: string, fallback: string): Promise<string> {
-  try {
-    const { stdout } = await run('osmium', [
-      'fileinfo',
-      '--get',
-      'header.option.osmosis_replication_timestamp',
-      extractPath,
-    ]);
-    const date = /^\d{4}-\d{2}-\d{2}/.exec(stdout.trim());
-    return date ? date[0] : fallback;
-  } catch (error) {
-    throw new WorkerError('osmium_failed', 'osmium fileinfo failed', { cause: error });
-  }
+export async function osmExtractDate(
+  extractPath: string,
+  fallback: string,
+  signal?: AbortSignal,
+): Promise<string> {
+  const stdout = await runOsmium(
+    ['fileinfo', '--get', 'header.option.osmosis_replication_timestamp', extractPath],
+    signal,
+  );
+  return /^\d{4}-\d{2}-\d{2}/.exec(stdout.trim())?.[0] ?? fallback;
 }
 
 export async function cityBoundingBox(sql: Sql, cityId: string): Promise<BoundingBox> {
@@ -86,10 +81,13 @@ export async function cityBoundingBox(sql: Sql, cityId: string): Promise<Boundin
   return row;
 }
 
-async function osmium(args: readonly string[]): Promise<void> {
+export async function runOsmium(args: readonly string[], signal?: AbortSignal): Promise<string> {
   try {
-    await run('osmium', [...args], { maxBuffer: 16 * 1024 * 1024 });
+    const { stdout } = await runChildProcess('osmium', args, 16 * 1024 * 1024, signal);
+    signal?.throwIfAborted();
+    return stdout;
   } catch (error) {
+    signal?.throwIfAborted();
     throw new WorkerError('osmium_failed', `osmium ${args[0] ?? ''} failed`, { cause: error });
   }
 }
@@ -101,37 +99,48 @@ export async function extractOsmFeatures(options: {
   geometryTypes: readonly OsmGeometryType[];
   workDir: string;
   name: string;
+  signal?: AbortSignal;
 }): Promise<string> {
-  const { bbox, workDir, name } = options;
+  const { bbox, workDir, name, signal } = options;
+  signal?.throwIfAborted();
   await mkdir(workDir, { recursive: true });
   const clipped = join(workDir, `${name}.clip.osm.pbf`);
   const filtered = join(workDir, `${name}.filtered.osm.pbf`);
   const exported = join(workDir, `${name}.geojsonseq`);
-  await osmium([
-    'extract',
-    '--bbox',
-    [bbox.west, bbox.south, bbox.east, bbox.north].join(','),
-    '--strategy',
-    'smart',
-    '--overwrite',
-    '--output',
-    clipped,
-    options.extractPath,
-  ]);
-  await osmium(['tags-filter', '--overwrite', '--output', filtered, clipped, ...options.filters]);
-  await osmium([
-    'export',
-    '--format',
-    'geojsonseq',
-    '--add-unique-id',
-    'type_id',
-    '--geometry-types',
-    options.geometryTypes.join(','),
-    '--overwrite',
-    '--output',
-    exported,
-    filtered,
-  ]);
+  await runOsmium(
+    [
+      'extract',
+      '--bbox',
+      [bbox.west, bbox.south, bbox.east, bbox.north].join(','),
+      '--strategy',
+      'smart',
+      '--overwrite',
+      '--output',
+      clipped,
+      options.extractPath,
+    ],
+    signal,
+  );
+  await runOsmium(
+    ['tags-filter', '--overwrite', '--output', filtered, clipped, ...options.filters],
+    signal,
+  );
+  await runOsmium(
+    [
+      'export',
+      '--format',
+      'geojsonseq',
+      '--add-unique-id',
+      'type_id',
+      '--geometry-types',
+      options.geometryTypes.join(','),
+      '--overwrite',
+      '--output',
+      exported,
+      filtered,
+    ],
+    signal,
+  );
   return exported;
 }
 

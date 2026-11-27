@@ -3,26 +3,31 @@ import { join } from 'node:path';
 
 import { z } from 'zod';
 
-import type { Sql } from '../db/sql.ts';
+import { createSnapshotSql, type Sql } from '../db/sql.ts';
 import { errorCode, WorkerError } from '../lib/errors.ts';
 import type { Logger } from '../lib/logger.ts';
-import type { ValhallaClient } from '../routing/valhalla.ts';
+import { RoutingScope } from '../routing/scope.ts';
+import type { ValhallaRegistry } from '../routing/valhalla-registry.ts';
+import type { ValhallaClient, ValhallaRequestScope } from '../routing/valhalla.ts';
 import type { CategoryKey } from '../scoring/categories.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
 import type { SourceMirror } from '../sources/mirror.ts';
 import { downloadOsmExtract, type OsmExtractSource } from '../sources/osm.ts';
+import { recordSnapshotExecution, trackCamsAttempts } from './recovery.db.ts';
 import { markResidentialCells } from './residential.ts';
 import {
   type CoveredCity,
   failSnapshot,
   finishSnapshot,
+  holdSnapshot,
   listCoveredCities,
+  markSnapshotRouting,
   prepareCityCells,
   startSnapshot,
 } from './snapshot.db.ts';
 
 export type BuildSnapshotOptions = {
-  sql: Sql;
+  databaseUrl: string;
   modules: readonly ScoreModule[];
   period: string;
   citySlugs: readonly string[];
@@ -31,7 +36,9 @@ export type BuildSnapshotOptions = {
   sourcesDir: string;
   osmExtract: OsmExtractSource;
   sourceMirror?: SourceMirror;
-  router: ValhallaClient | null;
+  createRouter?: (scope: ValhallaRequestScope) => ValhallaClient;
+  recovery?: { replicaId: string; registry: ValhallaRegistry };
+  signal?: AbortSignal;
   logger: Logger;
 };
 
@@ -59,17 +66,73 @@ export function selectModules(
   return modules.filter((module) => scoreKeys.includes(module.key));
 }
 
+export async function buildSnapshotOnSignals(
+  options: Omit<BuildSnapshotOptions, 'signal'>,
+): Promise<BuildSnapshotResult> {
+  const shutdown = new AbortController();
+  const stop = (signal: NodeJS.Signals) => {
+    if (shutdown.signal.aborted) return;
+    options.logger.info('build-snapshot stopping', { signal });
+    shutdown.abort(new WorkerError('snapshot_stopping', 'Snapshot worker is stopping'));
+  };
+  process.on('SIGTERM', stop);
+  process.on('SIGINT', stop);
+  try {
+    return await buildSnapshot({ ...options, signal: shutdown.signal });
+  } catch (error) {
+    if (errorCode(error) === 'snapshot_stopping') {
+      options.logger.info('build-snapshot shutdown confirmed');
+    }
+    throw error;
+  } finally {
+    process.off('SIGTERM', stop);
+    process.off('SIGINT', stop);
+  }
+}
+
 export async function buildSnapshot(options: BuildSnapshotOptions): Promise<BuildSnapshotResult> {
-  const { sql, logger } = options;
+  options.signal?.throwIfAborted();
+  const lifetime = new AbortController();
+  const onDisconnect = () =>
+    lifetime.abort(
+      new WorkerError('snapshot_connection_lost', 'A snapshot database session closed'),
+    );
+  const sql = createSnapshotSql(options.databaseUrl, onDisconnect);
+  const guard = createSnapshotSql(options.databaseUrl, onDisconnect);
+  const signal = options.signal
+    ? AbortSignal.any([options.signal, lifetime.signal])
+    : lifetime.signal;
+  const stopScoringSql = () => void sql.end({ timeout: 0 });
+  options.signal?.addEventListener('abort', stopScoringSql, { once: true });
+  try {
+    return await buildSnapshotInSession(sql, guard, signal, options);
+  } finally {
+    options.signal?.removeEventListener('abort', stopScoringSql);
+    await Promise.all([sql.end({ timeout: 5 }), guard.end({ timeout: 5 })]);
+  }
+}
+
+async function buildSnapshotInSession(
+  sql: Sql,
+  guard: Sql,
+  signal: AbortSignal,
+  options: BuildSnapshotOptions,
+): Promise<BuildSnapshotResult> {
+  const { logger } = options;
   const modules = selectModules(options.modules, options.scoreKeys);
   const cities = await selectCities(sql, logger, options);
 
+  signal.throwIfAborted();
   const version = await startSnapshot(sql, options.period);
   const workDir = join(options.sourcesDir, 'work', version.snapshotId);
   const log = (message: string, fields = {}) =>
     logger.info(message, { snapshot_id: version.snapshotId, ...fields });
+  const protect = () => markSnapshotRouting(guard, version.snapshotId, true);
+  const release = () => releaseSnapshotRouting(guard, options.databaseUrl, version.snapshotId);
 
   try {
+    await holdSnapshot(guard, version);
+    signal.throwIfAborted();
     const params = versionParamsSchema.safeParse(version.params);
     if (!params.success) {
       throw new WorkerError(
@@ -78,47 +141,86 @@ export async function buildSnapshot(options: BuildSnapshotOptions): Promise<Buil
       );
     }
     const cellSizeM = params.data.cell_size_m;
-    const extractPath = await downloadOsmExtract(
-      options.osmExtract,
-      options.sourcesDir,
-      version.period,
+    const { cells, sourceDates } = await withSnapshotWork(
+      signal,
+      protect,
+      release,
+      async (routing) => {
+        const recovery = options.recovery;
+        const ledgerId = recovery
+          ? await routing.run(() => recovery.registry.register(version.snapshotId, signal))
+          : undefined;
+        if (recovery && ledgerId) {
+          await recordSnapshotExecution(
+            guard,
+            version.snapshotId,
+            recovery.replicaId,
+            recovery.registry.endpoint,
+            ledgerId,
+          );
+        }
+        const router =
+          recovery && ledgerId
+            ? recovery.registry.router(version.snapshotId, ledgerId, routing)
+            : (options.createRouter?.(routing) ?? null);
+        const recordCamsAttempt = recovery
+          ? trackCamsAttempts(guard, version.snapshotId)
+          : undefined;
+        const extractPath = await downloadOsmExtract(
+          options.osmExtract,
+          options.sourcesDir,
+          version.period,
+          signal,
+        );
+        let count = 0;
+        for (const city of cities) {
+          signal.throwIfAborted();
+          const seeded = await prepareCityCells(sql, version.snapshotId, city.id, cellSizeM);
+          signal.throwIfAborted();
+          const residential = await markResidentialCells({
+            sql,
+            snapshotId: version.snapshotId,
+            city,
+            extractPath,
+            workDir,
+            minShare: params.data.residential_min_share,
+            signal,
+          });
+          count += seeded;
+          log('city cells ready', {
+            city: city.slug,
+            cells: seeded,
+            residential_cells: residential,
+          });
+        }
+        const sourceDates: Record<string, string> = {};
+        for (const module of modules) {
+          signal.throwIfAborted();
+          log('score started', { score: module.key });
+          const result = await module.run({
+            sql,
+            snapshotId: version.snapshotId,
+            period: version.period,
+            cellSizeM,
+            cities,
+            params: version.params[module.key],
+            sourcesDir: options.sourcesDir,
+            osmExtract: options.osmExtract,
+            sourceMirror: options.sourceMirror,
+            router,
+            logger,
+            signal,
+            routingScope: routing,
+            recordCamsAttempt,
+          });
+          Object.assign(sourceDates, result.sourceDates);
+          log('score finished', { score: module.key });
+        }
+        return { cells: count, sourceDates };
+      },
     );
 
-    let cells = 0;
-    for (const city of cities) {
-      const seeded = await prepareCityCells(sql, version.snapshotId, city.id, cellSizeM);
-      const residential = await markResidentialCells({
-        sql,
-        snapshotId: version.snapshotId,
-        city,
-        extractPath,
-        workDir,
-        minShare: params.data.residential_min_share,
-      });
-      cells += seeded;
-      log('city cells ready', { city: city.slug, cells: seeded, residential_cells: residential });
-    }
-
-    const sourceDates: Record<string, string> = {};
-    for (const module of modules) {
-      log('score started', { score: module.key });
-      const result = await module.run({
-        sql,
-        snapshotId: version.snapshotId,
-        period: version.period,
-        cellSizeM,
-        cities,
-        params: version.params[module.key],
-        sourcesDir: options.sourcesDir,
-        osmExtract: options.osmExtract,
-        sourceMirror: options.sourceMirror,
-        router: options.router,
-        logger,
-      });
-      Object.assign(sourceDates, result.sourceDates);
-      log('score finished', { score: module.key });
-    }
-
+    signal.throwIfAborted();
     await finishSnapshot(sql, version.snapshotId, sourceDates);
     log('snapshot ready', { cities: cities.length, cells });
     return {
@@ -128,12 +230,51 @@ export async function buildSnapshot(options: BuildSnapshotOptions): Promise<Buil
       scores: modules.map((module) => module.key),
     };
   } catch (error) {
-    const code = errorCode(error);
+    const abortReason: unknown = signal.reason;
+    const reported =
+      errorCode(error) === 'snapshot_routing_unconfirmed' ? error : (abortReason ?? error);
+    const code = errorCode(reported);
     logger.error('snapshot failed', { snapshot_id: version.snapshotId, code });
-    await failSnapshot(sql, version.snapshotId, code);
-    throw error;
+    if (!signal.aborted && code !== 'snapshot_routing_unconfirmed') {
+      await failSnapshot(sql, version.snapshotId, code);
+    }
+    throw reported;
   } finally {
     await rm(workDir, { recursive: true, force: true });
+  }
+}
+
+async function withSnapshotWork<T>(
+  signal: AbortSignal,
+  protect: () => Promise<void>,
+  release: () => Promise<void>,
+  run: (routing: RoutingScope) => Promise<T>,
+): Promise<T> {
+  const routing = new RoutingScope(signal, protect);
+  try {
+    return await routing.runLocal(() => run(routing));
+  } finally {
+    await routing.drain();
+    if (routing.guardRecorded) await release();
+  }
+}
+
+async function releaseSnapshotRouting(guard: Sql, databaseUrl: string, snapshotId: string) {
+  try {
+    await markSnapshotRouting(guard, snapshotId, false);
+  } catch {
+    const cleanup = createSnapshotSql(databaseUrl);
+    try {
+      await markSnapshotRouting(cleanup, snapshotId, false);
+    } catch (error) {
+      throw new WorkerError(
+        'snapshot_routing_unconfirmed',
+        'Cannot clear the snapshot routing guard after routing ended',
+        { cause: error },
+      );
+    } finally {
+      await cleanup.end({ timeout: 5 });
+    }
   }
 }
 

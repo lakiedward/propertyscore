@@ -85,6 +85,7 @@ async function loadGtfsNetwork(options: {
   params: AccessibilityParams;
   sourcesDir: string;
   workDir: string;
+  signal?: AbortSignal;
 }): Promise<{ network: CityNetwork | null; feeds: FeedRecord[] }> {
   const { params } = options;
   const sources = await listFeedSources(options.sql, options.city.id);
@@ -98,6 +99,7 @@ async function loadGtfsNetwork(options: {
   };
 
   for (const [index, source] of sources.entries()) {
+    options.signal?.throwIfAborted();
     const base: FeedRecord = {
       source: 'gtfs',
       operator: source.operator,
@@ -120,7 +122,9 @@ async function loadGtfsNetwork(options: {
           options.city.slug,
           `${options.period.slice(0, 7)}-${urlTag(source.url)}.zip`,
         ),
+        { signal: options.signal },
       );
+      options.signal?.throwIfAborted();
       const directory = await unzipGtfs(archive, join(options.workDir, `gtfs-${index}`));
       const info = await readFeedInfo(directory);
       const calendar = await readServiceCalendar(directory);
@@ -148,6 +152,7 @@ async function loadGtfsNetwork(options: {
       archives.push(archive);
       feeds.push({ ...record, referenceDate: date, status: 'used', errorCode: null });
     } catch (error) {
+      options.signal?.throwIfAborted();
       feeds.push({ ...base, errorCode: errorCode(error) });
     }
   }
@@ -170,8 +175,14 @@ async function loadOsmNetwork(options: {
   slug: string;
   period: string;
   params: AccessibilityParams;
+  signal?: AbortSignal;
 }): Promise<CityNetwork | null> {
-  const opl = await exportTransitOpl(options.clipped, options.workDir, options.slug);
+  const opl = await exportTransitOpl(
+    options.clipped,
+    options.workDir,
+    options.slug,
+    options.signal,
+  );
   const network = buildOsmNetwork(await readOpl(opl));
   if (network.routes.length === 0) return null;
   const referenceDate = pickReferenceDate(
@@ -199,11 +210,13 @@ export const accessibilityModule: ScoreModule = {
       context.osmExtract,
       context.sourcesDir,
       context.period,
+      context.signal,
     );
-    const osmDate = await osmExtractDate(extract, context.period);
+    const osmDate = await osmExtractDate(extract, context.period, context.signal);
     const gtfsDates: string[] = [];
 
     for (const city of context.cities) {
+      context.signal?.throwIfAborted();
       const workDir = join(context.sourcesDir, 'accessibility', snapshotId, city.slug);
       await clearCityTransit(sql, snapshotId, city.id);
       const clipped = await clipOsmExtract({
@@ -211,6 +224,7 @@ export const accessibilityModule: ScoreModule = {
         bbox: await transitBoundingBox(sql, city.id),
         workDir,
         name: city.slug,
+        signal: context.signal,
       });
 
       const gtfs = await loadGtfsNetwork({
@@ -221,6 +235,7 @@ export const accessibilityModule: ScoreModule = {
         params,
         sourcesDir: context.sourcesDir,
         workDir,
+        signal: context.signal,
       });
       const loaded =
         gtfs.network ??
@@ -230,6 +245,7 @@ export const accessibilityModule: ScoreModule = {
           slug: city.slug,
           period: context.period,
           params,
+          signal: context.signal,
         }));
       const feeds = [...gtfs.feeds];
       if (!gtfs.network) {
@@ -290,6 +306,8 @@ export const accessibilityModule: ScoreModule = {
         withMatrix: true,
         withItineraries: false,
         workDir,
+        signal: context.signal,
+        scope: context.routingScope,
       });
 
       await saveRoutingBundle(sql, snapshotId, city.id, {

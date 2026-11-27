@@ -1,18 +1,16 @@
-import { execFile } from 'node:child_process';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { promisify } from 'node:util';
 
 import { z } from 'zod';
 
+import { runChildProcess } from '../../lib/child-process.ts';
 import { WorkerError } from '../../lib/errors.ts';
+import type { RoutingScope } from '../../routing/scope.ts';
 import { readCsvRecords } from './csv.ts';
 import type { AccessibilityParams } from './accessibility.params.ts';
 import { clockSeconds, nonEmpty } from './gtfs.ts';
 import type { LngLat } from './transit.types.ts';
-
-const run = promisify(execFile);
 
 const R5_MAX_MEMORY = '60%';
 
@@ -37,6 +35,8 @@ export type RoutingJob = {
   withMatrix: boolean;
   withItineraries: boolean;
   workDir: string;
+  signal?: AbortSignal;
+  scope?: Pick<RoutingScope, 'runLocal'>;
 };
 
 export type RoutingSettings = Pick<
@@ -93,10 +93,18 @@ export type RoutingResult = {
   gtfsArchives: string[];
 };
 
-export type RoutingRunner = (command: string, args: readonly string[]) => Promise<void>;
+export type RoutingRunner = (
+  command: string,
+  args: readonly string[],
+  signal?: AbortSignal,
+) => Promise<void>;
 
-async function defaultRunner(command: string, args: readonly string[]): Promise<void> {
-  await run(command, [...args], { maxBuffer: 64 * 1024 * 1024 });
+async function defaultRunner(
+  command: string,
+  args: readonly string[],
+  signal?: AbortSignal,
+): Promise<void> {
+  await runChildProcess(command, args, 64 * 1024 * 1024, signal);
 }
 
 function pointsCsv(points: readonly RoutingPoint[]): string {
@@ -197,6 +205,12 @@ export async function runTransitRouting(
   job: RoutingJob,
   runner: RoutingRunner = defaultRunner,
 ): Promise<RoutingResult> {
+  const route = () => runRoutingJob(job, runner);
+  return job.scope ? job.scope.runLocal(route) : route();
+}
+
+async function runRoutingJob(job: RoutingJob, runner: RoutingRunner): Promise<RoutingResult> {
+  job.signal?.throwIfAborted();
   const outputDir = join(job.workDir, 'routing');
   await mkdir(outputDir, { recursive: true });
   const files = {
@@ -233,8 +247,11 @@ export async function runTransitRouting(
     'utf8',
   );
   try {
-    await runner('python3', [ROUTE_SCRIPT, jobPath]);
+    job.signal?.throwIfAborted();
+    await runner('python3', [ROUTE_SCRIPT, jobPath], job.signal);
+    job.signal?.throwIfAborted();
   } catch (error) {
+    job.signal?.throwIfAborted();
     throw new WorkerError('transit_routing_failed', 'The r5py routing job failed', {
       cause: error,
     });

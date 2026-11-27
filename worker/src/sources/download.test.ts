@@ -13,11 +13,18 @@ describe('downloadOsmExtract', () => {
   let baseUrl: string;
   let requests = 0;
   let sourcesDir: string;
+  const streaming = Promise.withResolvers<undefined>();
 
   beforeAll(async () => {
     sourcesDir = await mkdtemp(join(tmpdir(), 'sources-test-'));
     server = createServer((request, response) => {
       requests += 1;
+      if (request.url === '/streaming.osm.pbf') {
+        response.writeHead(200);
+        response.write('partial');
+        streaming.resolve(undefined);
+        return;
+      }
       if (request.url === '/private/romania.osm.pbf') {
         const isAuthorized =
           request.headers.apikey === 'secret-key' &&
@@ -76,5 +83,26 @@ describe('downloadOsmExtract', () => {
       ),
     ).rejects.toBeInstanceOf(SourceUnavailableError);
     await expect(stat(join(sourcesDir, 'osm', 'romania-2026-12.osm.pbf.part'))).rejects.toThrow();
+  });
+
+  it('removes the partial extract when shutdown interrupts the response body', async () => {
+    const stop = new AbortController();
+    const reason = new Error('test shutdown');
+    const path = join(sourcesDir, 'osm', 'romania-2027-02.osm.pbf');
+    const pending = downloadOsmExtract(
+      { url: `${baseUrl}/streaming.osm.pbf`, apiKey: null },
+      sourcesDir,
+      '2027-02-01',
+      stop.signal,
+    );
+    try {
+      await streaming.promise;
+      await expect.poll(() => readFile(`${path}.part`, 'utf8')).toBe('partial');
+    } finally {
+      stop.abort(reason);
+      await expect(pending).rejects.toBe(reason);
+    }
+    await expect(stat(path)).rejects.toMatchObject({ code: 'ENOENT' });
+    await expect(stat(`${path}.part`)).rejects.toMatchObject({ code: 'ENOENT' });
   });
 });

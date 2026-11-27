@@ -11,6 +11,7 @@ export type SnapshotVersion = {
   snapshotId: string;
   period: string;
   params: Record<string, unknown>;
+  lockOwnerPid: number;
 };
 
 export async function listCoveredCities(
@@ -32,24 +33,47 @@ export async function listCoveredCities(
 
 export async function startSnapshot(sql: Sql, period: string): Promise<SnapshotVersion> {
   const [started] = await sql<{ id: string }[]>`
-    select private.start_score_snapshot(${period}::date) as id
+    select private.start_score_snapshot(${period}::date, true) as id
   `;
   if (!started)
     throw new WorkerError('snapshot_not_started', 'start_score_snapshot returned no snapshot');
   try {
-    const [row] = await sql<{ period: string; params: Record<string, unknown> }[]>`
-      select to_char(s.period, 'YYYY-MM-DD') as period, v.params
+    const [row] = await sql<{ period: string; params: Record<string, unknown>; pid: number }[]>`
+      select to_char(s.period, 'YYYY-MM-DD') as period, v.params, pg_backend_pid() as pid
       from public.score_snapshots s
       join public.scoring_versions v on v.id = s.scoring_version_id
       where s.id = ${started.id}
     `;
     if (!row)
       throw new WorkerError('snapshot_not_readable', 'The started snapshot is not readable');
-    return { snapshotId: started.id, period: row.period, params: row.params };
+    return {
+      snapshotId: started.id,
+      period: row.period,
+      params: row.params,
+      lockOwnerPid: row.pid,
+    };
   } catch (error) {
     await failSnapshot(sql, started.id, 'start_failed');
     throw error;
   }
+}
+
+export async function holdSnapshot(sql: Sql, version: SnapshotVersion): Promise<void> {
+  await sql`select private.hold_score_snapshot(${version.snapshotId}, ${version.lockOwnerPid})`;
+}
+
+export async function markSnapshotRouting(
+  sql: Sql,
+  snapshotId: string,
+  pending: boolean,
+): Promise<void> {
+  const [row] = await sql<{ id: string }[]>`
+    update public.score_snapshots
+    set routing_pending = ${pending}
+    where id = ${snapshotId} and status = 'building' and uses_worker_lock
+    returning id
+  `;
+  if (!row) throw new WorkerError('snapshot_not_building', 'Cannot set the snapshot routing state');
 }
 
 export async function prepareCityCells(

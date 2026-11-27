@@ -3,6 +3,11 @@ import { z } from 'zod';
 import { type Sql, withLongStatements } from '../db/sql.ts';
 import { mapWithConcurrency } from '../lib/concurrency.ts';
 import type { Leg, LngLat, ValhallaClient } from './valhalla.ts';
+import {
+  openWalkCandidateCursor,
+  readWalkCandidateBatch,
+  writeWalkAccessBatch,
+} from './walk-access.db.ts';
 
 export type WalkAccessTarget = {
   key: string;
@@ -53,8 +58,6 @@ const cellSchema = z.object({
   lat: z.number(),
   candidates: z.array(candidateSchema),
 });
-
-const CELL_BATCH = 200;
 
 export type CellCandidates<T extends Candidate> = {
   cell_id: string;
@@ -171,26 +174,16 @@ export function walkAccessRowsForCell(
   );
 }
 
-function targetsJson(targets: readonly WalkAccessTarget[]) {
-  return targets.map((target) => ({
-    key: target.key,
-    poi_categories: [...target.poiCategories],
-    search_radius_m: target.searchRadiusM,
-    max_candidates: target.maxCandidates,
-  }));
-}
-
 export async function computeWalkAccess(options: ComputeWalkAccessOptions): Promise<number> {
   const { sql, router, snapshotId, cityId, targets } = options;
   if (targets.length === 0) return 0;
   const distanceMethod: DistanceMethod = router ? 'pedestrian_routing' : 'straight_line';
   return withLongStatements(sql, async (transaction) => {
     let written = 0;
-    const cursor = transaction`
-      select cell_id, lng, lat, candidates
-      from private.walk_access_candidates(${snapshotId}, ${cityId}, ${transaction.json(targetsJson(targets))}::jsonb)
-    `.cursor(CELL_BATCH);
-    for await (const batch of cursor) {
+    await openWalkCandidateCursor(transaction, snapshotId, cityId, targets);
+    for (;;) {
+      const batch = await readWalkCandidateBatch(transaction);
+      if (batch.length === 0) return written;
       const cells = z.array(cellSchema).parse(batch);
       const rows = await mapWithConcurrency(cells, options.concurrency ?? 4, async (cell) => {
         const legs = await legsFromOrigin(
@@ -202,12 +195,8 @@ export async function computeWalkAccess(options: ComputeWalkAccessOptions): Prom
         );
         return walkAccessRowsForCell(cell.cell_id, targets, cell.candidates, legs, distanceMethod);
       });
-      const [result] = await sql<{ written: number }[]>`
-        select private.write_cell_walk_access(${snapshotId}, ${sql.json(rows.flat())}::jsonb) as written
-      `;
-      written += result?.written ?? 0;
+      written += await writeWalkAccessBatch(transaction, snapshotId, rows.flat());
     }
-    return written;
   });
 }
 

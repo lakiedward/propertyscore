@@ -101,14 +101,13 @@ describe.skipIf(!databaseUrl || !hasOsmium())('air module against the local data
     restoreCoverage = await limitCoveredCities(sql, 'sibiu');
 
     const result = await buildSnapshot({
-      sql,
+      databaseUrl: databaseUrl ?? '',
       modules: [testAirModule],
       period: '2026-11-01',
       citySlugs: ['sibiu'],
       scoreKeys: [],
       sourcesDir,
       osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
-      router: null,
       logger: silentLogger,
     });
     snapshotId = result.snapshotId;
