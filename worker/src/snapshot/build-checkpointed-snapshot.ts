@@ -69,7 +69,7 @@ async function reconcileAds(
 ): Promise<VerifiedRequestResult[]> {
   const rows = await sql`
     select id, execution_id, step_key, provider, operation_key, fingerprint, attempt,
-      upstream_id, state, artifact_sha256, created_at::text
+      upstream_id, state, rejection_status, artifact_sha256, created_at::text
     from private.score_snapshot_requests
     where snapshot_id = ${snapshotId} and provider = 'ads' and state in ('accepted', 'unconfirmed')
     order by id
@@ -261,6 +261,7 @@ export async function buildCheckpointedSnapshot(options: Options): Promise<Build
                 step: 'source:osm',
                 signal: stepSignal,
                 directory: sourceArtifacts,
+                retryUnavailableOnResume: true,
               },
               () => downloadOsmExtract(options.osmExtract, sourcesDir, inputs.period),
             );

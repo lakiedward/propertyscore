@@ -32,6 +32,15 @@ const jobSchema = z.object({ jobID: z.string().min(1), status: z.string() });
 const statusSchema = z.object({ status: z.string() });
 const resultsSchema = z.object({ asset: z.object({ value: z.object({ href: z.url() }) }) });
 
+class AdsHttpError extends WorkerError {
+  readonly status: number;
+
+  constructor(status: number) {
+    super('cams_request_failed', `ADS answered ${status}`);
+    this.status = status;
+  }
+}
+
 export type AdsClientOptions = {
   apiUrl: string;
   apiKey: string;
@@ -99,7 +108,8 @@ async function adsJson(options: AdsClientOptions, url: string, body?: unknown): 
     }),
   });
   if (!response.ok) {
-    throw new WorkerError('cams_request_failed', `ADS answered ${response.status}`);
+    await response.body?.cancel().catch(() => undefined);
+    throw new AdsHttpError(response.status);
   }
   return response.json();
 }
@@ -218,7 +228,13 @@ async function downloadCheckpointedCams(options: CamsDownloadOptions, checkpoint
     return file;
   }
   if (pending.outcome !== 'submit') artifactUnconfirmed();
-  const job = await submitCams(client);
+  const job = await submitCams(client).catch(async (error: unknown) => {
+    if (error instanceof AdsHttpError && (error.status === 401 || error.status === 403)) {
+      await journal.rejectAdsSubmission(pending.requestId, error.status);
+      throw new WorkerError('cams_submission_rejected', 'ADS refused the job credentials');
+    }
+    throw error;
+  });
   await journal.acceptRequest(pending.requestId, job.jobID);
   const jobUrl = camsJobUrl(client, job.jobID);
   if ((await waitForCams(client, jobUrl, job.status)) === 'failed') {

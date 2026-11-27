@@ -153,7 +153,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     expect(overall.every((row) => row.overall === row.green)).toBe(true);
   });
 
-  it('resumes a real local snapshot without rerunning its grid, cached route or accepted ADS job', async () => {
+  it('retries a missing OSM extract, malformed matrix and refused ADS submission only after safe takeover', async () => {
     const database = databaseUrl ?? '';
     const [active] = await sql<
       { id: string | null }[]
@@ -174,6 +174,10 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     const runs = new Set<string>();
     const routingRequests: string[] = [];
     let adsSubmissions = 0;
+    let osmAvailable = false;
+    let invalidMatrix = true;
+    let adsKey = 'expired-key';
+    let adsStatusReadable = false;
     let sourceReads = 0;
     let stationReads = 0;
     const stationFile = 'https://sources.example.test/station.parquet';
@@ -188,7 +192,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
           sourceReads++;
           if (url.pathname === '/missing') return new Response(null, { status: 404 });
           if (url.href === stationFile) return new Response('test-station');
-          return new Response(extract);
+          return osmAvailable ? new Response(extract) : new Response(null, { status: 404 });
         }
         if (url.hostname === 'eeadmz1-downloads-api-appservice.azurewebsites.net') {
           stationReads++;
@@ -219,20 +223,24 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
           }
           routingRequests.push(new Headers(init?.headers).get('x-propertyscore-request') ?? '');
           expect(new Headers(init?.headers).get('x-valhalla-ledger')).toBe(ledgerId);
+          expect(action).toBe('sources_to_targets');
           return Response.json({
-            trip: { summary: { length: 0.1, time: 12 }, legs: [{ shape: 'test-polyline' }] },
+            sources_to_targets: invalidMatrix ? [[]] : [[{ distance: 0.1, time: 12 }]],
           });
         }
         if (url.hostname === 'ads.example.test') {
           if (url.pathname.endsWith('/execution')) {
             adsSubmissions++;
+            if (new Headers(init?.headers).get('PRIVATE-TOKEN') === 'expired-key') {
+              return new Response(null, { status: 401 });
+            }
             return Response.json({ jobID: 'accepted-ads-job', status: 'accepted' });
           }
           if (url.pathname.endsWith('/results')) {
             return Response.json({ asset: { value: { href: 'https://ads.example.test/asset' } } });
           }
           if (url.pathname === '/asset') return new Response('test-cams-raster');
-          return observation === 'stopped'
+          return adsStatusReadable
             ? Response.json({ status: 'successful' })
             : new Response(null, { status: 503 });
         }
@@ -244,23 +252,17 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     const air: ScoreModule = {
       key: 'air',
       async run(context) {
-        const route = {
-          origin: { lat: 45.79, lng: 24.12 },
-          destination: { lat: 45.8, lng: 24.13 },
+        const matrix = {
+          sources: [{ lat: 45.79, lng: 24.12 }],
+          targets: [{ lat: 45.8, lng: 24.13 }],
           costing: 'auto' as const,
         };
         await context.sql.begin(async (tx) => {
           for await (const rows of tx`select n from generate_series(1, 2) as n`.cursor(1)) {
             expect(rows).toHaveLength(1);
             expect(
-              await Promise.all([context.router?.route(route), context.router?.route(route)]),
-            ).toEqual(
-              Array.from({ length: 2 }, () => ({
-                meters: 100,
-                seconds: 12,
-                polyline6: 'test-polyline',
-              })),
-            );
+              await Promise.all([context.router?.matrix(matrix), context.router?.matrix(matrix)]),
+            ).toEqual([[[{ meters: 100, seconds: 12 }]], [[{ meters: 100, seconds: 12 }]]]);
             expect(await context.sql`select 1 as value`).toEqual([{ value: 1 }]);
           }
         });
@@ -286,7 +288,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         ).rejects.toBeInstanceOf(SourceUnavailableError);
         const file = await downloadCamsMonth({
           apiUrl: 'https://ads.example.test/api',
-          apiKey: 'test-key',
+          apiKey: adsKey,
           pollutant: 'pm25',
           month: '2026-10-01',
           sourcesDir: context.sourcesDir,
@@ -325,6 +327,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       try {
         return await buildCheckpointedSnapshot({
           ...options,
+          ads: { ...options.ads, apiKey: adsKey },
           resumeId,
           sql,
           journalSql: connection,
@@ -335,42 +338,107 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     };
 
     try {
-      await expect(run(null)).rejects.toMatchObject({ code: 'cams_request_failed' });
+      await expect(run(null)).rejects.toMatchObject({ code: 'source_download_failed' });
       const [interrupted] = await sql<{ id: string }[]>`
         select id from public.score_snapshots where status = 'building'
       `;
       if (!interrupted) throw new Error('Missing interrupted snapshot');
       created.push(interrupted.id);
+      expect(await readSnapshotRequests(sql, interrupted.id, null)).toContainEqual(
+        expect.objectContaining({
+          step_key: 'source:osm',
+          attempt: 1,
+          state: 'failed',
+          artifact_sha256: null,
+        }),
+      );
+      osmAvailable = true;
       expect(await sql`select private.current_score_snapshot_id() as id`).toEqual([active]);
       await expect(run(interrupted.id)).rejects.toMatchObject({
         code: 'snapshot_stop_unconfirmed',
       });
       expect(runs.size).toBe(1);
+      expect(sourceReads).toBe(1);
+      expect(routingRequests).toHaveLength(0);
+      expect(adsSubmissions).toBe(0);
 
       observation = 'stopped';
+      await expect(run(interrupted.id)).rejects.toMatchObject({ code: 'walk_routing_invalid' });
+      expect(await readSnapshotRequests(sql, interrupted.id, null)).toContainEqual(
+        expect.objectContaining({
+          provider: 'valhalla',
+          state: 'unconfirmed',
+          artifact_sha256: null,
+        }),
+      );
+      expect(await sql`select private.current_score_snapshot_id() as id`).toEqual([active]);
+      invalidMatrix = false;
+      await expect(run(interrupted.id)).rejects.toMatchObject({ code: 'cams_submission_rejected' });
+      expect(await readSnapshotRequests(sql, interrupted.id, null)).toContainEqual(
+        expect.objectContaining({
+          provider: 'ads',
+          attempt: 1,
+          state: 'rejected',
+          upstream_id: null,
+          rejection_status: 401,
+        }),
+      );
+      expect(await sql`select private.current_score_snapshot_id() as id`).toEqual([active]);
+      adsKey = 'test-key';
+      await expect(run(interrupted.id)).rejects.toMatchObject({ code: 'cams_request_failed' });
+      expect(await readSnapshotRequests(sql, interrupted.id, null)).toContainEqual(
+        expect.objectContaining({
+          provider: 'ads',
+          attempt: 2,
+          state: 'accepted',
+          upstream_id: 'accepted-ads-job',
+        }),
+      );
+      expect(await sql`select private.current_score_snapshot_id() as id`).toEqual([active]);
+      adsStatusReadable = true;
       const resumed = await run(interrupted.id);
       expect(resumed).toMatchObject({ snapshotId: interrupted.id, scores: ['green', 'air'] });
       const progress = await readSnapshotProgress(sql, interrupted.id);
       expect(progress).toMatchObject({
         snapshot_status: 'ready',
         routing_pending: false,
-        requests: { accepted: 0, failed: 1, succeeded: 5 },
+        requests: {
+          unconfirmed: 0,
+          accepted: 0,
+          discarded: 1,
+          failed: 2,
+          rejected: 1,
+          succeeded: 5,
+        },
       });
-      expect(progress?.generations).toHaveLength(2);
+      expect(progress?.generations).toHaveLength(5);
       expect(progress?.steps.map((step) => step.completed_by)).toEqual([
-        progress?.generations[0]?.id,
-        progress?.generations[0]?.id,
-        progress?.generations[0]?.id,
         progress?.generations[1]?.id,
+        progress?.generations[1]?.id,
+        progress?.generations[1]?.id,
+        progress?.generations[4]?.id,
       ]);
       const requests = await readSnapshotRequests(sql, interrupted.id, null);
       expect(routingRequests).toEqual([
-        requests.find((request) => request.provider === 'valhalla')?.id,
+        requests.find((request) => request.provider === 'valhalla' && request.state === 'discarded')
+          ?.id,
+        requests.find((request) => request.provider === 'valhalla' && request.state === 'succeeded')
+          ?.id,
       ]);
-      expect(adsSubmissions).toBe(1);
-      expect(sourceReads).toBe(3);
+      expect(adsSubmissions).toBe(2);
+      expect(requests).toContainEqual(
+        expect.objectContaining({
+          provider: 'ads',
+          attempt: 2,
+          state: 'succeeded',
+          upstream_id: 'accepted-ads-job',
+        }),
+      );
+      expect(sourceReads).toBe(4);
       expect(stationReads).toBe(1);
-      expect(requests.find(({ step_key }) => step_key === 'source:osm')).toMatchObject({
+      expect(
+        requests.find(({ step_key, attempt }) => step_key === 'source:osm' && attempt === 2),
+      ).toMatchObject({
         step_key: 'source:osm',
         state: 'succeeded',
         artifact_sha256: expect.stringMatching(/^[a-f0-9]{64}$/) as unknown,

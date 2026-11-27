@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(8);
+select plan(10);
 
 select is(
   (select count(*)::int
@@ -11,6 +11,14 @@ select is(
       and c.relname in ('score_snapshot_progress', 'score_snapshot_generations',
         'score_snapshot_steps', 'score_snapshot_requests')),
   4, 'All worker journal tables have RLS'
+);
+select ok(
+  has_schema_privilege('snapshot_status_reader', 'snapshot_diagnostics', 'USAGE'),
+  'The dedicated reader can resolve the checkpoint diagnostics'
+);
+select ok(
+  not has_schema_privilege('authenticated', 'snapshot_diagnostics', 'USAGE'),
+  'API roles cannot access the diagnostics schema'
 );
 select ok(
   not has_table_privilege('service_role', 'private.score_snapshot_requests', 'SELECT, INSERT, UPDATE, DELETE'),

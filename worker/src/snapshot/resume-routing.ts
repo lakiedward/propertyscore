@@ -59,15 +59,13 @@ export function createResumeRouting(url: string, controlToken: string, routingTo
       const root = `${endpoint}/runs/${runId}`;
       const inflight = new Map<string, Promise<Uint8Array>>();
       return createValhallaClient(root, {
-        fetch: async (input, init) => {
-          const headers = new Headers(init?.headers);
+        checkpointFetch: async (url, init, validate) => {
+          const headers = new Headers(init.headers);
           headers.set('authorization', `Bearer ${routingToken}`);
           headers.set('x-valhalla-ledger', ledgerId);
-          const requestSignal = AbortSignal.any([signal, ...(init?.signal ? [init.signal] : [])]);
-          const url =
-            typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+          const requestSignal = AbortSignal.any([signal, ...(init.signal ? [init.signal] : [])]);
           const path = url.slice(root.length);
-          const fingerprint = snapshotDigest(JSON.stringify([path, init?.method, init?.body]));
+          const fingerprint = snapshotDigest(JSON.stringify([path, init.method, init.body]));
           let packedResponse: Uint8Array | null = null;
           const promise =
             inflight.get(fingerprint) ??
@@ -82,26 +80,15 @@ export function createResumeRouting(url: string, controlToken: string, routingTo
               {
                 submit: async (correlationId, abort) => {
                   headers.set('x-propertyscore-request', correlationId);
-                  const response = await fetch(input, {
+                  const response = await fetch(url, {
                     ...init,
                     headers,
                     redirect: 'error',
                     signal: abort,
                   });
                   const body = new Uint8Array(await response.arrayBuffer());
-                  if (response.status !== 200) {
-                    const error = z
-                      .object({ error_code: z.number() })
-                      .safeParse(JSON.parse(new TextDecoder().decode(body)) as unknown);
-                    if (
-                      response.status < 400 ||
-                      response.status >= 500 ||
-                      !error.success ||
-                      ![171, 442, 443].includes(error.data.error_code)
-                    ) {
-                      routingUnconfirmed();
-                    }
-                  }
+                  const json: unknown = JSON.parse(new TextDecoder().decode(body));
+                  validate(response.status, json);
                   const packed = new Uint8Array(body.length + 2);
                   new DataView(packed.buffer).setUint16(0, response.status);
                   packed.set(body, 2);

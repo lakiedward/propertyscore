@@ -89,6 +89,51 @@ describe('downloadCamsMonth', () => {
     if (dir) await rm(dir, { recursive: true, force: true });
   });
 
+  it.each([
+    { status: 401, body: null, rejected: true },
+    { status: 403, body: null, rejected: true },
+    { status: 400, body: null, rejected: false },
+    { status: 503, body: null, rejected: false },
+    { status: 200, body: '{"status":"accepted"}', rejected: false },
+    { status: 200, body: '{', rejected: false },
+    { status: null, body: null, rejected: false },
+  ])(
+    'preserves a submission outcome with HTTP status $status',
+    async ({ status, body, rejected }) => {
+      const journal = {
+        beginRequest: vi.fn(() =>
+          Promise.resolve({ outcome: 'submit', requestId: 'request-1' } as const),
+        ),
+        rejectAdsSubmission: vi.fn(() => Promise.resolve()),
+        acceptRequest: vi.fn(() => Promise.resolve()),
+        finishRequest: vi.fn(() => Promise.resolve()),
+      };
+      const request = vi.fn(() =>
+        status === null
+          ? Promise.reject(new DOMException('ADS response timed out', 'TimeoutError'))
+          : Promise.resolve(new Response(body, { status })),
+      );
+      vi.stubGlobal('fetch', request);
+      await expect(
+        downloadCamsMonth({
+          apiUrl: 'https://ads.example.test/api',
+          apiKey: 'test-key',
+          pollutant: 'pm25',
+          month: '2026-01-01',
+          sourcesDir: tmpdir(),
+          checkpoint: { journal, step: 'score:air', signal: AbortSignal.timeout(5000) },
+        }),
+      ).rejects.toThrow();
+      expect(journal.beginRequest).toHaveBeenCalledOnce();
+      expect(request).toHaveBeenCalledOnce();
+      expect(journal.rejectAdsSubmission.mock.calls).toEqual(
+        rejected ? [['request-1', status]] : [],
+      );
+      expect(journal.acceptRequest).not.toHaveBeenCalled();
+      expect(journal.finishRequest).not.toHaveBeenCalled();
+    },
+  );
+
   it('submits the request, waits for the job and downloads the result once', async () => {
     dir = await mkdtemp(join(tmpdir(), 'cams-test-'));
     const calls: string[] = [];

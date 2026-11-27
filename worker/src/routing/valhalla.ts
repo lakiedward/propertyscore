@@ -42,6 +42,12 @@ export type ValhallaClient = {
 };
 
 type Fetch = typeof fetch;
+type ResponseReader = (status: number, json: unknown) => unknown;
+type CheckpointFetch = (
+  url: string,
+  init: RequestInit,
+  validate: ResponseReader,
+) => Promise<Response>;
 
 const NO_ROUTE_ERROR_CODES = new Set([171, 442, 443]);
 
@@ -99,32 +105,40 @@ export function chunkTargets<T>(targets: readonly T[], sources: number, maxPairs
 
 export function createValhallaClient(
   baseUrl: string,
-  options: { fetch?: Fetch; maxMatrixPairs?: number } = {},
+  options: { fetch?: Fetch; checkpointFetch?: CheckpointFetch; maxMatrixPairs?: number } = {},
 ): ValhallaClient {
   const request = options.fetch ?? fetch;
   const maxPairs = options.maxMatrixPairs ?? 2500;
   const root = baseUrl.replace(/\/+$/, '');
 
-  async function call(
+  async function call<T>(
     path: string,
+    read: (status: number, json: unknown) => T,
     body: unknown,
     signal?: AbortSignal,
-  ): Promise<{ status: number; json: unknown }> {
+  ): Promise<T> {
     let response: Response;
     try {
-      response = await request(`${root}${path}`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-        signal,
-      });
+      const init =
+        body === undefined
+          ? {}
+          : {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify(body),
+              signal,
+            };
+      response = options.checkpointFetch
+        ? await options.checkpointFetch(`${root}${path}`, init, read)
+        : await request(`${root}${path}`, init);
     } catch (error) {
+      if (options.checkpointFetch && error instanceof WorkerError) throw error;
       throw new WorkerError('walk_routing_unreachable', `Routing service unreachable on ${path}`, {
         cause: error,
       });
     }
     const json: unknown = await response.json().catch(() => null);
-    return { status: response.status, json };
+    return read(response.status, json);
   }
 
   function isNoRoute(status: number, json: unknown): boolean {
@@ -143,26 +157,32 @@ export function createValhallaClient(
     targets: readonly LngLat[],
     walkSpeedKmh: number | undefined,
   ): Promise<(Leg | null)[][]> {
-    const { status, json } = await call('/sources_to_targets', {
-      sources: sources.map(location),
-      targets: targets.map(location),
-      costing,
-      costing_options: costingOptions(costing, walkSpeedKmh),
-      units: 'kilometers',
-      verbose: true,
-    });
-    if (isNoRoute(status, json)) return sources.map(() => targets.map(() => null));
-    if (status !== 200) throw failed('/sources_to_targets', status);
-    const parsed = matrixResponseSchema.safeParse(json);
-    if (!parsed.success || parsed.data.sources_to_targets.length !== sources.length) {
-      throw new WorkerError('walk_routing_invalid', 'Unexpected matrix response');
-    }
-    return parsed.data.sources_to_targets.map((row) => {
-      if (row.length !== targets.length) {
-        throw new WorkerError('walk_routing_invalid', 'Unexpected matrix row length');
-      }
-      return row.map(legFromMatrixCell);
-    });
+    const path = '/sources_to_targets';
+    return call(
+      path,
+      (status, json) => {
+        if (isNoRoute(status, json)) return sources.map(() => targets.map(() => null));
+        if (status !== 200) throw failed(path, status);
+        const parsed = matrixResponseSchema.safeParse(json);
+        if (!parsed.success || parsed.data.sources_to_targets.length !== sources.length) {
+          throw new WorkerError('walk_routing_invalid', 'Unexpected matrix response');
+        }
+        return parsed.data.sources_to_targets.map((row) => {
+          if (row.length !== targets.length) {
+            throw new WorkerError('walk_routing_invalid', 'Unexpected matrix row length');
+          }
+          return row.map(legFromMatrixCell);
+        });
+      },
+      {
+        sources: sources.map(location),
+        targets: targets.map(location),
+        costing,
+        costing_options: costingOptions(costing, walkSpeedKmh),
+        units: 'kilometers',
+        verbose: true,
+      },
+    );
   }
 
   return {
@@ -177,26 +197,51 @@ export function createValhallaClient(
       return rows;
     },
 
-    async isochrones({ origin, minutes, walkSpeedKmh }) {
-      const { status, json } = await call('/isochrone', {
-        locations: [location(origin)],
-        costing: 'pedestrian',
-        costing_options: costingOptions('pedestrian', walkSpeedKmh),
-        contours: minutes.map((time) => ({ time })),
-        polygons: true,
-      });
-      if (isNoRoute(status, json)) return [];
-      if (status !== 200) throw failed('/isochrone', status);
-      const parsed = isochroneResponseSchema.safeParse(json);
-      if (!parsed.success) throw new WorkerError('walk_routing_invalid', 'Unexpected isochrone');
-      return parsed.data.features
-        .map((feature) => ({ minutes: feature.properties.contour, geometry: feature.geometry }))
-        .sort((a, b) => a.minutes - b.minutes);
+    isochrones({ origin, minutes, walkSpeedKmh }) {
+      const path = '/isochrone';
+      return call(
+        path,
+        (status, json) => {
+          if (isNoRoute(status, json)) return [];
+          if (status !== 200) throw failed(path, status);
+          const parsed = isochroneResponseSchema.safeParse(json);
+          if (!parsed.success)
+            throw new WorkerError('walk_routing_invalid', 'Unexpected isochrone');
+          return parsed.data.features
+            .map((feature) => ({ minutes: feature.properties.contour, geometry: feature.geometry }))
+            .sort((a, b) => a.minutes - b.minutes);
+        },
+        {
+          locations: [location(origin)],
+          costing: 'pedestrian',
+          costing_options: costingOptions('pedestrian', walkSpeedKmh),
+          contours: minutes.map((time) => ({ time })),
+          polygons: true,
+        },
+      );
     },
 
-    async route({ origin, destination, costing = 'pedestrian', walkSpeedKmh, signal }) {
-      const { status, json } = await call(
-        '/route',
+    route({ origin, destination, costing = 'pedestrian', walkSpeedKmh, signal }) {
+      const path = '/route';
+      return call(
+        path,
+        (status, json) => {
+          if (isNoRoute(status, json)) return null;
+          if (status !== 200) throw failed(path, status);
+          const parsed = routeResponseSchema.safeParse(json);
+          if (!parsed.success) throw new WorkerError('walk_routing_invalid', 'Unexpected route');
+          const { summary, legs } = parsed.data.trip;
+          const [leg] = legs;
+          if (!leg) throw new WorkerError('walk_routing_invalid', 'Route without legs');
+          if (costing === 'auto' && legs.length !== 1) {
+            throw new WorkerError('car_routing_invalid', 'Unexpected number of driving legs');
+          }
+          return {
+            seconds: Math.round(summary.time),
+            meters: Math.round(summary.length * 1000),
+            polyline6: leg.shape,
+          };
+        },
         {
           locations: [location(origin), location(destination)],
           costing,
@@ -206,40 +251,22 @@ export function createValhallaClient(
         },
         signal,
       );
-      if (isNoRoute(status, json)) return null;
-      if (status !== 200) throw failed('/route', status);
-      const parsed = routeResponseSchema.safeParse(json);
-      if (!parsed.success) throw new WorkerError('walk_routing_invalid', 'Unexpected route');
-      const { summary, legs } = parsed.data.trip;
-      const [leg] = legs;
-      if (!leg) throw new WorkerError('walk_routing_invalid', 'Route without legs');
-      if (costing === 'auto' && legs.length !== 1) {
-        throw new WorkerError('car_routing_invalid', 'Unexpected number of driving legs');
-      }
-      return {
-        seconds: Math.round(summary.time),
-        meters: Math.round(summary.length * 1000),
-        polyline6: leg.shape,
-      };
     },
 
-    async tilesetDate() {
-      let response: Response;
-      try {
-        response = await request(`${root}/status`);
-      } catch (error) {
-        throw new WorkerError(
-          'walk_routing_unreachable',
-          'Routing service unreachable on /status',
-          {
-            cause: error,
-          },
-        );
-      }
-      if (!response.ok) throw failed('/status', response.status);
-      const parsed = statusResponseSchema.safeParse(await response.json().catch(() => null));
-      const seconds = parsed.success ? parsed.data.tileset_last_modified : undefined;
-      return seconds === undefined ? null : new Date(seconds * 1000).toISOString().slice(0, 10);
+    tilesetDate() {
+      return call(
+        '/status',
+        (status, json) => {
+          if (status < 200 || status >= 300) throw failed('/status', status);
+          const parsed = statusResponseSchema.safeParse(json);
+          if (options.checkpointFetch && (!parsed.success || status !== 200)) {
+            throw new WorkerError('walk_routing_invalid', 'Unexpected tileset status');
+          }
+          const seconds = parsed.success ? parsed.data.tileset_last_modified : undefined;
+          return seconds === undefined ? null : new Date(seconds * 1000).toISOString().slice(0, 10);
+        },
+        undefined,
+      );
     },
   };
 }

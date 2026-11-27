@@ -15,6 +15,7 @@ type SourceStep = {
   step: string;
   signal: AbortSignal;
   directory: string;
+  retryUnavailableOnResume?: boolean;
 };
 
 const sourceStep = new AsyncLocalStorage<
@@ -39,11 +40,15 @@ async function checkpointRead<T>(
   signal.throwIfAborted();
   const fingerprint = snapshotDigest(JSON.stringify(identity));
   async function capture(known: SourceStep) {
-    const attempt = await journal.beginRequest(step, {
-      provider: 'source',
-      operationKey: fingerprint,
-      fingerprint,
-    });
+    const attempt = await journal.beginRequest(
+      step,
+      {
+        provider: 'source',
+        operationKey: fingerprint,
+        fingerprint,
+      },
+      { retryUnavailableOnResume: known.retryUnavailableOnResume },
+    );
     signal.throwIfAborted();
     if (attempt.outcome === 'reuse') return load(attempt.artifactSha256, known);
     if (attempt.outcome === 'unavailable') {

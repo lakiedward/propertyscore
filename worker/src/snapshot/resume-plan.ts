@@ -29,6 +29,7 @@ export const progressSchema = z.object({
     succeeded: z.number().int().nonnegative(),
     failed: z.number().int().nonnegative(),
     discarded: z.number().int().nonnegative(),
+    rejected: z.number().int().nonnegative(),
   }),
 });
 
@@ -41,7 +42,8 @@ export const requestSchema = z.object({
   fingerprint: sha256,
   attempt: z.number().int().positive(),
   upstream_id: z.string().min(1).nullable(),
-  state: z.enum(['unconfirmed', 'accepted', 'succeeded', 'failed', 'discarded']),
+  state: z.enum(['unconfirmed', 'accepted', 'succeeded', 'failed', 'discarded', 'rejected']),
+  rejection_status: z.union([z.literal(401), z.literal(403)]).nullable(),
   artifact_sha256: sha256.nullable(),
   created_at: z.string(),
 });

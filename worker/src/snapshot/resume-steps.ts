@@ -3,7 +3,10 @@ import { WorkerError } from '../lib/errors.ts';
 import type { createSnapshotJournal } from './resume-journal.ts';
 
 type Journal = ReturnType<typeof createSnapshotJournal>;
-export type StepJournal = Pick<Journal, 'beginRequest' | 'acceptRequest' | 'finishRequest'>;
+export type StepJournal = Pick<
+  Journal,
+  'beginRequest' | 'acceptRequest' | 'finishRequest' | 'rejectAdsSubmission'
+>;
 
 type SnapshotStep = {
   key: string;

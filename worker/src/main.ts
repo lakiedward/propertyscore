@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
-import { parseCommand, type WorkerCommand } from './cli.ts';
-import { type Env, readDocumentEnv, readEnv } from './config/env.ts';
+import { type InspectSnapshotProgressCommand, parseCommand, type WorkerCommand } from './cli.ts';
+import { type Env, readDocumentEnv, readEnv, readSnapshotReaderEnv } from './config/env.ts';
 import { createSnapshotResumeConnection, createSql, type Sql } from './db/sql.ts';
 import { errorCauseExit, errorCauseTail, errorCode, WorkerError } from './lib/errors.ts';
 import { createLogger, type Logger } from './lib/logger.ts';
@@ -115,29 +115,35 @@ async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<voi
   }
 }
 
+async function inspectSnapshotProgress(command: InspectSnapshotProgressCommand) {
+  const env = readSnapshotReaderEnv();
+  const sql = createSql(env.SNAPSHOT_STATUS_DATABASE_URL);
+  try {
+    const progress = await readSnapshotProgress(sql, command.snapshotId);
+    if (!progress) throw new WorkerError('snapshot_not_found', 'Smart Check snapshot not found');
+    const summary = summarizeSnapshotProgress(progress);
+    const page = command.requests
+      ? await readSnapshotRequests(sql, command.snapshotId, command.requests.after)
+      : undefined;
+    process.stdout.write(
+      `${JSON.stringify({
+        ...summary,
+        request_page: page,
+        next_after: page?.length === 100 ? page.at(-1)?.id : undefined,
+      })}\n`,
+    );
+  } finally {
+    await sql.end({ timeout: 5 });
+  }
+}
+
 async function runCommand(
-  command: WorkerCommand,
+  command: Exclude<WorkerCommand, InspectSnapshotProgressCommand>,
   sql: Sql,
   env: Env,
   logger: Logger,
 ): Promise<void> {
   switch (command.command) {
-    case 'inspect-snapshot-progress': {
-      const progress = await readSnapshotProgress(sql, command.snapshotId);
-      if (!progress) throw new WorkerError('snapshot_not_found', 'Smart Check snapshot not found');
-      const summary = summarizeSnapshotProgress(progress);
-      const page = command.requests
-        ? await readSnapshotRequests(sql, command.snapshotId, command.requests.after)
-        : undefined;
-      process.stdout.write(
-        `${JSON.stringify({
-          ...summary,
-          request_page: page,
-          next_after: page?.length === 100 ? page.at(-1)?.id : undefined,
-        })}\n`,
-      );
-      return;
-    }
     case 'build-snapshot': {
       const options = {
         sql,
@@ -327,6 +333,10 @@ async function runCheckpointedSnapshot(
 
 async function main(): Promise<void> {
   const command = parseCommand(process.argv.slice(2), new Date());
+  if (command.command === 'inspect-snapshot-progress') {
+    await inspectSnapshotProgress(command);
+    return;
+  }
   if (command.command === 'render-report-pdf' && 'inputPath' in command.source) {
     const documentEnv = readDocumentEnv();
     await renderReportPdf({

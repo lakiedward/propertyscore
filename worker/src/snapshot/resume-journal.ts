@@ -284,7 +284,11 @@ export function createSnapshotJournal(sql: Sql, snapshotId: string, executionId:
       });
     },
 
-    async beginRequest(step: string, key: SnapshotRequestKey) {
+    async beginRequest(
+      step: string,
+      key: SnapshotRequestKey,
+      { retryUnavailableOnResume = false } = {},
+    ) {
       return write(async (tx) => {
         await requireNextStep(tx, step);
         const [stage] = await tx<{ started_by: string | null }[]>`
@@ -295,6 +299,7 @@ export function createSnapshotJournal(sql: Sql, snapshotId: string, executionId:
         const [last] = await tx<
           {
             id: string;
+            execution_id: string;
             state: SnapshotRequest['state'];
             fingerprint: string;
             attempt: number;
@@ -302,7 +307,7 @@ export function createSnapshotJournal(sql: Sql, snapshotId: string, executionId:
             upstream_id: string | null;
           }[]
         >`
-          select id, state, fingerprint, attempt, artifact_sha256, upstream_id
+          select id, execution_id, state, fingerprint, attempt, artifact_sha256, upstream_id
           from private.score_snapshot_requests
           where snapshot_id = ${snapshotId} and step_key = ${step}
             and provider = ${key.provider} and operation_key = ${key.operationKey}
@@ -310,7 +315,11 @@ export function createSnapshotJournal(sql: Sql, snapshotId: string, executionId:
         `;
         if (last && last.fingerprint !== key.fingerprint)
           cannotContinue('snapshot_request_changed');
-        if (last?.state === 'failed' && key.provider === 'source') {
+        if (
+          last?.state === 'failed' &&
+          key.provider === 'source' &&
+          (!retryUnavailableOnResume || last.execution_id === executionId)
+        ) {
           return { outcome: 'unavailable' } as const;
         }
         if (
@@ -324,7 +333,12 @@ export function createSnapshotJournal(sql: Sql, snapshotId: string, executionId:
             upstreamId: last.upstream_id,
           } as const;
         }
-        if (last && last.state !== 'failed' && last.state !== 'discarded') {
+        if (
+          last &&
+          last.state !== 'failed' &&
+          last.state !== 'discarded' &&
+          last.state !== 'rejected'
+        ) {
           cannotContinue('snapshot_request_unconfirmed');
         }
         const [row] = await tx<{ id: string }[]>`
@@ -348,6 +362,18 @@ export function createSnapshotJournal(sql: Sql, snapshotId: string, executionId:
           set state = 'accepted', upstream_id = ${upstreamId}
           where id = ${requestId} and execution_id = ${executionId}
             and (state = 'unconfirmed' or (state = 'accepted' and upstream_id = ${upstreamId}))
+        `;
+        if (changed.count !== 1) cannotContinue('snapshot_request_unconfirmed');
+      });
+    },
+
+    async rejectAdsSubmission(requestId: string, status: 401 | 403) {
+      return write(async (tx) => {
+        const changed = await tx`
+          update private.score_snapshot_requests
+          set state = 'rejected', rejection_status = ${status}
+          where id = ${requestId} and execution_id = ${executionId} and provider = 'ads'
+            and state = 'unconfirmed' and upstream_id is null
         `;
         if (changed.count !== 1) cannotContinue('snapshot_request_unconfirmed');
       });

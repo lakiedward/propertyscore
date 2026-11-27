@@ -55,7 +55,8 @@ create table private.score_snapshot_requests (
   attempt integer not null check (attempt > 0),
   upstream_id text check (length(upstream_id) between 1 and 255),
   state text not null default 'unconfirmed'
-    check (state in ('unconfirmed', 'accepted', 'succeeded', 'failed', 'discarded')),
+    check (state in ('unconfirmed', 'accepted', 'succeeded', 'failed', 'discarded', 'rejected')),
+  rejection_status smallint check (rejection_status in (401, 403)),
   artifact_sha256 text check (artifact_sha256 ~ '^[0-9a-f]{64}$'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -65,8 +66,10 @@ create table private.score_snapshot_requests (
     on delete cascade,
   foreign key (snapshot_id, execution_id) references private.score_snapshot_generations(snapshot_id, id)
     deferrable initially deferred,
-  check (state = 'discarded' or ((state = 'unconfirmed') = (upstream_id is null))),
+  check (state = 'discarded' or ((state in ('unconfirmed', 'rejected')) = (upstream_id is null))),
   check (state <> 'discarded' or provider in ('valhalla', 'source')),
+  check ((state = 'rejected') = (rejection_status is not null)),
+  check (state <> 'rejected' or provider = 'ads'),
   check ((state = 'succeeded') = (artifact_sha256 is not null))
 );
 
@@ -124,7 +127,8 @@ as $$
         'accepted', count(*) filter (where r.state = 'accepted'),
         'succeeded', count(*) filter (where r.state = 'succeeded'),
         'failed', count(*) filter (where r.state = 'failed'),
-        'discarded', count(*) filter (where r.state = 'discarded')
+        'discarded', count(*) filter (where r.state = 'discarded'),
+        'rejected', count(*) filter (where r.state = 'rejected')
       )
       from private.score_snapshot_requests r where r.snapshot_id = s.id
     )
@@ -149,7 +153,8 @@ as $$
   select coalesce(jsonb_agg(jsonb_build_object(
     'id', r.id, 'execution_id', r.execution_id, 'step_key', r.step_key, 'provider', r.provider,
     'operation_key', r.operation_key, 'fingerprint', r.fingerprint, 'attempt', r.attempt,
-    'upstream_id', r.upstream_id, 'state', r.state, 'artifact_sha256', r.artifact_sha256,
+    'upstream_id', r.upstream_id, 'state', r.state, 'rejection_status', r.rejection_status,
+    'artifact_sha256', r.artifact_sha256,
     'created_at', r.created_at
   ) order by r.id), '[]'::jsonb)
   from (
