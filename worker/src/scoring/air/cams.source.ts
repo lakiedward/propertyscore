@@ -1,10 +1,18 @@
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import { z } from 'zod';
 
 import { WorkerError } from '../../lib/errors.ts';
 import type { Logger } from '../../lib/logger.ts';
+import {
+  artifactUnconfirmed,
+  snapshotDigest,
+  snapshotFileDigest,
+} from '../../snapshot/resume-artifacts.ts';
+import type { SnapshotRequest } from '../../snapshot/resume-plan.ts';
+import type { StepJournal } from '../../snapshot/resume-steps.ts';
 import { downloadOnce } from '../../sources/download.ts';
 import { isNoData, type RasterGrid } from '../../sources/gdal.ts';
 import type { Pollutant } from './air.params.ts';
@@ -31,6 +39,20 @@ export type AdsClientOptions = {
   pollIntervalMs?: number;
   maxWaitMs?: number;
   logger?: Logger;
+  signal?: AbortSignal;
+};
+
+export type CamsCheckpoint = {
+  journal: StepJournal;
+  step: string;
+  signal: AbortSignal;
+};
+
+type CamsDownloadOptions = AdsClientOptions & {
+  sourcesDir: string;
+  pollutant: Pollutant;
+  month: string;
+  checkpoint?: CamsCheckpoint;
 };
 
 async function isDownloaded(path: string): Promise<boolean> {
@@ -71,60 +93,157 @@ async function adsJson(options: AdsClientOptions, url: string, body?: unknown): 
     method: body === undefined ? 'GET' : 'POST',
     headers: { 'PRIVATE-TOKEN': options.apiKey, 'Content-Type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
+    ...(options.signal && {
+      signal: AbortSignal.any([options.signal, AbortSignal.timeout(60_000)]),
+      redirect: 'error',
+    }),
   });
   if (!response.ok) {
-    throw new WorkerError(
-      'cams_request_failed',
-      `ADS answered ${response.status} for ${new URL(url).pathname}`,
-    );
+    throw new WorkerError('cams_request_failed', `ADS answered ${response.status}`);
   }
   return response.json();
 }
 
-export async function downloadCamsMonth(
-  options: AdsClientOptions & { sourcesDir: string; pollutant: Pollutant; month: string },
-): Promise<string> {
-  const destination = camsFilePath(options.sourcesDir, options.pollutant, options.month);
-  if (await isDownloaded(destination)) return destination;
-  const sleep =
-    options.sleep ??
-    ((milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
-  const base = options.apiUrl.replace(/\/$/, '');
+async function submitCams(options: CamsDownloadOptions) {
   const submitted = jobSchema.safeParse(
-    await adsJson(options, `${base}/retrieve/v1/processes/${CAMS_DATASET}/execution`, {
-      inputs: camsRequest(options.pollutant, options.month),
-    }),
+    await adsJson(
+      options,
+      `${options.apiUrl.replace(/\/$/, '')}/retrieve/v1/processes/${CAMS_DATASET}/execution`,
+      {
+        inputs: camsRequest(options.pollutant, options.month),
+      },
+    ),
   );
   if (!submitted.success) throw new WorkerError('cams_request_failed', 'ADS did not return a job');
-  const jobUrl = `${base}/retrieve/v1/jobs/${encodeURIComponent(submitted.data.jobID)}`;
   options.logger?.info('cams job submitted', {
     pollutant: options.pollutant,
     month: options.month,
   });
+  return submitted.data;
+}
 
+function camsJobUrl(options: AdsClientOptions, jobId: string) {
+  return `${options.apiUrl.replace(/\/$/, '')}/retrieve/v1/jobs/${encodeURIComponent(jobId)}`;
+}
+
+async function readCamsStatus(options: AdsClientOptions, jobUrl: string) {
+  const polled = statusSchema.safeParse(await adsJson(options, jobUrl));
+  if (!polled.success) throw new WorkerError('cams_request_failed', 'ADS job status is unreadable');
+  return polled.data.status;
+}
+
+function isCamsFailure(status: string) {
+  return ['failed', 'rejected', 'dismissed', 'deleted'].includes(status);
+}
+
+async function waitForCams(options: AdsClientOptions, jobUrl: string, initialStatus: string) {
+  const sleep =
+    options.sleep ??
+    ((milliseconds: number) => delay(milliseconds, undefined, { signal: options.signal }));
   const deadline = Date.now() + (options.maxWaitMs ?? 3 * 60 * 60 * 1000);
-  let status = submitted.data.status;
+  let status = initialStatus;
   while (status !== 'successful') {
-    if (
-      status === 'failed' ||
-      status === 'rejected' ||
-      status === 'dismissed' ||
-      status === 'deleted'
-    ) {
-      throw new WorkerError('cams_job_failed', `ADS job ended as ${status}`);
-    }
+    if (isCamsFailure(status)) return 'failed';
     if (Date.now() > deadline)
       throw new WorkerError('cams_job_timeout', 'ADS job did not finish in time');
     await sleep(options.pollIntervalMs ?? 30_000);
-    const polled = statusSchema.safeParse(await adsJson(options, jobUrl));
-    if (!polled.success)
-      throw new WorkerError('cams_request_failed', 'ADS job status is unreadable');
-    status = polled.data.status;
+    status = await readCamsStatus(options, jobUrl);
   }
+  return 'successful';
+}
 
+async function downloadCamsResult(options: AdsClientOptions, jobUrl: string, destination: string) {
   const results = resultsSchema.safeParse(await adsJson(options, `${jobUrl}/results`));
   if (!results.success) throw new WorkerError('cams_request_failed', 'ADS results have no file');
-  return downloadOnce(results.data.asset.value.href, destination);
+  try {
+    return await downloadOnce(results.data.asset.value.href, destination, {
+      signal: options.signal,
+    });
+  } catch {
+    options.signal?.throwIfAborted();
+    throw new WorkerError('cams_request_failed', 'ADS result file is unavailable');
+  }
+}
+
+function checkpointPath(directory: string, jobId: string) {
+  return join(directory, 'air', 'ads-jobs', `${snapshotDigest(jobId)}.grib`);
+}
+
+export async function reconcileCamsRequest(
+  options: AdsClientOptions & { sourcesDir: string; signal: AbortSignal },
+  request: SnapshotRequest,
+) {
+  if (request.provider !== 'ads' || request.upstream_id === null) return null;
+  const jobUrl = camsJobUrl(options, request.upstream_id);
+  const status = await readCamsStatus(options, jobUrl);
+  const identity = {
+    provider: request.provider,
+    upstreamId: request.upstream_id,
+    fingerprint: request.fingerprint,
+    correlationId: null,
+  } as const;
+  if (isCamsFailure(status)) return { ...identity, state: 'failed' } as const;
+  if (status !== 'successful') return null;
+  const file = await downloadCamsResult(
+    options,
+    jobUrl,
+    checkpointPath(options.sourcesDir, request.upstream_id),
+  );
+  return {
+    ...identity,
+    state: 'succeeded',
+    artifactSha256: await snapshotFileDigest(file, options.signal),
+  } as const;
+}
+
+async function downloadCheckpointedCams(options: CamsDownloadOptions, checkpoint: CamsCheckpoint) {
+  const { journal, signal, step } = checkpoint;
+  signal.throwIfAborted();
+  const pending = await journal.beginRequest(step, {
+    provider: 'ads',
+    operationKey: `${options.pollutant}:${options.month}`,
+    fingerprint: snapshotDigest(
+      JSON.stringify([options.apiUrl, CAMS_DATASET, camsRequest(options.pollutant, options.month)]),
+    ),
+  });
+  signal.throwIfAborted();
+  const client = { ...options, signal };
+  if (pending.outcome === 'reuse') {
+    const file = checkpointPath(options.sourcesDir, pending.upstreamId);
+    if (!(await isDownloaded(file))) {
+      await downloadCamsResult(client, camsJobUrl(client, pending.upstreamId), file);
+    }
+    if ((await snapshotFileDigest(file, signal)) !== pending.artifactSha256) artifactUnconfirmed();
+    return file;
+  }
+  const job = await submitCams(client);
+  await journal.acceptRequest(pending.requestId, job.jobID);
+  const jobUrl = camsJobUrl(client, job.jobID);
+  if ((await waitForCams(client, jobUrl, job.status)) === 'failed') {
+    await journal.finishRequest(pending.requestId, 'failed');
+    throw new WorkerError('cams_job_failed', 'ADS job ended unsuccessfully');
+  }
+  const file = await downloadCamsResult(
+    client,
+    jobUrl,
+    checkpointPath(options.sourcesDir, job.jobID),
+  );
+  await journal.finishRequest(pending.requestId, {
+    artifactSha256: await snapshotFileDigest(file, signal),
+  });
+  return file;
+}
+
+export async function downloadCamsMonth(options: CamsDownloadOptions): Promise<string> {
+  if (options.checkpoint) return downloadCheckpointedCams(options, options.checkpoint);
+  const destination = camsFilePath(options.sourcesDir, options.pollutant, options.month);
+  if (await isDownloaded(destination)) return destination;
+  const job = await submitCams(options);
+  const jobUrl = camsJobUrl(options, job.jobID);
+  if ((await waitForCams(options, jobUrl, job.status)) === 'failed') {
+    throw new WorkerError('cams_job_failed', 'ADS job ended unsuccessfully');
+  }
+  return downloadCamsResult(options, jobUrl, destination);
 }
 
 export function bandValidTime(metadata: Record<string, string>): Date {

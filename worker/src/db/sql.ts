@@ -32,3 +32,15 @@ export async function withLongStatements<T>(
   });
   return result.value;
 }
+
+export function createSnapshotResumeConnection(databaseUrl: string, onClose: () => void): Sql {
+  return postgres(databaseUrl, {
+    max: 1,
+    idle_timeout: 0,
+    max_lifetime: null,
+    connect_timeout: 30,
+    prepare: false,
+    onnotice: () => undefined,
+    onclose: onClose,
+  });
+}

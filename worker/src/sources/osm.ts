@@ -42,16 +42,18 @@ export type OsmExtractSource = {
   apiKey: string | null;
 };
 
+export function osmExtractPath(sourcesDir: string, period: string) {
+  return join(sourcesDir, 'osm', `romania-${period.slice(0, 7)}.osm.pbf`);
+}
+
 export async function downloadOsmExtract(
   source: OsmExtractSource,
   sourcesDir: string,
   period: string,
 ): Promise<string> {
-  return downloadOnce(
-    source.url,
-    join(sourcesDir, 'osm', `romania-${period.slice(0, 7)}.osm.pbf`),
-    { headers: privateSourceHeaders(source.apiKey) },
-  );
+  return downloadOnce(source.url, osmExtractPath(sourcesDir, period), {
+    headers: privateSourceHeaders(source.apiKey),
+  });
 }
 
 export async function osmExtractDate(extractPath: string, fallback: string): Promise<string> {

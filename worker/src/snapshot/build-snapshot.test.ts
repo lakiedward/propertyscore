@@ -1,15 +1,19 @@
-import { rm } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { readFile, rm } from 'node:fs/promises';
 
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { createSql, type Sql } from '../db/sql.ts';
+import { createSnapshotResumeConnection, createSql, type Sql } from '../db/sql.ts';
 import { createLogger } from '../lib/logger.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
-import { cityBoundingBox } from '../sources/osm.ts';
+import { downloadCamsMonth } from '../scoring/air/cams.source.ts';
+import { cityBoundingBox, osmExtractPath } from '../sources/osm.ts';
 import { limitCoveredCities } from '../test/coverage-fixture.ts';
 import { hasOsmium, prepareSourcesDir } from '../test/osm-fixture.ts';
 import { writeCategoryScores } from '../scoring/write-category-scores.ts';
+import { buildCheckpointedSnapshot } from './build-checkpointed-snapshot.ts';
 import { buildSnapshot, selectModules } from './build-snapshot.ts';
+import { readSnapshotProgress, readSnapshotRequests } from './resume-journal.ts';
 
 const silentLogger = createLogger('error', () => undefined);
 
@@ -144,6 +148,188 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       where snapshot_id = ${result.snapshotId}
     `;
     expect(overall.every((row) => row.overall === row.green)).toBe(true);
+  });
+
+  it('resumes a real local snapshot without rerunning its grid, cached route or accepted ADS job', async () => {
+    const database = databaseUrl ?? '';
+    const [active] = await sql<
+      { id: string | null }[]
+    >`select private.current_score_snapshot_id() as id`;
+    if (!active?.id) {
+      const [ready] = await sql<{ id: string }[]>`
+        insert into public.score_snapshots (scoring_version_id, period, status, finished_at)
+        select id, '2026-10-01', 'ready', now()
+        from public.scoring_versions where kind = 'online' and is_active
+        returning id
+      `;
+      if (!ready) throw new Error('Missing ready fixture');
+      created.push(ready.id);
+      if (active) active.id = ready.id;
+    }
+    const ledgerId = randomUUID();
+    const replicaId = 'test-replica';
+    const runs = new Set<string>();
+    const routingRequests: string[] = [];
+    let adsSubmissions = 0;
+    let observation = 'active';
+    const period = '2026-11-01';
+    const extract = await readFile(osmExtractPath(sourcesDir, period));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: string, init?: RequestInit): Response => {
+        const url = new URL(input);
+        if (url.hostname === 'sources.example.test') return new Response(extract);
+        if (url.hostname === 'observer.example.test') {
+          return Response.json({
+            run_id: url.pathname.split('/')[2],
+            replica_id: replicaId,
+            state: observation,
+            children_stopped: observation === 'stopped',
+            restart_excluded: observation === 'stopped',
+          });
+        }
+        if (url.hostname === 'valhalla.example.test') {
+          const [, , runId, action] = url.pathname.split('/');
+          if (!runId) throw new Error('Missing run');
+          if (init?.method === 'PUT') {
+            if (action !== 'fence') runs.add(runId);
+            return Response.json({
+              run_id: runId,
+              ledger_id: ledgerId,
+              state: action === 'fence' ? 'drained' : 'idle',
+              admission: action === 'fence' ? 'fenced' : 'open',
+              queued: 0,
+              running: 0,
+            });
+          }
+          routingRequests.push(new Headers(init?.headers).get('x-propertyscore-request') ?? '');
+          expect(new Headers(init?.headers).get('x-valhalla-ledger')).toBe(ledgerId);
+          return Response.json({
+            trip: { summary: { length: 0.1, time: 12 }, legs: [{ shape: 'test-polyline' }] },
+          });
+        }
+        if (url.hostname === 'ads.example.test') {
+          if (url.pathname.endsWith('/execution')) {
+            adsSubmissions++;
+            return Response.json({ jobID: 'accepted-ads-job', status: 'accepted' });
+          }
+          if (url.pathname.endsWith('/results')) {
+            return Response.json({ asset: { value: { href: 'https://ads.example.test/asset' } } });
+          }
+          if (url.pathname === '/asset') return new Response('test-cams-raster');
+          return observation === 'stopped'
+            ? Response.json({ status: 'successful' })
+            : new Response(null, { status: 503 });
+        }
+        throw new Error('Unexpected test fixture endpoint');
+      }),
+    );
+
+    const green = vi.fn(fakeGreenModule.run);
+    const air: ScoreModule = {
+      key: 'air',
+      async run(context) {
+        const route = {
+          origin: { lat: 45.79, lng: 24.12 },
+          destination: { lat: 45.8, lng: 24.13 },
+          costing: 'auto' as const,
+        };
+        expect(
+          await Promise.all([context.router?.route(route), context.router?.route(route)]),
+        ).toEqual(
+          Array.from({ length: 2 }, () => ({
+            meters: 100,
+            seconds: 12,
+            polyline6: 'test-polyline',
+          })),
+        );
+        expect(context.camsCheckpoint).toBeDefined();
+        const file = await downloadCamsMonth({
+          apiUrl: 'https://ads.example.test/api',
+          apiKey: 'test-key',
+          pollutant: 'pm25',
+          month: '2026-10-01',
+          sourcesDir: context.sourcesDir,
+          checkpoint: context.camsCheckpoint,
+          sleep: () => Promise.resolve(),
+        });
+        expect(await readFile(file, 'utf8')).toBe('test-cams-raster');
+        return { sourceDates: { cams: '2026-10-01' } };
+      },
+    };
+    const settings = {
+      SNAPSHOT_SESSION_DATABASE_URL: database,
+      SNAPSHOT_INPUT_REVISION: 'a'.repeat(64),
+      SNAPSHOT_REPLICA_ID: replicaId,
+      SNAPSHOT_VALHALLA_URL: 'https://valhalla.example.test',
+      SNAPSHOT_VALHALLA_CONTROL_TOKEN: 'c'.repeat(32),
+      SNAPSHOT_VALHALLA_ROUTING_TOKEN: 'r'.repeat(32),
+      SNAPSHOT_REPLICA_INSPECTOR_URL: 'https://observer.example.test',
+      SNAPSHOT_REPLICA_INSPECTOR_TOKEN: 'o'.repeat(32),
+    };
+    const options = {
+      modules: [{ ...fakeGreenModule, run: green }, air],
+      period,
+      citySlugs: [],
+      scoreKeys: [],
+      sourcesDir,
+      sourceConfiguration: [],
+      settings,
+      osmExtract: { url: 'https://sources.example.test/osm.pbf', apiKey: null },
+      ads: { apiUrl: 'https://ads.example.test/api', apiKey: 'test-key' },
+      signal: new AbortController().signal,
+      logger: silentLogger,
+    };
+    const run = async (resumeId: string | null) => {
+      const connection = createSnapshotResumeConnection(database, () => undefined);
+      try {
+        return await buildCheckpointedSnapshot({ ...options, resumeId, sql: connection });
+      } finally {
+        await connection.end({ timeout: 0 });
+      }
+    };
+
+    try {
+      await expect(run(null)).rejects.toMatchObject({ code: 'cams_request_failed' });
+      const [interrupted] = await sql<{ id: string }[]>`
+        select id from public.score_snapshots where status = 'building'
+      `;
+      if (!interrupted) throw new Error('Missing interrupted snapshot');
+      created.push(interrupted.id);
+      expect(await sql`select private.current_score_snapshot_id() as id`).toEqual([active]);
+      await expect(run(interrupted.id)).rejects.toMatchObject({
+        code: 'snapshot_stop_unconfirmed',
+      });
+      expect(runs.size).toBe(1);
+
+      observation = 'stopped';
+      const resumed = await run(interrupted.id);
+      expect(resumed).toMatchObject({ snapshotId: interrupted.id, scores: ['green', 'air'] });
+      const progress = await readSnapshotProgress(sql, interrupted.id);
+      expect(progress).toMatchObject({
+        snapshot_status: 'ready',
+        routing_pending: false,
+        requests: { accepted: 0, succeeded: 2 },
+      });
+      expect(progress?.generations).toHaveLength(2);
+      expect(progress?.steps.map((step) => step.completed_by)).toEqual([
+        progress?.generations[0]?.id,
+        progress?.generations[0]?.id,
+        progress?.generations[0]?.id,
+        progress?.generations[1]?.id,
+      ]);
+      const requests = await readSnapshotRequests(sql, interrupted.id, null);
+      expect(routingRequests).toEqual([
+        requests.find((request) => request.provider === 'valhalla')?.id,
+      ]);
+      expect(adsSubmissions).toBe(1);
+      expect(green).toHaveBeenCalledOnce();
+      expect(await sql`select private.current_score_snapshot_id() as id`).toEqual([
+        { id: interrupted.id },
+      ]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('gives a score module the box around a city coverage area', async () => {

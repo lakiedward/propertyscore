@@ -178,6 +178,22 @@ pnpm test:worker          # worker Vitest suite; the database tests run when DAT
 - A test that builds a snapshot gets its OSM data from a small `.osm` fixture in `src/sources/fixtures/` through `prepareSourcesDir`, never from the network.
 - Tests that need `osmium`, GDAL, `xls2csv` or `pdftotext` use `describe.skipIf` on their presence; CI installs `osmium-tool`, `gdal-bin`, `catdoc` and `poppler-utils`.
 
+## Checkpointed Smart Check snapshots
+
+```sh
+pnpm --filter @propertyscore/worker start build-snapshot --checkpointed [--period YYYY-MM]
+pnpm --filter @propertyscore/worker start inspect-snapshot-progress --snapshot <uuid> [--requests [--after <uuid>]]
+pnpm --filter @propertyscore/worker start build-snapshot --resume <uuid>
+```
+
+- The normal cron command is unchanged. Checkpointed execution only accepts full builds. A failed execution stays `building` with `routing_pending` so neither the normal command nor another checkpointed build can replace it. The ready snapshot remains readable until publication passes the existing coverage checks.
+- Use a direct or **session-mode** Postgres connection in `SNAPSHOT_SESSION_DATABASE_URL`: the lock and all snapshot writes must share that session. Do not use transaction pooling. For inspection, use `DATABASE_URL` with a dedicated login granted `snapshot_status_reader`; it cannot write. Pass the returned `next_after` cursor with `--requests` to inspect the next page.
+- Persist `SOURCES_DIR/snapshots/<uuid>` on storage the next runner can access. Retain the directory and the exact worker/source release until publication. Set `SNAPSHOT_INPUT_REVISION` to the SHA-256 of that release's immutable input manifest (worker build, tile graph and other source versions). The tool checks the plan, scoring version, city boundaries and OSM file digest; it does not freeze all external data feeds or verify the manifest's claims. Do not update data, rebuild the routing graph or restore an older volume mid-calculation.
+- Configure an authenticated, private Valhalla registry at `SNAPSHOT_VALHALLA_URL`, with distinct `SNAPSHOT_VALHALLA_CONTROL_TOKEN` and `SNAPSHOT_VALHALLA_ROUTING_TOKEN`. The checkpoint command acts as the coordinator and needs both; do not give the control token to report readers. It fences and drains the exact previous run and ledger. It reuses saved routing responses by hash, or recomputes missing responses only after the old run is drained.
+- Set `SNAPSHOT_REPLICA_ID` to the exact runner identity. An independent observer at `SNAPSHOT_REPLICA_INSPECTOR_URL` must authenticate `SNAPSHOT_REPLICA_INSPECTOR_TOKEN` and attest at `GET /runs/<execution-id>` that the exact `run_id` and `replica_id` are `state: "stopped"`, `children_stopped: true`, and `restart_excluded: true`. A missing or ambiguous signal is not proof. The repository does not provision this observer. Use encrypted or otherwise protected private transport and keep the token separate.
+- Resume only needs the snapshot UUID; the period is read from it. Completed steps are skipped. An interrupted score step can rerun local computation, but it reuses verified Valhalla and ADS artifacts. Known ADS IDs are checked against ADS and must be terminal. If ADS accepted a submission but the job ID was lost, the tool blocks; approximate matching by time or parameters is not a receipt. Legacy snapshots, including those opened by PR #109's recovery flow, have no checkpoints to resume.
+- There is no unconditional two-hour restart guarantee. A bounded restart requires an independently fenceable runner and retained artifacts; keep ADS out of the critical path by pre-staging verified releases, or require an upstream idempotency or correlation contract that can prove what happened even when the response is lost.
+
 ## Deploy (Railway)
 
 The services are created and changed through the Railway connector or the dashboard, only after the user approves the exact list, and the settings below are their source of truth: a change on Railway lands here in the same PR. Railway Config as Code (`railway.json`, `railway.toml`) is deprecated and new services cannot use it; Railway Infrastructure as Code (`.railway/railway.ts`) needs the `railway` npm package, a dependency not added yet.
