@@ -1,4 +1,5 @@
 import { cva } from 'class-variance-authority';
+import { BOOKING_TARGET } from '../home.constants';
 import {
   Building2Icon,
   CameraIcon,
@@ -125,7 +126,7 @@ export function PhysicalSection() {
                 </span>
               }
               ctaLabel={t('physical.price.cta')}
-              ctaHash={HOME_SECTION.pricing}
+              ctaTarget={BOOKING_TARGET}
             />
           </div>
         </div>

@@ -2,7 +2,13 @@ import type { Session, User } from '@supabase/supabase-js';
 import { redirect } from '@tanstack/react-router';
 import { createContext, use } from 'react';
 import type { AppRole, SignInMethod } from './auth.types';
-import { postSignInPath, rolesFromAccessToken, signInMethodFromAccessToken } from './auth.utils';
+import {
+  otherPanelRedirect,
+  postSignInPath,
+  rolesFromAccessToken,
+  settingsPathFor,
+  signInMethodFromAccessToken,
+} from './auth.utils';
 
 export type AuthState = {
   session: Session | null;
@@ -27,6 +33,18 @@ export function createAuthState(
 
 export function signedInRedirect(auth: AuthState, target?: string) {
   return auth.session ? redirect({ href: postSignInPath(auth.roles, target) }) : undefined;
+}
+
+export function otherPanelGuard(
+  auth: AuthState,
+  location: { pathname: string; search: Record<string, unknown> },
+) {
+  const target = otherPanelRedirect(auth.roles, location.pathname);
+  if (target === null) {
+    return undefined;
+  }
+  const keepsSearch = target === settingsPathFor(auth.roles);
+  return redirect({ to: target, search: keepsSearch ? location.search : {} });
 }
 
 export const AuthContext = createContext<AuthState | null>(null);

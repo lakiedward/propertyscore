@@ -74,7 +74,6 @@ export function ReportPage({ reportId, shareToken }: ReportPageProps) {
   return (
     <div className="page-wrap py-10">
       <EmptyState
-        variant="card"
         kind={report.status === 'failed' ? 'error' : 'empty'}
         title={t(`report.state.${report.status}.title`)}
         description={t(`report.state.${report.status}.description`)}

@@ -48,8 +48,6 @@ export function MyListingsPage() {
         </>
       ) : (
         <EmptyState
-          variant="card"
-          kind="empty"
           title={t('list.empty.title')}
           description={t('list.empty.description')}
           action={addListing}

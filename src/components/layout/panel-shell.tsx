@@ -12,6 +12,7 @@ import { MainContent } from './main-content';
 import {
   ACCOUNT_NAVIGATION,
   ADMIN_NAVIGATION,
+  FIELD_NAVIGATION,
   findCurrentNavItem,
   type ResolvedNavGroup,
   type ResolvedNavItem,
@@ -54,6 +55,13 @@ function usePanelGroups(area: PanelArea): ResolvedNavGroup[] {
       id: group.id,
       title: t(`panel.account.groups.${group.id}`),
       items: group.items.map((item) => ({ ...item, label: t(`panel.account.nav.${item.id}`) })),
+    }));
+  }
+  if (area === 'field') {
+    return FIELD_NAVIGATION.map((group) => ({
+      id: group.id,
+      title: t(`panel.field.groups.${group.id}`),
+      items: group.items.map((item) => ({ ...item, label: t(`panel.field.nav.${item.id}`) })),
     }));
   }
   return ADMIN_NAVIGATION.map((group) => ({
@@ -214,9 +222,13 @@ function SidebarLink({ item, count, isCollapsed }: SidebarLinkProps) {
         aria-hidden
         className="absolute inset-y-2 -left-3 hidden w-1 rounded-r-sm bg-sidebar-band group-data-[status=active]:block"
       />
-      <span className="grid size-9 shrink-0 place-items-center rounded-thumb bg-sidebar-icon-tile text-sidebar-icon group-data-[status=active]:bg-sidebar-icon-tile-active group-data-[status=active]:text-sidebar-icon-active">
-        <Icon aria-hidden className="size-5" />
-      </span>
+      {item.brand ? (
+        <BrandMark product={item.brand} size={40} className="-m-0.5" />
+      ) : (
+        <span className="grid size-9 shrink-0 place-items-center rounded-thumb bg-sidebar-icon-tile text-sidebar-icon group-data-[status=active]:bg-sidebar-icon-tile-active group-data-[status=active]:text-sidebar-icon-active">
+          <Icon aria-hidden className="size-5" />
+        </span>
+      )}
       <span className={cn('min-w-0 flex-1', isCollapsed && 'sr-only')}>{item.label}</span>
       {hasCount ? (
         <>

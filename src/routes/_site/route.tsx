@@ -1,8 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
-import { MainContent } from '@/components/layout/main-content';
-import { SiteFooter } from '@/components/layout/site-footer';
-import { SiteHeader } from '@/components/layout/site-header';
-import { SkipLink } from '@/components/layout/skip-link';
+import { SiteLayout } from '@/components/layout/site-layout';
 import { homePathFor, useAuth } from '@/features/auth';
 import {
   LanguageSwitcher,
@@ -12,37 +9,33 @@ import {
 } from '@/features/profile';
 
 export const Route = createFileRoute('/_site')({
-  component: SiteLayout,
+  component: SiteRouteLayout,
 });
 
-function SiteLayout() {
+function SiteRouteLayout() {
   const { user, roles } = useAuth();
   const userId = user?.id;
   const panelPath = homePathFor(roles);
 
   return (
-    <div className="flex min-h-svh flex-col bg-background" data-density="comfortable">
+    <SiteLayout
+      header={{
+        account: user
+          ? {
+              path: panelPath,
+              menu: <UserMenu user={user} tone="light" panelPath={panelPath} nameDisplay="first" />,
+              heroMenu: (
+                <UserMenu user={user} tone="inverse" panelPath={panelPath} nameDisplay="first" />
+              ),
+              menuSection: <SiteMenuAccount user={user} panelPath={panelPath} />,
+            }
+          : undefined,
+        menuLanguageSwitcher: <LanguageSwitcher userId={userId} variant="segmented" />,
+      }}
+    >
       {userId ? <ProfileLocaleSync userId={userId} /> : null}
-      <SkipLink />
-      <SiteHeader
-        account={
-          user
-            ? {
-                path: panelPath,
-                menu: (
-                  <UserMenu user={user} tone="light" panelPath={panelPath} nameDisplay="first" />
-                ),
-                menuSection: <SiteMenuAccount user={user} panelPath={panelPath} />,
-              }
-            : undefined
-        }
-        menuLanguageSwitcher={<LanguageSwitcher userId={userId} variant="segmented" />}
-      />
-      <MainContent className="flex-1">
-        <Outlet />
-      </MainContent>
-      <SiteFooter />
-    </div>
+      <Outlet />
+    </SiteLayout>
   );
 }
 

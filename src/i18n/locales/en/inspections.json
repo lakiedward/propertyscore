@@ -1,0 +1,534 @@
+{
+  "propertyType": {
+    "apartment": "Apartment",
+    "house": "House"
+  },
+  "accessTag": {
+    "intercom": "Intercom",
+    "parking": "Parking available",
+    "pet": "Pet in the home",
+    "key_at_doorman": "Key with the building manager"
+  },
+  "agenda": {
+    "next": {
+      "eyebrow": "Next · {{when}}",
+      "eyebrowEmpty": "Next",
+      "emptyTitle": "No inspection assigned",
+      "emptyText": "When an inspection is assigned to you, it shows up here.",
+      "start": "Start the inspection",
+      "continue": "Continue the inspection"
+    },
+    "days": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "week": "This week"
+    },
+    "dayLabel": "Day",
+    "statUnit": "inspections",
+    "weekRange": "{{from}} – {{to}}",
+    "area": "{{area}} m²",
+    "floor": "floor {{floor}}/{{floors}}",
+    "number": "#{{number}}",
+    "start": "Start",
+    "navigate": "Directions",
+    "status": {
+      "scheduled": "Booked",
+      "inspector_assigned": "Not started",
+      "in_progress": "In progress",
+      "completed": "Submitted",
+      "book_ready": "Book ready",
+      "cancelled": "Cancelled"
+    },
+    "empty": {
+      "day": "You have no inspections on this day",
+      "week": "You have no inspections this week",
+      "next": "Next: {{when}}, {{address}}."
+    },
+    "startsFrom": "from {{time}}",
+    "inProgress": "In progress · {{answered}}/{{total}}",
+    "continue": "Continue",
+    "sent": "Sent · {{time}}"
+  },
+  "booking": {
+    "pageTitle": "Book a Property Fizic inspection",
+    "stepOf": "Step {{step}} of {{total}}",
+    "hero": {
+      "eyebrow": "On-site visit · for owners",
+      "title": "Book the inspection",
+      "text": "A PropertyScore inspector visits the home, looks carefully at every room and leaves you a clear book with photos. You only choose the day.",
+      "includesLabel": "What the inspection includes",
+      "includes": {
+        "checks": "Book with 44 checks",
+        "report": "Full online report",
+        "photos": "Presentation photos",
+        "tour": "360° in every room",
+        "plan": "Polycam floor plan",
+        "listing": "Free professional listing"
+      },
+      "priceLabel": "Fixed price",
+      "priceNote": "all included · VAT included",
+      "duration": "1–2 hours at your home",
+      "reschedule": "Reschedule for free up to 24 h before",
+      "imageAlt": "PropertyScore inspector checking a window"
+    },
+    "steps": {
+      "label": "Steps",
+      "requester": "Who orders",
+      "home": "The home",
+      "date": "Date",
+      "access": "Access",
+      "payment": "Payment"
+    },
+    "titles": {
+      "requester": "Who is ordering the inspection?",
+      "home": "Where is the home?",
+      "date": "Choose the date and time",
+      "access": "Who opens the door?",
+      "payment": "Review and book"
+    },
+    "help": {
+      "requester": "It tells us where to send the confirmations and the book.",
+      "home": "The address, the pin on the map and a few details about the home.",
+      "date": "The visit takes 1–2 hours. You can reschedule for free up to 24 hours before.",
+      "access": "Tell us who lets the inspector in.",
+      "payment": "The booking appears in your account as soon as you send it."
+    },
+    "requester": {
+      "owner": {
+        "title": "I am the owner",
+        "text": "I am booking the inspection for my home. I get the full book and a free professional listing."
+      },
+      "buyer": {
+        "title": "I am a buyer",
+        "text": "I want to know the state of the home before I buy it. The owner picks the day, I pay afterwards."
+      },
+      "soon": "Coming soon",
+      "signIn": {
+        "title": "Sign in to continue",
+        "text": "The booking and the book go to your account. Once you sign in, we bring you back here.",
+        "login": "Sign in",
+        "signUp": "Create an account"
+      }
+    },
+    "home": {
+      "title": "For which home?",
+      "text": "The homes in your account. Choose one or add another.",
+      "signedInAs": "Signed in as {{name}}",
+      "groupLabel": "Choose the home",
+      "error": "We could not load your homes.",
+      "rooms_one": "{{count}} room",
+      "rooms_other": "{{count}} rooms",
+      "tag": {
+        "inspected": "Physically verified · {{date}}",
+        "none": "No PropertyScore report"
+      },
+      "status": {
+        "sale": "Active listing · for sale",
+        "rent": "Active listing · for rent",
+        "unpublished": "Listing not published",
+        "none": "No listing"
+      },
+      "note": {
+        "reinspect": "A new inspection updates the book and the badge.",
+        "badge": "After the inspection, the listing gets the “Physically verified” badge.",
+        "listing": "You also get a free professional listing, if you want one."
+      },
+      "new": {
+        "title": "Add a new home",
+        "text": "You fill in the address and the details in the next step."
+      },
+      "picked": {
+        "new": "New home. You fill in the address in the next step.",
+        "existing": "You chose {{address}}. We already filled in the address and details; you check them in the next step."
+      }
+    },
+    "address": {
+      "title": "Address",
+      "text": "Street, number and city.",
+      "street": "Street and number",
+      "streetPlaceholder": "E.g. 12 Școlii Street, apt 7",
+      "city": "City",
+      "cityPlaceholder": "Choose the city",
+      "covered": "We have inspectors in {{city}}. You can continue.",
+      "noCoverage": {
+        "title": "We have no inspectors in {{city}} yet",
+        "text": "We do not ask you to pay anything. Come back soon: our team of inspectors grows every month."
+      },
+      "citiesError": "We couldn't load the cities. Try again."
+    },
+    "pin": {
+      "title": "Pin on the map",
+      "text": "The inspector comes to exactly this point.",
+      "mapLabel": "Map for the home pin",
+      "mapError": "The map could not load. Reload the page.",
+      "placed": "The pin is placed",
+      "empty": "Tap the map to place the pin",
+      "coordinates": "{{lat}}, {{lng}}"
+    },
+    "details": {
+      "title": "About the home",
+      "text": "It helps us estimate how long the visit takes.",
+      "type": "Type of home",
+      "area": "Usable area",
+      "areaSuffix": "m²",
+      "areaHint": "From the papers or the listing",
+      "year": "Year built (optional)",
+      "yearHint": "An estimate is fine",
+      "floor": "Floor",
+      "floorHint": "The floor and how many the building has",
+      "floorLabel": "Apartment floor",
+      "buildingFloors": "Floors in the building",
+      "of": "of"
+    },
+    "date": {
+      "dayTitle": "Choose the day",
+      "timeTitle": "Choose the time",
+      "calendarLabel": "Calendar",
+      "error": "We could not load the free times.",
+      "firstFree": "First free time: {{when}}",
+      "freeShort_one": "{{count}} free",
+      "freeShort_other": "{{count}} free",
+      "full": "full",
+      "closed": "closed",
+      "dayFree_one": "{{day}}, {{count}} free time",
+      "dayFree_other": "{{day}}, {{count}} free times",
+      "dayOff": "{{day}}, unavailable",
+      "dayPast": "{{day}}, cannot be booked",
+      "timeHelp_one": "{{day}} · {{count}} free time",
+      "timeHelp_other": "{{day}} · {{count}} free times",
+      "timeHelpEmpty": "First choose a day in the calendar.",
+      "parts": {
+        "morning": "Morning",
+        "midday": "Midday",
+        "afternoon": "Afternoon"
+      },
+      "until": "until {{time}}",
+      "busy": "taken",
+      "picked": "{{day}} · {{from}}–{{to}}",
+      "pickedNote": "The visit takes 1–2 hours · free rescheduling up to 24 hours before",
+      "taken": {
+        "title": "The chosen time was just booked, choose another",
+        "text": "We kept the day. The times still free are below."
+      },
+      "noSlots": {
+        "title": "No free times left",
+        "text": "The inspectors in {{city}} are booked for the next 90 days. Come back in a few days."
+      }
+    },
+    "access": {
+      "openerLabel": "Who opens the door",
+      "opener": {
+        "self": {
+          "title": "I open it",
+          "text": "We use the name and phone from your account."
+        },
+        "other": {
+          "title": "Someone else",
+          "text": "A family member, a neighbour or the agent."
+        }
+      },
+      "fromAccount": "{{phone}} · from your account",
+      "name": "Their name",
+      "phone": "Their phone",
+      "phonePlaceholder": "0722 123 456",
+      "notesTitle": "Notes for the inspector",
+      "notesText": "Optional. Tap to add quickly.",
+      "tagsLabel": "Quick notes",
+      "notesPlaceholder": "E.g. intercom 4, the dog stays on the balcony",
+      "notesCount": "{{count}}/{{max}}",
+      "callNote": "The inspector calls 30 minutes before. If nobody answers, they wait 15 minutes."
+    },
+    "review": {
+      "title": "Check the details",
+      "hint": "You can change any step",
+      "edit": "Edit",
+      "editLabel": "Edit: {{item}}",
+      "rows": {
+        "address": "Address",
+        "home": "Home",
+        "date": "Date",
+        "opener": "Opens the door"
+      },
+      "addressInCity": "{{address}}, {{city}}",
+      "dateValue": "{{day}} · {{from}}–{{to}}"
+    },
+    "payment": {
+      "legend": "How you pay",
+      "methods": {
+        "card": {
+          "label": "Bank card",
+          "text": "Visa, Mastercard"
+        },
+        "apple_pay": {
+          "label": "Apple Pay"
+        },
+        "google_pay": {
+          "label": "Google Pay"
+        }
+      },
+      "terms": "I agree to the Terms and the Privacy Policy.",
+      "termsNote": "Cancelling is free up to 24 hours before.",
+      "notActive": "Online payment is not active yet: the booking is saved now, without payment.",
+      "submit": "Book the inspection",
+      "booking": "Booking…",
+      "secure": "Secure payment. We do not keep card details."
+    },
+    "summary": {
+      "label": "Order summary",
+      "listLabel": "Summary",
+      "next": "Next: {{step}}",
+      "back": "Back",
+      "pending": "You choose it in step {{step}}",
+      "blocked": {
+        "requester": "Choose an option to continue",
+        "date": "Choose a day and a time to continue"
+      },
+      "continueTo": {
+        "home": "Continue to the home",
+        "date": "Continue to date",
+        "access": "Continue to access",
+        "payment": "Continue to payment"
+      }
+    },
+    "confirmation": {
+      "pageTitle": "The inspection is booked",
+      "eyebrow": "Order PS-I-{{number}}",
+      "title": "The inspection is booked",
+      "text": "The booking is saved in your account. We let you know there when an inspector is assigned.",
+      "view": "See the booking",
+      "calendar": "Add to calendar",
+      "mapLabel": "Map of the home",
+      "nextTitle": "What happens next",
+      "prepTitle": "How to get ready",
+      "icsTitle": "Property Fizic inspection",
+      "icsFileName": "inspection-PS-I-{{number}}.ics",
+      "stages": {
+        "assigned": "Inspector assigned",
+        "assignedMeta": "within one working day",
+        "next": "Next",
+        "visit": "The inspection",
+        "visitMeta": "{{date}} · 1–2 hours",
+        "book": "Book ready",
+        "bookMeta": "within 3 working days"
+      },
+      "prep": {
+        "rooms": "Make every room, the balcony and the storage room accessible",
+        "meters": "Leave the electrical panel and the meters in view",
+        "papers": "Have the papers ready: land register extract and floor survey, if you have them",
+        "heating": "Turn on the heating and hot water an hour before",
+        "worries": "Write down what worries you, so the inspector checks it"
+      }
+    }
+  },
+  "appointments": {
+    "description": "Your inspections.",
+    "new": "New inspection",
+    "rowEyebrow": "Physical inspection · {{time}}",
+    "inspector": "Inspector: {{name}}",
+    "inspectorPending": "The inspector is assigned within 24 hours",
+    "cancelledOn": "Cancelled on {{date}}",
+    "number": "PS-I-{{number}}",
+    "empty": {
+      "title": "No bookings yet",
+      "text": "Book an inspection or start with the online report of the area.",
+      "book": "Book the inspection",
+      "check": "Check the property"
+    },
+    "status": {
+      "scheduled": "Booked",
+      "inspector_assigned": "Inspector assigned",
+      "in_progress": "Inspection in progress",
+      "completed": "Done",
+      "book_ready": "Book ready",
+      "cancelled": "Cancelled"
+    },
+    "drawer": {
+      "title": "Inspection · {{date}}",
+      "description": "The booking details, its stages and what you can change."
+    },
+    "rows": {
+      "date": "Date",
+      "address": "Address",
+      "inspector": "Inspector",
+      "opener": "Opens the door",
+      "phone": "Phone",
+      "notes": "Notes"
+    },
+    "stages": {
+      "title": "Stages",
+      "label": "Inspection stages",
+      "booked": "Booking made",
+      "assigned": "Inspector assigned",
+      "inProgress": "in progress",
+      "visit": "The inspection",
+      "review": "Internal review",
+      "reviewMeta": "1–2 days",
+      "book": "Book ready",
+      "cancelled": "Booking cancelled"
+    },
+    "history": {
+      "title": "History",
+      "meta": "{{date}} · {{name}}",
+      "kind": {
+        "booked": "Booking made",
+        "rescheduled": "Rescheduled",
+        "assigned": "Inspector assigned",
+        "unassigned": "Inspector removed",
+        "cancelled": "Cancelled",
+        "started": "Inspection started",
+        "submitted": "Inspection sent for review"
+      }
+    },
+    "locked": "The inspection has taken place. It can no longer be rescheduled or cancelled.",
+    "reschedule": {
+      "open": "Reschedule",
+      "title": "Choose the new date",
+      "text": "Free times in the city with an inspector available.",
+      "textAssigned": "If {{name}} is free at the new time, they stay your inspector; otherwise we assign another.",
+      "back": "Back to the details",
+      "confirm": "Confirm the new time",
+      "pending": "Rescheduling…",
+      "done": "The booking was moved."
+    },
+    "cancel": {
+      "open": "Cancel",
+      "title": "Cancel the inspection on {{date}}?",
+      "text": "You have not paid anything, so there is nothing to refund. The time is freed for other clients.",
+      "confirm": "Cancel the inspection",
+      "pending": "Cancelling…",
+      "keep": "Keep the booking",
+      "done": "The inspection was cancelled."
+    }
+  },
+  "schedule": {
+    "description": "Physical inspections: assign inspectors and follow the calendar.",
+    "tabs": {
+      "label": "Sections",
+      "calendar": "Calendar",
+      "availability": "Availability"
+    },
+    "toolbar": {
+      "view": "View",
+      "views": {
+        "day": "Day",
+        "week": "Week"
+      },
+      "previous": "Previous",
+      "next": "Next",
+      "today": "Today",
+      "inspector": "Inspector",
+      "allInspectors": "All inspectors",
+      "city": "City",
+      "allCities": "All cities"
+    },
+    "range": "{{from}}–{{to}}",
+    "week": {
+      "range": "{{from}} – {{to}}",
+      "closed": "Closed"
+    },
+    "queue": {
+      "empty": {
+        "title": "No inspections to assign",
+        "text": "Every booking has an inspector. New ones show up here."
+      },
+      "details": "Details",
+      "roleDescription": "inspection to assign",
+      "city": "City",
+      "day": "Date",
+      "allDays": "All days",
+      "noMatch": {
+        "title": "No inspections for these filters",
+        "text": "Change the city or the day.",
+        "reset": "Show all"
+      },
+      "clearDay": "Show every day",
+      "heading": "Bookings to assign",
+      "count_one": "{{count}} inspection without an inspector",
+      "count_other": "{{count}} inspections without an inspector",
+      "hide": "Hide the list",
+      "show_one": "Bookings to assign · {{count}}",
+      "show_other": "Bookings to assign · {{count}}"
+    },
+    "day": {
+      "subtitle_one": "{{count}} inspector · {{visits}} assigned",
+      "subtitle_other": "{{count}} inspectors · {{visits}} assigned",
+      "load_one": "{{city}} · {{count}} inspection",
+      "load_other": "{{city}} · {{count}} inspections",
+      "noInspectors": {
+        "title": "No inspectors",
+        "text": "Change the city or the inspector in the filters."
+      },
+      "unavailable": "Unavailable",
+      "column": "{{name}}'s column",
+      "roleDescription": "assigned inspection"
+    },
+    "ghost": {
+      "free": "Free · drop here",
+      "busy": "Already has an inspection at this time",
+      "unavailable": "Does not work at this time"
+    },
+    "assigned": "PS-I-{{number}} assigned to {{name}}.",
+    "undo": "Undo",
+    "conflict": {
+      "title": "{{name}} cannot take the inspection"
+    },
+    "dnd": {
+      "instructions": "Press space to pick up the inspection, the arrow keys to move it onto an inspector’s column and space to drop it. Escape cancels.",
+      "start": "You picked up inspection no. {{number}}.",
+      "over": "Inspection no. {{number}} is over {{name}}’s column.",
+      "overNone": "Inspection no. {{number}} is no longer over a column.",
+      "end": "Inspection no. {{number}} was dropped on {{name}}’s column.",
+      "endNone": "Inspection no. {{number}} was dropped outside the columns.",
+      "cancel": "Moving inspection no. {{number}} was cancelled."
+    },
+    "drawer": {
+      "description": "The booking details, the inspector, rescheduling and cancelling.",
+      "inspector": "Inspector",
+      "choose": "Choose the inspector",
+      "noFree": "No inspector is free at the time of this booking.",
+      "freeOnly": "Only inspectors free at the booking time are shown.",
+      "assign": "Assign",
+      "change": "Change",
+      "unassign": "Remove the inspector",
+      "assignedToast": "The inspector was assigned.",
+      "rows": {
+        "date": "Date",
+        "address": "Address",
+        "client": "Client",
+        "opener": "Opens the door",
+        "notes": "Notes",
+        "payment": "Payment"
+      },
+      "booking": "Booking",
+      "cancel": "Cancel the inspection"
+    },
+    "payment": {
+      "unpaid": "Unpaid · {{price}}",
+      "paid": "Paid · {{price}}",
+      "refunded": "Refunded · {{price}}"
+    },
+    "cancel": {
+      "title": "Cancel inspection PS-I-{{number}}",
+      "text": "Online payment is not active, so there is nothing to refund. The client sees the reason in their account.",
+      "reason": "Reason (the client sees it)",
+      "back": "Back"
+    },
+    "availability": {
+      "description": "The hours when <name>{{name}}</name> can take new bookings, every week.",
+      "empty": {
+        "title": "No inspectors yet",
+        "text": "Make a user an inspector on the Users page."
+      },
+      "picker": "Choose the inspector",
+      "inactiveCity": "{{city}} · Inactive",
+      "inspector": "Inspector",
+      "search": "Search by name or city",
+      "noMatch": "No inspector found.",
+      "city": "City",
+      "citySearch": "Search the city",
+      "noCity": "No city found."
+    },
+    "assignTo": "Assign to {{name}}",
+    "resetFilters": "Reset the filters"
+  }
+}

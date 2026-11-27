@@ -1,0 +1,234 @@
+{
+  "content": {
+    "description": "Versioned texts and forms",
+    "tabs": {
+      "label": "Sections",
+      "consent": "Consent texts",
+      "form": "Inspection form"
+    }
+  },
+  "status": {
+    "draft": "Draft",
+    "published": "Published",
+    "publishedFeminine": "Published",
+    "archived": "Archived"
+  },
+  "form": {
+    "titleDraft": "Inspection form · draft v{{version}}",
+    "titlePublished": "Inspection form · v{{version}} published",
+    "titleEmpty": "Inspection form",
+    "publishedLine": "Published: v{{version}}, {{date}} · {{questions}} in {{categories}}",
+    "noPublished": "No form published yet",
+    "questionCount_one": "{{count}} question",
+    "questionCount_other": "{{count}} questions",
+    "categoryCount_one": "{{count}} category",
+    "categoryCount_other": "{{count}} categories",
+    "weights": "Weights: {{sum}}%",
+    "publish": "Publish the form",
+    "publishing": "Publishing…",
+    "publishedToast": "Form v{{version}} is published. New inspections use it from now on.",
+    "createDraft": "Create a draft",
+    "creatingDraft": "Creating…",
+    "discard": "Discard draft",
+    "discardTitle": "Discard draft v{{version}}?",
+    "discardDescription": "Every change in the draft is lost. The published form stays as it is.",
+    "discardConfirm": "Discard draft",
+    "discarding": "Deleting…",
+    "readOnly": {
+      "title": "The published form no longer changes",
+      "text": "Create a draft to change the categories, weights or questions. Inspections already started keep the version they began with."
+    },
+    "weightsInvalid": {
+      "title": "The weights must total 100%",
+      "text": "They now total {{sum}}%. Adjust them to publish."
+    },
+    "categories": {
+      "label": "Categories",
+      "weightLabel": "Weight {{name}}",
+      "add": "Add category",
+      "drag": "Drag to move {{name}}",
+      "dragInstructions": "Use the up and down arrows to move the category by one place. With a mouse, drag the handle.",
+      "questionWeightsOff": "The questions of {{name}} add up to {{sum}}%, not 100%",
+      "announcements": {
+        "dragStart": "Picked up category {{name}}.",
+        "dragOver": "Category {{name}} is over category {{over}}.",
+        "dragOutside": "Category {{name}} is no longer over another category.",
+        "dragEnd": "Category {{name}} was moved to the place of category {{over}}.",
+        "dropped": "Category {{name}} was dropped in its place.",
+        "dragCancel": "Moving was cancelled. Category {{name}} stayed in its place."
+      }
+    },
+    "category": {
+      "edit": "Edit",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Delete",
+      "removeTitle": "Delete the category “{{name}}”?",
+      "removeDescription_one": "Its question is deleted from the draft too.",
+      "removeDescription_other": "Its {{count}} questions are deleted from the draft too.",
+      "removeConfirm": "Delete category",
+      "removing": "Deleting…",
+      "weightShare": "{{weight}}% of the grade",
+      "dialog": {
+        "addTitle": "New category",
+        "editTitle": "Edit category",
+        "description": "The name appears on the inspector's phone and in the book.",
+        "nameRo": "Name · RO",
+        "nameEn": "Name · EN",
+        "icon": "Icon",
+        "add": "Add category",
+        "save": "Save",
+        "saving": "Saving…"
+      },
+      "questionWeights": "The questions make up {{sum}}% of the category",
+      "questionWeightsHint": "They must add up to exactly 100%. A question answered N/A shares its weight among the others.",
+      "splitEvenly": "Split evenly"
+    },
+    "icons": {
+      "building-2": "Building",
+      "droplets": "Damp",
+      "zap": "Electricity",
+      "droplet": "Water",
+      "flame": "Flame",
+      "door-open": "Door",
+      "thermometer": "Thermometer",
+      "paintbrush": "Paintbrush",
+      "users": "People",
+      "file-text": "Document",
+      "shield": "Shield",
+      "house": "House",
+      "wrench": "Wrench",
+      "plug": "Plug",
+      "wind": "Air",
+      "sun": "Sun",
+      "trees": "Trees",
+      "car": "Car",
+      "key-round": "Key",
+      "clipboard-check": "Checklist"
+    },
+    "question": {
+      "number": "Question {{number}}",
+      "missingEn": "EN missing",
+      "missingRo": "RO missing",
+      "textRo": "Text · RO",
+      "textEn": "Text · EN",
+      "textEnPlaceholder": "English translation",
+      "textRoPlaceholder": "Write the question",
+      "media": "Required media",
+      "mediaOptions": {
+        "photo": "Photo required",
+        "video": "Video required",
+        "none": "No required media"
+      },
+      "actions": "Actions for question {{number}}",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "moveTo": "Move to another category",
+      "remove": "Delete question",
+      "removeTitle": "Delete question {{number}}?",
+      "removeDescription": "The question disappears from the draft. Published versions do not change.",
+      "removeConfirm": "Delete question",
+      "removing": "Deleting…",
+      "add": "Add question",
+      "empty": {
+        "title": "This category has no questions",
+        "description": "Add at least one question to publish the form."
+      },
+      "weight": "Weight in category"
+    },
+    "points": {
+      "title": "Answer points",
+      "good": "Good",
+      "acceptable": "Acceptable",
+      "problem": "Problem",
+      "hint": "N/A does not count: the question's weight is shared among the others. The category score is the average of the answers weighted by the question weights; the final score is the weighted average of the categories."
+    },
+    "empty": {
+      "title": "There is no form yet",
+      "description": "Create a draft to add the inspection's categories and questions."
+    },
+    "questionWeightsInvalid": {
+      "title": "The questions do not add up to 100% in every category",
+      "text": "Adjust the weights in: {{categories}}."
+    }
+  },
+  "consent": {
+    "titleDraft": "Draft v{{version}} · {{language}}",
+    "titlePublished": "Version v{{version}} · {{language}}",
+    "languages": {
+      "ro": "Română",
+      "en": "English"
+    },
+    "languageLabel": "Language",
+    "helper": "Shown on the inspector's phone before the inspection.",
+    "section": "Section {{number}}",
+    "fields": {
+      "title": "Title",
+      "text": "Text",
+      "check": "Checkbox label"
+    },
+    "addSection": "Add section",
+    "removeSection": "Delete section {{number}}",
+    "removeTitle": "Delete section {{number}}?",
+    "removeDescription": "The section disappears from the draft, in both languages.",
+    "removeConfirm": "Delete section",
+    "removing": "Deleting…",
+    "notice": {
+      "title": "Older signatures keep their version",
+      "text": "Every signed PDF stays linked to the text the owner saw. The new version applies only to inspections that start after it is published."
+    },
+    "publishedToast": "Version {{version}} is published. New inspections use it from now on.",
+    "save": "Save draft",
+    "saving": "Saving…",
+    "publish": "Publish new version",
+    "publishing": "Publishing…",
+    "createDraft": "Create a draft",
+    "discard": "Discard draft",
+    "discardTitle": "Discard draft v{{version}}?",
+    "discardDescription": "Changes in the draft are lost. The published version stays as it is.",
+    "discarding": "Deleting…",
+    "readOnly": {
+      "title": "The published version no longer changes",
+      "text": "Create a draft to change the texts. Inspections already started keep the version that was signed."
+    },
+    "empty": {
+      "title": "There are no consent texts yet",
+      "description": "Create a draft and add the sections the owner signs."
+    }
+  },
+  "versions": {
+    "title": "Versions",
+    "label": "v{{version}}",
+    "draftLine": "Draft · edited {{date}}",
+    "publishedLine": "Published · since {{date}}",
+    "archivedLine": "Archived · {{from}} – {{to}}",
+    "usedIn_one": "Used in one inspection",
+    "usedIn_other": "Used in {{count}} inspections",
+    "unused": "Not used in any inspection",
+    "actions": "Actions for {{version}}",
+    "view": "View version",
+    "restore": "Restore as a new version",
+    "delete": "Delete version",
+    "cannotDeletePublished": "The published version cannot be deleted.",
+    "cannotDeleteInUse": "Used in inspections, so it is kept.",
+    "backToDraft": "Back to the draft",
+    "backToPublished": "Back to the published version",
+    "banner": {
+      "title": "Viewing {{version}}",
+      "usedIn_one": "Read only. Used in one inspection",
+      "usedIn_other": "Read only. Used in {{count}} inspections",
+      "unused": "Read only. Not used in any inspection"
+    },
+    "restoreTitle": "Restore {{version}}?",
+    "restoreText": "Draft {{next}} is created with the content of {{version}}. You can edit and publish it afterwards.",
+    "restoreReplaceText": "Draft {{next}} is replaced with the content of {{version}}. The changes made in it are lost.",
+    "restoreConfirm": "Create draft {{next}}",
+    "restoring": "Restoring…",
+    "restoredToast": "Draft {{next}} was created from {{version}}.",
+    "deleteTitle": "Delete {{version}}?",
+    "deleteText": "This version was not used in any inspection. It is deleted for good, with all its content.",
+    "deleteConfirm": "Delete for good",
+    "deleting": "Deleting…",
+    "deletedToast": "Version {{version}} was deleted."
+  }
+}

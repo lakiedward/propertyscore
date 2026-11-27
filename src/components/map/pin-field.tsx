@@ -1,14 +1,17 @@
 import { MapPinIcon } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { LazyMapCanvas } from '@/components/map/lazy-map-canvas';
-import type { LngLat } from '@/components/map/map.config';
+import { cn } from '@/lib/utils';
+import { LazyMapCanvas } from './lazy-map-canvas';
+import type { LngLat } from './map.config';
 import { ROMANIA_CENTER, ROMANIA_ZOOM } from '@/config/listings-explorer';
 
 const CITY_ZOOM = 13;
 const PIN_ZOOM = 16;
-const PIN_MARKER_ID = 'listing-pin';
+const PIN_MARKER_ID = 'pin-field';
 
-type ListingPinFieldProps = {
+type PinFieldProps = {
+  mapLabel: string;
+  errorText: string;
+  mapClassName?: string;
   labelledBy: string;
   value: LngLat | null;
   cityCenter: LngLat | undefined;
@@ -18,7 +21,10 @@ type ListingPinFieldProps = {
   onChange: (value: LngLat) => void;
 };
 
-export function ListingPinField({
+export function PinField({
+  mapLabel,
+  errorText,
+  mapClassName = 'h-72',
   labelledBy,
   value,
   cityCenter,
@@ -26,8 +32,7 @@ export function ListingPinField({
   isInvalid,
   describedBy,
   onChange,
-}: ListingPinFieldProps) {
-  const { t } = useTranslation('myListings');
+}: PinFieldProps) {
   const center = value ?? cityCenter ?? ROMANIA_CENTER;
   const zoom = value ? PIN_ZOOM : cityCenter ? CITY_ZOOM : ROMANIA_ZOOM;
   const focusKey = cityCenter ? cityCenter.join(',') : 'country';
@@ -42,7 +47,7 @@ export function ListingPinField({
     >
       <LazyMapCanvas
         key={value ? 'pinned' : focusKey}
-        label={t('form.pin.mapLabel')}
+        label={mapLabel}
         center={center}
         zoom={zoom}
         markers={
@@ -59,11 +64,9 @@ export function ListingPinField({
             : []
         }
         onPick={isDisabled ? undefined : onChange}
-        errorFallback={
-          <p className="p-4 text-small text-muted-foreground">{t('form.pin.mapError')}</p>
-        }
-        className="h-72 rounded-none"
-        fallbackClassName="h-72 rounded-none"
+        errorFallback={<p className="p-4 text-small text-muted-foreground">{errorText}</p>}
+        className={cn('rounded-none', mapClassName)}
+        fallbackClassName={cn('rounded-none', mapClassName)}
       />
     </div>
   );

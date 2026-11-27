@@ -171,5 +171,16 @@
     },
     "save": "Save to favourites: {{title}}",
     "unavailableTitle": "Listing unavailable"
+  },
+  "owner": {
+    "more": "Show more listings",
+    "empty": {
+      "title": "No listings",
+      "description": "This account has not sent any listing for publication."
+    },
+    "error": {
+      "title": "The listings did not load",
+      "description": "Close the row and open it again."
+    }
   }
 }

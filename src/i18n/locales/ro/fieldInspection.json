@@ -1,0 +1,121 @@
+{
+  "workspace": {
+    "title": "Inspecția #{{number}}",
+    "area": "{{area}} mp",
+    "floor": "et. {{floor}}/{{floors}}",
+    "year": "{{year}}",
+    "contact": "{{name}} · {{phone}}",
+    "consentSigned": "✓ consimțământ semnat {{time}}"
+  },
+  "nav": {
+    "label": "Secțiuni inspecție",
+    "consent": "Consimțământ",
+    "toSign": "de semnat",
+    "signed": "semnat {{time}}",
+    "categorySub": "{{done}}/{{total}} · {{weight}}%",
+    "locked": "Se deschide după semnarea consimțământului"
+  },
+  "consent": {
+    "title": "Consimțământ înainte de inspecție",
+    "languageLabel": "Limba",
+    "version": "text orientativ · v{{version}}",
+    "signerTitle": "Cine semnează",
+    "signer": "Semnatar",
+    "phone": "Telefon",
+    "inspector": "Inspector",
+    "date": "Data",
+    "signatureLabel": "Semnătura vânzătorului",
+    "signaturePlaceholder": "Semnează aici, cu degetul",
+    "signatureArea": "Zonă pentru semnătură. Semnează cu degetul.",
+    "clear": "Șterge",
+    "sign": "Semnează și începe inspecția",
+    "signing": "Se pornește…",
+    "signedAt": "Semnat · {{time}}",
+    "ready": "Gata de semnat",
+    "signedNote": "Consimțământul e semnat. Poți trece la întrebări.",
+    "notStartable": "Inspecția poate începe în ziua vizitei, cu cel mult o oră înainte.",
+    "missingChecks_one": "Lipsește {{count}} bifă",
+    "missingChecks_few": "Lipsesc {{count}} bife",
+    "missingChecks_other": "Lipsesc {{count}} de bife",
+    "missingSignature": "Lipsește semnătura",
+    "missingBoth_one": "Lipsesc {{count}} bifă și semnătura",
+    "missingBoth_few": "Lipsesc {{count}} bife și semnătura",
+    "missingBoth_other": "Lipsesc {{count}} de bife și semnătura"
+  },
+  "question": {
+    "requirement": {
+      "photo": "Fotografie obligatorie",
+      "video": "Clip video obligatoriu",
+      "none": "Foto și video opționale"
+    },
+    "answers": {
+      "good": "Bine",
+      "acceptable": "Acceptabil",
+      "problem": "Problemă",
+      "not_applicable": "N/A"
+    },
+    "answerGroup": "Răspuns {{number}}",
+    "photo": "Foto",
+    "video": "Video",
+    "photoRequired": "Foto · obligatoriu",
+    "videoRequired": "Video · obligatoriu",
+    "addPhoto": "Adaugă fotografii la întrebarea {{number}}",
+    "addVideo": "Adaugă un clip la întrebarea {{number}}",
+    "missingPhoto": "Lipsește fotografia obligatorie",
+    "missingVideo": "Lipsește clipul obligatoriu",
+    "addNote": "Adaugă notă",
+    "noteLabel": "Notă pentru book",
+    "notePlaceholder": "Ce ai observat, unde, cât de grav",
+    "mediaAlt": "Fotografia {{index}} la întrebarea {{number}}",
+    "videoLabel": "Clipul {{index}} la întrebarea {{number}}",
+    "removePhoto": "Șterge fotografia {{index}} de la întrebarea {{number}}",
+    "removeVideo": "Șterge clipul {{index}} de la întrebarea {{number}}",
+    "uploading": "Se încarcă…",
+    "videoTooLarge": "Clipul are peste 50 MB. Filmează unul mai scurt.",
+    "fileTypeInvalid": "Formatul fișierului nu e acceptat."
+  },
+  "section": {
+    "weightLine": "{{weight}}% din notă · {{done}}/{{total}} · notă {{score}}",
+    "noScore": "–",
+    "back": "Înapoi",
+    "next": "Următoarea: {{name}}"
+  },
+  "aside": {
+    "label": "Notă și trimitere",
+    "provisional": "Notă provizorie",
+    "outOf": "/ 10",
+    "progress": "Progres",
+    "progressError": "Nu am putut încărca nota provizorie.",
+    "counters": "{{answered}}/{{total}} răspunse · {{photos}} foto · {{videos}} video",
+    "howTitle": "Cum iese nota",
+    "howNote": "Media ponderată a categoriilor cu răspunsuri.",
+    "weight": "{{weight}}%",
+    "missingTitle": "Mai lipsesc",
+    "unanswered_one": "{{count}} întrebare fără răspuns",
+    "unanswered_few": "{{count}} întrebări fără răspuns",
+    "unanswered_other": "{{count}} de întrebări fără răspuns",
+    "missingMedia_one": "{{count}} foto sau clip obligatoriu",
+    "missingMedia_few": "{{count}} foto sau clipuri obligatorii",
+    "missingMedia_other": "{{count}} de foto sau clipuri obligatorii",
+    "submit": "Trimite la review",
+    "notSigned": "Semnează consimțământul ca să începi."
+  },
+  "confirm": {
+    "title": "Proprietarul confirmă finalizarea",
+    "text": "Proprietarul confirmă că inspecția s-a încheiat.",
+    "ownerName": "Numele proprietarului",
+    "confirm": "Confirm, inspecția s-a încheiat",
+    "confirming": "Se trimite…"
+  },
+  "submitted": {
+    "title": "Trimis la review · {{time}}",
+    "text": "Biroul verifică răspunsurile și media. Cererile de completare apar în Istoric.",
+    "score": "Nota trimisă: {{score}} / 10",
+    "back": "Înapoi la agendă"
+  },
+  "current": {
+    "emptyTitle": "Nu ai o inspecție în lucru",
+    "emptyText": "Începe una din agendă când ajungi la proprietate.",
+    "toAgenda": "Deschide agenda"
+  }
+}

@@ -3,14 +3,17 @@ import { CheckIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { HomeSectionId } from '@/components/layout/site-navigation';
 import { PillLink } from '@/components/navigation/pill-link';
+import { ctaLinkOptions, type CtaTarget } from '../home.constants';
+import type { PriceLinkProps } from './smart-check-price-link';
 import { TextLink } from '@/components/navigation/text-link';
 import { SplitPrice } from '@/components/property/split-price';
 import type { Currency } from '@/i18n/format';
-import type { PriceLinkProps } from './smart-check-price-link';
 
 type PriceCardTone = 'physical' | 'smartcheck';
 
 const DefaultActionLink = PillLink;
+
+const HOME_LINK = { to: '/' } as const;
 
 const priceCardVariants = cva('flex flex-col gap-4.5 rounded-2xl p-6 text-on-inverse w520:p-10', {
   variants: { tone: { physical: 'bg-primary shadow-price', smartcheck: 'bg-info' } },
@@ -30,7 +33,7 @@ type SectionPriceCardProps = {
   badge: ReactNode;
   features: readonly { title: string; text: string }[];
   cta: string;
-  ctaHash: HomeSectionId;
+  ctaTarget: CtaTarget;
   secondary: string;
   secondaryHash: HomeSectionId;
 };
@@ -46,7 +49,7 @@ export function PriceCard({
   badge,
   features,
   cta,
-  ctaHash,
+  ctaTarget,
   actionLink: PillLink = DefaultActionLink,
   secondary,
   secondaryHash,
@@ -76,7 +79,10 @@ export function PriceCard({
         ))}
       </ul>
       <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-2">
-        <PillLink to="/" hash={ctaHash} tone={CTA_TONE[tone]}>
+        <PillLink
+          {...(ctaTarget === undefined ? HOME_LINK : ctaLinkOptions(ctaTarget))}
+          tone={CTA_TONE[tone]}
+        >
           {cta}
         </PillLink>
         <TextLink to="/" hash={secondaryHash} tone="inverse">

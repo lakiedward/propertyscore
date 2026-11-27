@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
 import { toAppError } from '@/lib/supabase/errors';
+import type { NullableColumns } from '@/lib/supabase/nullable-columns';
 
 type FavoriteRpcRow =
   Database['public']['Functions']['list_my_favorite_listings']['Returns'][number];
@@ -8,9 +9,7 @@ type FavoriteRpcRow =
 type NullableFavoriteColumn =
   'title' | 'photo_path' | 'transaction' | 'price' | 'currency' | 'rooms' | 'area_m2' | 'city';
 
-type FavoriteRow = Omit<FavoriteRpcRow, NullableFavoriteColumn> & {
-  [Column in NullableFavoriteColumn]: FavoriteRpcRow[Column] | null;
-};
+type FavoriteRow = NullableColumns<FavoriteRpcRow, NullableFavoriteColumn>;
 
 export type FavoriteListing = Omit<FavoriteRow, 'total_count'>;
 

@@ -10,6 +10,7 @@ import { useSectionNav } from '@/hooks/use-section-nav';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { PanelPath } from './panel-paths';
+import { SITE_HERO_SURFACE, type SiteHeroTone } from './site-hero';
 import { SiteMenu } from './site-menu';
 import { HOME_SECTION } from './site-navigation';
 
@@ -23,11 +24,13 @@ export type SiteHeaderAccount = {
 type SiteHeaderProps = {
   account?: SiteHeaderAccount | undefined;
   menuLanguageSwitcher: ReactNode;
-  isOnHero?: boolean;
+  heroTone?: SiteHeroTone | null;
 };
 
-export function SiteHeader({ account, menuLanguageSwitcher, isOnHero = false }: SiteHeaderProps) {
+export function SiteHeader({ account, menuLanguageSwitcher, heroTone = null }: SiteHeaderProps) {
   const { t } = useTranslation();
+  const isOnHero = heroTone !== null;
+  const isOnPhysicalHero = heroTone === 'physical';
   const headerRef = useRef<HTMLElement>(null);
   const sectionNav = useSectionNav();
   const activeSection = useActiveSection(sectionNav?.links.map((link) => link.id) ?? []);
@@ -40,7 +43,7 @@ export function SiteHeader({ account, menuLanguageSwitcher, isOnHero = false }: 
       className={cn(
         'sticky top-0 z-100 border-b transition-[background-color,border-color,box-shadow] duration-(--duration-base) ease-standard',
         isOnHero
-          ? 'border-transparent bg-report-hero shadow-none'
+          ? cn('border-transparent shadow-none', SITE_HERO_SURFACE[heroTone])
           : 'border-border bg-card shadow-header',
       )}
     >
@@ -151,13 +154,21 @@ export function SiteHeader({ account, menuLanguageSwitcher, isOnHero = false }: 
             </Button>
             <Button
               asChild
-              variant="default"
+              variant={isOnPhysicalHero ? 'cta' : 'default'}
               size="nav"
-              className="border-primary hover:bg-primary-pressed"
+              className={cn(
+                isOnPhysicalHero ? 'border-cta' : 'border-primary hover:bg-primary-pressed',
+              )}
             >
-              <Link to="/" hash={HOME_SECTION.physical} aria-label={t('site.header.physical')}>
+              <Link to="/inspection" aria-label={t('site.header.physical')}>
                 <BrandMark product="physical" size={18} />
-                <Logo product="physical" tone="inverse" size="2xs" hasMark={false} isDecorative />
+                <Logo
+                  product="physical"
+                  tone={isOnPhysicalHero ? 'color' : 'inverse'}
+                  size="2xs"
+                  hasMark={false}
+                  isDecorative
+                />
               </Link>
             </Button>
           </div>

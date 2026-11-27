@@ -6,7 +6,7 @@ const priceVariants = cva('font-extrabold tabular-nums', {
     look: {
       card: 'mb-1 text-card-title tracking-figure text-foreground',
       stacked: 'text-price-sm text-foreground',
-      popup: 'text-[18px] tracking-[-0.025em] text-brand',
+      popup: 'text-title-2xs-sm tracking-[-0.025em] text-brand',
     },
   },
 });

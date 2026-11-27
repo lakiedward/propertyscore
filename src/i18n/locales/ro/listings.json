@@ -182,5 +182,16 @@
     },
     "save": "Salvează la favorite: {{title}}",
     "unavailableTitle": "Anunț indisponibil"
+  },
+  "owner": {
+    "more": "Arată mai multe anunțuri",
+    "empty": {
+      "title": "Niciun anunț",
+      "description": "Acest cont nu are anunțuri trimise spre publicare."
+    },
+    "error": {
+      "title": "Anunțurile nu s-au încărcat",
+      "description": "Închide rândul și deschide-l din nou."
+    }
   }
 }

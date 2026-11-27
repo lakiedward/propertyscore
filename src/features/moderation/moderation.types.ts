@@ -2,7 +2,7 @@ import type { ListingStatus } from '@/features/listings';
 import type { Enums } from '@/lib/supabase/database.types';
 import type { getModerationListing, listModerationQueue } from './api/moderation.api';
 
-export type ModerationStatus = Exclude<ListingStatus, 'draft'>;
+export type ModerationStatus = Exclude<ListingStatus, 'draft' | 'suspended'>;
 
 export type ModerationCounts = Record<ModerationStatus, number>;
 

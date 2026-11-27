@@ -3,9 +3,10 @@ import { EyeOffIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { StatusPill } from '@/components/feedback/status-pill';
 import { ListingCard } from '@/components/property/listing-card';
-import { formatNumber, formatPrice, toCurrency } from '@/i18n/format';
+import { formatPrice, toCurrency } from '@/i18n/format';
 import type { FavoriteListing } from '../api/favorites.api';
 import { getListingMediumUrl } from '../api/listings.storage';
+import { useCardFacts } from '../hooks/use-card-facts';
 import { FavoriteButton } from './favorite-button';
 import { ListingPriceLabel } from './listing-price-label';
 
@@ -17,6 +18,7 @@ export function FavoriteListingCard({ favorite }: FavoriteListingCardProps) {
   const { t } = useTranslation(['listings', 'common']);
   const title = favorite.title ?? t('listings:favorites.unavailableTitle');
   const photoUrl = favorite.photo_path ? getListingMediumUrl(favorite.photo_path) : undefined;
+  const cardFacts = useCardFacts();
   const heart = <FavoriteButton listingId={favorite.listing_id} title={title} look="card" />;
 
   if (!favorite.is_available) {
@@ -38,13 +40,7 @@ export function FavoriteListingCard({ favorite }: FavoriteListingCardProps) {
     );
   }
 
-  const facts =
-    favorite.rooms !== null && favorite.area_m2 !== null
-      ? [
-          t('common:listingSummary.facts.rooms', { count: favorite.rooms }),
-          t('common:listingSummary.area', { value: formatNumber(favorite.area_m2) }),
-        ].join(' · ')
-      : undefined;
+  const facts = cardFacts(favorite.rooms, favorite.area_m2);
 
   return (
     <ListingCard

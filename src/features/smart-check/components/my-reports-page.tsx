@@ -42,7 +42,6 @@ export function MyReportsPage() {
         </>
       ) : (
         <EmptyState
-          variant="card"
           kind="empty"
           title={t('smartCheck:myReports.empty.title')}
           description={t('smartCheck:myReports.empty.description')}

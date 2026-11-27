@@ -11,7 +11,7 @@ import { safeRedirectPath } from '@/lib/url';
 import type { AppRole, EmailLinkType, SignInMethod } from './auth.types';
 
 const APP_ROLES: readonly string[] = Constants.public.Enums.app_role;
-const ADMIN_PATH = /^\/admin(?:[/?#]|$)/u;
+const SETTINGS_PATH_LIST: readonly string[] = Object.values(SETTINGS_PATHS);
 const LINK_SIGN_IN_METHOD = 'otp';
 const LINK_SIGN_IN_WINDOW_SECONDS = 900;
 
@@ -69,17 +69,45 @@ export function isRecentLinkSignIn(
 }
 
 export function homePathFor(roles: readonly AppRole[]): PanelPath {
-  return roles.includes('admin') ? PANEL_PATHS.admin : PANEL_PATHS.account;
+  if (roles.includes('admin')) {
+    return PANEL_PATHS.admin;
+  }
+  return roles.includes('inspector') ? PANEL_PATHS.field : PANEL_PATHS.account;
 }
 
 export function settingsPathFor(roles: readonly AppRole[]): SettingsPath {
-  return roles.includes('admin') ? SETTINGS_PATHS.admin : SETTINGS_PATHS.account;
+  const home = homePathFor(roles);
+  if (home === PANEL_PATHS.admin) {
+    return SETTINGS_PATHS.admin;
+  }
+  return home === PANEL_PATHS.field ? SETTINGS_PATHS.field : SETTINGS_PATHS.account;
+}
+
+function panelOf(path: string): PanelPath | undefined {
+  return Object.values(PANEL_PATHS).find(
+    (panel) =>
+      path === panel || (path.startsWith(panel) && /^[/?#]/u.test(path.slice(panel.length))),
+  );
+}
+
+export function otherPanelRedirect(
+  roles: readonly AppRole[],
+  pathname: string,
+): PanelPath | SettingsPath | null {
+  const panel = panelOf(pathname);
+  const home = homePathFor(roles);
+  if (panel === undefined || panel === home) {
+    return null;
+  }
+  const isSettings = SETTINGS_PATH_LIST.includes(pathname.replace(/\/$/u, ''));
+  return isSettings ? settingsPathFor(roles) : home;
 }
 
 export function postSignInPath(roles: readonly AppRole[], redirect: string | undefined): string {
   const home = homePathFor(roles);
   const path = safeRedirectPath(redirect, home);
-  return ADMIN_PATH.test(path) && !roles.includes('admin') ? home : path;
+  const panel = panelOf(path);
+  return panel !== undefined && panel !== home ? home : path;
 }
 
 function redirectFromEmailLink(next: string | undefined): string | undefined {
@@ -109,25 +137,4 @@ export function emailLinkTarget(
 
 export function isExpiredLinkCode(code: string | undefined): boolean {
   return code !== undefined && EXPIRED_LINK_CODES.includes(code);
-}
-
-const PHONE_SEPARATORS = /[\s.()/-]/gu;
-const ROMANIAN_NATIONAL_PHONE = /^0[1-9]\d{8}$/u;
-const ROMANIAN_PHONE = /^\+40\d{9}$/u;
-const INTERNATIONAL_PHONE = /^\+[1-9]\d{7,14}$/u;
-
-export function toE164Phone(value: string): string {
-  const compact = value.replace(PHONE_SEPARATORS, '');
-  if (compact.startsWith('00')) {
-    return `+${compact.slice(2)}`;
-  }
-  if (ROMANIAN_NATIONAL_PHONE.test(compact)) {
-    return `+40${compact.slice(1)}`;
-  }
-  return compact;
-}
-
-export function isPhoneNumber(value: string): boolean {
-  const phone = toE164Phone(value);
-  return phone.startsWith('+40') ? ROMANIAN_PHONE.test(phone) : INTERNATIONAL_PHONE.test(phone);
 }

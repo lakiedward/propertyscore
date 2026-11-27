@@ -17,6 +17,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { InitialsAvatar } from '@/components/layout/initials-avatar';
 import { PANEL_LINK_KEYS, type PanelPath } from '@/components/layout/panel-paths';
 import { settingsPathFor, SignOutDialog, useAuth, type AppRole } from '@/features/auth';
 import { SUPPORTED_LOCALES } from '@/i18n/i18n';
@@ -24,7 +25,7 @@ import { useLocale } from '@/i18n/use-locale';
 import { cn } from '@/lib/utils';
 import { useAccountIdentity } from '../hooks/use-account-identity';
 import { useChangeLocale } from '../hooks/use-change-locale';
-import { firstNameOf, initialsOf } from '../profile.utils';
+import { firstNameOf } from '../profile.utils';
 
 const triggerVariants = cva(
   'inline-flex min-h-11 items-center gap-2 rounded-full pr-2 pl-1 text-body-sm font-bold focus-visible:ring-3 focus-visible:outline-none',
@@ -40,18 +41,11 @@ const triggerVariants = cva(
   },
 );
 
-const avatarVariants = cva(
-  'grid size-8.5 shrink-0 place-items-center rounded-full text-caption leading-none font-extrabold',
-  {
-    variants: {
-      tone: {
-        light: 'bg-primary text-primary-foreground',
-        inverse: 'bg-cta text-cta-foreground',
-        panel: 'bg-cta text-cta-foreground md:bg-primary md:text-primary-foreground',
-      },
-    },
-  },
-);
+const AVATAR_TONES = {
+  light: 'primary',
+  inverse: 'cta',
+  panel: 'panel',
+} as const;
 
 type UserMenuProps = {
   user: User;
@@ -75,9 +69,7 @@ export function UserMenu({ user, tone, appRole, panelPath, nameDisplay = 'full' 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button type="button" className={triggerVariants({ tone })}>
-            <span aria-hidden="true" className={avatarVariants({ tone })}>
-              {initialsOf(name)}
-            </span>
+            <InitialsAvatar name={name} size="menu" tone={AVATAR_TONES[tone]} />
             {nameDisplay === 'first' ? (
               <span aria-hidden="true" className="hidden max-w-32 truncate w820:block">
                 {firstNameOf(name)}

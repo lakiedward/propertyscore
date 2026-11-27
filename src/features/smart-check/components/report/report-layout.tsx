@@ -9,7 +9,7 @@ import { ReportHeroContext } from './report-hero-context';
 const HEADER_SOLID_AFTER_PX = 20;
 
 type ReportLayoutProps = {
-  header: Omit<ComponentProps<typeof SiteHeader>, 'isOnHero'>;
+  header: Omit<ComponentProps<typeof SiteHeader>, 'heroTone'>;
   children: ReactNode;
 };
 
@@ -20,7 +20,7 @@ export function ReportLayout({ header, children }: ReportLayoutProps) {
   return (
     <div className="flex min-h-svh flex-col bg-card" data-density="comfortable">
       <SkipLink />
-      <SiteHeader {...header} isOnHero={hasHero && !isScrolled} />
+      <SiteHeader {...header} heroTone={hasHero && !isScrolled ? 'report' : null} />
       <ReportHeroContext value={setHasHero}>
         <MainContent className="flex-1">{children}</MainContent>
       </ReportHeroContext>

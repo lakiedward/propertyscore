@@ -1,5 +1,6 @@
 import { cva } from 'class-variance-authority';
 import { CircleCheckIcon, CircleXIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const inlineToastIconVariants = cva('size-5 shrink-0', {
@@ -14,10 +15,11 @@ const inlineToastIconVariants = cva('size-5 shrink-0', {
 type InlineToastProps = {
   tone: 'success' | 'error';
   message: string;
+  action?: { label: string; onAction: () => void };
   className?: string;
 };
 
-export function InlineToast({ tone, message, className }: InlineToastProps) {
+export function InlineToast({ tone, message, action, className }: InlineToastProps) {
   const Icon = tone === 'error' ? CircleXIcon : CircleCheckIcon;
 
   return (
@@ -29,7 +31,17 @@ export function InlineToast({ tone, message, className }: InlineToastProps) {
       )}
     >
       <Icon aria-hidden className={inlineToastIconVariants({ tone })} />
-      <span>{message}</span>
+      <span className="flex-1">{message}</span>
+      {action ? (
+        <Button
+          type="button"
+          variant="link"
+          onClick={action.onAction}
+          className="touch-target rounded-md px-2 py-1 text-body-sm leading-copy font-bold text-cta underline hover:text-cta focus-visible:ring-focus-inverse focus-visible:ring-offset-0"
+        >
+          {action.label}
+        </Button>
+      ) : null}
     </div>
   );
 }

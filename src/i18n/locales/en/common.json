@@ -92,7 +92,61 @@
       "decision_message_too_long": "The message can have at most 2,000 characters.",
       "listing_floor_above_building": "The floor cannot be higher than the number of floors in the building.",
       "value_out_of_range": "The value is outside the allowed range.",
-      "favorite_limit_reached": "You have already saved 500 homes. Remove a few from your favourites to add more."
+      "favorite_limit_reached": "You have already saved 500 homes. Remove a few from your favourites to add more.",
+      "outside_coverage": "We have no inspectors at this address yet.",
+      "slot_taken": "The chosen time was just booked. Choose another one.",
+      "invalid_access": "Check the name and phone of the person opening the door.",
+      "property_invalid": "Check the home details.",
+      "inspection_locked": "The booking can no longer be changed.",
+      "inspection_not_found": "The booking no longer exists.",
+      "wrong_city": "The inspector works in another city.",
+      "inspector_unavailable": "The inspector does not work at this time.",
+      "inspector_busy": "The inspector already has an inspection at this time.",
+      "availability_invalid": "Check the ranges: at most 4 a day, without overlaps.",
+      "inspector_not_found": "The inspector no longer exists.",
+      "cannot_block_self": "You cannot block your own account.",
+      "cannot_block_admin": "An admin cannot be blocked.",
+      "block_reason_invalid": "Write the reason for blocking (at most 300 characters).",
+      "user_not_found": "The user no longer exists.",
+      "user_not_blocked": "The account is not blocked.",
+      "account_blocked": "Your account has been blocked. Write to us if you think this is a mistake.",
+      "user_blocked": "The account is blocked. Unblock it first.",
+      "admin_inspector_conflict": "An inspector cannot be an admin. Remove the inspector role first.",
+      "form_draft_exists": "A draft already exists. Open it or discard it.",
+      "form_not_draft": "Only the draft can be changed.",
+      "form_items_changed": "The form changed in the meantime. Reload the page.",
+      "form_weights_invalid": "The weights must total 100%.",
+      "form_question_weights_invalid": "The questions of each category must add up to 100%.",
+      "form_category_empty": "Every category needs at least one question.",
+      "form_question_empty": "Every question needs Romanian text.",
+      "form_translation_missing": "English translations are missing.",
+      "form_item_invalid": "Check the name and the text.",
+      "form_item_not_found": "The item no longer exists. Reload the page.",
+      "consent_draft_exists": "A consent draft already exists.",
+      "consent_not_draft": "Only the draft can be changed.",
+      "consent_translation_missing": "Fill in the title, text and checkbox in both languages.",
+      "consent_empty": "Add at least one section.",
+      "consent_item_not_found": "The section no longer exists. Reload the page.",
+      "version_not_found": "The version no longer exists. Reload the page.",
+      "version_not_archived": "Only an archived version can be deleted.",
+      "version_in_use": "The version was used in an inspection, so it is kept.",
+      "inspection_not_startable": "The inspection can start only on the visit day, at most one hour early.",
+      "consent_incomplete": "Tick every consent section.",
+      "signature_missing": "The signature did not upload. Try again.",
+      "form_not_published": "There is no published form. Tell the office.",
+      "inspection_not_in_progress": "The inspection is not in progress.",
+      "question_not_in_form": "The question is not part of this inspection's form.",
+      "note_too_long": "The note is over 2,000 characters.",
+      "media_missing": "The file did not upload. Try again.",
+      "media_limit_reached": "You reached the maximum number of files for this question.",
+      "owner_name_required": "Write the owner's name.",
+      "inspection_incomplete": "Some questions are unanswered or required media is missing.",
+      "inspector_has_open_inspection": "The inspector has an inspection in progress. Wait until it is sent before removing them.",
+      "media_type_invalid": "The file does not match the chosen type (photo or video).",
+      "consent_item_invalid": "Check the section texts: one is too long.",
+      "city_not_found": "The chosen city no longer exists. Reload the page.",
+      "cancel_reason_required": "Write the reason for the cancellation.",
+      "media_path_taken": "The file already belongs to another question. Upload it again."
     }
   },
   "validation": {
@@ -105,7 +159,14 @@
     "maxLength_one": "Enter at most {{count}} character.",
     "maxLength_other": "Enter at most {{count}} characters.",
     "min": "The minimum value is {{min}}.",
-    "max": "The maximum value is {{max}}."
+    "max": "The maximum value is {{max}}.",
+    "endAfterStart": "The end must be after the start.",
+    "rangesOverlap": "The ranges overlap.",
+    "pinRequired": "Place the pin on the map.",
+    "range": "Enter a value between {{min}} and {{max}}.",
+    "floorAboveBuilding": "The floor cannot be higher than the number of floors in the building.",
+    "phone": "Enter a valid phone number.",
+    "termsRequired": "Tick the agreement to continue."
   },
   "site": {
     "skipToContent": "Skip to content",
@@ -260,27 +321,47 @@
         "scoring": "Scoring",
         "analytics": "Analytics",
         "products": "Products",
-        "content": "Content",
+        "content": "$t(brand.physical)",
         "settings": "Settings"
       },
       "pageTitle": "{{page}} · Admin",
       "pendingListings_one": "{{count}} listing to review",
-      "pendingListings_other": "{{count}} listings to review"
+      "pendingListings_other": "{{count}} listings to review",
+      "unassignedInspections_one": "{{count}} inspection to assign",
+      "unassignedInspections_other": "{{count}} inspections to assign"
     },
     "expandMenu": "Expand the menu",
     "collapseMenu": "Collapse the menu",
     "brandHome": "{{brand}}, public site",
     "link": {
       "account": "My account",
-      "admin": "Admin panel"
+      "admin": "Admin panel",
+      "field": "Inspector agenda"
     },
     "userMenu": {
       "role": {
         "user": "User",
-        "admin": "Admin"
+        "admin": "Admin",
+        "inspector": "Inspector"
       }
     },
-    "backToSite": "Back to site"
+    "backToSite": "Back to site",
+    "field": {
+      "label": "Inspector",
+      "navLabel": "Inspector navigation",
+      "groups": {
+        "workday": "Working day",
+        "archive": "Archive",
+        "account": "Account"
+      },
+      "nav": {
+        "agenda": "Agenda",
+        "current": "Current inspection",
+        "availability": "Availability",
+        "history": "History",
+        "settings": "Settings"
+      }
+    }
   },
   "listingSummary": {
     "dealCity": "{{deal}} · {{city}}",
@@ -441,6 +522,29 @@
       "in": "Zoom in",
       "out": "Zoom out",
       "reset": "Zoom {{value}}, back to the original size"
+    }
+  },
+  "stageTimeline": {
+    "state": {
+      "done": "Done",
+      "current": "Now",
+      "upcoming": "Next",
+      "cancelled": "Cancelled"
+    }
+  },
+  "calendar": {
+    "today": "Today",
+    "previous": "Previous month",
+    "next": "Next month",
+    "choose": "Choose a date",
+    "weekdaysShort": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
     }
   }
 }

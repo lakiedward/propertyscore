@@ -75,11 +75,23 @@ describe('AdminShell', { timeout: 20_000 }, () => {
     });
   });
 
-  it('hides the admin panel from a regular user', async () => {
-    await renderAppRoute('/admin', { auth: signedInAs() });
+  it('sends a regular user from the admin panel to their own panel', async () => {
+    const { router } = await renderAppRoute('/admin', { auth: signedInAs() });
 
-    expect(await screen.findByText(roCommon.pages.notFound.title)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/account');
+    });
     expect(screen.queryByRole('navigation', { name: NAV.navLabel })).not.toBeInTheDocument();
+  });
+
+  it('sends an inspector from the user settings to the inspector settings', async () => {
+    const { router } = await renderAppRoute('/account/settings', {
+      auth: signedInAs('inspector'),
+    });
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/field/settings');
+    });
   });
 
   it('sends a signed-out visitor to sign in first', async () => {

@@ -15,6 +15,7 @@ import { Route as ReportRouteRouteImport } from './routes/_report/route'
 import { Route as SiteRouteRouteImport } from './routes/_site/route'
 import { Route as AuthenticatedAccountRouteRouteImport } from './routes/_authenticated/account/route'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedFieldRouteRouteImport } from './routes/_authenticated/field/route'
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
@@ -41,16 +42,24 @@ import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminScoringRouteImport } from './routes/_authenticated/admin/scoring'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
+import { Route as AuthenticatedFieldIndexRouteImport } from './routes/_authenticated/field/index'
+import { Route as AuthenticatedFieldAvailabilityRouteImport } from './routes/_authenticated/field/availability'
+import { Route as AuthenticatedFieldCurrentRouteImport } from './routes/_authenticated/field/current'
+import { Route as AuthenticatedFieldHistoryRouteImport } from './routes/_authenticated/field/history'
+import { Route as AuthenticatedFieldSettingsRouteImport } from './routes/_authenticated/field/settings'
 import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth/callback'
 import { Route as PublicAuthConfirmRouteImport } from './routes/_public/auth/confirm'
 import { Route as PublicPasswordResetIndexRouteImport } from './routes/_public/password-reset/index'
 import { Route as PublicPasswordResetNewRouteImport } from './routes/_public/password-reset/new'
+import { Route as SiteInspectionIndexRouteImport } from './routes/_site/inspection/index'
 import { Route as SiteListingsIndexRouteImport } from './routes/_site/listings/index'
 import { Route as SiteListingsListingIdRouteImport } from './routes/_site/listings/$listingId'
 import { Route as AuthenticatedAccountListingsIndexRouteImport } from './routes/_authenticated/account/listings/index'
 import { Route as AuthenticatedAccountListingsListingIdRouteImport } from './routes/_authenticated/account/listings/$listingId'
 import { Route as AuthenticatedAccountListingsNewRouteImport } from './routes/_authenticated/account/listings/new'
+import { Route as AuthenticatedFieldInspectionsInspectionIdRouteImport } from './routes/_authenticated/field/inspections/$inspectionId'
 import { Route as ReportCheckResultReportIdRouteImport } from './routes/_report/check/result.$reportId'
+import { Route as SiteInspectionConfirmationInspectionIdRouteImport } from './routes/_site/inspection/confirmation/$inspectionId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -77,6 +86,11 @@ const AuthenticatedAccountRouteRoute =
 const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFieldRouteRoute = AuthenticatedFieldRouteRouteImport.update({
+  id: '/field',
+  path: '/field',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const PublicLoginRoute = PublicLoginRouteImport.update({
@@ -228,6 +242,35 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedFieldIndexRoute = AuthenticatedFieldIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedFieldRouteRoute,
+} as any)
+const AuthenticatedFieldAvailabilityRoute =
+  AuthenticatedFieldAvailabilityRouteImport.update({
+    id: '/availability',
+    path: '/availability',
+    getParentRoute: () => AuthenticatedFieldRouteRoute,
+  } as any)
+const AuthenticatedFieldCurrentRoute =
+  AuthenticatedFieldCurrentRouteImport.update({
+    id: '/current',
+    path: '/current',
+    getParentRoute: () => AuthenticatedFieldRouteRoute,
+  } as any)
+const AuthenticatedFieldHistoryRoute =
+  AuthenticatedFieldHistoryRouteImport.update({
+    id: '/history',
+    path: '/history',
+    getParentRoute: () => AuthenticatedFieldRouteRoute,
+  } as any)
+const AuthenticatedFieldSettingsRoute =
+  AuthenticatedFieldSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedFieldRouteRoute,
+  } as any)
 const PublicAuthCallbackRoute = PublicAuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
@@ -248,6 +291,11 @@ const PublicPasswordResetNewRoute = PublicPasswordResetNewRouteImport.update({
   id: '/password-reset/new',
   path: '/password-reset/new',
   getParentRoute: () => PublicRouteRoute,
+} as any)
+const SiteInspectionIndexRoute = SiteInspectionIndexRouteImport.update({
+  id: '/inspection/',
+  path: '/inspection/',
+  getParentRoute: () => SiteRouteRoute,
 } as any)
 const SiteListingsIndexRoute = SiteListingsIndexRouteImport.update({
   id: '/listings/',
@@ -277,17 +325,30 @@ const AuthenticatedAccountListingsNewRoute =
     path: '/listings/new',
     getParentRoute: () => AuthenticatedAccountRouteRoute,
   } as any)
+const AuthenticatedFieldInspectionsInspectionIdRoute =
+  AuthenticatedFieldInspectionsInspectionIdRouteImport.update({
+    id: '/inspections/$inspectionId',
+    path: '/inspections/$inspectionId',
+    getParentRoute: () => AuthenticatedFieldRouteRoute,
+  } as any)
 const ReportCheckResultReportIdRoute =
   ReportCheckResultReportIdRouteImport.update({
     id: '/check/result/$reportId',
     path: '/check/result/$reportId',
     getParentRoute: () => ReportRouteRoute,
   } as any)
+const SiteInspectionConfirmationInspectionIdRoute =
+  SiteInspectionConfirmationInspectionIdRouteImport.update({
+    id: '/inspection/confirmation/$inspectionId',
+    path: '/inspection/confirmation/$inspectionId',
+    getParentRoute: () => SiteRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
   '/account': typeof AuthenticatedAccountRouteRouteWithChildren
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/field': typeof AuthenticatedFieldRouteRouteWithChildren
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
   '/check': typeof SiteCheckRoute
@@ -311,17 +372,25 @@ export interface FileRoutesByFullPath {
   '/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/field/availability': typeof AuthenticatedFieldAvailabilityRoute
+  '/field/current': typeof AuthenticatedFieldCurrentRoute
+  '/field/history': typeof AuthenticatedFieldHistoryRoute
+  '/field/settings': typeof AuthenticatedFieldSettingsRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
   '/listings/$listingId': typeof SiteListingsListingIdRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/field/': typeof AuthenticatedFieldIndexRoute
   '/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/inspection/': typeof SiteInspectionIndexRoute
   '/listings/': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/field/inspections/$inspectionId': typeof AuthenticatedFieldInspectionsInspectionIdRoute
   '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
+  '/inspection/confirmation/$inspectionId': typeof SiteInspectionConfirmationInspectionIdRoute
   '/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -349,17 +418,25 @@ export interface FileRoutesByTo {
   '/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/field/availability': typeof AuthenticatedFieldAvailabilityRoute
+  '/field/current': typeof AuthenticatedFieldCurrentRoute
+  '/field/history': typeof AuthenticatedFieldHistoryRoute
+  '/field/settings': typeof AuthenticatedFieldSettingsRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/auth/confirm': typeof PublicAuthConfirmRoute
   '/password-reset/new': typeof PublicPasswordResetNewRoute
   '/listings/$listingId': typeof SiteListingsListingIdRoute
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/field': typeof AuthenticatedFieldIndexRoute
   '/password-reset': typeof PublicPasswordResetIndexRoute
+  '/inspection': typeof SiteInspectionIndexRoute
   '/listings': typeof SiteListingsIndexRoute
   '/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/field/inspections/$inspectionId': typeof AuthenticatedFieldInspectionsInspectionIdRoute
   '/check/result/$reportId': typeof ReportCheckResultReportIdRoute
+  '/inspection/confirmation/$inspectionId': typeof SiteInspectionConfirmationInspectionIdRoute
   '/account/listings': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRoutesById {
@@ -370,6 +447,7 @@ export interface FileRoutesById {
   '/_site': typeof SiteRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRouteRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/_authenticated/field': typeof AuthenticatedFieldRouteRouteWithChildren
   '/_public/login': typeof PublicLoginRoute
   '/_public/sign-up': typeof PublicSignUpRoute
   '/_site/check': typeof SiteCheckRoute
@@ -394,17 +472,25 @@ export interface FileRoutesById {
   '/_authenticated/admin/scoring': typeof AuthenticatedAdminScoringRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/field/availability': typeof AuthenticatedFieldAvailabilityRoute
+  '/_authenticated/field/current': typeof AuthenticatedFieldCurrentRoute
+  '/_authenticated/field/history': typeof AuthenticatedFieldHistoryRoute
+  '/_authenticated/field/settings': typeof AuthenticatedFieldSettingsRoute
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
   '/_public/auth/confirm': typeof PublicAuthConfirmRoute
   '/_public/password-reset/new': typeof PublicPasswordResetNewRoute
   '/_site/listings/$listingId': typeof SiteListingsListingIdRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/field/': typeof AuthenticatedFieldIndexRoute
   '/_public/password-reset/': typeof PublicPasswordResetIndexRoute
+  '/_site/inspection/': typeof SiteInspectionIndexRoute
   '/_site/listings/': typeof SiteListingsIndexRoute
   '/_authenticated/account/listings/$listingId': typeof AuthenticatedAccountListingsListingIdRoute
   '/_authenticated/account/listings/new': typeof AuthenticatedAccountListingsNewRoute
+  '/_authenticated/field/inspections/$inspectionId': typeof AuthenticatedFieldInspectionsInspectionIdRoute
   '/_report/check/result/$reportId': typeof ReportCheckResultReportIdRoute
+  '/_site/inspection/confirmation/$inspectionId': typeof SiteInspectionConfirmationInspectionIdRoute
   '/_authenticated/account/listings/': typeof AuthenticatedAccountListingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -413,6 +499,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/admin'
+    | '/field'
     | '/login'
     | '/sign-up'
     | '/check'
@@ -436,17 +523,25 @@ export interface FileRouteTypes {
     | '/admin/scoring'
     | '/admin/settings'
     | '/admin/users'
+    | '/field/availability'
+    | '/field/current'
+    | '/field/history'
+    | '/field/settings'
     | '/auth/callback'
     | '/auth/confirm'
     | '/password-reset/new'
     | '/listings/$listingId'
     | '/account/'
     | '/admin/'
+    | '/field/'
     | '/password-reset/'
+    | '/inspection/'
     | '/listings/'
     | '/account/listings/$listingId'
     | '/account/listings/new'
+    | '/field/inspections/$inspectionId'
     | '/check/result/$reportId'
+    | '/inspection/confirmation/$inspectionId'
     | '/account/listings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -474,17 +569,25 @@ export interface FileRouteTypes {
     | '/admin/scoring'
     | '/admin/settings'
     | '/admin/users'
+    | '/field/availability'
+    | '/field/current'
+    | '/field/history'
+    | '/field/settings'
     | '/auth/callback'
     | '/auth/confirm'
     | '/password-reset/new'
     | '/listings/$listingId'
     | '/account'
     | '/admin'
+    | '/field'
     | '/password-reset'
+    | '/inspection'
     | '/listings'
     | '/account/listings/$listingId'
     | '/account/listings/new'
+    | '/field/inspections/$inspectionId'
     | '/check/result/$reportId'
+    | '/inspection/confirmation/$inspectionId'
     | '/account/listings'
   id:
     | '__root__'
@@ -494,6 +597,7 @@ export interface FileRouteTypes {
     | '/_site'
     | '/_authenticated/account'
     | '/_authenticated/admin'
+    | '/_authenticated/field'
     | '/_public/login'
     | '/_public/sign-up'
     | '/_site/check'
@@ -518,17 +622,25 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/scoring'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/users'
+    | '/_authenticated/field/availability'
+    | '/_authenticated/field/current'
+    | '/_authenticated/field/history'
+    | '/_authenticated/field/settings'
     | '/_public/auth/callback'
     | '/_public/auth/confirm'
     | '/_public/password-reset/new'
     | '/_site/listings/$listingId'
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
+    | '/_authenticated/field/'
     | '/_public/password-reset/'
+    | '/_site/inspection/'
     | '/_site/listings/'
     | '/_authenticated/account/listings/$listingId'
     | '/_authenticated/account/listings/new'
+    | '/_authenticated/field/inspections/$inspectionId'
     | '/_report/check/result/$reportId'
+    | '/_site/inspection/confirmation/$inspectionId'
     | '/_authenticated/account/listings/'
   fileRoutesById: FileRoutesById
 }
@@ -581,6 +693,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/field': {
+      id: '/_authenticated/field'
+      path: '/field'
+      fullPath: '/field'
+      preLoaderRoute: typeof AuthenticatedFieldRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_public/login': {
@@ -765,6 +884,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/field/': {
+      id: '/_authenticated/field/'
+      path: '/'
+      fullPath: '/field/'
+      preLoaderRoute: typeof AuthenticatedFieldIndexRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
+    '/_authenticated/field/availability': {
+      id: '/_authenticated/field/availability'
+      path: '/availability'
+      fullPath: '/field/availability'
+      preLoaderRoute: typeof AuthenticatedFieldAvailabilityRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
+    '/_authenticated/field/current': {
+      id: '/_authenticated/field/current'
+      path: '/current'
+      fullPath: '/field/current'
+      preLoaderRoute: typeof AuthenticatedFieldCurrentRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
+    '/_authenticated/field/history': {
+      id: '/_authenticated/field/history'
+      path: '/history'
+      fullPath: '/field/history'
+      preLoaderRoute: typeof AuthenticatedFieldHistoryRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
+    '/_authenticated/field/settings': {
+      id: '/_authenticated/field/settings'
+      path: '/settings'
+      fullPath: '/field/settings'
+      preLoaderRoute: typeof AuthenticatedFieldSettingsRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
     '/_public/auth/callback': {
       id: '/_public/auth/callback'
       path: '/auth/callback'
@@ -792,6 +946,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/password-reset/new'
       preLoaderRoute: typeof PublicPasswordResetNewRouteImport
       parentRoute: typeof PublicRouteRoute
+    }
+    '/_site/inspection/': {
+      id: '/_site/inspection/'
+      path: '/inspection'
+      fullPath: '/inspection/'
+      preLoaderRoute: typeof SiteInspectionIndexRouteImport
+      parentRoute: typeof SiteRouteRoute
     }
     '/_site/listings/': {
       id: '/_site/listings/'
@@ -828,12 +989,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountListingsNewRouteImport
       parentRoute: typeof AuthenticatedAccountRouteRoute
     }
+    '/_authenticated/field/inspections/$inspectionId': {
+      id: '/_authenticated/field/inspections/$inspectionId'
+      path: '/inspections/$inspectionId'
+      fullPath: '/field/inspections/$inspectionId'
+      preLoaderRoute: typeof AuthenticatedFieldInspectionsInspectionIdRouteImport
+      parentRoute: typeof AuthenticatedFieldRouteRoute
+    }
     '/_report/check/result/$reportId': {
       id: '/_report/check/result/$reportId'
       path: '/check/result/$reportId'
       fullPath: '/check/result/$reportId'
       preLoaderRoute: typeof ReportCheckResultReportIdRouteImport
       parentRoute: typeof ReportRouteRoute
+    }
+    '/_site/inspection/confirmation/$inspectionId': {
+      id: '/_site/inspection/confirmation/$inspectionId'
+      path: '/inspection/confirmation/$inspectionId'
+      fullPath: '/inspection/confirmation/$inspectionId'
+      preLoaderRoute: typeof SiteInspectionConfirmationInspectionIdRouteImport
+      parentRoute: typeof SiteRouteRoute
     }
   }
 }
@@ -913,14 +1088,41 @@ const AuthenticatedAdminRouteRouteWithChildren =
     AuthenticatedAdminRouteRouteChildren,
   )
 
+interface AuthenticatedFieldRouteRouteChildren {
+  AuthenticatedFieldAvailabilityRoute: typeof AuthenticatedFieldAvailabilityRoute
+  AuthenticatedFieldCurrentRoute: typeof AuthenticatedFieldCurrentRoute
+  AuthenticatedFieldHistoryRoute: typeof AuthenticatedFieldHistoryRoute
+  AuthenticatedFieldSettingsRoute: typeof AuthenticatedFieldSettingsRoute
+  AuthenticatedFieldIndexRoute: typeof AuthenticatedFieldIndexRoute
+  AuthenticatedFieldInspectionsInspectionIdRoute: typeof AuthenticatedFieldInspectionsInspectionIdRoute
+}
+
+const AuthenticatedFieldRouteRouteChildren: AuthenticatedFieldRouteRouteChildren =
+  {
+    AuthenticatedFieldAvailabilityRoute: AuthenticatedFieldAvailabilityRoute,
+    AuthenticatedFieldCurrentRoute: AuthenticatedFieldCurrentRoute,
+    AuthenticatedFieldHistoryRoute: AuthenticatedFieldHistoryRoute,
+    AuthenticatedFieldSettingsRoute: AuthenticatedFieldSettingsRoute,
+    AuthenticatedFieldIndexRoute: AuthenticatedFieldIndexRoute,
+    AuthenticatedFieldInspectionsInspectionIdRoute:
+      AuthenticatedFieldInspectionsInspectionIdRoute,
+  }
+
+const AuthenticatedFieldRouteRouteWithChildren =
+  AuthenticatedFieldRouteRoute._addFileChildren(
+    AuthenticatedFieldRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRouteRoute: typeof AuthenticatedAccountRouteRouteWithChildren
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
+  AuthenticatedFieldRouteRoute: typeof AuthenticatedFieldRouteRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRouteRoute: AuthenticatedAccountRouteRouteWithChildren,
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
+  AuthenticatedFieldRouteRoute: AuthenticatedFieldRouteRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -965,7 +1167,9 @@ interface SiteRouteRouteChildren {
   SitePublishRoute: typeof SitePublishRoute
   SiteIndexRoute: typeof SiteIndexRoute
   SiteListingsListingIdRoute: typeof SiteListingsListingIdRoute
+  SiteInspectionIndexRoute: typeof SiteInspectionIndexRoute
   SiteListingsIndexRoute: typeof SiteListingsIndexRoute
+  SiteInspectionConfirmationInspectionIdRoute: typeof SiteInspectionConfirmationInspectionIdRoute
 }
 
 const SiteRouteRouteChildren: SiteRouteRouteChildren = {
@@ -973,7 +1177,10 @@ const SiteRouteRouteChildren: SiteRouteRouteChildren = {
   SitePublishRoute: SitePublishRoute,
   SiteIndexRoute: SiteIndexRoute,
   SiteListingsListingIdRoute: SiteListingsListingIdRoute,
+  SiteInspectionIndexRoute: SiteInspectionIndexRoute,
   SiteListingsIndexRoute: SiteListingsIndexRoute,
+  SiteInspectionConfirmationInspectionIdRoute:
+    SiteInspectionConfirmationInspectionIdRoute,
 }
 
 const SiteRouteRouteWithChildren = SiteRouteRoute._addFileChildren(

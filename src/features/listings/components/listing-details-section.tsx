@@ -4,6 +4,7 @@ import { FieldError, FieldGroup, FieldLegend, FieldSet } from '@/components/ui/f
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { parseLocaleNumber } from '@/i18n/format';
 import { useValidationMessage } from '@/i18n/validation';
+import { TextField } from '@/components/forms/text-field';
 import type { ListingFormValues } from '../listing-form.schemas';
 import {
   BUILDING_TYPES,
@@ -16,7 +17,6 @@ import {
 import { ListingCheckboxFields } from './listing-checkbox-fields';
 import { ListingSegmentedField } from './listing-segmented-field';
 import { ListingSelectField } from './listing-select-field';
-import { ListingTextField } from './listing-text-field';
 
 const ROOM_CHOICES = ['1', '2', '3', '4'] as const;
 const MANY_ROOMS = '5';
@@ -50,7 +50,7 @@ export function ListingDetailsSection({ control }: ListingDetailsSectionProps) {
   return (
     <FieldGroup className="gap-5">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <ListingTextField
+        <TextField
           control={control}
           name="price"
           label={
@@ -70,7 +70,7 @@ export function ListingDetailsSection({ control }: ListingDetailsSectionProps) {
         />
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <ListingTextField
+        <TextField
           control={control}
           name="area_m2"
           label={t('form.area.label')}
@@ -115,7 +115,7 @@ export function ListingDetailsSection({ control }: ListingDetailsSectionProps) {
       </div>
       {hasManyRooms ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <ListingTextField
+          <TextField
             control={control}
             name="rooms"
             label={t('wizard.details.roomsExact')}
@@ -147,7 +147,7 @@ export function ListingDetailsSection({ control }: ListingDetailsSectionProps) {
             }))}
           />
         ) : (
-          <ListingTextField
+          <TextField
             control={control}
             name="land_area_m2"
             label={t('common:listingDetails.fields.landArea')}
@@ -208,14 +208,14 @@ export function ListingDetailsSection({ control }: ListingDetailsSectionProps) {
         />
       )}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <ListingTextField
+        <TextField
           control={control}
           name="building_floors"
           label={t('form.buildingFloors.label')}
           hint={t('form.buildingFloors.hint')}
           inputMode="numeric"
         />
-        <ListingTextField
+        <TextField
           control={control}
           name="year_built"
           label={t('form.yearBuilt.label')}

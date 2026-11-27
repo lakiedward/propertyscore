@@ -15,6 +15,11 @@ const PUBLIC_LISTING_COLUMNS =
 
 export const EXPLORER_PAGE_SIZE = 12;
 
+const OWNER_LISTING_COLUMNS =
+  'id, title, status, transaction, price, currency, rooms, area_m2, city, photo_path' as const;
+
+const OWNER_LISTINGS_PAGE_SIZE = 12;
+
 const EXPLORER_ORDER: Readonly<
   Record<ExplorerSort, { column: 'published_at' | 'price' | 'area_m2'; ascending: boolean }>
 > = {
@@ -110,3 +115,20 @@ export async function listListings({ transaction, limit }: ListingFilters) {
   if (error) throw toAppError(error);
   return { items: data, total: count ?? data.length };
 }
+
+export async function listOwnerListings(ownerId: string, page = 0) {
+  const from = page * OWNER_LISTINGS_PAGE_SIZE;
+  const { data, error } = await supabase
+    .from('listings')
+    .select(OWNER_LISTING_COLUMNS)
+    .eq('owner_id', ownerId)
+    .is('revision_of', null)
+    .neq('status', 'draft')
+    .order('updated_at', { ascending: false })
+    .order('id', { ascending: false })
+    .range(from, from + OWNER_LISTINGS_PAGE_SIZE - 1);
+  if (error) throw toAppError(error);
+  return { items: data, hasMore: data.length === OWNER_LISTINGS_PAGE_SIZE };
+}
+
+export type OwnerListing = Awaited<ReturnType<typeof listOwnerListings>>['items'][number];

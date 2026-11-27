@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { Controller, useWatch, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { PinField } from '@/components/map/pin-field';
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import {
   Select,
@@ -10,10 +11,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useValidationMessage } from '@/i18n/validation';
+import { TextField } from '@/components/forms/text-field';
 import type { listCities } from '../api/my-listings.api';
 import type { ListingFormValues } from '../listing-form.schemas';
-import { ListingPinField } from './listing-pin-field';
-import { ListingTextField } from './listing-text-field';
 
 type ListingAddressSectionProps = {
   control: Control<ListingFormValues>;
@@ -62,7 +62,7 @@ export function ListingAddressSection({ control, cities }: ListingAddressSection
             </Field>
           )}
         />
-        <ListingTextField
+        <TextField
           control={control}
           name="street_label"
           label={t('wizard.address.street')}
@@ -78,7 +78,9 @@ export function ListingAddressSection({ control, cities }: ListingAddressSection
               {t('wizard.address.pin')}
             </FieldLabel>
             <FieldDescription id={pinHintId}>{t('form.pin.hint')}</FieldDescription>
-            <ListingPinField
+            <PinField
+              mapLabel={t('form.pin.mapLabel')}
+              errorText={t('form.pin.mapError')}
               labelledBy={pinLabelId}
               value={field.value}
               cityCenter={cityCenter}

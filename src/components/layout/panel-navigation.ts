@@ -1,13 +1,16 @@
 import {
+  CalendarClockIcon,
   CalendarDaysIcon,
   ChartLineIcon,
   ClipboardCheckIcon,
+  ClipboardListIcon,
   CreditCardIcon,
   DownloadIcon,
   FilePenLineIcon,
   FileTextIcon,
   HandshakeIcon,
   HeartIcon,
+  HistoryIcon,
   InboxIcon,
   LayoutDashboardIcon,
   MegaphoneIcon,
@@ -19,12 +22,14 @@ import {
   UsersIcon,
   type LucideIcon,
 } from 'lucide-react';
+import type { BrandProduct } from '@/components/brand/brand-marks';
 import type { FileRouteTypes } from '@/routeTree.gen';
 
 type PanelNavItem<TId extends string> = {
   id: TId;
   to: FileRouteTypes['to'];
   icon: LucideIcon;
+  brand?: BrandProduct;
   isExact?: boolean;
 };
 
@@ -67,6 +72,7 @@ export const ADMIN_NAVIGATION = [
       { id: 'dashboard', to: '/admin', icon: LayoutDashboardIcon, isExact: true },
       { id: 'appointments', to: '/admin/appointments', icon: CalendarDaysIcon },
       { id: 'inspections', to: '/admin/inspections', icon: ClipboardCheckIcon },
+      { id: 'content', to: '/admin/content', icon: FilePenLineIcon, brand: 'physical' },
     ],
   },
   {
@@ -85,12 +91,30 @@ export const ADMIN_NAVIGATION = [
       { id: 'scoring', to: '/admin/scoring', icon: SlidersHorizontalIcon },
       { id: 'analytics', to: '/admin/analytics', icon: ChartLineIcon },
       { id: 'products', to: '/admin/products', icon: PackageIcon },
-      { id: 'content', to: '/admin/content', icon: FilePenLineIcon },
     ],
   },
   {
     id: 'account',
     items: [{ id: 'settings', to: '/admin/settings', icon: SettingsIcon }],
+  },
+] as const satisfies readonly PanelNavGroup<string, string>[];
+
+export const FIELD_NAVIGATION = [
+  {
+    id: 'workday',
+    items: [
+      { id: 'agenda', to: '/field', icon: CalendarDaysIcon, isExact: true },
+      { id: 'current', to: '/field/current', icon: ClipboardListIcon },
+      { id: 'availability', to: '/field/availability', icon: CalendarClockIcon },
+    ],
+  },
+  {
+    id: 'archive',
+    items: [{ id: 'history', to: '/field/history', icon: HistoryIcon }],
+  },
+  {
+    id: 'account',
+    items: [{ id: 'settings', to: '/field/settings', icon: SettingsIcon }],
   },
 ] as const satisfies readonly PanelNavGroup<string, string>[];
 

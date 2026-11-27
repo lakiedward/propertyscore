@@ -108,7 +108,7 @@ export function SiteFooter() {
               shape="pill"
               className="gap-2 pr-4 pl-2.5 text-small font-extrabold focus-visible:ring-focus-inverse focus-visible:ring-offset-surface-inverse"
             >
-              <Link to="/" hash={HOME_SECTION.physical}>
+              <Link to="/inspection">
                 <BrandMark product="physical" size={22} />
                 {t('site.footer.physicalCta')}
               </Link>

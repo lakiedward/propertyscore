@@ -1,6 +1,7 @@
 import { useWatch, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FieldGroup } from '@/components/ui/field';
+import { TextField } from '@/components/forms/text-field';
 import type { ListingFormValues } from '../listing-form.schemas';
 import {
   BUILDING_SERVICES,
@@ -15,7 +16,6 @@ import {
 } from '../listing-property.options';
 import { ListingCheckboxFields } from './listing-checkbox-fields';
 import { ListingSelectField } from './listing-select-field';
-import { ListingTextField } from './listing-text-field';
 
 type ListingExtrasSectionProps = {
   control: Control<ListingFormValues>;
@@ -101,13 +101,13 @@ export function ListingExtrasSection({ control }: ListingExtrasSectionProps) {
         )}
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <ListingTextField
+        <TextField
           control={control}
           name="balconies"
           label={t('common:listingDetails.fields.balconies')}
           inputMode="numeric"
         />
-        <ListingTextField
+        <TextField
           control={control}
           name="parking_spaces"
           label={t('common:listingDetails.fields.parkingSpaces')}

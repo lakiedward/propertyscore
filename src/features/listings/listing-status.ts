@@ -1,5 +1,6 @@
 import {
   BanIcon,
+  CirclePauseIcon,
   CircleCheckIcon,
   HourglassIcon,
   PencilIcon,
@@ -16,6 +17,7 @@ export const LISTING_STATUS_META = {
   approved: { tone: 'success', icon: CircleCheckIcon },
   rejected: { tone: 'warning', icon: Undo2Icon },
   blocked: { tone: 'error', icon: BanIcon },
+  suspended: { tone: 'warning', icon: CirclePauseIcon },
 } as const satisfies Record<
   ListingStatus,
   { tone: 'neutral' | 'info' | 'success' | 'warning' | 'error'; icon: LucideIcon }

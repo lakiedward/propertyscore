@@ -1,0 +1,177 @@
+{
+  "users": {
+    "eyebrow": "Administrare",
+    "export": "Exportă CSV",
+    "card": {
+      "title": "Toți utilizatorii",
+      "shown_one": "{{shown}} din {{count}} cont",
+      "shown_few": "{{shown}} din {{count}} conturi",
+      "shown_other": "{{shown}} din {{count}} de conturi"
+    },
+    "search": {
+      "label": "Caută utilizatori",
+      "placeholder": "Caută după nume, email sau telefon"
+    },
+    "status": {
+      "label": "Status",
+      "all": "Toate statusurile",
+      "active": "Active",
+      "blocked": "Blocate"
+    },
+    "city": {
+      "label": "Oraș",
+      "all": "Toate orașele"
+    },
+    "roles": {
+      "label": "Filtrează după rol",
+      "all": "Toate",
+      "user": "Utilizator",
+      "admin": "Admin",
+      "inspector": "Inspector"
+    },
+    "columns": {
+      "name": "Nume",
+      "email": "Email",
+      "phone": "Telefon",
+      "roles": "Roluri",
+      "created": "Creat",
+      "status": "Status",
+      "actions": "Acțiuni"
+    },
+    "role": {
+      "user": "utilizator",
+      "admin": "admin",
+      "inspector": "inspector"
+    },
+    "inspectorCity": "inspector · {{city}}",
+    "state": {
+      "active": "Activ",
+      "blocked": "Blocat"
+    },
+    "noPhone": "—",
+    "actions": {
+      "menu": "Acțiuni pentru {{name}}",
+      "makeInspector": "Inspector",
+      "changeCity": "Schimbă orașul",
+      "removeInspector": "Scoate rolul de inspector",
+      "block": "Blochează contul",
+      "unblock": "Deblochează contul",
+      "makeAdmin": "Fă-l administrator"
+    },
+    "more": "Arată mai mulți utilizatori",
+    "empty": {
+      "title": "Niciun utilizator găsit",
+      "description": "Schimbă căutarea sau filtrele."
+    },
+    "inspectorDialog": {
+      "title": "Inspector în ce oraș?",
+      "description": "{{name}} va vedea agenda și inspecțiile alocate în acest oraș.",
+      "city": "Oraș",
+      "cityPlaceholder": "Alege orașul",
+      "save": "Salvează",
+      "saving": "Se salvează…",
+      "saved": "{{name}} e inspector în {{city}}.",
+      "citiesError": "Nu am putut încărca orașele. Încearcă din nou."
+    },
+    "removeDialog": {
+      "title": "Scoți rolul de inspector?",
+      "description": "{{name}} nu mai poate primi inspecții. Inspecțiile viitoare alocate lui revin în coada de alocat.",
+      "confirm": "Scoate rolul",
+      "pending": "Se scoate…",
+      "done": "{{name}} nu mai e inspector."
+    },
+    "unnamed": "Fără nume",
+    "csvFileName": "utilizatori.csv",
+    "blockDialog": {
+      "title": "Blochezi contul lui {{name}}?",
+      "description": "Contul rămâne în baza de date și îl poți debloca oricând.",
+      "consequences": {
+        "signIn": "Nu mai poate intra în cont, iar sesiunile deschise se închid.",
+        "listings": "Anunțurile publicate dispar de pe site până la deblocare.",
+        "bookings": "Inspecțiile programate pe viitor se anulează.",
+        "visits": "Dacă e inspector, vizitele lui viitoare revin la „Neasignate”."
+      },
+      "reason": "Motivul blocării",
+      "reasonHint": "Îl văd doar administratorii.",
+      "confirm": "Blochează contul",
+      "pending": "Se blochează…",
+      "done": "Contul lui {{name}} a fost blocat."
+    },
+    "unblockDialog": {
+      "title": "Deblochezi contul lui {{name}}?",
+      "description": "Poate intra din nou în cont, iar anunțurile suspendate revin pe site. Inspecțiile anulate nu se refac.",
+      "confirm": "Deblochează",
+      "pending": "Se deblochează…",
+      "done": "Contul lui {{name}} a fost deblocat."
+    },
+    "listings": {
+      "show": "Arată anunțurile lui {{name}}",
+      "hide": "Ascunde anunțurile lui {{name}}",
+      "title": "Anunțurile lui {{name}}"
+    },
+    "adminDialog": {
+      "title": "Faci din {{name}} administrator?",
+      "description": "Va avea acces complet la panoul de administrare: anunțuri, programări și utilizatori, și nu va mai folosi panoul de utilizator. Rolul ajunge în contul lui în cel mult o oră sau la următoarea autentificare.",
+      "confirm": "Fă-l administrator",
+      "pending": "Se salvează…",
+      "done": "{{name}} este acum administrator."
+    },
+    "error": "Nu am putut încărca conturile. Încearcă din nou."
+  },
+  "availability": {
+    "weekly": {
+      "title": "Program săptămânal",
+      "selfDescription": "Orele în care poți primi programări noi, în fiecare săptămână.",
+      "adminDescription": "Orele în care inspectorul poate primi programări noi.",
+      "range": "{{from}}–{{to}}",
+      "off": "Liber",
+      "editShort": "Modifică",
+      "edit": "Modifică programul de {{day}}",
+      "dialog": {
+        "title": "Programul de {{day}}",
+        "description": "Până la 4 intervale pe zi. Fără niciun interval, ziua rămâne liberă.",
+        "from": "De la (interval {{index}})",
+        "to": "Până la (interval {{index}})",
+        "remove": "Șterge intervalul {{index}}",
+        "add": "Adaugă interval",
+        "dayOff": "Ziua rămâne liberă.",
+        "save": "Salvează programul",
+        "saving": "Se salvează…"
+      },
+      "error": "Nu am putut încărca programul săptămânal. Încearcă din nou."
+    },
+    "exceptions": {
+      "title": "Excepții",
+      "subtitle": "Concedii, zile libere, ore blocate",
+      "add": "Adaugă excepție",
+      "empty": {
+        "title": "Nicio excepție programată",
+        "text": "Programul săptămânal se aplică fără întreruperi. Adaugă o excepție pentru concedii, zile libere sau ore blocate."
+      },
+      "remove": "Șterge excepția",
+      "range": "{{from}} – {{to}}",
+      "hours": "{{day}} · {{from}}–{{to}}",
+      "kind": {
+        "day_off": "Zi liberă",
+        "leave": "Concediu",
+        "training": "Training intern",
+        "other": "Altă indisponibilitate"
+      },
+      "dialog": {
+        "title": "Adaugă excepție",
+        "description": "În acest interval nu primești programări noi.",
+        "kind": "Tip",
+        "from": "De la data",
+        "to": "Până la data",
+        "allDay": "Toată ziua",
+        "startTime": "De la ora",
+        "endTime": "Până la ora",
+        "note": "Notă (opțional)",
+        "save": "Adaugă excepția",
+        "saving": "Se adaugă…"
+      },
+      "error": "Nu am putut încărca excepțiile. Încearcă din nou.",
+      "kindWithNote": "{{kind}} · {{note}}"
+    }
+  }
+}

@@ -92,7 +92,61 @@
       "decision_message_too_long": "Mesajul poate avea cel mult 2.000 de caractere.",
       "listing_floor_above_building": "Etajul nu poate fi mai mare decât numărul de etaje ale clădirii.",
       "value_out_of_range": "Valoarea este în afara limitelor permise.",
-      "favorite_limit_reached": "Ai salvat deja 500 de locuințe. Scoate câteva din favorite ca să adaugi altele."
+      "favorite_limit_reached": "Ai salvat deja 500 de locuințe. Scoate câteva din favorite ca să adaugi altele.",
+      "outside_coverage": "Încă nu avem inspectori la această adresă.",
+      "slot_taken": "Ora aleasă tocmai a fost rezervată. Alege alta.",
+      "invalid_access": "Verifică numele și telefonul persoanei care deschide.",
+      "property_invalid": "Verifică datele locuinței.",
+      "inspection_locked": "Programarea nu mai poate fi schimbată.",
+      "inspection_not_found": "Programarea nu mai există.",
+      "wrong_city": "Inspectorul lucrează în alt oraș.",
+      "inspector_unavailable": "Inspectorul nu lucrează la această oră.",
+      "inspector_busy": "Inspectorul are deja o inspecție la această oră.",
+      "availability_invalid": "Verifică intervalele: cel mult 4 pe zi, fără suprapuneri.",
+      "inspector_not_found": "Inspectorul nu mai există.",
+      "cannot_block_self": "Nu îți poți bloca propriul cont.",
+      "cannot_block_admin": "Un administrator nu poate fi blocat.",
+      "block_reason_invalid": "Scrie motivul blocării (cel mult 300 de caractere).",
+      "user_not_found": "Utilizatorul nu mai există.",
+      "user_not_blocked": "Contul nu este blocat.",
+      "account_blocked": "Contul tău a fost blocat. Scrie-ne dacă crezi că e o greșeală.",
+      "user_blocked": "Contul este blocat. Deblochează-l mai întâi.",
+      "admin_inspector_conflict": "Un inspector nu poate fi administrator. Scoate-l mai întâi din rolul de inspector.",
+      "form_draft_exists": "Există deja o ciornă. Deschide-o sau renunță la ea.",
+      "form_not_draft": "Doar ciorna se poate modifica.",
+      "form_items_changed": "Formularul s-a schimbat între timp. Reîncarcă pagina.",
+      "form_weights_invalid": "Ponderile trebuie să facă 100%.",
+      "form_question_weights_invalid": "Întrebările fiecărei categorii trebuie să facă împreună 100%.",
+      "form_category_empty": "Fiecare categorie are nevoie de cel puțin o întrebare.",
+      "form_question_empty": "Fiecare întrebare are nevoie de text în română.",
+      "form_translation_missing": "Lipsesc traduceri în engleză.",
+      "form_item_invalid": "Verifică numele și textul.",
+      "form_item_not_found": "Elementul nu mai există. Reîncarcă pagina.",
+      "consent_draft_exists": "Există deja o ciornă de consimțământ.",
+      "consent_not_draft": "Doar ciorna se poate modifica.",
+      "consent_translation_missing": "Completează titlul, textul și bifa în ambele limbi.",
+      "consent_empty": "Adaugă cel puțin o secțiune.",
+      "consent_item_not_found": "Secțiunea nu mai există. Reîncarcă pagina.",
+      "version_not_found": "Versiunea nu mai există. Reîncarcă pagina.",
+      "version_not_archived": "Doar o versiune arhivată se poate șterge.",
+      "version_in_use": "Versiunea a fost folosită într-o inspecție și se păstrează.",
+      "inspection_not_startable": "Inspecția poate începe doar în ziua vizitei, cu cel mult o oră înainte.",
+      "consent_incomplete": "Bifează toate secțiunile consimțământului.",
+      "signature_missing": "Semnătura nu s-a încărcat. Încearcă din nou.",
+      "form_not_published": "Nu există un formular publicat. Anunță biroul.",
+      "inspection_not_in_progress": "Inspecția nu e în lucru.",
+      "question_not_in_form": "Întrebarea nu face parte din formularul inspecției.",
+      "note_too_long": "Nota are peste 2.000 de caractere.",
+      "media_missing": "Fișierul nu s-a încărcat. Încearcă din nou.",
+      "media_limit_reached": "Ai atins numărul maxim de fișiere pentru această întrebare.",
+      "owner_name_required": "Scrie numele proprietarului.",
+      "inspection_incomplete": "Mai sunt întrebări fără răspuns sau media obligatorie lipsă.",
+      "inspector_has_open_inspection": "Inspectorul are o inspecție în lucru. Așteaptă să fie trimisă înainte să-l scoți.",
+      "media_type_invalid": "Fișierul nu se potrivește cu tipul ales (foto sau video).",
+      "consent_item_invalid": "Verifică textele secțiunilor: unul e prea lung.",
+      "city_not_found": "Orașul ales nu mai există. Reîncarcă pagina.",
+      "cancel_reason_required": "Scrie motivul anulării.",
+      "media_path_taken": "Fișierul aparține deja altei întrebări. Încarcă-l din nou."
     }
   },
   "validation": {
@@ -107,7 +161,14 @@
     "maxLength_few": "Introdu cel mult {{count}} caractere.",
     "maxLength_other": "Introdu cel mult {{count}} de caractere.",
     "min": "Valoarea minimă este {{min}}.",
-    "max": "Valoarea maximă este {{max}}."
+    "max": "Valoarea maximă este {{max}}.",
+    "endAfterStart": "Ora de sfârșit trebuie să fie după ora de început.",
+    "rangesOverlap": "Intervalele se suprapun.",
+    "pinRequired": "Pune pinul pe hartă.",
+    "range": "Introdu o valoare între {{min}} și {{max}}.",
+    "floorAboveBuilding": "Etajul nu poate fi mai mare decât numărul de etaje al blocului.",
+    "phone": "Introdu un număr de telefon valid.",
+    "termsRequired": "Bifează acordul ca să continui."
   },
   "site": {
     "skipToContent": "Sari la conținut",
@@ -262,28 +323,49 @@
         "scoring": "Scoring",
         "analytics": "Analytics",
         "products": "Produse",
-        "content": "Conținut",
+        "content": "$t(brand.physical)",
         "settings": "Setări"
       },
       "pageTitle": "{{page}} · Admin",
       "pendingListings_one": "{{count}} anunț de verificat",
       "pendingListings_few": "{{count}} anunțuri de verificat",
-      "pendingListings_other": "{{count}} de anunțuri de verificat"
+      "pendingListings_other": "{{count}} de anunțuri de verificat",
+      "unassignedInspections_one": "{{count}} inspecție de alocat",
+      "unassignedInspections_few": "{{count}} inspecții de alocat",
+      "unassignedInspections_other": "{{count}} de inspecții de alocat"
     },
     "expandMenu": "Extinde meniul",
     "collapseMenu": "Restrânge meniul",
     "brandHome": "{{brand}}, site-ul public",
     "link": {
       "account": "Contul meu",
-      "admin": "Panou admin"
+      "admin": "Panou admin",
+      "field": "Agenda inspectorului"
     },
     "userMenu": {
       "role": {
         "user": "Utilizator",
-        "admin": "Admin"
+        "admin": "Admin",
+        "inspector": "Inspector"
       }
     },
-    "backToSite": "Înapoi la site"
+    "backToSite": "Înapoi la site",
+    "field": {
+      "label": "Inspector",
+      "navLabel": "Navigare inspector",
+      "groups": {
+        "workday": "Ziua de lucru",
+        "archive": "Arhivă",
+        "account": "Cont"
+      },
+      "nav": {
+        "agenda": "Agenda",
+        "current": "Inspecția curentă",
+        "availability": "Disponibilitate",
+        "history": "Istoric",
+        "settings": "Setări"
+      }
+    }
   },
   "listingSummary": {
     "dealCity": "{{deal}} · {{city}}",
@@ -448,6 +530,29 @@
       "in": "Mărește fotografia",
       "out": "Micșorează fotografia",
       "reset": "Mărire {{value}}, revino la dimensiunea inițială"
+    }
+  },
+  "stageTimeline": {
+    "state": {
+      "done": "Finalizat",
+      "current": "Acum",
+      "upcoming": "Urmează",
+      "cancelled": "Anulat"
+    }
+  },
+  "calendar": {
+    "today": "Azi",
+    "previous": "Luna anterioară",
+    "next": "Luna următoare",
+    "choose": "Alege data",
+    "weekdaysShort": {
+      "mon": "lun",
+      "tue": "mar",
+      "wed": "mie",
+      "thu": "joi",
+      "fri": "vin",
+      "sat": "sâm",
+      "sun": "dum"
     }
   }
 }

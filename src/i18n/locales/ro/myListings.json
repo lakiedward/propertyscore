@@ -29,7 +29,8 @@
     "pending_approval": "În verificare",
     "approved": "Publicat",
     "rejected": "Respins",
-    "blocked": "Blocat"
+    "blocked": "Blocat",
+    "suspended": "Suspendat"
   },
   "notice": {
     "rejected": {

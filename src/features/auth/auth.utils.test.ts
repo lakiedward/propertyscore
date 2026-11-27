@@ -3,13 +3,12 @@ import {
   emailLinkTarget,
   homePathFor,
   isExpiredLinkCode,
-  isPhoneNumber,
   isRecentLinkSignIn,
+  otherPanelRedirect,
   postSignInPath,
   rolesFromAccessToken,
   settingsPathFor,
   signInMethodFromAccessToken,
-  toE164Phone,
 } from './auth.utils';
 
 describe('auth.utils', () => {
@@ -23,9 +22,9 @@ describe('auth.utils', () => {
     });
 
     it('drops roles the app does not know', () => {
-      expect(rolesFromAccessToken(buildAccessToken({ user_roles: ['inspector', 'user'] }))).toEqual(
-        ['user'],
-      );
+      expect(rolesFromAccessToken(buildAccessToken({ user_roles: ['partner', 'user'] }))).toEqual([
+        'user',
+      ]);
     });
 
     it('returns no roles for a garbage token', () => {
@@ -84,6 +83,11 @@ describe('auth.utils', () => {
     it('sends everyone else to the user panel', () => {
       expect(homePathFor([])).toBe('/account');
     });
+
+    it('sends inspectors to their agenda, unless they are also admins', () => {
+      expect(homePathFor(['user', 'inspector'])).toBe('/field');
+      expect(homePathFor(['admin', 'inspector'])).toBe('/admin');
+    });
   });
 
   describe('settingsPathFor', () => {
@@ -94,6 +98,36 @@ describe('auth.utils', () => {
     it('opens the settings inside the user panel for everyone else', () => {
       expect(settingsPathFor(['user'])).toBe('/account/settings');
       expect(settingsPathFor([])).toBe('/account/settings');
+    });
+
+    it('opens the settings inside the inspector area for inspectors', () => {
+      expect(settingsPathFor(['inspector'])).toBe('/field/settings');
+    });
+  });
+
+  describe('otherPanelRedirect', () => {
+    it('lets each role into its own panel', () => {
+      expect(otherPanelRedirect(['user'], '/account/listings')).toBeNull();
+      expect(otherPanelRedirect(['admin'], '/admin/users')).toBeNull();
+      expect(otherPanelRedirect(['inspector'], '/field/availability')).toBeNull();
+    });
+
+    it('sends a role out of another panel to its own home', () => {
+      expect(otherPanelRedirect(['inspector'], '/account/listings')).toBe('/field');
+      expect(otherPanelRedirect(['user'], '/field')).toBe('/account');
+      expect(otherPanelRedirect(['admin'], '/account')).toBe('/admin');
+      expect(otherPanelRedirect(['inspector'], '/admin/users')).toBe('/field');
+    });
+
+    it('keeps a settings page a settings page', () => {
+      expect(otherPanelRedirect(['inspector'], '/account/settings')).toBe('/field/settings');
+      expect(otherPanelRedirect(['admin'], '/account/settings/')).toBe('/admin/settings');
+      expect(otherPanelRedirect(['user'], '/field/settings')).toBe('/account/settings');
+    });
+
+    it('leaves pages outside the panels alone', () => {
+      expect(otherPanelRedirect(['inspector'], '/listings')).toBeNull();
+      expect(otherPanelRedirect(['user'], '/administration')).toBeNull();
     });
   });
 
@@ -118,6 +152,12 @@ describe('auth.utils', () => {
     it('keeps the admin panel for admins only', () => {
       expect(postSignInPath(['user'], '/admin/users')).toBe('/account');
       expect(postSignInPath(['admin'], '/admin/users')).toBe('/admin/users');
+    });
+
+    it('keeps every panel for its own role', () => {
+      expect(postSignInPath(['inspector'], '/account/listings')).toBe('/field');
+      expect(postSignInPath(['user'], '/field/availability')).toBe('/account');
+      expect(postSignInPath(['inspector'], '/field/availability')).toBe('/field/availability');
     });
   });
 
@@ -157,33 +197,6 @@ describe('auth.utils', () => {
     it('does not treat other codes as an expired link', () => {
       expect(isExpiredLinkCode('access_denied')).toBe(false);
       expect(isExpiredLinkCode(undefined)).toBe(false);
-    });
-  });
-
-  describe('toE164Phone', () => {
-    it('turns a Romanian national number into E.164', () => {
-      expect(toE164Phone('0722 123 456')).toBe('+40722123456');
-      expect(toE164Phone('(021) 315.15.15')).toBe('+40213151515');
-    });
-
-    it('keeps an international number and replaces a leading 00 with +', () => {
-      expect(toE164Phone('+40 722-123-456')).toBe('+40722123456');
-      expect(toE164Phone('0044 20 7946 0958')).toBe('+442079460958');
-    });
-  });
-
-  describe('isPhoneNumber', () => {
-    it('accepts Romanian and international numbers', () => {
-      expect(isPhoneNumber('0722 123 456')).toBe(true);
-      expect(isPhoneNumber('+40 722 123 456')).toBe(true);
-      expect(isPhoneNumber('+44 20 7946 0958')).toBe(true);
-    });
-
-    it('rejects short, long and non-numeric input', () => {
-      expect(isPhoneNumber('0722 123')).toBe(false);
-      expect(isPhoneNumber('+40 722 123 4567')).toBe(false);
-      expect(isPhoneNumber('+123')).toBe(false);
-      expect(isPhoneNumber('telefon')).toBe(false);
     });
   });
 });

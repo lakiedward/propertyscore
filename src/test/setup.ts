@@ -50,6 +50,8 @@ beforeAll(() => {
   vi.stubGlobal('ResizeObserver', ResizeObserverStub);
   vi.stubGlobal('matchMedia', matchMediaStub);
   Element.prototype.scrollIntoView = vi.fn();
+  Element.prototype.hasPointerCapture = vi.fn(() => false);
+  Element.prototype.releasePointerCapture = vi.fn();
   window.scrollTo = vi.fn();
   server.listen({ onUnhandledRequest: 'error' });
 });

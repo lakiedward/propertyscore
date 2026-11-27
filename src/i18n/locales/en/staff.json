@@ -1,0 +1,176 @@
+{
+  "users": {
+    "eyebrow": "Administration",
+    "export": "Export CSV",
+    "card": {
+      "title": "All users",
+      "shown_one": "{{shown}} of {{count}} account",
+      "shown_other": "{{shown}} of {{count}} accounts"
+    },
+    "search": {
+      "label": "Search users",
+      "placeholder": "Search by name, email or phone"
+    },
+    "status": {
+      "label": "Status",
+      "all": "All statuses",
+      "active": "Active",
+      "blocked": "Blocked"
+    },
+    "city": {
+      "label": "City",
+      "all": "All cities"
+    },
+    "roles": {
+      "label": "Filter by role",
+      "all": "All",
+      "user": "User",
+      "admin": "Admin",
+      "inspector": "Inspector"
+    },
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "roles": "Roles",
+      "created": "Created",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "role": {
+      "user": "user",
+      "admin": "admin",
+      "inspector": "inspector"
+    },
+    "inspectorCity": "inspector · {{city}}",
+    "state": {
+      "active": "Active",
+      "blocked": "Blocked"
+    },
+    "noPhone": "—",
+    "actions": {
+      "menu": "Actions for {{name}}",
+      "makeInspector": "Inspector",
+      "changeCity": "Change the city",
+      "removeInspector": "Remove the inspector role",
+      "block": "Block the account",
+      "unblock": "Unblock the account",
+      "makeAdmin": "Make admin"
+    },
+    "more": "Show more users",
+    "empty": {
+      "title": "No users found",
+      "description": "Change the search or the filters."
+    },
+    "inspectorDialog": {
+      "title": "Inspector in which city?",
+      "description": "{{name}} will see the agenda and the inspections assigned in this city.",
+      "city": "City",
+      "cityPlaceholder": "Choose the city",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "{{name}} is an inspector in {{city}}.",
+      "citiesError": "We couldn't load the cities. Try again."
+    },
+    "removeDialog": {
+      "title": "Remove the inspector role?",
+      "description": "{{name}} can no longer receive inspections. Their future assigned inspections go back to the queue.",
+      "confirm": "Remove the role",
+      "pending": "Removing…",
+      "done": "{{name}} is no longer an inspector."
+    },
+    "unnamed": "No name",
+    "csvFileName": "users.csv",
+    "blockDialog": {
+      "title": "Block {{name}}'s account?",
+      "description": "The account stays in the database and you can unblock it at any time.",
+      "consequences": {
+        "signIn": "They can no longer sign in, and open sessions are ended.",
+        "listings": "Their published listings leave the site until they are unblocked.",
+        "bookings": "Their future inspection bookings are cancelled.",
+        "visits": "If they are an inspector, their future visits go back to “Unassigned”."
+      },
+      "reason": "Reason for blocking",
+      "reasonHint": "Only admins see it.",
+      "confirm": "Block the account",
+      "pending": "Blocking…",
+      "done": "{{name}}'s account was blocked."
+    },
+    "unblockDialog": {
+      "title": "Unblock {{name}}'s account?",
+      "description": "They can sign in again and their suspended listings return to the site. Cancelled inspections are not restored.",
+      "confirm": "Unblock",
+      "pending": "Unblocking…",
+      "done": "{{name}}'s account was unblocked."
+    },
+    "listings": {
+      "show": "Show {{name}}'s listings",
+      "hide": "Hide {{name}}'s listings",
+      "title": "{{name}}'s listings"
+    },
+    "adminDialog": {
+      "title": "Make {{name}} an admin?",
+      "description": "They will have full access to the admin panel: listings, appointments and users, and will no longer use the user panel. The role reaches their account within an hour or at their next sign-in.",
+      "confirm": "Make admin",
+      "pending": "Saving…",
+      "done": "{{name}} is now an admin."
+    },
+    "error": "We couldn't load the accounts. Try again."
+  },
+  "availability": {
+    "weekly": {
+      "title": "Weekly schedule",
+      "selfDescription": "The hours when you can take new bookings, every week.",
+      "adminDescription": "The hours when the inspector can take new bookings.",
+      "range": "{{from}}–{{to}}",
+      "off": "Off",
+      "editShort": "Edit",
+      "edit": "Edit the {{day}} schedule",
+      "dialog": {
+        "title": "{{day}} schedule",
+        "description": "Up to 4 ranges a day. With no range, the day stays off.",
+        "from": "From (range {{index}})",
+        "to": "To (range {{index}})",
+        "remove": "Remove range {{index}}",
+        "add": "Add a range",
+        "dayOff": "The day stays off.",
+        "save": "Save the schedule",
+        "saving": "Saving…"
+      },
+      "error": "We couldn't load the weekly hours. Try again."
+    },
+    "exceptions": {
+      "title": "Exceptions",
+      "subtitle": "Leave, days off, blocked hours",
+      "add": "Add an exception",
+      "empty": {
+        "title": "No exceptions scheduled",
+        "text": "The weekly schedule applies without breaks. Add an exception for leave, days off or blocked hours."
+      },
+      "remove": "Remove the exception",
+      "range": "{{from}} – {{to}}",
+      "hours": "{{day}} · {{from}}–{{to}}",
+      "kind": {
+        "day_off": "Day off",
+        "leave": "Leave",
+        "training": "Internal training",
+        "other": "Other unavailability"
+      },
+      "dialog": {
+        "title": "Add an exception",
+        "description": "No new bookings reach you during this time.",
+        "kind": "Type",
+        "from": "From date",
+        "to": "To date",
+        "allDay": "All day",
+        "startTime": "From",
+        "endTime": "To",
+        "note": "Note (optional)",
+        "save": "Add the exception",
+        "saving": "Adding…"
+      },
+      "error": "We couldn't load the exceptions. Try again.",
+      "kindWithNote": "{{kind}} · {{note}}"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
+import { XIcon, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -60,7 +60,17 @@ export function ConfirmDialog({
     <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       {trigger ? <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger> : null}
       <AlertDialogContent>
-        <AlertDialogHeader>
+        <AlertDialogCancel
+          type="button"
+          variant="ghost"
+          size="icon"
+          disabled={isPending}
+          aria-label={t('actions.close')}
+          className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+        >
+          <XIcon aria-hidden />
+        </AlertDialogCancel>
+        <AlertDialogHeader className="pr-10">
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>

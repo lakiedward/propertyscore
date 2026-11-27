@@ -148,7 +148,6 @@ export function ListingsExplorerList({
       {hasError ? (
         <EmptyState
           kind="error"
-          variant="card"
           title={t('board.error.title')}
           description={t('board.error.description')}
           action={<NoticeAction label={t('common:actions.retry')} onClick={onRetry} />}
@@ -172,15 +171,11 @@ export function ListingsExplorerList({
       ) : listings.length === 0 ? (
         emptyKind === 'none' ? (
           <EmptyState
-            kind="empty"
-            variant="card"
             title={t(`explore.empty.none.${transaction}`)}
             description={t('explore.empty.none.description')}
           />
         ) : (
           <EmptyState
-            kind="empty"
-            variant="card"
             title={t(`explore.empty.${emptyKind}.title`)}
             description={t(`explore.empty.${emptyKind}.description`)}
             action={
