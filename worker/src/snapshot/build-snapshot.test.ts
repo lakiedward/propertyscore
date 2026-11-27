@@ -426,6 +426,19 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         await docker.disconnectEngine();
         await expectBlocked();
         await docker.restoreEngine();
+        await docker.stopVerifier();
+        await expectBlocked();
+        await docker.startVerifier();
+        const proofUrl = `${observerUrl}/runs/${docker.identity.run_id}`;
+        expect((await fetch(proofUrl)).status).toBe(401);
+        expect(
+          (
+            await fetch(proofUrl, {
+              method: 'POST',
+              headers: { authorization: `Bearer ${observerToken}` },
+            })
+          ).ok,
+        ).toBe(false);
         await docker.stopObserver();
         await expectBlocked();
         observerUrl = await docker.startObserver();

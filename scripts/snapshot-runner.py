@@ -1,13 +1,14 @@
 import argparse
 from contextlib import contextmanager
-from hmac import compare_digest
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
 import re
+from signal import SIGTERM, signal
+from socketserver import StreamRequestHandler, UnixStreamServer
 import sqlite3
 import subprocess
+from sys import exit
 from uuid import uuid4
 
 
@@ -38,19 +39,21 @@ def engine(args):
 
 
 @contextmanager
-def store(args):
-    db = sqlite3.connect(args.state, timeout=5)
+def store(args, read_only=False):
+    target = f"{Path(args.state).resolve().as_uri()}?mode=ro" if read_only else args.state
+    db = sqlite3.connect(target, uri=read_only, timeout=5)
     db.row_factory = sqlite3.Row
     try:
         with db:
-            db.execute("PRAGMA synchronous = FULL")
-            db.execute("""
-                create table if not exists runs (
-                    run_id text primary key, replica_id text not null unique,
-                    engine text not null, container_id text unique,
-                    retired integer not null default 0
-                )
-            """)
+            if not read_only:
+                db.execute("PRAGMA synchronous = FULL")
+                db.execute("""
+                    create table if not exists runs (
+                        run_id text primary key, replica_id text not null unique,
+                        engine text not null, container_id text unique,
+                        retired integer not null default 0
+                    )
+                """)
             yield db
     finally:
         db.close()
@@ -120,10 +123,11 @@ def stopped_state(args, row):
 def is_retired(args, row):
     if engine(args) != row["engine"]:
         raise Unconfirmed("Docker engine identity differs")
-    return not docker(
+    present = docker(
         args, "container", "ls", "--all", "--no-trunc", "--filter", f"id={row['container_id']}",
         "--format", "{{.ID}}",
     )
+    return not present and engine(args) == row["engine"]
 
 
 def retire(args):
@@ -145,47 +149,39 @@ def retire(args):
         db.execute("update runs set retired = 1 where run_id = ?", (args.run,))
 
 
-def serve(args):
-    token = os.environ.get("SNAPSHOT_REPLICA_INSPECTOR_TOKEN", "")
-    if len(token) < 32 or not token.isascii():
-        raise Unconfirmed("Set SNAPSHOT_REPLICA_INSPECTOR_TOKEN to at least 32 ASCII characters")
-    with store(args):
-        pass
+def verify(args):
+    class Verifier(StreamRequestHandler):
+        timeout = 2
 
-    class Inspector(BaseHTTPRequestHandler):
-        def log_message(self, *_):
-            pass
-
-        def respond(self, status, data):
-            body = json.dumps(data).encode()
-            self.send_response(status)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Cache-Control", "no-store")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-
-        def do_GET(self):
-            authorization = self.headers.get("Authorization", "").encode("latin-1")
-            if not compare_digest(authorization, f"Bearer {token}".encode()):
-                return self.respond(401, {"state": "unknown"})
-            if not re.fullmatch(f"/runs/{RUN_ID}", self.path):
-                return self.respond(404, {"state": "unknown"})
+        def handle(self):
+            line = self.rfile.readline(38)
+            if not re.fullmatch((RUN_ID + "\n").encode(), line):
+                return
+            run = line[:-1].decode("ascii")
+            status = 409
+            data = {"state": "unknown"}
             try:
-                with store(args) as db:
-                    row = lookup(db, self.path.removeprefix("/runs/"))
-                    if not row or not row["retired"] or not is_retired(args, row):
-                        return self.respond(409, {"state": "unknown"})
+                with store(args, read_only=True) as db:
+                    row = lookup(db, run)
+                    if row and row["retired"] and row["container_id"] and is_retired(args, row):
+                        status = 200
+                        data = {
+                            "run_id": run, "replica_id": row["replica_id"], "state": "stopped",
+                            "children_stopped": True, "restart_excluded": True,
+                        }
             except (Unconfirmed, sqlite3.Error):
-                return self.respond(503, {"state": "unknown"})
-            return self.respond(200, {
-                "run_id": row["run_id"], "replica_id": row["replica_id"], "state": "stopped",
-                "children_stopped": True, "restart_excluded": True,
-            })
+                status = 503
+            self.wfile.write(json.dumps([status, data]).encode() + b"\n")
 
-    with ThreadingHTTPServer((args.bind, args.port), Inspector) as server:
-        print(json.dumps({"port": server.server_port}), flush=True)
-        server.serve_forever()
+    path = Path(args.proof_socket)
+    with UnixStreamServer(str(path), Verifier) as server:
+        try:
+            path.chmod(0o660)
+            signal(SIGTERM, lambda *_: exit(0))
+            print(json.dumps({"listening": True}), flush=True)
+            server.serve_forever()
+        finally:
+            path.unlink()
 
 
 def main():
@@ -204,10 +200,9 @@ def main():
     stop = commands.add_parser("retire")
     stop.add_argument("run")
     stop.set_defaults(action=retire)
-    server = commands.add_parser("serve")
-    server.add_argument("--bind", default="127.0.0.1")
-    server.add_argument("--port", type=int, default=8793)
-    server.set_defaults(action=serve)
+    verifier = commands.add_parser("verify")
+    verifier.add_argument("--proof-socket", required=True)
+    verifier.set_defaults(action=verify)
     args = parser.parse_args()
     try:
         args.action(args)

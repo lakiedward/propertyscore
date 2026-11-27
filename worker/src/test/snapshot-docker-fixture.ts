@@ -12,6 +12,7 @@ import { z } from 'zod';
 const exec = promisify(execFile);
 const socket = '/var/run/docker.sock';
 const runner = fileURLToPath(new URL('../../../scripts/snapshot-runner.py', import.meta.url));
+const reader = fileURLToPath(new URL('../../../scripts/snapshot-observer.py', import.meta.url));
 const identitySchema = z.object({ run_id: z.uuid(), replica_id: z.uuid() });
 const portSchema = z.object({ port: z.number().int().positive() });
 
@@ -30,6 +31,7 @@ export async function launchSnapshotDockerFixture(image: string, token: string) 
   const directory = await mkdtemp(join(tmpdir(), 'snapshot-observer-'));
   const link = join(directory, 'docker.sock');
   const state = join(directory, 'observer.sqlite');
+  const proofSocket = join(directory, 'proof.sock');
   const options = [runner, '--state', state, '--socket', link];
   const docker = (...args: string[]) =>
     exec('docker', ['--host', `unix://${socket}`, ...args], { timeout: 20_000 });
@@ -38,13 +40,10 @@ export async function launchSnapshotDockerFixture(image: string, token: string) 
   const restoreEngine = () => symlink(socket, link);
   const disconnectEngine = () => unlink(link);
   let observer: ChildProcessWithoutNullStreams | undefined;
+  let verifier: ChildProcessWithoutNullStreams | undefined;
   let container: string | undefined;
 
-  async function startObserver() {
-    const child = spawn('python3', [...options, 'serve', '--port', '0'], {
-      env: { ...process.env, SNAPSHOT_REPLICA_INSPECTOR_TOKEN: token },
-    });
-    observer = child;
+  async function readReady(child: ChildProcessWithoutNullStreams) {
     const lines = createInterface({ input: child.stdout });
     try {
       const line: unknown = await Promise.race([
@@ -55,25 +54,46 @@ export async function launchSnapshotDockerFixture(image: string, token: string) 
           throw new Error('Docker fixture observer exited during startup');
         }),
       ]);
-      const port = portSchema.parse(JSON.parse(String(line))).port;
-      return `http://127.0.0.1:${port}`;
+      return JSON.parse(String(line)) as unknown;
     } finally {
       child.stdout.resume();
     }
   }
 
-  async function stopObserver() {
-    const child = observer;
-    observer = undefined;
+  async function startVerifier() {
+    verifier = spawn('python3', [...options, 'verify', '--proof-socket', proofSocket]);
+    z.object({ listening: z.literal(true) }).parse(await readReady(verifier));
+  }
+
+  async function startObserver() {
+    observer = spawn('python3', [reader, '--proof-socket', proofSocket, '--port', '0'], {
+      env: { ...process.env, SNAPSHOT_REPLICA_INSPECTOR_TOKEN: token },
+    });
+    const port = portSchema.parse(await readReady(observer)).port;
+    return `http://127.0.0.1:${port}`;
+  }
+
+  async function stop(child: ChildProcessWithoutNullStreams | undefined) {
     if (child?.exitCode !== null || child.signalCode !== null) return;
     const exit = once(child, 'exit', { signal: AbortSignal.timeout(5000) });
     child.kill();
     await exit;
   }
 
+  async function stopObserver() {
+    await stop(observer);
+    observer = undefined;
+  }
+
+  async function stopVerifier() {
+    await stop(verifier);
+    verifier = undefined;
+  }
+
   async function cleanup() {
     try {
       await stopObserver();
+      await stopVerifier();
       if (container) await docker('rm', '-fv', container).catch(() => undefined);
     } finally {
       await rm(directory, { recursive: true, force: true });
@@ -92,6 +112,7 @@ export async function launchSnapshotDockerFixture(image: string, token: string) 
     const identity = identitySchema.parse(JSON.parse(stdout));
     container = `snapshot-${identity.replica_id}`;
     const containerName = container;
+    await startVerifier();
     const url = await startObserver();
     return {
       identity,
@@ -136,6 +157,8 @@ export async function launchSnapshotDockerFixture(image: string, token: string) 
       restoreEngine,
       startObserver,
       stopObserver,
+      startVerifier,
+      stopVerifier,
       cleanup,
     };
   } catch (error) {
