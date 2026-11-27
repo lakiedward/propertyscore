@@ -43,6 +43,10 @@ export type ValhallaClient = {
 
 type Fetch = typeof fetch;
 
+export type ValhallaRequestScope = {
+  run: <T>(request: () => Promise<T>) => Promise<T>;
+};
+
 const NO_ROUTE_ERROR_CODES = new Set([171, 442, 443]);
 
 const matrixCellSchema = z.object({
@@ -83,6 +87,14 @@ function costingOptions(costing: Costing, walkSpeedKmh: number | undefined) {
   return { pedestrian: { walking_speed: walkSpeedKmh } };
 }
 
+function parseResponseBody(body: string): unknown {
+  try {
+    return JSON.parse(body) as unknown;
+  } catch {
+    return null;
+  }
+}
+
 export function legFromMatrixCell(cell: z.infer<typeof matrixCellSchema>): Leg | null {
   if (cell.time == null || cell.distance == null) return null;
   return { seconds: Math.round(cell.time), meters: Math.round(cell.distance * 1000) };
@@ -99,32 +111,52 @@ export function chunkTargets<T>(targets: readonly T[], sources: number, maxPairs
 
 export function createValhallaClient(
   baseUrl: string,
-  options: { fetch?: Fetch; maxMatrixPairs?: number } = {},
+  options: { fetch?: Fetch; maxMatrixPairs?: number; requestScope?: ValhallaRequestScope } = {},
 ): ValhallaClient {
   const request = options.fetch ?? fetch;
   const maxPairs = options.maxMatrixPairs ?? 2500;
+  const scope = options.requestScope;
   const root = baseUrl.replace(/\/+$/, '');
 
-  async function call(
+  async function send(
     path: string,
-    body: unknown,
-    signal?: AbortSignal,
+    init?: RequestInit,
   ): Promise<{ status: number; json: unknown }> {
-    let response: Response;
-    try {
-      response = await request(`${root}${path}`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-        signal,
-      });
-    } catch (error) {
-      throw new WorkerError('walk_routing_unreachable', `Routing service unreachable on ${path}`, {
-        cause: error,
-      });
+    async function exchange() {
+      try {
+        const response = await request(
+          `${root}${path}`,
+          scope ? { ...init, signal: undefined, redirect: 'error' } : init,
+        );
+        const body = await response.text();
+        if (
+          scope &&
+          (response.status >= 500 || response.status === 408 || response.status === 499)
+        ) {
+          throw failed(path, response.status);
+        }
+        return { status: response.status, json: parseResponseBody(body) };
+      } catch (error) {
+        if (error instanceof WorkerError) throw error;
+        throw new WorkerError(
+          'walk_routing_unreachable',
+          `Routing service unreachable on ${path}`,
+          {
+            cause: error,
+          },
+        );
+      }
     }
-    const json: unknown = await response.json().catch(() => null);
-    return { status: response.status, json };
+    return scope ? scope.run(exchange) : exchange();
+  }
+
+  async function call(path: string, body: unknown, signal?: AbortSignal) {
+    return send(path, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+      signal,
+    });
   }
 
   function isNoRoute(status: number, json: unknown): boolean {
@@ -224,20 +256,9 @@ export function createValhallaClient(
     },
 
     async tilesetDate() {
-      let response: Response;
-      try {
-        response = await request(`${root}/status`);
-      } catch (error) {
-        throw new WorkerError(
-          'walk_routing_unreachable',
-          'Routing service unreachable on /status',
-          {
-            cause: error,
-          },
-        );
-      }
-      if (!response.ok) throw failed('/status', response.status);
-      const parsed = statusResponseSchema.safeParse(await response.json().catch(() => null));
+      const { status, json } = await send('/status');
+      if (status < 200 || status >= 300) throw failed('/status', status);
+      const parsed = statusResponseSchema.safeParse(json);
       const seconds = parsed.success ? parsed.data.tileset_last_modified : undefined;
       return seconds === undefined ? null : new Date(seconds * 1000).toISOString().slice(0, 10);
     },

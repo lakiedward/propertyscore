@@ -108,7 +108,6 @@ describe.skipIf(!databaseUrl || !hasOsmium())('air module against the local data
       scoreKeys: [],
       sourcesDir,
       osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
-      router: null,
       logger: silentLogger,
     });
     snapshotId = result.snapshotId;

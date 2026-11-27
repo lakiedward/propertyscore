@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 import { z } from 'zod';
 
 import { WorkerError } from '../../lib/errors.ts';
+import type { RoutingScope } from '../../routing/scope.ts';
 import { readCsvRecords } from './csv.ts';
 import type { AccessibilityParams } from './accessibility.params.ts';
 import { clockSeconds, nonEmpty } from './gtfs.ts';
@@ -38,6 +39,7 @@ export type RoutingJob = {
   withItineraries: boolean;
   workDir: string;
   signal?: AbortSignal;
+  scope?: Pick<RoutingScope, 'runLocal'>;
 };
 
 export type RoutingSettings = Pick<
@@ -218,6 +220,11 @@ export async function runTransitRouting(
   job: RoutingJob,
   runner: RoutingRunner = defaultRunner,
 ): Promise<RoutingResult> {
+  const route = () => runRoutingJob(job, runner);
+  return job.scope ? job.scope.runLocal(route) : route();
+}
+
+async function runRoutingJob(job: RoutingJob, runner: RoutingRunner): Promise<RoutingResult> {
   job.signal?.throwIfAborted();
   const outputDir = join(job.workDir, 'routing');
   await mkdir(outputDir, { recursive: true });

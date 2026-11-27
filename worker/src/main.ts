@@ -116,6 +116,7 @@ async function runBuildSnapshot(
   env: Env,
   logger: Logger,
 ): Promise<void> {
+  const routerUrl = env.VALHALLA_URL;
   const result = await buildSnapshot({
     databaseUrl: env.DATABASE_URL,
     modules: SCORE_MODULES,
@@ -126,7 +127,9 @@ async function runBuildSnapshot(
     sourcesDir: env.SOURCES_DIR,
     osmExtract: osmExtractSource(env),
     sourceMirror: sourceMirror(env),
-    router: reportRouter(env),
+    createRouter: routerUrl
+      ? (requestScope) => createValhallaClient(routerUrl, { requestScope })
+      : undefined,
     logger,
   });
   logger.info('build-snapshot done', {

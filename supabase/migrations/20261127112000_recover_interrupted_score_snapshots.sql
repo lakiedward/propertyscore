@@ -1,5 +1,6 @@
 alter table public.score_snapshots
-  add column uses_worker_lock boolean not null default false;
+  add column uses_worker_lock boolean not null default false,
+  add column routing_pending boolean not null default false;
 
 create function private.score_snapshot_lock_holders()
 returns setof integer
@@ -31,6 +32,10 @@ begin
 
   if exists (select 1 from private.score_snapshot_lock_holders()) then
     raise exception using errcode = 'P0001', message = 'snapshot_already_building';
+  end if;
+
+  if exists (select 1 from public.score_snapshots where routing_pending) then
+    raise exception using errcode = 'P0001', message = 'snapshot_routing_unconfirmed';
   end if;
 
   select v.id into v_version_id

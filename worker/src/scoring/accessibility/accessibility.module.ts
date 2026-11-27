@@ -291,6 +291,7 @@ export const accessibilityModule: ScoreModule = {
         withItineraries: false,
         workDir,
         signal: context.signal,
+        scope: context.routingScope,
       });
 
       await saveRoutingBundle(sql, snapshotId, city.id, {

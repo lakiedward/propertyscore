@@ -507,14 +507,14 @@ isOneToOne: false
                   ]
                 },"score_snapshots": {
                   Row: {
-                    "created_at": string,"error_code": string | null,"finished_at": string | null,"id": string,"period": string,"scoring_version_id": string,"source_dates": NonNullable<Json>,"started_at": string,"stats": NonNullable<Json>,"status": Database["public"]['Enums']["snapshot_status"],"updated_at": string,"uses_worker_lock": boolean
+                    "created_at": string,"error_code": string | null,"finished_at": string | null,"id": string,"period": string,"routing_pending": boolean,"scoring_version_id": string,"source_dates": NonNullable<Json>,"started_at": string,"stats": NonNullable<Json>,"status": Database["public"]['Enums']["snapshot_status"],"updated_at": string,"uses_worker_lock": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"error_code"?: string | null,"finished_at"?: string | null,"id"?: string,"period": string,"scoring_version_id": string,"source_dates"?: NonNullable<Json>,"started_at"?: string,"stats"?: NonNullable<Json>,"status"?: Database["public"]['Enums']["snapshot_status"],"updated_at"?: string,"uses_worker_lock"?: boolean
+                    "created_at"?: string,"error_code"?: string | null,"finished_at"?: string | null,"id"?: string,"period": string,"routing_pending"?: boolean,"scoring_version_id": string,"source_dates"?: NonNullable<Json>,"started_at"?: string,"stats"?: NonNullable<Json>,"status"?: Database["public"]['Enums']["snapshot_status"],"updated_at"?: string,"uses_worker_lock"?: boolean
                   }
                   Update: {
-                    "created_at"?: string,"error_code"?: string | null,"finished_at"?: string | null,"id"?: string,"period"?: string,"scoring_version_id"?: string,"source_dates"?: NonNullable<Json>,"started_at"?: string,"stats"?: NonNullable<Json>,"status"?: Database["public"]['Enums']["snapshot_status"],"updated_at"?: string,"uses_worker_lock"?: boolean
+                    "created_at"?: string,"error_code"?: string | null,"finished_at"?: string | null,"id"?: string,"period"?: string,"routing_pending"?: boolean,"scoring_version_id"?: string,"source_dates"?: NonNullable<Json>,"started_at"?: string,"stats"?: NonNullable<Json>,"status"?: Database["public"]['Enums']["snapshot_status"],"updated_at"?: string,"uses_worker_lock"?: boolean
                   }
                   Relationships: [
                     {

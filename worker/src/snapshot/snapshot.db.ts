@@ -66,6 +66,20 @@ export async function holdSnapshot(sql: Sql, version: SnapshotVersion): Promise<
   await sql`select private.hold_score_snapshot(${version.snapshotId}, ${version.lockOwnerPid})`;
 }
 
+export async function markSnapshotRouting(
+  sql: Sql,
+  snapshotId: string,
+  pending: boolean,
+): Promise<void> {
+  const [row] = await sql<{ id: string }[]>`
+    update public.score_snapshots
+    set routing_pending = ${pending}
+    where id = ${snapshotId} and status = 'building' and uses_worker_lock
+    returning id
+  `;
+  if (!row) throw new WorkerError('snapshot_not_building', 'Cannot set the snapshot routing state');
+}
+
 export async function prepareCityCells(
   sql: Sql,
   snapshotId: string,

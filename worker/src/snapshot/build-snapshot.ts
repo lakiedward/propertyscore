@@ -6,7 +6,8 @@ import { z } from 'zod';
 import { createSnapshotSql, type Sql } from '../db/sql.ts';
 import { errorCode, WorkerError } from '../lib/errors.ts';
 import type { Logger } from '../lib/logger.ts';
-import type { ValhallaClient } from '../routing/valhalla.ts';
+import { RoutingScope } from '../routing/scope.ts';
+import type { ValhallaClient, ValhallaRequestScope } from '../routing/valhalla.ts';
 import type { CategoryKey } from '../scoring/categories.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
 import type { SourceMirror } from '../sources/mirror.ts';
@@ -18,6 +19,7 @@ import {
   finishSnapshot,
   holdSnapshot,
   listCoveredCities,
+  markSnapshotRouting,
   prepareCityCells,
   startSnapshot,
 } from './snapshot.db.ts';
@@ -32,7 +34,7 @@ export type BuildSnapshotOptions = {
   sourcesDir: string;
   osmExtract: OsmExtractSource;
   sourceMirror?: SourceMirror;
-  router: ValhallaClient | null;
+  createRouter?: (scope: ValhallaRequestScope) => ValhallaClient;
   logger: Logger;
 };
 
@@ -126,22 +128,34 @@ async function buildSnapshotInSession(
     for (const module of modules) {
       signal.throwIfAborted();
       log('score started', { score: module.key });
-      const result = await module.run({
-        sql,
-        snapshotId: version.snapshotId,
-        period: version.period,
-        cellSizeM,
-        cities,
-        params: version.params[module.key],
-        sourcesDir: options.sourcesDir,
-        osmExtract: options.osmExtract,
-        sourceMirror: options.sourceMirror,
-        router: options.router,
-        logger,
-        signal,
+      const trackRouting = version.lockOwnerPid !== null;
+      const routing = new RoutingScope(signal, async () => {
+        if (trackRouting) await markSnapshotRouting(guard, version.snapshotId, true);
       });
-      Object.assign(sourceDates, result.sourceDates);
-      log('score finished', { score: module.key });
+      try {
+        const result = await module.run({
+          sql,
+          snapshotId: version.snapshotId,
+          period: version.period,
+          cellSizeM,
+          cities,
+          params: version.params[module.key],
+          sourcesDir: options.sourcesDir,
+          osmExtract: options.osmExtract,
+          sourceMirror: options.sourceMirror,
+          router: options.createRouter?.(routing) ?? null,
+          logger,
+          signal,
+          routingScope: routing,
+        });
+        Object.assign(sourceDates, result.sourceDates);
+        log('score finished', { score: module.key });
+      } finally {
+        await routing.drain();
+        if (trackRouting && routing.guardRecorded) {
+          await releaseSnapshotRouting(guard, options.databaseUrl, version.snapshotId);
+        }
+      }
     }
 
     signal.throwIfAborted();
@@ -156,10 +170,31 @@ async function buildSnapshotInSession(
   } catch (error) {
     const code = errorCode(error);
     logger.error('snapshot failed', { snapshot_id: version.snapshotId, code });
-    if (!signal.aborted) await failSnapshot(sql, version.snapshotId, code);
+    if (!signal.aborted && code !== 'snapshot_routing_unconfirmed') {
+      await failSnapshot(sql, version.snapshotId, code);
+    }
     throw error;
   } finally {
     await rm(workDir, { recursive: true, force: true });
+  }
+}
+
+async function releaseSnapshotRouting(guard: Sql, databaseUrl: string, snapshotId: string) {
+  try {
+    await markSnapshotRouting(guard, snapshotId, false);
+  } catch {
+    const cleanup = createSnapshotSql(databaseUrl);
+    try {
+      await markSnapshotRouting(cleanup, snapshotId, false);
+    } catch (error) {
+      throw new WorkerError(
+        'snapshot_routing_unconfirmed',
+        'Cannot clear the snapshot routing guard after routing ended',
+        { cause: error },
+      );
+    } finally {
+      await cleanup.end({ timeout: 5 });
+    }
   }
 }
 

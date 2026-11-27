@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(28);
+select plan(31);
 
 select results_eq(
   $$ select label, (select sum(value::numeric) from jsonb_each_text(weights)), params ->> 'cell_size_m' from public.scoring_versions where kind = 'online' and is_active $$,
@@ -208,6 +208,31 @@ select ok(
   not has_function_privilege('anon', 'private.start_score_snapshot(date,boolean)', 'EXECUTE')
   and not has_function_privilege('authenticated', 'private.start_score_snapshot(date,boolean)', 'EXECUTE'),
   'Visitors and signed-in users cannot start a session-owned build'
+);
+
+select pg_advisory_unlock_shared(hashtext('propertyscore.snapshot') & 2147483647, 1);
+update public.score_snapshots
+set routing_pending = true, started_at = now() - interval '13 hours'
+where id = :'owned_id';
+
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01', true) $$,
+  'P0001',
+  'snapshot_routing_unconfirmed',
+  'A lost session and an expired build do not prove that external routing stopped'
+);
+
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01') $$,
+  'P0001',
+  'snapshot_routing_unconfirmed',
+  'A legacy worker cannot bypass the routing guard'
+);
+
+select is(
+  (select id from public.score_snapshots where status = 'ready'),
+  :'second_id'::uuid,
+  'The routing guard leaves the existing ready snapshot alone'
 );
 
 set local role anon;

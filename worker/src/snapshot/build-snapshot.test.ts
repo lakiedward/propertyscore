@@ -1,10 +1,12 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { createServer, type ServerResponse } from 'node:http';
 import { delimiter, join } from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { createSnapshotSql, createSql, type Sql } from '../db/sql.ts';
 import { createLogger } from '../lib/logger.ts';
+import { createValhallaClient } from '../routing/valhalla.ts';
 import { runTransitRouting } from '../scoring/accessibility/routing.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
 import { cityBoundingBox } from '../sources/osm.ts';
@@ -69,6 +71,36 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
   let sourcesDir = '';
   const created: string[] = [];
 
+  const localBuild = () => ({
+    databaseUrl: databaseUrl ?? '',
+    period: '2026-11-01',
+    citySlugs: ['sibiu'],
+    scoreKeys: [],
+    sourcesDir,
+    osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
+    logger: silentLogger,
+  });
+
+  async function publishedScores() {
+    return [
+      ...(await sql<{ snapshot_id: string; cell_id: string; overall: number | null }[]>`
+        select snapshot_id, cell_id, overall, categories from private.cell_scores
+        where snapshot_id = private.current_score_snapshot_id()
+        order by cell_id
+      `),
+    ];
+  }
+
+  async function publishedScoreFixture() {
+    const recorded = await publishedScores();
+    if (recorded.some((row) => row.overall !== null)) return recorded;
+    const ready = await buildSnapshot({ ...localBuild(), modules: [fakeGreenModule] });
+    created.push(ready.snapshotId);
+    const populated = await publishedScores();
+    expect(populated.some((row) => row.overall === 80)).toBe(true);
+    return populated;
+  }
+
   beforeAll(async () => {
     sql = createSql(databaseUrl ?? '');
     sourcesDir = await prepareSourcesDir('sibiu.osm', '2026-11-01');
@@ -116,7 +148,6 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       scoreKeys: [],
       sourcesDir,
       osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
-      router: null,
       logger: silentLogger,
     });
     created.push(result.snapshotId);
@@ -160,11 +191,11 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     expect(box.east - box.west).toBeLessThan(0.2);
   });
 
-  it.skipIf(process.platform === 'win32')(
-    'stops a running transit child after SQL disconnect before allowing a replacement',
-    async () => {
-      const bin = join(sourcesDir, 'bin');
-      const routePidFile = join(sourcesDir, 'route.pid');
+  it.skipIf(process.platform === 'win32').each(['scoring', 'both'])(
+    'stops a running transit child after losing %s SQL sessions before allowing a replacement',
+    async (lostSessions) => {
+      const bin = join(sourcesDir, `bin-${lostSessions}`);
+      const routePidFile = join(bin, 'route.pid');
       await mkdir(bin);
       await writeFile(
         join(bin, 'python3'),
@@ -176,20 +207,18 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         ].join('\n'),
         { mode: 0o755 },
       );
-      const [ready] = await sql<{ id: string | null }[]>`
-        select private.current_score_snapshot_id() as id
-      `;
+      const published = await publishedScoreFixture();
       const owner = Promise.withResolvers<{ pid: number; snapshotId: string }>();
       const releaseBuild = Promise.withResolvers<undefined>();
       let routeHasStopped = false;
       const retry = createSnapshotSql(databaseUrl ?? '');
       vi.stubEnv('PATH', [bin, process.env.PATH ?? ''].join(delimiter));
       const old = buildSnapshot({
-        databaseUrl: databaseUrl ?? '',
+        ...localBuild(),
         modules: [
           {
             key: 'accessibility',
-            run: async ({ sql: workerSql, snapshotId, signal }) => {
+            run: async ({ sql: workerSql, snapshotId, signal, routingScope }) => {
               created.push(snapshotId);
               const [session] = await workerSql<{ pid: number }[]>`select pg_backend_pid() as pid`;
               if (!session) throw new Error('Missing build session');
@@ -211,8 +240,9 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
                   destinations: [],
                   withMatrix: true,
                   withItineraries: false,
-                  workDir: join(sourcesDir, 'disconnect-routing'),
+                  workDir: join(sourcesDir, `disconnect-routing-${lostSessions}`),
                   signal,
+                  scope: routingScope,
                 });
               } finally {
                 routeHasStopped = true;
@@ -222,13 +252,6 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
             },
           },
         ],
-        period: '2026-11-01',
-        citySlugs: ['sibiu'],
-        scoreKeys: [],
-        sourcesDir,
-        osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
-        router: null,
-        logger: silentLogger,
       }).then(
         () => ({ error: null }),
         (error: unknown) => ({ error }),
@@ -248,27 +271,35 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         childPid = routePid;
         expect(process.kill(routePid, 0)).toBe(true);
 
-        const [terminated] = await sql<{ ok: boolean }[]>`
-          select pg_terminate_backend(${ownerPid}, 5000) as ok
+        const sessions = await sql<{ pid: number }[]>`
+          select pid from private.score_snapshot_lock_holders() holder(pid)
         `;
-        expect(terminated?.ok).toBe(true);
+        expect(sessions).toHaveLength(2);
+        const terminate = lostSessions === 'both' ? sessions.map((session) => session.pid) : [pid];
+        const terminated = await sql<{ ok: boolean }[]>`
+          select pg_terminate_backend(killed.pid, 5000) as ok
+          from unnest(${sql.array(terminate)}::integer[]) killed(pid)
+        `;
+        expect(terminated.every((row) => row.ok)).toBe(true);
         ownerPid = undefined;
         await expect.poll(() => routeHasStopped).toBe(true);
         expect(() => process.kill(routePid, 0)).toThrow(expect.objectContaining({ code: 'ESRCH' }));
         childPid = undefined;
         await expect(startSnapshot(retry, '2026-11-01')).rejects.toMatchObject({
-          message: 'snapshot_already_building',
+          message:
+            lostSessions === 'both' ? 'snapshot_routing_unconfirmed' : 'snapshot_already_building',
         });
+        expect(await publishedScores()).toEqual(published);
 
         releaseBuild.resolve(undefined);
         expect((await old).error).toMatchObject({ code: 'snapshot_connection_lost' });
         const replacement = await startSnapshot(retry, '2026-11-01');
         created.push(replacement.snapshotId);
-        const [state] = await sql<{ ready_id: string | null; abandoned: string | null }[]>`
-          select private.current_score_snapshot_id() as ready_id,
-            (select error_code from public.score_snapshots where id = ${snapshotId}) as abandoned
+        const [state] = await sql<{ status: string; error_code: string | null }[]>`
+          select status, error_code from public.score_snapshots where id = ${snapshotId}
         `;
-        expect(state).toEqual({ ready_id: ready?.id ?? null, abandoned: 'abandoned' });
+        expect(state).toEqual({ status: 'failed', error_code: 'abandoned' });
+        expect(await publishedScores()).toEqual(published);
       } finally {
         releaseBuild.resolve(undefined);
         if (childPid !== undefined) {
@@ -282,6 +313,123 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         await old;
         await retry.end({ timeout: 5 });
         vi.unstubAllEnvs();
+      }
+    },
+  );
+
+  it.each(['completed', 'unconfirmed'])(
+    'stops sending Valhalla requests on disconnect and handles %s in-flight work',
+    async (outcome) => {
+      const published = await publishedScoreFixture();
+      const responses: ServerResponse[] = [];
+      const server = createServer((request, response) => {
+        request.resume();
+        responses.push(response);
+      });
+      await new Promise<void>((resolve, reject) => {
+        server.once('error', reject);
+        server.listen(0, '127.0.0.1', resolve);
+      });
+      const address = server.address();
+      if (!address || typeof address === 'string') throw new Error('Missing test router port');
+      const owner = Promise.withResolvers<{
+        pid: number;
+        snapshotId: string;
+        signal: AbortSignal;
+      }>();
+      let moduleEnded = false;
+      const build = buildSnapshot({
+        ...localBuild(),
+        createRouter: (requestScope) =>
+          createValhallaClient(`http://127.0.0.1:${address.port}`, {
+            maxMatrixPairs: 1,
+            requestScope,
+          }),
+        modules: [
+          {
+            key: 'fifteen_minute',
+            run: async ({ sql: workerSql, snapshotId, router, signal }) => {
+              created.push(snapshotId);
+              const [session] = await workerSql<{ pid: number }[]>`select pg_backend_pid() as pid`;
+              if (!session || !router || !signal) throw new Error('Missing routing test context');
+              owner.resolve({ pid: session.pid, snapshotId, signal });
+              const origin = { lng: 24.15, lat: 45.79 };
+              const job = {
+                costing: 'pedestrian' as const,
+                sources: [origin],
+                targets: [origin, origin],
+              };
+              try {
+                await Promise.all([router.matrix(job), router.matrix(job)]);
+              } finally {
+                moduleEnded = true;
+              }
+              return { sourceDates: {} };
+            },
+          },
+        ],
+      }).then(
+        () => ({ error: null }),
+        (error: unknown) => ({ error }),
+      );
+      const retry = createSnapshotSql(databaseUrl ?? '');
+      const reply = (response: ServerResponse | undefined) => {
+        if (!response) throw new Error('Missing in-flight Valhalla request');
+        response.end('{"sources_to_targets":[[{"distance":0.5,"time":400}]]}');
+      };
+      try {
+        const { pid, snapshotId, signal } = await Promise.race([
+          owner.promise,
+          build.then(({ error }) => {
+            throw new Error('Build ended before Valhalla', { cause: error });
+          }),
+        ]);
+        await expect.poll(() => responses.length).toBe(2);
+        const [terminated] = await sql<{ ok: boolean }[]>`
+          select pg_terminate_backend(${pid}, 5000) as ok
+        `;
+        expect(terminated?.ok).toBe(true);
+        await expect.poll(() => signal.aborted).toBe(true);
+        reply(responses[0]);
+        await expect.poll(() => moduleEnded).toBe(true);
+        expect(responses).toHaveLength(2);
+        expect(responses[1]?.destroyed).toBe(false);
+        await expect(startSnapshot(retry, '2026-11-01')).rejects.toMatchObject({
+          message: 'snapshot_already_building',
+        });
+        expect(await publishedScores()).toEqual(published);
+
+        if (outcome === 'completed') {
+          reply(responses[1]);
+          expect((await build).error).toMatchObject({ code: 'snapshot_connection_lost' });
+          const replacement = await startSnapshot(retry, '2026-11-01');
+          created.push(replacement.snapshotId);
+          const [state] = await sql<{ error_code: string | null }[]>`
+            select error_code from public.score_snapshots where id = ${snapshotId}
+          `;
+          expect(state?.error_code).toBe('abandoned');
+        } else {
+          responses[1]?.destroy();
+          expect((await build).error).toMatchObject({ code: 'snapshot_routing_unconfirmed' });
+          await sql`
+            update public.score_snapshots set started_at = now() - interval '13 hours'
+            where id = ${snapshotId}
+          `;
+          await expect(startSnapshot(retry, '2026-11-01')).rejects.toMatchObject({
+            message: 'snapshot_routing_unconfirmed',
+          });
+        }
+        expect(responses).toHaveLength(2);
+        expect(await publishedScores()).toEqual(published);
+      } finally {
+        server.closeAllConnections();
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+        await build;
+        await retry.end({ timeout: 5 });
+        await sql`
+          delete from public.score_snapshots where id in ${sql(created)}
+            and routing_pending
+        `;
       }
     },
   );
@@ -300,7 +448,6 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         scoreKeys: [],
         sourcesDir,
         osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
-        router: null,
         logger: createLogger('info', (line) => lines.push(line)),
       }),
     ).rejects.toMatchObject({ code: 'snapshot_partial_city_selection' });
@@ -334,7 +481,6 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
           scoreKeys: [],
           sourcesDir,
           osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
-          router: null,
           logger: createLogger('info', (line) => lines.push(line)),
         }),
       ).rejects.toMatchObject({ code: 'snapshot_partial_city_selection' });
@@ -373,7 +519,6 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         scoreKeys: [],
         sourcesDir,
         osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
-        router: null,
         logger: silentLogger,
       }),
     ).rejects.toThrow('source_missing');
