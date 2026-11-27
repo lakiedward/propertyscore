@@ -189,6 +189,46 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     );
   });
 
+  it('refuses a selection that leaves out a covered city before starting a snapshot', async () => {
+    const lines: string[] = [];
+    await sql`update public.cities set has_online_coverage = true where slug = 'timisoara'`;
+    try {
+      const [before] = await sql<
+        { count: number }[]
+      >`select count(*)::int as count from public.score_snapshots`;
+      await expect(
+        buildSnapshot({
+          sql,
+          modules: [fakeGreenModule],
+          period: '2026-11-01',
+          citySlugs: ['sibiu'],
+          scoreKeys: [],
+          sourcesDir,
+          osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
+          router: null,
+          logger: createLogger('info', (line) => lines.push(line)),
+        }),
+      ).rejects.toMatchObject({ code: 'snapshot_partial_city_selection' });
+      const [after] = await sql<
+        { count: number }[]
+      >`select count(*)::int as count from public.score_snapshots`;
+      expect(after?.count).toBe(before?.count);
+      expect(lines.map((line) => JSON.parse(line) as Record<string, unknown>)).toContainEqual(
+        expect.objectContaining({
+          message: 'snapshot cities selected',
+          city_filter: 'sibiu',
+          covered_cities: 2,
+          selected_cities: 1,
+          selected: 'sibiu',
+          missing: 'timisoara',
+          unknown: '',
+        }),
+      );
+    } finally {
+      await sql`update public.cities set has_online_coverage = false where slug = 'timisoara'`;
+    }
+  });
+
   it('marks the snapshot failed with the module error code', async () => {
     const failing: ScoreModule = {
       key: 'air',
