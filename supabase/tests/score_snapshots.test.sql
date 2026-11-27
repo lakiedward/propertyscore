@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(28);
 
 select results_eq(
   $$ select label, (select sum(value::numeric) from jsonb_each_text(weights)), params ->> 'cell_size_m' from public.scoring_versions where kind = 'online' and is_active $$,
@@ -180,6 +180,34 @@ select results_eq(
   format($$ select status::text, error_code from public.score_snapshots where id = %L $$, :'stale_id'),
   $$ values ('failed'::text, 'abandoned'::text) $$,
   'A build left running for more than 12 hours is abandoned when a new one starts'
+);
+
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01', true) $$,
+  'P0001',
+  'snapshot_already_building',
+  'A worker cannot reclaim a recent build created without a session lock'
+);
+
+select private.fail_score_snapshot(:'fresh_id', 'test_setup');
+select private.start_score_snapshot('2027-02-01', true) as owned_id \gset
+
+select ok(
+  (select uses_worker_lock from public.score_snapshots where id = :'owned_id'),
+  'A candidate started with the new worker is marked as session-owned'
+);
+
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01', true) $$,
+  'P0001',
+  'snapshot_already_building',
+  'The session owning a build cannot start another candidate'
+);
+
+select ok(
+  not has_function_privilege('anon', 'private.start_score_snapshot(date,boolean)', 'EXECUTE')
+  and not has_function_privilege('authenticated', 'private.start_score_snapshot(date,boolean)', 'EXECUTE'),
+  'Visitors and signed-in users cannot start a session-owned build'
 );
 
 set local role anon;

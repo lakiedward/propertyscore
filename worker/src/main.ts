@@ -111,35 +111,39 @@ async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<voi
   }
 }
 
+async function runBuildSnapshot(
+  command: Extract<WorkerCommand, { command: 'build-snapshot' }>,
+  env: Env,
+  logger: Logger,
+): Promise<void> {
+  const result = await buildSnapshot({
+    databaseUrl: env.DATABASE_URL,
+    modules: SCORE_MODULES,
+    period: command.period,
+    citySlugs: command.citySlugs,
+    scoreKeys: command.scoreKeys,
+    allowPartialCities: command.allowPartialCities,
+    sourcesDir: env.SOURCES_DIR,
+    osmExtract: osmExtractSource(env),
+    sourceMirror: sourceMirror(env),
+    router: reportRouter(env),
+    logger,
+  });
+  logger.info('build-snapshot done', {
+    snapshot_id: result.snapshotId,
+    cities: result.cities,
+    cells: result.cells,
+    scores: result.scores.join(','),
+  });
+}
+
 async function runCommand(
-  command: WorkerCommand,
+  command: Exclude<WorkerCommand, { command: 'build-snapshot' }>,
   sql: Sql,
   env: Env,
   logger: Logger,
 ): Promise<void> {
   switch (command.command) {
-    case 'build-snapshot': {
-      const result = await buildSnapshot({
-        databaseUrl: env.DATABASE_URL,
-        modules: SCORE_MODULES,
-        period: command.period,
-        citySlugs: command.citySlugs,
-        scoreKeys: command.scoreKeys,
-        allowPartialCities: command.allowPartialCities,
-        sourcesDir: env.SOURCES_DIR,
-        osmExtract: osmExtractSource(env),
-        sourceMirror: sourceMirror(env),
-        router: reportRouter(env),
-        logger,
-      });
-      logger.info('build-snapshot done', {
-        snapshot_id: result.snapshotId,
-        cities: result.cities,
-        cells: result.cells,
-        scores: result.scores.join(','),
-      });
-      return;
-    }
     case 'generate-report':
       await generateReport({
         sql,
@@ -274,6 +278,10 @@ async function main(): Promise<void> {
   }
   const env = readEnv();
   const logger = createLogger(env.LOG_LEVEL, undefined, { service: 'worker' });
+  if (command.command === 'build-snapshot') {
+    await runBuildSnapshot(command, env, logger);
+    return;
+  }
   const sql = createSql(env.DATABASE_URL);
   try {
     await runCommand(command, sql, env, logger);

@@ -54,8 +54,6 @@ const cellSchema = z.object({
   candidates: z.array(candidateSchema),
 });
 
-const CELL_BATCH = 200;
-
 export type CellCandidates<T extends Candidate> = {
   cell_id: string;
   lng: number;
@@ -186,11 +184,14 @@ export async function computeWalkAccess(options: ComputeWalkAccessOptions): Prom
   const distanceMethod: DistanceMethod = router ? 'pedestrian_routing' : 'straight_line';
   return withLongStatements(sql, async (transaction) => {
     let written = 0;
-    const cursor = transaction`
+    await transaction`
+      declare walk_candidates no scroll cursor for
       select cell_id, lng, lat, candidates
       from private.walk_access_candidates(${snapshotId}, ${cityId}, ${transaction.json(targetsJson(targets))}::jsonb)
-    `.cursor(CELL_BATCH);
-    for await (const batch of cursor) {
+    `;
+    for (;;) {
+      const batch = await transaction`fetch forward 200 from walk_candidates`;
+      if (batch.length === 0) return written;
       const cells = z.array(cellSchema).parse(batch);
       const rows = await mapWithConcurrency(cells, options.concurrency ?? 4, async (cell) => {
         const legs = await legsFromOrigin(
@@ -202,12 +203,11 @@ export async function computeWalkAccess(options: ComputeWalkAccessOptions): Prom
         );
         return walkAccessRowsForCell(cell.cell_id, targets, cell.candidates, legs, distanceMethod);
       });
-      const [result] = await sql<{ written: number }[]>`
-        select private.write_cell_walk_access(${snapshotId}, ${sql.json(rows.flat())}::jsonb) as written
+      const [result] = await transaction<{ written: number }[]>`
+        select private.write_cell_walk_access(${snapshotId}, ${transaction.json(rows.flat())}::jsonb) as written
       `;
       written += result?.written ?? 0;
     }
-    return written;
   });
 }
 
