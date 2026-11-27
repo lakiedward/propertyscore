@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(35);
 
 select results_eq(
   $$ select label, (select sum(value::numeric) from jsonb_each_text(weights)), params ->> 'cell_size_m' from public.scoring_versions where kind = 'online' and is_active $$,
@@ -43,7 +43,7 @@ select results_eq(
 select throws_ok(
   $$ select private.start_score_snapshot('2026-11-01') $$,
   'P0001',
-  'snapshot_already_building',
+  'snapshot_legacy_unconfirmed',
   'A second build cannot start while one is building'
 );
 
@@ -164,22 +164,102 @@ select results_eq(
 );
 
 select private.start_score_snapshot('2027-01-01') as failed_id \gset
-select private.fail_score_snapshot(:'failed_id', 'osmium_failed');
+select private.fail_score_snapshot(:'failed_id', 'cams_job_timeout');
 
 select results_eq(
-  format($$ select status::text, error_code, finished_at is not null from public.score_snapshots where id = %L $$, :'failed_id'),
-  $$ values ('failed'::text, 'osmium_failed'::text, true) $$,
-  'A failed build keeps its error code and does not replace the current snapshot'
+  format($$ select status::text, error_code, finished_at is not null, routing_pending from public.score_snapshots where id = %L $$, :'failed_id'),
+  $$ values ('failed'::text, 'cams_job_timeout'::text, true, true) $$,
+  'A legacy failure keeps its error code and retains the guard without external evidence'
 );
+
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01') $$,
+  'P0001',
+  'snapshot_routing_unconfirmed',
+  'A legacy worker cannot start again after an unverified legacy failure'
+);
+
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01', true) $$,
+  'P0001',
+  'snapshot_routing_unconfirmed',
+  'A new worker cannot start after an unverified legacy failure'
+);
+
+select is(
+  private.current_score_snapshot_id(),
+  :'second_id'::uuid,
+  'A legacy failure leaves the published snapshot active'
+);
+
+delete from public.score_snapshots where id = :'failed_id';
 
 select private.start_score_snapshot('2027-02-01') as stale_id \gset
 update public.score_snapshots set started_at = now() - interval '13 hours' where id = :'stale_id';
-select private.start_score_snapshot('2027-02-01') as fresh_id \gset
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01') $$,
+  'P0001',
+  'snapshot_legacy_unconfirmed',
+  'A legacy worker cannot take over an old unconfirmed build'
+);
+
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01', true) $$,
+  'P0001',
+  'snapshot_legacy_unconfirmed',
+  'Elapsed time is not proof that a legacy build ended'
+);
 
 select results_eq(
-  format($$ select status::text, error_code from public.score_snapshots where id = %L $$, :'stale_id'),
-  $$ values ('failed'::text, 'abandoned'::text) $$,
-  'A build left running for more than 12 hours is abandoned when a new one starts'
+  format($$ select status::text, error_code, finished_at from public.score_snapshots where id = %L $$, :'stale_id'),
+  $$ values ('building'::text, null::text, null::timestamptz) $$,
+  'Both rejected starts leave the old candidate untouched'
+);
+
+delete from public.score_snapshots where id = :'stale_id';
+select private.start_score_snapshot('2027-02-01', true) as owned_id \gset
+
+select ok(
+  (select uses_worker_lock from public.score_snapshots where id = :'owned_id'),
+  'A candidate started with the new worker is marked as session-owned'
+);
+
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01', true) $$,
+  'P0001',
+  'snapshot_already_building',
+  'The session owning a build cannot start another candidate'
+);
+
+select ok(
+  not has_function_privilege('anon', 'private.start_score_snapshot(date,boolean)', 'EXECUTE')
+  and not has_function_privilege('authenticated', 'private.start_score_snapshot(date,boolean)', 'EXECUTE'),
+  'Visitors and signed-in users cannot start a session-owned build'
+);
+
+select pg_advisory_unlock_shared(hashtext('propertyscore.snapshot') & 2147483647, 1);
+update public.score_snapshots
+set routing_pending = true, started_at = now() - interval '13 hours'
+where id = :'owned_id';
+
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01', true) $$,
+  'P0001',
+  'snapshot_routing_unconfirmed',
+  'A lost session and an expired build do not prove that external routing stopped'
+);
+
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01') $$,
+  'P0001',
+  'snapshot_routing_unconfirmed',
+  'A legacy worker cannot bypass the routing guard'
+);
+
+select is(
+  (select id from public.score_snapshots where status = 'ready'),
+  :'second_id'::uuid,
+  'The routing guard leaves the existing ready snapshot alone'
 );
 
 set local role anon;
