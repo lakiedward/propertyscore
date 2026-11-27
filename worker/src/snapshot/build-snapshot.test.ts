@@ -10,13 +10,15 @@ import { createSnapshotSql, createSql, type Sql } from '../db/sql.ts';
 import { createLogger } from '../lib/logger.ts';
 import { createValhallaClient } from '../routing/valhalla.ts';
 import { runTransitRouting } from '../scoring/accessibility/routing.ts';
-import { downloadCamsMonth } from '../scoring/air/cams.source.ts';
+import { createCamsJobVerifier, downloadCamsMonth } from '../scoring/air/cams.source.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
 import { cityBoundingBox } from '../sources/osm.ts';
 import { limitCoveredCities } from '../test/coverage-fixture.ts';
 import { hasOsmium, prepareSourcesDir } from '../test/osm-fixture.ts';
 import { writeCategoryScores } from '../scoring/write-category-scores.ts';
 import { buildSnapshot, selectModules } from './build-snapshot.ts';
+import { recoverSnapshot } from './recover-snapshot.ts';
+import { recordSnapshotExecution, trackCamsAttempts } from './recovery.db.ts';
 import { startSnapshot } from './snapshot.db.ts';
 
 const silentLogger = createLogger('error', () => undefined);
@@ -503,6 +505,64 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       }
     },
   );
+
+  it('does not release the guard unless all evidence matches the same execution', async () => {
+    const published = await publishedScoreFixture();
+    const owner = createSnapshotSql(databaseUrl ?? '');
+    const registry = {
+      endpoint: 'http://127.0.0.1:1',
+      fenceAndCheck: vi.fn().mockResolvedValue(false),
+    };
+    const cams = createCamsJobVerifier('http://127.0.0.1:2', 'test-key');
+    const camsTerminal = vi.spyOn(cams, 'isTerminal').mockResolvedValue(false);
+    const replicaStopped = vi.fn().mockResolvedValue(false);
+    try {
+      const { snapshotId } = await startSnapshot(owner, '2026-11-01');
+      created.push(snapshotId);
+      const recover = () => recoverSnapshot({ sql, snapshotId, replicaStopped, registry, cams });
+      await expect(recover()).resolves.toBe('busy');
+      expect(replicaStopped).not.toHaveBeenCalled();
+      await owner.end({ timeout: 5 });
+      await expect(recover()).resolves.toBe('execution_unconfirmed');
+      const ledgerId = 'ca3e8efb-ba90-4367-9b67-e4d79dabdfa6';
+      await recordSnapshotExecution(sql, snapshotId, 'replica-1', registry.endpoint, ledgerId);
+      await sql`update public.score_snapshots set routing_pending = true where id = ${snapshotId}`;
+      const recordJob = await trackCamsAttempts(sql, snapshotId)(cams.endpoint);
+
+      await expect(recover()).resolves.toBe('replica_unconfirmed');
+      expect(replicaStopped).toHaveBeenCalledWith('replica-1', snapshotId, expect.any(AbortSignal));
+      expect(registry.fenceAndCheck).not.toHaveBeenCalled();
+      replicaStopped.mockResolvedValue(true);
+      await expect(recover()).resolves.toBe('valhalla_unconfirmed');
+      expect(registry.fenceAndCheck).toHaveBeenCalledWith(
+        snapshotId,
+        ledgerId,
+        expect.any(AbortSignal),
+      );
+      expect(camsTerminal).not.toHaveBeenCalled();
+      registry.fenceAndCheck.mockResolvedValue(true);
+      await expect(recover()).resolves.toBe('cams_unconfirmed');
+      expect(camsTerminal).not.toHaveBeenCalled();
+      await recordJob('job-1');
+      await expect(recover()).resolves.toBe('cams_unconfirmed');
+      expect(camsTerminal).toHaveBeenCalledWith('job-1', expect.any(AbortSignal));
+      expect(await publishedScores()).toEqual(published);
+      camsTerminal.mockResolvedValue(true);
+      await expect(recover()).resolves.toBe('recovered');
+      await expect(recover()).resolves.toBe('execution_unconfirmed');
+      const [abandoned] = await sql`
+        select status, routing_pending, error_code from public.score_snapshots where id = ${snapshotId}
+      `;
+      expect(abandoned).toEqual({
+        status: 'failed',
+        routing_pending: false,
+        error_code: 'abandoned',
+      });
+      expect(await publishedScores()).toEqual(published);
+    } finally {
+      await owner.end({ timeout: 5 });
+    }
+  });
 
   it.each(['timeout', 'lost submission', 'terminal failure'])(
     'releases the CAMS guard only on confirmed completion (%s)',

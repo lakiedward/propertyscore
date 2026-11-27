@@ -23,8 +23,10 @@ const CAMS_VARIABLES: Record<Pollutant, string> = {
 const HOURS = Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, '0')}:00`);
 
 const jobSchema = z.object({ jobID: z.string().min(1), status: z.string() });
-const statusSchema = z.object({ status: z.string() });
+const statusSchema = z.object({ status: z.string(), jobID: z.string().optional() });
 const resultsSchema = z.object({ asset: z.object({ value: z.object({ href: z.url() }) }) });
+
+export type RecordCamsAttempt = (adsUrl: string) => Promise<(jobId: string) => Promise<void>>;
 
 type AdsClientOptions = {
   apiUrl: string;
@@ -35,6 +37,7 @@ type AdsClientOptions = {
   logger?: Logger;
   signal?: AbortSignal;
   requestScope?: Pick<RoutingScope, 'run'>;
+  recordAttempt?: RecordCamsAttempt;
 };
 
 type CamsDownloadOptions = AdsClientOptions & {
@@ -87,6 +90,8 @@ async function adsJson(
     method: body === undefined ? 'GET' : 'POST',
     headers: { 'PRIVATE-TOKEN': options.apiKey, 'Content-Type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
+    redirect: 'error',
+    cache: 'no-store',
     signal,
   });
   if (!response.ok) {
@@ -98,17 +103,70 @@ async function adsJson(
   return response.json();
 }
 
+export function isTerminalCamsJob(status: string): boolean {
+  return (
+    status === 'successful' ||
+    status === 'failed' ||
+    status === 'rejected' ||
+    status === 'dismissed'
+  );
+}
+
+export function isActiveCamsJob(status: string): boolean {
+  return status === 'accepted' || status === 'running' || status === 'queued';
+}
+
+async function camsJobStatus(
+  options: AdsClientOptions,
+  jobUrl: string,
+  jobId: string,
+  signal: AbortSignal,
+) {
+  const polled = statusSchema.safeParse(await adsJson(options, jobUrl, signal));
+  if (!polled.success || (polled.data.jobID !== undefined && polled.data.jobID !== jobId)) {
+    throw new WorkerError('cams_request_failed', 'ADS job status could not be verified');
+  }
+  return polled.data.status;
+}
+
+export function createCamsJobVerifier(apiUrl: string, apiKey: string) {
+  const endpoint = apiUrl.replace(/\/+$/, '');
+  const read = async (jobId: string, signal: AbortSignal) => {
+    const id = z
+      .string()
+      .regex(/^[A-Za-z0-9_-]+$/)
+      .parse(jobId);
+    const job = jobSchema.parse(
+      await adsJson({ apiUrl: endpoint, apiKey }, `${endpoint}/retrieve/v1/jobs/${id}`, signal),
+    );
+    if (job.jobID !== id) {
+      throw new WorkerError('cams_request_failed', 'ADS job identity changed');
+    }
+    return job.status;
+  };
+  return {
+    endpoint,
+    read,
+    async isTerminal(jobId: string, signal: AbortSignal) {
+      return isTerminalCamsJob(await read(jobId, signal));
+    },
+  };
+}
+
 async function waitForCamsJob(
   options: CamsDownloadOptions,
   signal: AbortSignal,
 ): Promise<{ jobUrl: string; status: string }> {
-  const base = options.apiUrl.replace(/\/$/, '');
+  const base = options.apiUrl.replace(/\/+$/, '');
+  const recordJobId = await options.recordAttempt?.(base);
+  signal.throwIfAborted();
   const submitted = jobSchema.safeParse(
     await adsJson(options, `${base}/retrieve/v1/processes/${CAMS_DATASET}/execution`, signal, {
       inputs: camsRequest(options.pollutant, options.month),
     }),
   );
   if (!submitted.success) throw new WorkerError('cams_request_failed', 'ADS did not return a job');
+  await recordJobId?.(submitted.data.jobID);
   const jobUrl = `${base}/retrieve/v1/jobs/${encodeURIComponent(submitted.data.jobID)}`;
   options.logger?.info('cams job submitted', {
     pollutant: options.pollutant,
@@ -117,23 +175,15 @@ async function waitForCamsJob(
 
   let status = submitted.data.status;
   for (;;) {
-    if (
-      status === 'successful' ||
-      status === 'failed' ||
-      status === 'rejected' ||
-      status === 'dismissed'
-    ) {
+    if (isTerminalCamsJob(status)) {
       return { jobUrl, status };
     }
-    if (status !== 'accepted' && status !== 'running' && status !== 'queued') {
+    if (!isActiveCamsJob(status)) {
       throw new WorkerError('cams_request_failed', 'ADS job completion is unknown');
     }
     const interval = options.pollIntervalMs ?? 30_000;
     await (options.sleep ? options.sleep(interval) : delay(interval, undefined, { signal }));
-    const polled = statusSchema.safeParse(await adsJson(options, jobUrl, signal));
-    if (!polled.success)
-      throw new WorkerError('cams_request_failed', 'ADS job status is unreadable');
-    status = polled.data.status;
+    status = await camsJobStatus(options, jobUrl, submitted.data.jobID, signal);
   }
 }
 

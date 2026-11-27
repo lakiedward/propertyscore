@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { readEnv } from './env.ts';
+import { readEnv, readSnapshotStatusEnv } from './env.ts';
 
 describe('readEnv', () => {
   it('needs a Postgres URL and fills the defaults', () => {
@@ -37,5 +37,35 @@ describe('readEnv', () => {
         message: 'Invalid worker environment: DATABASE_URL',
       }),
     );
+  });
+});
+
+describe('readSnapshotStatusEnv', () => {
+  const readOnlyEnv = {
+    SNAPSHOT_STATUS_DATABASE_URL: 'postgresql://snapshot_reader@db.example.test/postgres',
+    SNAPSHOT_STATUS_TOKEN: 'a'.repeat(32),
+  };
+
+  it('uses a dedicated database connection and binds to loopback by default', () => {
+    expect(readSnapshotStatusEnv(readOnlyEnv)).toMatchObject({
+      SNAPSHOT_STATUS_HOST: '127.0.0.1',
+      SNAPSHOT_STATUS_DATABASE_URL: readOnlyEnv.SNAPSHOT_STATUS_DATABASE_URL,
+    });
+    expect(() =>
+      readSnapshotStatusEnv({
+        DATABASE_URL: readOnlyEnv.SNAPSHOT_STATUS_DATABASE_URL,
+        SNAPSHOT_STATUS_TOKEN: readOnlyEnv.SNAPSHOT_STATUS_TOKEN,
+      }),
+    ).toThrow(/SNAPSHOT_STATUS_DATABASE_URL/);
+  });
+
+  it('does not replace the Valhalla read token with a control token', () => {
+    expect(() =>
+      readSnapshotStatusEnv({
+        ...readOnlyEnv,
+        VALHALLA_REGISTRY_URL: 'https://router.example.test',
+        VALHALLA_REGISTRY_CONTROL_TOKEN: 'b'.repeat(48),
+      }),
+    ).toThrow(/VALHALLA_REGISTRY_READ_TOKEN/);
   });
 });

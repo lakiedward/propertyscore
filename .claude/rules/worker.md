@@ -178,6 +178,16 @@ pnpm test:worker          # worker Vitest suite; the database tests run when DAT
 - A test that builds a snapshot gets its OSM data from a small `.osm` fixture in `src/sources/fixtures/` through `prepareSourcesDir`, never from the network.
 - Tests that need `osmium`, GDAL, `xls2csv` or `pdftotext` use `describe.skipIf` on their presence; CI installs `osmium-tool`, `gdal-bin`, `catdoc` and `poppler-utils`.
 
+## Snapshot run status
+
+`node src/main.ts serve-snapshot-status` runs the authenticated read-only status server from the worker image. Read one exact snapshot with `GET /runs/<snapshot-uuid>` and `Authorization: Bearer <SNAPSHOT_STATUS_TOKEN>`. Assign the bot only this token and approved network access over TLS or a private tunnel. The response reports `active`, `stopped` or `unknown` plus a reason for each of worker, Valhalla and ADS. `work_ended` means all three proofs were observed for that run; it does not clear the guard, start recovery or guarantee a new snapshot can start. Legacy snapshots have no stored identity and remain unknown.
+
+The server binds to loopback by default (`SNAPSHOT_STATUS_HOST`, `SNAPSHOT_STATUS_PORT`). Give it `SNAPSHOT_STATUS_DATABASE_URL` for a dedicated login granted only `snapshot_status_reader`, `VALHALLA_REGISTRY_URL` with `VALHALLA_REGISTRY_READ_TOKEN`, and the credential for the execution's ADS account in `ADS_API_KEY`. The caller does not receive these credentials. The status server sends only GET requests and does not receive the Valhalla routing or control token. Valhalla is stopped only after the separate control path fences the same run and the registry confirms it drained.
+
+The instrumented builder uses `VALHALLA_REGISTRY_URL`, `VALHALLA_REGISTRY_CONTROL_TOKEN` to register the run and `VALHALLA_REGISTRY_ROUTING_TOKEN` to route. Keep that control credential out of the reader. The builder records the snapshot ID, Railway deployment/replica key and Valhalla ledger before routing, and ADS attempts before submission. Standard Valhalla cannot serve as the registry.
+
+Configure `SNAPSHOT_REPLICA_INSPECTOR_URL` and `SNAPSHOT_REPLICA_INSPECTOR_READ_TOKEN` only against a trusted independent runtime observer. It must respond to `GET /runs/<snapshot-uuid>` with `run_id`, the stored `replica_id` (Railway deployment ID and replica ID separated by `/`), and `state`. A `stopped` response requires `children_stopped: true` and `restart_excluded: true` for the exact execution. Railway deployment status, missing inventory entries and lost SQL locks are not that proof. No Railway observer with this guarantee is included or assumed available. Without it, worker termination stays unknown. Deploying or exposing this reader and configuring instrumented services require separate approval.
+
 ## Deploy (Railway)
 
 The services are created and changed through the Railway connector or the dashboard, only after the user approves the exact list, and the settings below are their source of truth: a change on Railway lands here in the same PR. Railway Config as Code (`railway.json`, `railway.toml`) is deprecated and new services cannot use it; Railway Infrastructure as Code (`.railway/railway.ts`) needs the `railway` npm package, a dependency not added yet.

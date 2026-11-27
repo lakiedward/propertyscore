@@ -1,7 +1,8 @@
 import { join } from 'node:path';
+import { once } from 'node:events';
 
 import { parseCommand, type WorkerCommand } from './cli.ts';
-import { type Env, readDocumentEnv, readEnv } from './config/env.ts';
+import { type Env, readDocumentEnv, readEnv, readSnapshotStatusEnv } from './config/env.ts';
 import { createSql, type Sql } from './db/sql.ts';
 import { errorCauseExit, errorCauseTail, errorCode, WorkerError } from './lib/errors.ts';
 import { createLogger, type Logger } from './lib/logger.ts';
@@ -25,6 +26,11 @@ import { serveReports } from './report-queue/serve-reports.ts';
 import { createWorkSignal } from './report-queue/work-signal.ts';
 import { importHealthSources } from './scoring/health/import-health-sources.ts';
 import { createValhallaClient, type ValhallaClient } from './routing/valhalla.ts';
+import {
+  createValhallaRegistry,
+  createValhallaRegistryReader,
+} from './routing/valhalla-registry.ts';
+import { createCamsJobVerifier } from './scoring/air/cams.source.ts';
 import { importAreaStatistics } from './scoring/investment/area-statistics-import.ts';
 import { importCityAverages } from './scoring/investment/city-averages-import.ts';
 import { readActiveInvestmentParams } from './scoring/investment/investment.db.ts';
@@ -32,6 +38,8 @@ import { importMarketListings } from './scoring/investment/market-import.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
 import { createEarthquakeCatalog } from './scoring/seismic/earthquake-catalog.ts';
 import { buildSnapshotOnSignals } from './snapshot/build-snapshot.ts';
+import { createReplicaInspector } from './snapshot/replica-inspector.ts';
+import { createSnapshotStatusServer } from './snapshot/serve-snapshot-status.ts';
 import type { SourceMirror } from './sources/mirror.ts';
 import type { OsmExtractSource } from './sources/osm.ts';
 
@@ -117,6 +125,7 @@ async function runBuildSnapshot(
   logger: Logger,
 ): Promise<void> {
   const routerUrl = env.VALHALLA_URL;
+  const recovery = snapshotRecovery(env);
   const result = await buildSnapshotOnSignals({
     databaseUrl: env.DATABASE_URL,
     modules: SCORE_MODULES,
@@ -127,9 +136,11 @@ async function runBuildSnapshot(
     sourcesDir: env.SOURCES_DIR,
     osmExtract: osmExtractSource(env),
     sourceMirror: sourceMirror(env),
-    createRouter: routerUrl
-      ? (requestScope) => createValhallaClient(routerUrl, { requestScope })
-      : undefined,
+    recovery,
+    createRouter:
+      routerUrl && !recovery
+        ? (requestScope) => createValhallaClient(routerUrl, { requestScope })
+        : undefined,
     logger,
   });
   logger.info('build-snapshot done', {
@@ -140,8 +151,65 @@ async function runBuildSnapshot(
   });
 }
 
+function snapshotRecovery(env: Env) {
+  const {
+    VALHALLA_REGISTRY_URL: url,
+    VALHALLA_REGISTRY_ROUTING_TOKEN: routingToken,
+    VALHALLA_REGISTRY_CONTROL_TOKEN: controlToken,
+    RAILWAY_DEPLOYMENT_ID: deployment,
+    RAILWAY_REPLICA_ID: replica,
+  } = env;
+  if (!url && !routingToken && !controlToken) return undefined;
+  if (!url || !routingToken || !controlToken || !deployment || !replica) {
+    throw new WorkerError(
+      'snapshot_identity_not_configured',
+      'Registry and Railway identity are required',
+    );
+  }
+  return {
+    replicaId: `${deployment}/${replica}`,
+    registry: createValhallaRegistry(url, routingToken, controlToken),
+  };
+}
+
+async function runSnapshotStatusService() {
+  const env = readSnapshotStatusEnv();
+  const sql = createSql(env.SNAPSHOT_STATUS_DATABASE_URL);
+  const server = createSnapshotStatusServer({
+    sql,
+    token: env.SNAPSHOT_STATUS_TOKEN,
+    readers: {
+      replica:
+        env.SNAPSHOT_REPLICA_INSPECTOR_URL && env.SNAPSHOT_REPLICA_INSPECTOR_READ_TOKEN
+          ? createReplicaInspector(
+              env.SNAPSHOT_REPLICA_INSPECTOR_URL,
+              env.SNAPSHOT_REPLICA_INSPECTOR_READ_TOKEN,
+            )
+          : undefined,
+      valhalla:
+        env.VALHALLA_REGISTRY_URL && env.VALHALLA_REGISTRY_READ_TOKEN
+          ? createValhallaRegistryReader(
+              env.VALHALLA_REGISTRY_URL,
+              env.VALHALLA_REGISTRY_READ_TOKEN,
+            )
+          : undefined,
+      ads: env.ADS_API_KEY ? createCamsJobVerifier(env.ADS_API_URL, env.ADS_API_KEY) : undefined,
+    },
+  });
+  const stop = () => server.close();
+  process.once('SIGTERM', stop);
+  process.once('SIGINT', stop);
+  try {
+    await once(server.listen(env.SNAPSHOT_STATUS_PORT, env.SNAPSHOT_STATUS_HOST), 'close');
+  } finally {
+    process.off('SIGTERM', stop);
+    process.off('SIGINT', stop);
+    await sql.end({ timeout: 5 });
+  }
+}
+
 async function runCommand(
-  command: Exclude<WorkerCommand, { command: 'build-snapshot' }>,
+  command: Exclude<WorkerCommand, { command: 'build-snapshot' | 'serve-snapshot-status' }>,
   sql: Sql,
   env: Env,
   logger: Logger,
@@ -269,6 +337,10 @@ async function runCommand(
 
 async function main(): Promise<void> {
   const command = parseCommand(process.argv.slice(2), new Date());
+  if (command.command === 'serve-snapshot-status') {
+    await runSnapshotStatusService();
+    return;
+  }
   if (command.command === 'render-report-pdf' && 'inputPath' in command.source) {
     const documentEnv = readDocumentEnv();
     await renderReportPdf({

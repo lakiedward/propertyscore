@@ -82,6 +82,7 @@ export type RefreshReportPdfCommand = {
 
 export type WorkerCommand =
   | BuildSnapshotCommand
+  | { command: 'serve-snapshot-status' }
   | GenerateReportCommand
   | ServeReportsCommand
   | RenderReportPdfCommand
@@ -409,6 +410,9 @@ export function parseCommand(argv: readonly string[], now: Date): WorkerCommand 
   switch (command) {
     case 'build-snapshot':
       return parseBuildSnapshot(rest, now);
+    case 'serve-snapshot-status':
+      parseArgs({ args: rest, options: {} });
+      return { command };
     case 'generate-report':
       return parseGenerateReport(rest);
     case 'serve-reports':

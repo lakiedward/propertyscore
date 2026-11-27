@@ -7,11 +7,13 @@ import { createSnapshotSql, type Sql } from '../db/sql.ts';
 import { errorCode, WorkerError } from '../lib/errors.ts';
 import type { Logger } from '../lib/logger.ts';
 import { RoutingScope } from '../routing/scope.ts';
+import type { ValhallaRegistry } from '../routing/valhalla-registry.ts';
 import type { ValhallaClient, ValhallaRequestScope } from '../routing/valhalla.ts';
 import type { CategoryKey } from '../scoring/categories.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
 import type { SourceMirror } from '../sources/mirror.ts';
 import { downloadOsmExtract, type OsmExtractSource } from '../sources/osm.ts';
+import { recordSnapshotExecution, trackCamsAttempts } from './recovery.db.ts';
 import { markResidentialCells } from './residential.ts';
 import {
   type CoveredCity,
@@ -35,6 +37,7 @@ export type BuildSnapshotOptions = {
   osmExtract: OsmExtractSource;
   sourceMirror?: SourceMirror;
   createRouter?: (scope: ValhallaRequestScope) => ValhallaClient;
+  recovery?: { replicaId: string; registry: ValhallaRegistry };
   signal?: AbortSignal;
   logger: Logger;
 };
@@ -138,57 +141,84 @@ async function buildSnapshotInSession(
       );
     }
     const cellSizeM = params.data.cell_size_m;
-    const cells = await withSnapshotWork(signal, protect, release, async () => {
-      const extractPath = await downloadOsmExtract(
-        options.osmExtract,
-        options.sourcesDir,
-        version.period,
-        signal,
-      );
-      let count = 0;
-      for (const city of cities) {
-        signal.throwIfAborted();
-        const seeded = await prepareCityCells(sql, version.snapshotId, city.id, cellSizeM);
-        signal.throwIfAborted();
-        const residential = await markResidentialCells({
-          sql,
-          snapshotId: version.snapshotId,
-          city,
-          extractPath,
-          workDir,
-          minShare: params.data.residential_min_share,
+    const { cells, sourceDates } = await withSnapshotWork(
+      signal,
+      protect,
+      release,
+      async (routing) => {
+        const recovery = options.recovery;
+        const ledgerId = recovery
+          ? await routing.run(() => recovery.registry.register(version.snapshotId, signal))
+          : undefined;
+        if (recovery && ledgerId) {
+          await recordSnapshotExecution(
+            guard,
+            version.snapshotId,
+            recovery.replicaId,
+            recovery.registry.endpoint,
+            ledgerId,
+          );
+        }
+        const router =
+          recovery && ledgerId
+            ? recovery.registry.router(version.snapshotId, ledgerId, routing)
+            : (options.createRouter?.(routing) ?? null);
+        const recordCamsAttempt = recovery
+          ? trackCamsAttempts(guard, version.snapshotId)
+          : undefined;
+        const extractPath = await downloadOsmExtract(
+          options.osmExtract,
+          options.sourcesDir,
+          version.period,
           signal,
-        });
-        count += seeded;
-        log('city cells ready', { city: city.slug, cells: seeded, residential_cells: residential });
-      }
-      return count;
-    });
-
-    const sourceDates: Record<string, string> = {};
-    for (const module of modules) {
-      signal.throwIfAborted();
-      log('score started', { score: module.key });
-      const result = await withSnapshotWork(signal, protect, release, (routing) =>
-        module.run({
-          sql,
-          snapshotId: version.snapshotId,
-          period: version.period,
-          cellSizeM,
-          cities,
-          params: version.params[module.key],
-          sourcesDir: options.sourcesDir,
-          osmExtract: options.osmExtract,
-          sourceMirror: options.sourceMirror,
-          router: options.createRouter?.(routing) ?? null,
-          logger,
-          signal,
-          routingScope: routing,
-        }),
-      );
-      Object.assign(sourceDates, result.sourceDates);
-      log('score finished', { score: module.key });
-    }
+        );
+        let count = 0;
+        for (const city of cities) {
+          signal.throwIfAborted();
+          const seeded = await prepareCityCells(sql, version.snapshotId, city.id, cellSizeM);
+          signal.throwIfAborted();
+          const residential = await markResidentialCells({
+            sql,
+            snapshotId: version.snapshotId,
+            city,
+            extractPath,
+            workDir,
+            minShare: params.data.residential_min_share,
+            signal,
+          });
+          count += seeded;
+          log('city cells ready', {
+            city: city.slug,
+            cells: seeded,
+            residential_cells: residential,
+          });
+        }
+        const sourceDates: Record<string, string> = {};
+        for (const module of modules) {
+          signal.throwIfAborted();
+          log('score started', { score: module.key });
+          const result = await module.run({
+            sql,
+            snapshotId: version.snapshotId,
+            period: version.period,
+            cellSizeM,
+            cities,
+            params: version.params[module.key],
+            sourcesDir: options.sourcesDir,
+            osmExtract: options.osmExtract,
+            sourceMirror: options.sourceMirror,
+            router,
+            logger,
+            signal,
+            routingScope: routing,
+            recordCamsAttempt,
+          });
+          Object.assign(sourceDates, result.sourceDates);
+          log('score finished', { score: module.key });
+        }
+        return { cells: count, sourceDates };
+      },
+    );
 
     signal.throwIfAborted();
     await finishSnapshot(sql, version.snapshotId, sourceDates);
