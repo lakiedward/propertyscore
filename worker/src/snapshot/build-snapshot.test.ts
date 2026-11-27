@@ -296,8 +296,8 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       SNAPSHOT_INPUT_REVISION: 'a'.repeat(64),
       SNAPSHOT_REPLICA_ID: replicaId,
       SNAPSHOT_VALHALLA_URL: 'https://valhalla.example.test',
-      SNAPSHOT_VALHALLA_CONTROL_TOKEN: 'c'.repeat(32),
-      SNAPSHOT_VALHALLA_ROUTING_TOKEN: 'r'.repeat(32),
+      SNAPSHOT_VALHALLA_CONTROL_TOKEN: 'c'.repeat(64),
+      SNAPSHOT_VALHALLA_ROUTING_TOKEN: 'r'.repeat(64),
       SNAPSHOT_REPLICA_INSPECTOR_URL: 'https://observer.example.test',
       SNAPSHOT_REPLICA_INSPECTOR_TOKEN: 'o'.repeat(32),
     };
