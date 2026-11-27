@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(31);
+select plan(32);
 
 select results_eq(
   $$ select label, (select sum(value::numeric) from jsonb_each_text(weights)), params ->> 'cell_size_m' from public.scoring_versions where kind = 'online' and is_active $$,
@@ -43,7 +43,7 @@ select results_eq(
 select throws_ok(
   $$ select private.start_score_snapshot('2026-11-01') $$,
   'P0001',
-  'snapshot_already_building',
+  'snapshot_legacy_unconfirmed',
   'A second build cannot start while one is building'
 );
 
@@ -174,22 +174,27 @@ select results_eq(
 
 select private.start_score_snapshot('2027-02-01') as stale_id \gset
 update public.score_snapshots set started_at = now() - interval '13 hours' where id = :'stale_id';
-select private.start_score_snapshot('2027-02-01') as fresh_id \gset
-
-select results_eq(
-  format($$ select status::text, error_code from public.score_snapshots where id = %L $$, :'stale_id'),
-  $$ values ('failed'::text, 'abandoned'::text) $$,
-  'A build left running for more than 12 hours is abandoned when a new one starts'
+select throws_ok(
+  $$ select private.start_score_snapshot('2027-02-01') $$,
+  'P0001',
+  'snapshot_legacy_unconfirmed',
+  'A legacy worker cannot take over an old unconfirmed build'
 );
 
 select throws_ok(
   $$ select private.start_score_snapshot('2027-02-01', true) $$,
   'P0001',
-  'snapshot_already_building',
-  'A worker cannot reclaim a recent build created without a session lock'
+  'snapshot_legacy_unconfirmed',
+  'Elapsed time is not proof that a legacy build ended'
 );
 
-select private.fail_score_snapshot(:'fresh_id', 'test_setup');
+select results_eq(
+  format($$ select status::text, error_code, finished_at from public.score_snapshots where id = %L $$, :'stale_id'),
+  $$ values ('building'::text, null::text, null::timestamptz) $$,
+  'Both rejected starts leave the old candidate untouched'
+);
+
+select private.fail_score_snapshot(:'stale_id', 'test_setup');
 select private.start_score_snapshot('2027-02-01', true) as owned_id \gset
 
 select ok(

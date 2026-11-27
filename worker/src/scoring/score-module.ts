@@ -20,7 +20,7 @@ export type ScoreContext = {
   router: ValhallaClient | null;
   logger: Logger;
   signal?: AbortSignal;
-  routingScope?: Pick<RoutingScope, 'runLocal'>;
+  routingScope?: Pick<RoutingScope, 'run' | 'runLocal'>;
 };
 
 type ScoreModuleResult = {

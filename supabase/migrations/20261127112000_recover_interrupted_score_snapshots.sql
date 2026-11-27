@@ -38,6 +38,12 @@ begin
     raise exception using errcode = 'P0001', message = 'snapshot_routing_unconfirmed';
   end if;
 
+  if exists (
+    select 1 from public.score_snapshots where status = 'building' and not uses_worker_lock
+  ) then
+    raise exception using errcode = 'P0001', message = 'snapshot_legacy_unconfirmed';
+  end if;
+
   select v.id into v_version_id
   from public.scoring_versions v
   where v.kind = 'online' and v.is_active;
@@ -48,8 +54,7 @@ begin
 
   update public.score_snapshots
   set status = 'failed', finished_at = now(), error_code = 'abandoned'
-  where status = 'building'
-    and (uses_worker_lock or started_at < now() - interval '12 hours');
+  where status = 'building' and uses_worker_lock;
 
   if exists (select 1 from public.score_snapshots s where s.status = 'building') then
     raise exception using errcode = 'P0001', message = 'snapshot_already_building';

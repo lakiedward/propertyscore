@@ -124,13 +124,8 @@ async function buildSnapshotInSession(
   const workDir = join(options.sourcesDir, 'work', version.snapshotId);
   const log = (message: string, fields = {}) =>
     logger.info(message, { snapshot_id: version.snapshotId, ...fields });
-  const trackWork = version.lockOwnerPid !== null;
-  const protect = async () => {
-    if (trackWork) await markSnapshotRouting(guard, version.snapshotId, true);
-  };
-  const release = async () => {
-    if (trackWork) await releaseSnapshotRouting(guard, options.databaseUrl, version.snapshotId);
-  };
+  const protect = () => markSnapshotRouting(guard, version.snapshotId, true);
+  const release = () => releaseSnapshotRouting(guard, options.databaseUrl, version.snapshotId);
 
   try {
     await holdSnapshot(guard, version);

@@ -10,6 +10,7 @@ import { createSnapshotSql, createSql, type Sql } from '../db/sql.ts';
 import { createLogger } from '../lib/logger.ts';
 import { createValhallaClient } from '../routing/valhalla.ts';
 import { runTransitRouting } from '../scoring/accessibility/routing.ts';
+import { downloadCamsMonth } from '../scoring/air/cams.source.ts';
 import type { ScoreModule } from '../scoring/score-module.ts';
 import { cityBoundingBox } from '../sources/osm.ts';
 import { limitCoveredCities } from '../test/coverage-fixture.ts';
@@ -110,8 +111,11 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
   }
 
   function launchWorker(env: NodeJS.ProcessEnv, args: readonly string[] = []) {
-    const entry = args.length > 0 ? '../main.ts' : '../test/snapshot-shutdown-worker.ts';
-    const worker = fork(new URL(entry, import.meta.url), [...args], {
+    const entry =
+      args.length > 0
+        ? new URL('../main.ts', import.meta.url)
+        : new URL('../test/snapshot-shutdown-worker.ts', import.meta.url);
+    const worker = fork(entry, [...args], {
       env: {
         PATH: process.env.PATH,
         DATABASE_URL: databaseUrl,
@@ -496,6 +500,95 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
           delete from public.score_snapshots where id in ${sql(created)}
             and routing_pending
         `;
+      }
+    },
+  );
+
+  it.each(['timeout', 'lost submission', 'terminal failure'])(
+    'releases the CAMS guard only on confirmed completion (%s)',
+    async (outcome) => {
+      const published = await publishedScoreFixture();
+      const accepted: string[] = [];
+      const server = createServer((request, response) => {
+        if (request.method === 'POST') {
+          request.resume();
+          accepted.push('job-1');
+          if (outcome === 'lost submission') {
+            response.destroy();
+            return;
+          }
+          response.end(
+            JSON.stringify({
+              jobID: 'job-1',
+              status: outcome === 'terminal failure' ? 'dismissed' : 'accepted',
+            }),
+          );
+        } else {
+          response.end(JSON.stringify({ status: 'running' }));
+        }
+      });
+      const apiUrl = await listenTestRouter(server);
+      const retry = createSnapshotSql(databaseUrl ?? '');
+      let candidate: string | undefined;
+      try {
+        const build = buildSnapshot({
+          ...localBuild(),
+          modules: [
+            {
+              key: 'air',
+              run: async ({ snapshotId, routingScope, signal }) => {
+                candidate = snapshotId;
+                created.push(snapshotId);
+                await downloadCamsMonth({
+                  apiUrl,
+                  apiKey: 'test-key',
+                  sourcesDir,
+                  pollutant: 'pm25',
+                  month: '2026-11-01',
+                  maxWaitMs: 500,
+                  pollIntervalMs: 10,
+                  signal,
+                  requestScope: routingScope,
+                });
+                return { sourceDates: {} };
+              },
+            },
+          ],
+        });
+        if (outcome === 'terminal failure') {
+          await expect(build).rejects.toMatchObject({ code: 'cams_job_failed' });
+        } else {
+          await expect(build).rejects.toMatchObject({
+            code: 'snapshot_routing_unconfirmed',
+            ...(outcome === 'timeout' ? { cause: { code: 'cams_job_timeout' } } : {}),
+          });
+        }
+        expect(accepted).toEqual(['job-1']);
+        if (!candidate) throw new Error('Missing CAMS candidate');
+        const terminal = outcome === 'terminal failure';
+        const [state] = await sql<{ status: string; routing_pending: boolean }[]>`
+          update public.score_snapshots set started_at = now() - interval '13 hours'
+          where id = ${candidate}
+          returning status, routing_pending
+        `;
+        expect(state).toEqual({
+          status: terminal ? 'failed' : 'building',
+          routing_pending: !terminal,
+        });
+        if (terminal) {
+          const replacement = await startSnapshot(retry, '2026-11-01');
+          created.push(replacement.snapshotId);
+        } else {
+          await expect(startSnapshot(retry, '2026-11-01')).rejects.toMatchObject({
+            message: 'snapshot_routing_unconfirmed',
+          });
+        }
+        expect(await publishedScores()).toEqual(published);
+      } finally {
+        server.closeAllConnections();
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+        await retry.end({ timeout: 5 });
+        if (candidate) await sql`delete from public.score_snapshots where id = ${candidate}`;
       }
     },
   );

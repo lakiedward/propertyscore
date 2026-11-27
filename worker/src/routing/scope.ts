@@ -7,7 +7,7 @@ export class RoutingScope implements ValhallaRequestScope {
   readonly #inFlight = new Set<Promise<unknown>>();
   #protection?: Promise<void>;
   #closed = false;
-  #confirmed = true;
+  #unconfirmed?: { cause: unknown };
   #protected = false;
 
   constructor(signal: AbortSignal, protect: () => Promise<void>) {
@@ -39,7 +39,7 @@ export class RoutingScope implements ValhallaRequestScope {
       try {
         return await request();
       } catch (error) {
-        if (uncertainOnError) this.#confirmed = false;
+        if (uncertainOnError) this.#unconfirmed ??= { cause: error };
         throw error;
       }
     });
@@ -54,10 +54,11 @@ export class RoutingScope implements ValhallaRequestScope {
   async drain(): Promise<void> {
     this.#closed = true;
     await Promise.allSettled(this.#inFlight);
-    if (!this.#confirmed) {
+    if (this.#unconfirmed) {
       throw new WorkerError(
         'snapshot_routing_unconfirmed',
-        'Cannot confirm that in-flight Valhalla requests ended',
+        'Cannot confirm that in-flight external work ended',
+        this.#unconfirmed,
       );
     }
   }

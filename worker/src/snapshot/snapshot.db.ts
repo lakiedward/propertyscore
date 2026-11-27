@@ -11,7 +11,7 @@ export type SnapshotVersion = {
   snapshotId: string;
   period: string;
   params: Record<string, unknown>;
-  lockOwnerPid: number | null;
+  lockOwnerPid: number;
 };
 
 export async function listCoveredCities(
@@ -32,12 +32,9 @@ export async function listCoveredCities(
 }
 
 export async function startSnapshot(sql: Sql, period: string): Promise<SnapshotVersion> {
-  const [features] = await sql<{ worker_lock: boolean }[]>`
-    select to_regprocedure('private.start_score_snapshot(date,boolean)') is not null as worker_lock
+  const [started] = await sql<{ id: string }[]>`
+    select private.start_score_snapshot(${period}::date, true) as id
   `;
-  const [started] = features?.worker_lock
-    ? await sql<{ id: string }[]>`select private.start_score_snapshot(${period}::date, true) as id`
-    : await sql<{ id: string }[]>`select private.start_score_snapshot(${period}::date) as id`;
   if (!started)
     throw new WorkerError('snapshot_not_started', 'start_score_snapshot returned no snapshot');
   try {
@@ -53,7 +50,7 @@ export async function startSnapshot(sql: Sql, period: string): Promise<SnapshotV
       snapshotId: started.id,
       period: row.period,
       params: row.params,
-      lockOwnerPid: features?.worker_lock ? row.pid : null,
+      lockOwnerPid: row.pid,
     };
   } catch (error) {
     await failSnapshot(sql, started.id, 'start_failed');
@@ -62,7 +59,6 @@ export async function startSnapshot(sql: Sql, period: string): Promise<SnapshotV
 }
 
 export async function holdSnapshot(sql: Sql, version: SnapshotVersion): Promise<void> {
-  if (version.lockOwnerPid === null) return;
   await sql`select private.hold_score_snapshot(${version.snapshotId}, ${version.lockOwnerPid})`;
 }
 
