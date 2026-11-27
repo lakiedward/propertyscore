@@ -41,6 +41,35 @@ describe('parseCommand', () => {
     });
   });
 
+  it('opts into checkpointed snapshots and uses the saved period on resume', () => {
+    const id = 'd0000000-0000-4000-8000-000000000001';
+    expect(parseCommand(['build-snapshot', '--checkpointed'], NOW)).toMatchObject({
+      checkpoint: { resumeId: null },
+    });
+    expect(parseCommand(['build-snapshot', '--resume', id], NOW)).toMatchObject({
+      checkpoint: { resumeId: id },
+    });
+    expect(() =>
+      parseCommand(['build-snapshot', '--resume', id, '--period', '2026-11'], NOW),
+    ).toThrow(expect.objectContaining({ code: 'invalid_snapshot_resume' }));
+    expect(() =>
+      parseCommand(['build-snapshot', '--checkpointed', '--score', 'green'], NOW),
+    ).toThrow(expect.objectContaining({ code: 'invalid_snapshot_resume' }));
+    expect(
+      parseCommand(
+        ['inspect-snapshot-progress', '--snapshot', id, '--requests', '--after', id],
+        NOW,
+      ),
+    ).toEqual({
+      command: 'inspect-snapshot-progress',
+      snapshotId: id,
+      requests: { after: id },
+    });
+    expect(() =>
+      parseCommand(['inspect-snapshot-progress', '--snapshot', id, '--after', id], NOW),
+    ).toThrow(expect.objectContaining({ code: 'invalid_snapshot_progress' }));
+  });
+
   it('rejects unknown commands, periods and scores with a code', () => {
     expect(() => parseCommand(['rebuild'], NOW)).toThrow(
       expect.objectContaining({ code: 'unknown_command' }),

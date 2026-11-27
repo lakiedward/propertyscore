@@ -1,8 +1,8 @@
 import { join } from 'node:path';
 
-import { parseCommand, type WorkerCommand } from './cli.ts';
-import { type Env, readDocumentEnv, readEnv } from './config/env.ts';
-import { createSql, type Sql } from './db/sql.ts';
+import { type InspectSnapshotProgressCommand, parseCommand, type WorkerCommand } from './cli.ts';
+import { type Env, readDocumentEnv, readEnv, readSnapshotReaderEnv } from './config/env.ts';
+import { createSnapshotResumeConnection, createSql, type Sql } from './db/sql.ts';
 import { errorCauseExit, errorCauseTail, errorCode, WorkerError } from './lib/errors.ts';
 import { createLogger, type Logger } from './lib/logger.ts';
 import { generateReport } from './report/generate-report.ts';
@@ -31,7 +31,11 @@ import { readActiveInvestmentParams } from './scoring/investment/investment.db.t
 import { importMarketListings } from './scoring/investment/market-import.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
 import { createEarthquakeCatalog } from './scoring/seismic/earthquake-catalog.ts';
+import { buildCheckpointedSnapshot } from './snapshot/build-checkpointed-snapshot.ts';
 import { buildSnapshot } from './snapshot/build-snapshot.ts';
+import { readSnapshotProgress, readSnapshotRequests } from './snapshot/resume-journal.ts';
+import { summarizeSnapshotProgress } from './snapshot/resume-plan.ts';
+import { readSnapshotResumeSettings } from './snapshot/resume-settings.ts';
 import type { SourceMirror } from './sources/mirror.ts';
 import type { OsmExtractSource } from './sources/osm.ts';
 
@@ -111,15 +115,37 @@ async function runReportService(sql: Sql, env: Env, logger: Logger): Promise<voi
   }
 }
 
+async function inspectSnapshotProgress(command: InspectSnapshotProgressCommand) {
+  const env = readSnapshotReaderEnv();
+  const sql = createSql(env.SNAPSHOT_STATUS_DATABASE_URL);
+  try {
+    const progress = await readSnapshotProgress(sql, command.snapshotId);
+    if (!progress) throw new WorkerError('snapshot_not_found', 'Smart Check snapshot not found');
+    const summary = summarizeSnapshotProgress(progress);
+    const page = command.requests
+      ? await readSnapshotRequests(sql, command.snapshotId, command.requests.after)
+      : undefined;
+    process.stdout.write(
+      `${JSON.stringify({
+        ...summary,
+        request_page: page,
+        next_after: page?.length === 100 ? page.at(-1)?.id : undefined,
+      })}\n`,
+    );
+  } finally {
+    await sql.end({ timeout: 5 });
+  }
+}
+
 async function runCommand(
-  command: WorkerCommand,
+  command: Exclude<WorkerCommand, InspectSnapshotProgressCommand>,
   sql: Sql,
   env: Env,
   logger: Logger,
 ): Promise<void> {
   switch (command.command) {
     case 'build-snapshot': {
-      const result = await buildSnapshot({
+      const options = {
         sql,
         modules: SCORE_MODULES,
         period: command.period,
@@ -129,9 +155,11 @@ async function runCommand(
         sourcesDir: env.SOURCES_DIR,
         osmExtract: osmExtractSource(env),
         sourceMirror: sourceMirror(env),
-        router: reportRouter(env),
         logger,
-      });
+      };
+      const result = command.checkpoint
+        ? await runCheckpointedSnapshot(options, command.checkpoint.resumeId, env)
+        : await buildSnapshot({ ...options, router: reportRouter(env) });
       logger.info('build-snapshot done', {
         snapshot_id: result.snapshotId,
         cities: result.cities,
@@ -260,8 +288,55 @@ async function runCommand(
   }
 }
 
+async function runCheckpointedSnapshot(
+  options: Omit<Parameters<typeof buildSnapshot>[0], 'router'>,
+  resumeId: string | null,
+  env: Env,
+) {
+  const settings = readSnapshotResumeSettings();
+  const abort = new AbortController();
+  const requestStop = () =>
+    abort.abort(new WorkerError('snapshot_stopped', 'Smart Check checkpoint execution stopped'));
+  const sql = createSql(settings.SNAPSHOT_SESSION_DATABASE_URL);
+  const journalSql = createSnapshotResumeConnection(
+    settings.SNAPSHOT_SESSION_DATABASE_URL,
+    requestStop,
+  );
+  const closeWork = () => {
+    void sql.end({ timeout: 0 }).catch(() => undefined);
+  };
+  abort.signal.addEventListener('abort', closeWork, { once: true });
+  process.on('SIGINT', requestStop);
+  process.on('SIGTERM', requestStop);
+  try {
+    return await buildCheckpointedSnapshot({
+      ...options,
+      sql,
+      journalSql,
+      resumeId,
+      settings,
+      signal: abort.signal,
+      ads: { apiUrl: env.ADS_API_URL, apiKey: env.ADS_API_KEY },
+      sourceConfiguration: [
+        env.AIR_EEA_MAP_YEAR,
+        env.AIR_EEA_PM25_MAP_URL,
+        env.AIR_EEA_NO2_MAP_URL,
+      ],
+    });
+  } finally {
+    process.off('SIGINT', requestStop);
+    process.off('SIGTERM', requestStop);
+    abort.signal.removeEventListener('abort', closeWork);
+    await Promise.all([sql.end({ timeout: 5 }), journalSql.end({ timeout: 5 })]);
+  }
+}
+
 async function main(): Promise<void> {
   const command = parseCommand(process.argv.slice(2), new Date());
+  if (command.command === 'inspect-snapshot-progress') {
+    await inspectSnapshotProgress(command);
+    return;
+  }
   if (command.command === 'render-report-pdf' && 'inputPath' in command.source) {
     const documentEnv = readDocumentEnv();
     await renderReportPdf({

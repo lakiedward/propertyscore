@@ -42,7 +42,7 @@ export type BuildSnapshotResult = {
   scores: CategoryKey[];
 };
 
-const versionParamsSchema = z.looseObject({
+export const versionParamsSchema = z.looseObject({
   cell_size_m: z.number().int().min(50).max(2000),
   residential_min_share: z.number().min(0).max(1),
 });
@@ -137,7 +137,7 @@ export async function buildSnapshot(options: BuildSnapshotOptions): Promise<Buil
   }
 }
 
-async function selectCities(
+export async function selectCities(
   sql: Sql,
   logger: Logger,
   options: Pick<BuildSnapshotOptions, 'citySlugs' | 'allowPartialCities'>,

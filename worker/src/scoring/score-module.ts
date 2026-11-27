@@ -5,6 +5,7 @@ import type { CoveredCity } from '../snapshot/snapshot.db.ts';
 import type { SourceMirror } from '../sources/mirror.ts';
 import type { OsmExtractSource } from '../sources/osm.ts';
 import type { CategoryKey } from './categories.ts';
+import type { CamsCheckpoint } from './air/cams.source.ts';
 
 export type ScoreContext = {
   sql: Sql;
@@ -18,6 +19,7 @@ export type ScoreContext = {
   sourceMirror?: SourceMirror;
   router: ValhallaClient | null;
   logger: Logger;
+  camsCheckpoint?: CamsCheckpoint;
 };
 
 type ScoreModuleResult = {

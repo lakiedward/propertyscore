@@ -1,6 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
-import { readEnv } from './env.ts';
+import { readEnv, readSnapshotReaderEnv } from './env.ts';
+
+describe('readSnapshotReaderEnv', () => {
+  it('requires only the read-only database configuration, not the writer environment', () => {
+    const readerUrl = 'postgresql://snapshot_reader@db.example.test:5432/postgres';
+    expect(
+      readSnapshotReaderEnv({
+        SNAPSHOT_STATUS_DATABASE_URL: readerUrl,
+        DATABASE_URL: 'invalid-writer-url',
+      }),
+    ).toEqual({ SNAPSHOT_STATUS_DATABASE_URL: readerUrl });
+    expect(() => readSnapshotReaderEnv({ DATABASE_URL: readerUrl })).toThrow(
+      expect.objectContaining({ code: 'invalid_environment' }),
+    );
+  });
+});
 
 describe('readEnv', () => {
   it('needs a Postgres URL and fills the defaults', () => {

@@ -11,7 +11,7 @@ import {
   type RasterGrid,
 } from '../../sources/gdal.ts';
 import type { AirParams, Pollutant } from './air.params.ts';
-import { camsMonthlyField, downloadCamsMonth } from './cams.source.ts';
+import { camsMonthlyField, downloadCamsMonth, type CamsCheckpoint } from './cams.source.ts';
 import {
   dailyMeans,
   downloadStationFile,
@@ -59,6 +59,7 @@ type SourceContext = {
   sourcesDir: string;
   period: string;
   logger: Logger;
+  camsCheckpoint?: CamsCheckpoint;
 };
 
 function fieldSampler(grid: Omit<RasterGrid, 'bands'>, field: Float32Array): ModelField {
@@ -99,6 +100,7 @@ export function createAirSources(
         pollutant,
         month,
         logger,
+        checkpoint: context.camsCheckpoint,
       });
       const grid = await readRaster(path, workDir);
       const field = camsMonthlyField(grid, params.min_valid_hours_per_day, params.min_valid_days);

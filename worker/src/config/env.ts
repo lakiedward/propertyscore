@@ -35,6 +35,10 @@ const documentEnvSchema = z.object({
   CHROMIUM_PATH: z.string().min(1).optional(),
 });
 
+const snapshotReaderEnvSchema = z.object({
+  SNAPSHOT_STATUS_DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+});
+
 export type Env = z.infer<typeof envSchema>;
 export type DocumentEnv = z.infer<typeof documentEnvSchema>;
 
@@ -52,6 +56,17 @@ export function readDocumentEnv(source: NodeJS.ProcessEnv = process.env): Docume
   if (!parsed.success) {
     const fields = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
     throw new WorkerError('invalid_environment', `Invalid worker environment: ${fields}`);
+  }
+  return parsed.data;
+}
+
+export function readSnapshotReaderEnv(source: NodeJS.ProcessEnv = process.env) {
+  const parsed = snapshotReaderEnvSchema.safeParse(source);
+  if (!parsed.success) {
+    throw new WorkerError(
+      'invalid_environment',
+      'Invalid worker environment: SNAPSHOT_STATUS_DATABASE_URL',
+    );
   }
   return parsed.data;
 }

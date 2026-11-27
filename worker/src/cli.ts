@@ -17,6 +17,13 @@ export type BuildSnapshotCommand = {
   citySlugs: string[];
   scoreKeys: CategoryKey[];
   allowPartialCities: boolean;
+  checkpoint?: { resumeId: string | null };
+};
+
+export type InspectSnapshotProgressCommand = {
+  command: 'inspect-snapshot-progress';
+  snapshotId: string;
+  requests: { after: string | null } | null;
 };
 
 export type GenerateReportCommand = {
@@ -82,6 +89,7 @@ export type RefreshReportPdfCommand = {
 
 export type WorkerCommand =
   | BuildSnapshotCommand
+  | InspectSnapshotProgressCommand
   | GenerateReportCommand
   | ServeReportsCommand
   | RenderReportPdfCommand
@@ -159,6 +167,8 @@ function parseBuildSnapshot(argv: readonly string[], now: Date): BuildSnapshotCo
       city: { type: 'string', multiple: true },
       score: { type: 'string', multiple: true },
       'allow-partial': { type: 'boolean' },
+      checkpointed: { type: 'boolean' },
+      resume: { type: 'string' },
     },
   });
 
@@ -172,6 +182,25 @@ function parseBuildSnapshot(argv: readonly string[], now: Date): BuildSnapshotCo
   if (unknownScores.length > 0) {
     throw new WorkerError('invalid_score', `Unknown score: ${unknownScores.join(', ')}`);
   }
+  const resume = z
+    .uuid()
+    .nullable()
+    .safeParse(values.resume ?? null);
+  if (!resume.success || (values.resume !== undefined && values.period !== undefined)) {
+    throw new WorkerError(
+      'invalid_snapshot_resume',
+      '--resume needs a snapshot UUID and uses its existing period',
+    );
+  }
+  if (
+    (values.checkpointed || resume.data !== null) &&
+    (values.city?.length || scoreKeys.length || values['allow-partial'])
+  ) {
+    throw new WorkerError(
+      'invalid_snapshot_resume',
+      'Checkpointed Smart Check requires every city and score',
+    );
+  }
 
   return {
     command: 'build-snapshot',
@@ -179,6 +208,9 @@ function parseBuildSnapshot(argv: readonly string[], now: Date): BuildSnapshotCo
     citySlugs: values.city ?? [],
     scoreKeys: scoreKeys.filter(isCategoryKey),
     allowPartialCities: values['allow-partial'] ?? false,
+    ...(values.checkpointed || values.resume !== undefined
+      ? { checkpoint: { resumeId: resume.data } }
+      : {}),
   };
 }
 
@@ -189,6 +221,29 @@ function parseGenerateReport(argv: readonly string[]): GenerateReportCommand {
     throw new WorkerError('invalid_report_id', 'generate-report needs --report <uuid>');
   }
   return { command: 'generate-report', reportId: reportId.data };
+}
+
+function parseInspectSnapshotProgress(argv: readonly string[]): InspectSnapshotProgressCommand {
+  const { values } = parseArgs({
+    args: [...argv],
+    options: {
+      snapshot: { type: 'string' },
+      requests: { type: 'boolean' },
+      after: { type: 'string' },
+    },
+  });
+  const parsed = z.object({ snapshot: z.uuid(), after: z.uuid().optional() }).safeParse(values);
+  if (!parsed.success || (values.after !== undefined && !values.requests)) {
+    throw new WorkerError(
+      'invalid_snapshot_progress',
+      'inspect-snapshot-progress needs --snapshot <uuid>; use --after <uuid> with --requests',
+    );
+  }
+  return {
+    command: 'inspect-snapshot-progress',
+    snapshotId: parsed.data.snapshot,
+    requests: values.requests ? { after: parsed.data.after ?? null } : null,
+  };
 }
 
 function parseServeReports(argv: readonly string[]): ServeReportsCommand {
@@ -409,6 +464,8 @@ export function parseCommand(argv: readonly string[], now: Date): WorkerCommand 
   switch (command) {
     case 'build-snapshot':
       return parseBuildSnapshot(rest, now);
+    case 'inspect-snapshot-progress':
+      return parseInspectSnapshotProgress(rest);
     case 'generate-report':
       return parseGenerateReport(rest);
     case 'serve-reports':

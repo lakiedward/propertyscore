@@ -6,11 +6,14 @@ import { pipeline } from 'node:stream/promises';
 import { setTimeout as delay } from 'node:timers/promises';
 
 import { WorkerError } from '../lib/errors.ts';
+import { checkpointSourceFile } from '../snapshot/resume-source.ts';
 
 export type DownloadOptions = {
   attempts?: number;
   backoffMs?: number;
   headers?: Readonly<Record<string, string>>;
+  signal?: AbortSignal;
+  trackSource?: boolean;
 };
 
 const DEFAULT_ATTEMPTS = 4;
@@ -48,6 +51,7 @@ async function downloadAttempt(
   url: string,
   destination: string,
   headers: Readonly<Record<string, string>>,
+  signal?: AbortSignal,
 ): Promise<void> {
   let response: Response;
   const controller = new AbortController();
@@ -55,7 +59,10 @@ async function downloadAttempt(
     controller.abort();
   }, RESPONSE_TIMEOUT_MS);
   try {
-    response = await fetch(url, { headers, signal: controller.signal });
+    response = await fetch(url, {
+      headers,
+      signal: signal ? AbortSignal.any([signal, controller.signal]) : controller.signal,
+    });
   } catch (error) {
     throw new RetryableDownloadError('source_download_failed', `Download unreachable: ${url}`, {
       cause: error,
@@ -73,7 +80,7 @@ async function downloadAttempt(
   }
   const partial = `${destination}.part`;
   try {
-    await pipeline(Readable.fromWeb(response.body), createWriteStream(partial));
+    await pipeline(Readable.fromWeb(response.body), createWriteStream(partial), { signal });
     await rename(partial, destination);
   } catch (error) {
     await rm(partial, { force: true });
@@ -83,7 +90,7 @@ async function downloadAttempt(
   }
 }
 
-export async function downloadOnce(
+async function downloadFile(
   url: string,
   destination: string,
   options: DownloadOptions = {},
@@ -93,12 +100,27 @@ export async function downloadOnce(
   const attempts = options.attempts ?? DEFAULT_ATTEMPTS;
   const backoffMs = options.backoffMs ?? DEFAULT_BACKOFF_MS;
   for (let attempt = 1; ; attempt += 1) {
+    options.signal?.throwIfAborted();
     try {
-      await downloadAttempt(url, destination, options.headers ?? {});
+      await downloadAttempt(url, destination, options.headers ?? {}, options.signal);
       return destination;
     } catch (error) {
       if (!(error instanceof RetryableDownloadError) || attempt >= attempts) throw error;
-      await delay(backoffMs * 2 ** (attempt - 1));
+      await delay(backoffMs * 2 ** (attempt - 1), undefined, { signal: options.signal });
     }
   }
+}
+
+export function downloadOnce(url: string, destination: string, options: DownloadOptions = {}) {
+  if (options.trackSource === false) return downloadFile(url, destination, options);
+  return checkpointSourceFile(
+    url,
+    destination,
+    (signal) =>
+      downloadFile(url, destination, signal ? { ...options, signal, attempts: 1 } : options),
+    (error) => error instanceof SourceUnavailableError,
+    () => {
+      throw new SourceUnavailableError('source_download_failed', 'Saved source was unavailable');
+    },
+  );
 }
