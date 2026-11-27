@@ -82,6 +82,7 @@ create trigger require_unpublished_poi before insert or update or delete on priv
 create function private.freeze_checkpoint_industry_inputs(p_snapshot_id uuid, p_industry_year smallint)
 returns smallint
 language plpgsql
+security definer
 set search_path = ''
 as $$
 declare
@@ -262,3 +263,305 @@ end
 $$;
 revoke all on function private.capture_legacy_report_cutover(uuid),
   private.open_legacy_report_cutover(uuid,timestamptz) from public, anon, authenticated, service_role;
+
+create function private.publish_checkpointed_score_snapshot(
+  p_snapshot_id uuid,
+  p_execution_id uuid,
+  p_source_dates jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_generation uuid;
+  v_ledger uuid;
+begin
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('propertyscore.snapshot') & 2147483647, 3);
+  perform from public.score_snapshots s
+    where s.id = p_snapshot_id and s.status = 'building' and s.uses_worker_lock
+    for update;
+  if not found or not exists (
+    select from private.score_snapshot_lock_holders() h(pid) where h.pid = pg_catalog.pg_backend_pid()
+  ) then
+    raise exception using errcode = 'P0001', message = 'snapshot_guard_unconfirmed';
+  end if;
+
+  select g.id, g.valhalla_ledger_id into v_generation, v_ledger
+    from private.score_snapshot_generations g
+    where g.snapshot_id = p_snapshot_id order by g.generation desc limit 1;
+  if v_generation is null or v_generation is distinct from p_execution_id then
+    raise exception using errcode = 'P0001', message = 'snapshot_generation_changed';
+  end if;
+  if v_ledger is null then
+    raise exception using errcode = 'P0001', message = 'snapshot_valhalla_unconfirmed';
+  end if;
+  if not exists (
+    select from private.score_snapshot_steps where snapshot_id = p_snapshot_id
+  ) or exists (
+    select from private.score_snapshot_steps where snapshot_id = p_snapshot_id and completed_at is null
+  ) then
+    raise exception using errcode = 'P0001', message = 'snapshot_steps_missing';
+  end if;
+
+  perform private.compute_overall_scores(p_snapshot_id);
+  perform private.compute_snapshot_stats(p_snapshot_id);
+  perform private.publish_score_snapshot(p_snapshot_id, p_source_dates);
+  update public.score_snapshots set routing_pending = false where id = p_snapshot_id;
+end
+$$;
+
+revoke all on function private.publish_checkpointed_score_snapshot(uuid,uuid,jsonb)
+  from public, anon, authenticated, service_role;
+
+do $$
+begin
+  if not exists (select from pg_catalog.pg_roles where rolname = 'smart_check_report_worker') then
+    create role smart_check_report_worker nologin nosuperuser nobypassrls;
+  end if;
+  if not exists (select from pg_catalog.pg_roles where rolname = 'smart_check_snapshot_worker') then
+    create role smart_check_snapshot_worker nologin nosuperuser nobypassrls;
+  end if;
+  if exists (
+    select from pg_catalog.pg_roles
+    where rolname in ('smart_check_report_worker', 'smart_check_snapshot_worker')
+      and (rolcanlogin or rolsuper or rolcreaterole or rolcreatedb or rolreplication or rolbypassrls)
+  ) then
+    raise exception 'smart_check_worker_role_not_restricted';
+  end if;
+end
+$$;
+
+revoke execute on function private.handle_new_user() from public;
+grant usage on schema public, private, extensions to smart_check_report_worker, smart_check_snapshot_worker;
+grant usage on schema snapshot_diagnostics to smart_check_snapshot_worker;
+grant execute on function snapshot_diagnostics.read_score_snapshot_progress(uuid) to smart_check_snapshot_worker;
+grant execute on function private.start_score_snapshot(date, boolean),
+  private.score_snapshot_lock_holders(), private.hold_score_snapshot(uuid, integer),
+  private.freeze_checkpoint_industry_inputs(uuid, smallint),
+  private.publish_checkpointed_score_snapshot(uuid, uuid, jsonb) to smart_check_snapshot_worker;
+
+grant select on public.cities, public.scoring_versions, public.score_snapshots,
+  public.online_reports to smart_check_report_worker;
+grant select on private.online_report_pdf_variants to smart_check_report_worker;
+grant insert (report_id, locale, storage_path), update (storage_path, failed_at)
+  on private.online_report_pdf_variants to smart_check_report_worker;
+grant update (status, error_code, claim_expires_at, generation_attempts, snapshot_id,
+  scoring_version_id, overall_score, category_scores, result, generated_at)
+  on public.online_reports to smart_check_report_worker;
+
+create or replace function private.attach_online_report_pdf(p_report_id uuid, p_pdf_path text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_status text;
+  v_path text;
+begin
+  select r.status, r.pdf_path into v_status, v_path
+    from public.online_reports r where r.id = p_report_id for update;
+  if not found then
+    raise exception using errcode = 'P0001', message = 'report_not_found';
+  end if;
+  if v_status <> 'ready' then
+    raise exception using errcode = 'P0001', message = 'report_not_ready';
+  end if;
+  if p_pdf_path is distinct from private.online_report_pdf_path(p_report_id) then
+    raise exception using errcode = 'P0001', message = 'report_pdf_path_invalid';
+  end if;
+  if v_path is null then
+    update public.online_reports set pdf_path = p_pdf_path, claim_expires_at = null where id = p_report_id;
+  end if;
+end
+$$;
+revoke all on function private.attach_online_report_pdf(uuid,text) from public, anon, authenticated, service_role;
+
+alter function private.claim_next_saved_report_walk_route() security definer;
+alter function private.complete_saved_report_walk_route(uuid, uuid, text) security definer;
+revoke all on function private.claim_next_saved_report_walk_route(),
+  private.complete_saved_report_walk_route(uuid, uuid, text) from public, anon, authenticated, service_role;
+
+grant execute on function private.claim_next_online_report(), private.extend_online_report_claim(uuid),
+  private.online_report_pdf_path(uuid), private.attach_online_report_pdf(uuid, text),
+  private.claim_next_saved_report_walk_route(), private.complete_saved_report_walk_route(uuid, uuid, text)
+  to smart_check_report_worker;
+
+create policy "Report worker reads reports" on public.online_reports for select to smart_check_report_worker using (true);
+create policy "Report worker advances undelivered reports" on public.online_reports
+  for update to smart_check_report_worker
+  using (status in ('queued', 'generating') and pdf_path is null)
+  with check (status in ('queued', 'generating', 'ready', 'failed'));
+create policy "Report worker reads ready PDF variants" on private.online_report_pdf_variants
+  for select to smart_check_report_worker
+  using (exists (select from public.online_reports r where r.id = report_id and r.status = 'ready'));
+create policy "Report worker creates ready PDF variants" on private.online_report_pdf_variants
+  for insert to smart_check_report_worker
+  with check (exists (select from public.online_reports r where r.id = report_id and r.status = 'ready'));
+create policy "Report worker generates pending PDF variants" on private.online_report_pdf_variants
+  for update to smart_check_report_worker using (storage_path is null and failed_at is null)
+  with check (exists (select from public.online_reports r where r.id = report_id and r.status = 'ready'));
+
+create policy "Report worker reads covered cities" on public.cities for select to smart_check_report_worker
+  using (has_online_coverage);
+create policy "Report worker reads online formulas" on public.scoring_versions for select to smart_check_report_worker
+  using (kind = 'online');
+create policy "Report worker reads published snapshots" on public.score_snapshots
+  for select to smart_check_report_worker using (status in ('ready', 'superseded'));
+
+do $$
+declare
+  rel text;
+  row_filter text;
+begin
+  for rel in select unnest(array[
+    'grid_cells', 'industrial_sites', 'education_institutions',
+    'key_destinations', 'noise_datasets', 'noise_contours',
+    'market_imports', 'market_listings', 'market_area_statistics', 'market_city_averages', 'seismic_zones'
+  ]) loop
+    execute format('grant select on private.%I to smart_check_report_worker', rel);
+    execute format('create policy "Report worker reads reference data" on private.%I for select to smart_check_report_worker using (true)', rel);
+  end loop;
+
+  for rel in select unnest(array[
+    'cell_scores', 'poi_features', 'cell_air', 'air_city_calibration', 'cell_walk_access', 'city_category_stats',
+    'green_areas', 'green_area_sources', 'cell_transit', 'transit_routing_bundles', 'transit_stops', 'transit_routes',
+    'transit_stop_routes', 'noise_buildings', 'noise_sources', 'noise_snapshot_datasets', 'safety_features',
+    'industry_snapshot_source', 'report_industry_snapshot_inputs', 'legacy_report_institutions'
+  ]) loop
+    row_filter := format('exists (select from public.score_snapshots s where s.id = %I.snapshot_id and s.status in (''ready'', ''superseded''))', rel);
+    execute format('grant select on private.%I to smart_check_report_worker', rel);
+    execute format('create policy "Report worker reads published inputs" on private.%I for select to smart_check_report_worker using (%s)', rel, row_filter);
+  end loop;
+end
+$$;
+
+grant select on public.cities, public.scoring_versions, public.score_snapshots to smart_check_snapshot_worker;
+grant update (id) on public.scoring_versions to smart_check_snapshot_worker;
+grant insert (scoring_version_id, period, uses_worker_lock), update (stats, status, finished_at, error_code, routing_pending)
+  on public.score_snapshots to smart_check_snapshot_worker;
+create policy "Snapshot worker reads covered cities" on public.cities
+  for select to smart_check_snapshot_worker using (has_online_coverage);
+create policy "Snapshot worker reads online formulas" on public.scoring_versions
+  for select to smart_check_snapshot_worker using (kind = 'online');
+create policy "Snapshot worker locks the active online formula" on public.scoring_versions
+  for update to smart_check_snapshot_worker using (kind = 'online' and is_active) with check (false);
+create policy "Snapshot worker reads snapshot state" on public.score_snapshots
+  for select to smart_check_snapshot_worker using (true);
+create policy "Snapshot worker starts a building snapshot" on public.score_snapshots
+  for insert to smart_check_snapshot_worker with check (status = 'building');
+create policy "Snapshot worker updates its build or marks it failed" on public.score_snapshots
+  for update to smart_check_snapshot_worker
+  using (status = 'building') with check (status in ('building', 'failed'));
+
+grant select, insert on private.grid_cells to smart_check_snapshot_worker;
+create policy "Snapshot worker reads covered grid cells" on private.grid_cells
+  for select to smart_check_snapshot_worker using (exists (select from public.cities c where c.id = city_id and c.has_online_coverage));
+create policy "Snapshot worker inserts covered grid cells" on private.grid_cells
+  for insert to smart_check_snapshot_worker with check (exists (select from public.cities c where c.id = city_id and c.has_online_coverage));
+grant select on private.key_destinations, private.transit_feed_sources to smart_check_snapshot_worker;
+create policy "Snapshot worker reads active covered destinations" on private.key_destinations
+  for select to smart_check_snapshot_worker using (is_active and exists (select from public.cities c where c.id = city_id and c.has_online_coverage));
+create policy "Snapshot worker reads active covered transit sources" on private.transit_feed_sources
+  for select to smart_check_snapshot_worker using (is_active and exists (select from public.cities c where c.id = city_id and c.has_online_coverage));
+
+grant update (categories, inputs, overall, is_residential, safety_layers) on private.cell_scores to smart_check_snapshot_worker;
+grant update (geometry) on private.residential_areas to smart_check_snapshot_worker;
+grant update (operator, license, valid_from, valid_to, reference_date, feed_version, fetched_at, status, error_code, sha256)
+  on private.transit_feeds to smart_check_snapshot_worker;
+grant update (reference_date, osm_pbf, gtfs_archives) on private.transit_routing_bundles to smart_check_snapshot_worker;
+grant update (valhalla_ledger_id) on private.score_snapshot_generations to smart_check_snapshot_worker;
+grant update (started_at, started_by, completed_at, completed_by, result) on private.score_snapshot_steps to smart_check_snapshot_worker;
+grant update (upstream_id, state, rejection_status, artifact_sha256) on private.score_snapshot_requests to smart_check_snapshot_worker;
+grant update (location, coordinate_status, city_id, name) on private.industrial_sites to smart_check_snapshot_worker;
+grant insert (city_id, siiir_code, parent_siiir_code, osm_ref, name, levels, ownership, teaching_languages,
+  address_text, location, location_precision, match_status, source_date, last_seen_on),
+  update (city_id, siiir_code, parent_siiir_code, osm_ref, name, levels, ownership, teaching_languages,
+  address_text, location, location_precision, match_status, source_date, last_seen_on)
+  on private.education_institutions to smart_check_snapshot_worker;
+grant update (station_type, area_type, location, active_from, active_to)
+  on private.air_stations to smart_check_snapshot_worker;
+grant update (mean, valid_days, source, imported_at) on private.air_station_months to smart_check_snapshot_worker;
+
+do $$
+declare
+  rel text;
+  verb text;
+  row_filter text;
+  conditions text;
+begin
+  for rel, verb in
+    select paths.rel, action.verb
+    from (values
+    ('cell_scores', 'select,insert,update'),
+    ('residential_areas', 'select,insert,update'),
+    ('safety_features', 'select,insert,delete'),
+    ('poi_features', 'select,insert,delete'),
+    ('cell_transit', 'select,insert,delete'),
+    ('cell_travel_matrix', 'select,insert,delete'),
+    ('transit_feeds', 'select,insert,update,delete'),
+    ('transit_routes', 'select,insert,delete'),
+    ('transit_stops', 'select,insert,delete'),
+    ('transit_stop_routes', 'select,insert,delete'),
+    ('transit_routing_bundles', 'select,insert,update,delete'),
+    ('score_snapshot_generations', 'select,insert,update'),
+    ('score_snapshot_steps', 'select,insert,update'),
+    ('score_snapshot_requests', 'select,insert,update'),
+    ('score_snapshot_progress', 'select,insert'),
+    ('noise_buildings', 'select,insert,delete'),
+    ('noise_sources', 'select,insert,delete'),
+    ('noise_snapshot_datasets', 'select,insert,delete'),
+    ('green_areas', 'select,insert,delete'),
+    ('green_area_sources', 'select,insert,update'),
+    ('cell_walk_access', 'select,insert,update'),
+    ('city_category_stats', 'select,insert,update'),
+    ('air_city_calibration', 'select,insert,update'),
+    ('cell_air', 'select,insert,update'),
+    ('industry_snapshot_source', 'select'),
+    ('report_industry_snapshot_inputs', 'select')
+    ) as paths(rel, verbs), lateral unnest(string_to_array(paths.verbs, ',')) as action(verb)
+  loop
+    row_filter := format('exists (select from public.score_snapshots s where s.id = %I.%I and s.status = ''building'')',
+      rel, case when rel = 'score_snapshot_progress' then 'id' else 'snapshot_id' end);
+    if rel in ('noise_buildings', 'transit_routing_bundles') and verb in ('select', 'delete') then
+      row_filter := format('exists (select from public.score_snapshots s where s.id = %I.snapshot_id and s.status in (%s))',
+        rel, case when rel = 'transit_routing_bundles' and verb = 'delete' then '''failed'', ''superseded'''
+                 else '''building'', ''failed'', ''superseded''' end);
+    end if;
+    conditions := case when verb <> 'insert' then format(' using (%s)', row_filter) else '' end ||
+                  case when verb in ('insert', 'update') then format(' with check (%s)', row_filter) else '' end;
+    if verb <> 'update' or rel in ('green_area_sources', 'cell_walk_access', 'city_category_stats', 'air_city_calibration', 'cell_air') then
+      execute format('grant %s on private.%I to smart_check_snapshot_worker', verb, rel);
+    end if;
+    execute format('create policy %I on private.%I for %s to smart_check_snapshot_worker%s',
+      'Snapshot worker can ' || verb || ' build data', rel, verb, conditions);
+  end loop;
+
+  for rel, verb in
+    select paths.rel, action.verb
+    from (values
+      ('industrial_sites', 'select,insert,update,delete'),
+      ('education_institutions', 'select,insert,update,delete'),
+      ('air_stations', 'select,insert,update'),
+      ('air_station_months', 'select,insert,update'),
+      ('industrial_site_overrides', 'select'),
+      ('noise_datasets', 'select'),
+      ('noise_contours', 'select'),
+      ('cnas_providers', 'select'),
+      ('emergency_hospitals', 'select')
+    ) as paths(rel, verbs), lateral unnest(string_to_array(paths.verbs, ',')) as action(verb)
+  loop
+    conditions := case when rel = 'education_institutions' and verb = 'delete'
+                       then ' using (siiir_code is null and osm_ref is not null and reviewed_at is null)'
+                       when verb <> 'insert' then ' using (true)' else '' end ||
+                  case when verb in ('insert', 'update') then ' with check (true)' else '' end;
+    if verb <> 'update' and not (rel = 'education_institutions' and verb = 'insert') then
+      execute format('grant %s on private.%I to smart_check_snapshot_worker', verb, rel);
+    end if;
+    execute format('create policy %I on private.%I for %s to smart_check_snapshot_worker%s',
+      'Snapshot worker can ' || verb || ' its inputs', rel, verb, conditions);
+  end loop;
+end
+$$;

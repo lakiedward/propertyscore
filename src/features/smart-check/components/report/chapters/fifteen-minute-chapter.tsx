@@ -173,7 +173,7 @@ export function FifteenMinuteChapter({ report, shareToken }: ReportChapterProps)
         />
       ) : null}
       {observedAt ? (
-        <p className="text-[12.5px] leading-[1.45] text-muted-foreground">
+        <p className="text-caption text-muted-foreground">
           {t('report.chapters.fifteenMinute.sources.educationLegacy', {
             date: formatDate(observedAt, { dateStyle: 'long', timeZone: 'UTC' }),
           })}

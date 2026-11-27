@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { Sql } from '../db/sql.ts';
+import type { Sql, SqlQueries } from '../db/sql.ts';
 import type { CategoryKey, ContextKey } from '../scoring/categories.ts';
 
 export type CellCategory = {
@@ -10,7 +10,7 @@ export type CellCategory = {
 };
 
 export async function readCellCategory(
-  sql: Sql,
+  sql: SqlQueries,
   snapshotId: string,
   cellId: string,
   key: CategoryKey,

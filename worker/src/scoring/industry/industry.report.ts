@@ -1,4 +1,4 @@
-import type { JsonObject, Sql } from '../../db/sql.ts';
+import type { JsonObject, SqlQueries } from '../../db/sql.ts';
 import { readCellCategory, sectionParams } from '../../report/cell-category.ts';
 import type { ReportSection } from '../../report/report-section.ts';
 import {
@@ -103,7 +103,7 @@ export function industryReportFromSites(input: {
 }
 
 export async function buildIndustryReport(
-  sql: Sql,
+  sql: SqlQueries,
   input: {
     snapshotId?: string;
     longitude: number;
@@ -148,7 +148,8 @@ export async function buildIndustryReport(
 export const industryReportSection: ReportSection = {
   key: 'industry',
   addressScore: (section) => (typeof section.score === 'number' ? section.score : null),
-  build: async ({ sql, snapshotId, cellId, latitude, longitude, params }) => {
+  build: async ({ sql: pool, registrySql, snapshotId, cellId, latitude, longitude, params }) => {
+    const sql = registrySql ?? pool;
     const cell = await readCellCategory(sql, snapshotId, cellId, 'industry');
     if (!cell) return null;
     const report = await buildIndustryReport(sql, {

@@ -1,4 +1,4 @@
-import { type JsonObject, type Sql, withLongStatements } from '../../db/sql.ts';
+import { type JsonObject, type Sql, type SqlQueries, withLongStatements } from '../../db/sql.ts';
 import type { RegisterSite } from './eea-register.ts';
 import type { SectorCode } from './industry.formula.ts';
 
@@ -26,7 +26,10 @@ export type CellSitePair = {
 
 const BATCH_SIZE = 500;
 
-export async function importedReportingYear(sql: Sql, version: string): Promise<number | null> {
+export async function importedReportingYear(
+  sql: SqlQueries,
+  version: string,
+): Promise<number | null> {
   const [row] = await sql<{ year: number | null }[]>`
     select max(reporting_year)::integer as year
     from private.industrial_sites
@@ -198,7 +201,7 @@ export type NearbySite = {
 };
 
 export async function listSnapshotSitesNear(
-  sql: Sql,
+  sql: SqlQueries,
   options: { snapshotId: string; longitude: number; latitude: number; radiusM: number },
 ): Promise<{
   reportingYear: number | null;
@@ -230,7 +233,7 @@ export async function listSnapshotSitesNear(
 }
 
 export async function listSitesNear(
-  sql: Sql,
+  sql: SqlQueries,
   options: {
     longitude: number;
     latitude: number;

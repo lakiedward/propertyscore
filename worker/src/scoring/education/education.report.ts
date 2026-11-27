@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { JsonObject, Sql } from '../../db/sql.ts';
+import type { JsonObject, SqlQueries } from '../../db/sql.ts';
 import { readCellCategory, sectionParams } from '../../report/cell-category.ts';
 import type { ReportSection } from '../../report/report-section.ts';
 import { educationParamsSchema, SCORED_LEVELS } from './education.params.ts';
@@ -33,7 +33,7 @@ const institutionSchema = z.object({
 });
 
 async function readInstitutions(
-  sql: Sql,
+  sql: SqlQueries,
   snapshotId: string,
   ids: readonly string[],
   position: { longitude: number; latitude: number },
@@ -83,7 +83,8 @@ async function readInstitutions(
 
 export const educationReportSection: ReportSection = {
   key: 'education',
-  build: async ({ sql, snapshotId, cellId, latitude, longitude, params }) => {
+  build: async ({ sql: pool, registrySql, snapshotId, cellId, latitude, longitude, params }) => {
+    const sql = registrySql ?? pool;
     const educationParams = educationParamsSchema.parse(sectionParams(params, 'education'));
     const cell = await readCellCategory(sql, snapshotId, cellId, 'education');
     if (!cell) return null;
