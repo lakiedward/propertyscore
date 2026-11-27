@@ -45,8 +45,9 @@ export async function markResidentialCells(options: {
   extractPath: string;
   workDir: string;
   minShare: number;
+  signal?: AbortSignal;
 }): Promise<number> {
-  const { sql, snapshotId, city } = options;
+  const { sql, snapshotId, city, signal } = options;
   const exported = await extractOsmFeatures({
     extractPath: options.extractPath,
     bbox: await cityBoundingBox(sql, city.id),
@@ -54,16 +55,19 @@ export async function markResidentialCells(options: {
     geometryTypes: ['polygon'],
     workDir: options.workDir,
     name: `${city.slug}-residential`,
+    signal,
   });
 
   let batch: ResidentialRow[] = [];
   for await (const feature of readOsmFeatures(exported)) {
+    signal?.throwIfAborted();
     batch.push({ source_ref: osmSourceRef(feature.id), geojson: JSON.stringify(feature.geometry) });
     if (batch.length >= BATCH_SIZE) {
       await saveResidentialAreas(sql, snapshotId, city.id, batch);
       batch = [];
     }
   }
+  signal?.throwIfAborted();
   await saveResidentialAreas(sql, snapshotId, city.id, batch);
 
   return withLongStatements(sql, async (transaction) => {

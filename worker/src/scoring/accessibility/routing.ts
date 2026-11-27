@@ -1,19 +1,16 @@
-import { execFile } from 'node:child_process';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { promisify } from 'node:util';
 
 import { z } from 'zod';
 
+import { runChildProcess } from '../../lib/child-process.ts';
 import { WorkerError } from '../../lib/errors.ts';
 import type { RoutingScope } from '../../routing/scope.ts';
 import { readCsvRecords } from './csv.ts';
 import type { AccessibilityParams } from './accessibility.params.ts';
 import { clockSeconds, nonEmpty } from './gtfs.ts';
 import type { LngLat } from './transit.types.ts';
-
-const run = promisify(execFile);
 
 const R5_MAX_MEMORY = '60%';
 
@@ -107,19 +104,7 @@ async function defaultRunner(
   args: readonly string[],
   signal?: AbortSignal,
 ): Promise<void> {
-  signal?.throwIfAborted();
-  const execution = run(command, [...args], {
-    maxBuffer: 64 * 1024 * 1024,
-  });
-  const stop = () => execution.child.kill('SIGKILL');
-  signal?.addEventListener('abort', stop, { once: true });
-  const closed = new Promise<void>((resolve) => execution.child.once('close', () => resolve()));
-  try {
-    await execution;
-  } finally {
-    await closed;
-    signal?.removeEventListener('abort', stop);
-  }
+  await runChildProcess(command, args, 64 * 1024 * 1024, signal);
 }
 
 function pointsCsv(points: readonly RoutingPoint[]): string {

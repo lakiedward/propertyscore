@@ -31,7 +31,7 @@ import { readActiveInvestmentParams } from './scoring/investment/investment.db.t
 import { importMarketListings } from './scoring/investment/market-import.ts';
 import { SCORE_MODULES } from './scoring/registry.ts';
 import { createEarthquakeCatalog } from './scoring/seismic/earthquake-catalog.ts';
-import { buildSnapshot } from './snapshot/build-snapshot.ts';
+import { buildSnapshotOnSignals } from './snapshot/build-snapshot.ts';
 import type { SourceMirror } from './sources/mirror.ts';
 import type { OsmExtractSource } from './sources/osm.ts';
 
@@ -117,7 +117,7 @@ async function runBuildSnapshot(
   logger: Logger,
 ): Promise<void> {
   const routerUrl = env.VALHALLA_URL;
-  const result = await buildSnapshot({
+  const result = await buildSnapshotOnSignals({
     databaseUrl: env.DATABASE_URL,
     modules: SCORE_MODULES,
     period: command.period,

@@ -35,6 +35,7 @@ export type BuildSnapshotOptions = {
   osmExtract: OsmExtractSource;
   sourceMirror?: SourceMirror;
   createRouter?: (scope: ValhallaRequestScope) => ValhallaClient;
+  signal?: AbortSignal;
   logger: Logger;
 };
 
@@ -62,7 +63,32 @@ export function selectModules(
   return modules.filter((module) => scoreKeys.includes(module.key));
 }
 
+export async function buildSnapshotOnSignals(
+  options: Omit<BuildSnapshotOptions, 'signal'>,
+): Promise<BuildSnapshotResult> {
+  const shutdown = new AbortController();
+  const stop = (signal: NodeJS.Signals) => {
+    if (shutdown.signal.aborted) return;
+    options.logger.info('build-snapshot stopping', { signal });
+    shutdown.abort(new WorkerError('snapshot_stopping', 'Snapshot worker is stopping'));
+  };
+  process.on('SIGTERM', stop);
+  process.on('SIGINT', stop);
+  try {
+    return await buildSnapshot({ ...options, signal: shutdown.signal });
+  } catch (error) {
+    if (errorCode(error) === 'snapshot_stopping') {
+      options.logger.info('build-snapshot shutdown confirmed');
+    }
+    throw error;
+  } finally {
+    process.off('SIGTERM', stop);
+    process.off('SIGINT', stop);
+  }
+}
+
 export async function buildSnapshot(options: BuildSnapshotOptions): Promise<BuildSnapshotResult> {
+  options.signal?.throwIfAborted();
   const lifetime = new AbortController();
   const onDisconnect = () =>
     lifetime.abort(
@@ -70,9 +96,15 @@ export async function buildSnapshot(options: BuildSnapshotOptions): Promise<Buil
     );
   const sql = createSnapshotSql(options.databaseUrl, onDisconnect);
   const guard = createSnapshotSql(options.databaseUrl, onDisconnect);
+  const signal = options.signal
+    ? AbortSignal.any([options.signal, lifetime.signal])
+    : lifetime.signal;
+  const stopScoringSql = () => void sql.end({ timeout: 0 });
+  options.signal?.addEventListener('abort', stopScoringSql, { once: true });
   try {
-    return await buildSnapshotInSession(sql, guard, lifetime.signal, options);
+    return await buildSnapshotInSession(sql, guard, signal, options);
   } finally {
+    options.signal?.removeEventListener('abort', stopScoringSql);
     await Promise.all([sql.end({ timeout: 5 }), guard.end({ timeout: 5 })]);
   }
 }
@@ -87,10 +119,18 @@ async function buildSnapshotInSession(
   const modules = selectModules(options.modules, options.scoreKeys);
   const cities = await selectCities(sql, logger, options);
 
+  signal.throwIfAborted();
   const version = await startSnapshot(sql, options.period);
   const workDir = join(options.sourcesDir, 'work', version.snapshotId);
   const log = (message: string, fields = {}) =>
     logger.info(message, { snapshot_id: version.snapshotId, ...fields });
+  const trackWork = version.lockOwnerPid !== null;
+  const protect = async () => {
+    if (trackWork) await markSnapshotRouting(guard, version.snapshotId, true);
+  };
+  const release = async () => {
+    if (trackWork) await releaseSnapshotRouting(guard, options.databaseUrl, version.snapshotId);
+  };
 
   try {
     await holdSnapshot(guard, version);
@@ -103,37 +143,39 @@ async function buildSnapshotInSession(
       );
     }
     const cellSizeM = params.data.cell_size_m;
-    const extractPath = await downloadOsmExtract(
-      options.osmExtract,
-      options.sourcesDir,
-      version.period,
-    );
-
-    let cells = 0;
-    for (const city of cities) {
-      const seeded = await prepareCityCells(sql, version.snapshotId, city.id, cellSizeM);
-      const residential = await markResidentialCells({
-        sql,
-        snapshotId: version.snapshotId,
-        city,
-        extractPath,
-        workDir,
-        minShare: params.data.residential_min_share,
-      });
-      cells += seeded;
-      log('city cells ready', { city: city.slug, cells: seeded, residential_cells: residential });
-    }
+    const cells = await withSnapshotWork(signal, protect, release, async () => {
+      const extractPath = await downloadOsmExtract(
+        options.osmExtract,
+        options.sourcesDir,
+        version.period,
+        signal,
+      );
+      let count = 0;
+      for (const city of cities) {
+        signal.throwIfAborted();
+        const seeded = await prepareCityCells(sql, version.snapshotId, city.id, cellSizeM);
+        signal.throwIfAborted();
+        const residential = await markResidentialCells({
+          sql,
+          snapshotId: version.snapshotId,
+          city,
+          extractPath,
+          workDir,
+          minShare: params.data.residential_min_share,
+          signal,
+        });
+        count += seeded;
+        log('city cells ready', { city: city.slug, cells: seeded, residential_cells: residential });
+      }
+      return count;
+    });
 
     const sourceDates: Record<string, string> = {};
     for (const module of modules) {
       signal.throwIfAborted();
       log('score started', { score: module.key });
-      const trackRouting = version.lockOwnerPid !== null;
-      const routing = new RoutingScope(signal, async () => {
-        if (trackRouting) await markSnapshotRouting(guard, version.snapshotId, true);
-      });
-      try {
-        const result = await module.run({
+      const result = await withSnapshotWork(signal, protect, release, (routing) =>
+        module.run({
           sql,
           snapshotId: version.snapshotId,
           period: version.period,
@@ -147,15 +189,10 @@ async function buildSnapshotInSession(
           logger,
           signal,
           routingScope: routing,
-        });
-        Object.assign(sourceDates, result.sourceDates);
-        log('score finished', { score: module.key });
-      } finally {
-        await routing.drain();
-        if (trackRouting && routing.guardRecorded) {
-          await releaseSnapshotRouting(guard, options.databaseUrl, version.snapshotId);
-        }
-      }
+        }),
+      );
+      Object.assign(sourceDates, result.sourceDates);
+      log('score finished', { score: module.key });
     }
 
     signal.throwIfAborted();
@@ -168,14 +205,32 @@ async function buildSnapshotInSession(
       scores: modules.map((module) => module.key),
     };
   } catch (error) {
-    const code = errorCode(error);
+    const abortReason: unknown = signal.reason;
+    const reported =
+      errorCode(error) === 'snapshot_routing_unconfirmed' ? error : (abortReason ?? error);
+    const code = errorCode(reported);
     logger.error('snapshot failed', { snapshot_id: version.snapshotId, code });
     if (!signal.aborted && code !== 'snapshot_routing_unconfirmed') {
       await failSnapshot(sql, version.snapshotId, code);
     }
-    throw error;
+    throw reported;
   } finally {
     await rm(workDir, { recursive: true, force: true });
+  }
+}
+
+async function withSnapshotWork<T>(
+  signal: AbortSignal,
+  protect: () => Promise<void>,
+  release: () => Promise<void>,
+  run: (routing: RoutingScope) => Promise<T>,
+): Promise<T> {
+  const routing = new RoutingScope(signal, protect);
+  try {
+    return await routing.runLocal(() => run(routing));
+  } finally {
+    await routing.drain();
+    if (routing.guardRecorded) await release();
   }
 }
 

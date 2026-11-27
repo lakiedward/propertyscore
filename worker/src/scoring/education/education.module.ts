@@ -73,6 +73,7 @@ async function readCityUnits(
     geometryTypes: ['point', 'polygon'],
     workDir: join(context.sourcesDir, 'work', context.period.slice(0, 7), city.slug),
     name: 'education',
+    signal: context.signal,
   });
   const units: OsmEducationUnit[] = [];
   for await (const feature of readOsmFeatures(exported)) {
@@ -278,6 +279,7 @@ export const educationModule: ScoreModule = {
       context.osmExtract,
       context.sourcesDir,
       context.period,
+      context.signal,
     );
     const {
       rows: register,
@@ -305,7 +307,7 @@ export const educationModule: ScoreModule = {
 
     return {
       sourceDates: {
-        osm: await osmExtractDate(extractPath, context.period),
+        osm: await osmExtractDate(extractPath, context.period, context.signal),
         siiir: sourceDate,
       },
     };

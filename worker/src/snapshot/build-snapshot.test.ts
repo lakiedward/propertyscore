@@ -1,6 +1,8 @@
+import { fork } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer, type ServerResponse } from 'node:http';
 import { delimiter, join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -17,6 +19,25 @@ import { buildSnapshot, selectModules } from './build-snapshot.ts';
 import { startSnapshot } from './snapshot.db.ts';
 
 const silentLogger = createLogger('error', () => undefined);
+
+async function listenTestRouter(server: ReturnType<typeof createServer>): Promise<string> {
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const address = server.address();
+  if (!address || typeof address === 'string') throw new Error('Missing test router port');
+  return `http://127.0.0.1:${address.port}`;
+}
+
+function processRunning(pid: number): boolean {
+  try {
+    return process.kill(pid, 0);
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ESRCH') return false;
+    throw error;
+  }
+}
 
 const fakeGreenModule: ScoreModule = {
   key: 'green',
@@ -80,6 +101,56 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     osmExtract: { url: 'https://example.test/romania.osm.pbf', apiKey: null },
     logger: silentLogger,
   });
+
+  async function snapshotSessionCount() {
+    const [row] = await sql<{ active: number }[]>`
+      select count(*)::int as active from private.score_snapshot_lock_holders()
+    `;
+    return row?.active;
+  }
+
+  function launchWorker(env: NodeJS.ProcessEnv, args: readonly string[] = []) {
+    const entry = args.length > 0 ? '../main.ts' : '../test/snapshot-shutdown-worker.ts';
+    const worker = fork(new URL(entry, import.meta.url), [...args], {
+      env: {
+        PATH: process.env.PATH,
+        DATABASE_URL: databaseUrl,
+        SOURCES_DIR: sourcesDir,
+        OSM_EXTRACT_URL: 'https://example.test/romania.osm.pbf',
+        SNAPSHOT_TEST_SOURCES_DIR: sourcesDir,
+        SNAPSHOT_TEST_ROUTER_URL: 'http://127.0.0.1:1',
+        ...env,
+      },
+      execArgv: [],
+      stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+    });
+    let stdout = '';
+    let stderr = '';
+    worker.stdout?.setEncoding('utf8');
+    worker.stdout?.on('data', (chunk: string) => {
+      stdout += chunk;
+    });
+    worker.stderr?.setEncoding('utf8');
+    worker.stderr?.on('data', (chunk: string) => {
+      stderr += chunk;
+    });
+    const exited = new Promise<{ code: number | null; signal: NodeJS.Signals | null }>(
+      (resolve, reject) => {
+        worker.once('error', reject);
+        worker.once('close', (code, signal) => resolve({ code, signal }));
+      },
+    );
+    const earlyExit = () =>
+      exited.then(({ code, signal }) => {
+        throw new Error(`Worker exited before the test: ${code ?? signal ?? 'unknown'} ${stderr}`);
+      });
+    return {
+      worker,
+      exited,
+      earlyExit,
+      shutdownConfirmed: () => stdout.includes('build-snapshot shutdown confirmed'),
+    };
+  }
 
   async function publishedScores() {
     return [
@@ -326,12 +397,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         request.resume();
         responses.push(response);
       });
-      await new Promise<void>((resolve, reject) => {
-        server.once('error', reject);
-        server.listen(0, '127.0.0.1', resolve);
-      });
-      const address = server.address();
-      if (!address || typeof address === 'string') throw new Error('Missing test router port');
+      const routerUrl = await listenTestRouter(server);
       const owner = Promise.withResolvers<{
         pid: number;
         snapshotId: string;
@@ -341,7 +407,7 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
       const build = buildSnapshot({
         ...localBuild(),
         createRouter: (requestScope) =>
-          createValhallaClient(`http://127.0.0.1:${address.port}`, {
+          createValhallaClient(routerUrl, {
             maxMatrixPairs: 1,
             requestScope,
           }),
@@ -430,6 +496,184 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
           delete from public.score_snapshots where id in ${sql(created)}
             and routing_pending
         `;
+      }
+    },
+  );
+
+  it.skipIf(process.platform === 'win32').each(['confirmed', 'expired', 'killed'])(
+    'allows takeover only after confirmed shutdown (%s)',
+    async (outcome) => {
+      const published = await publishedScoreFixture();
+      const graceful = outcome !== 'killed';
+      const bin = join(sourcesDir, `shutdown-bin-${outcome}`);
+      const pidFile = join(bin, 'r5.pid');
+      await mkdir(bin, { recursive: true });
+      await writeFile(
+        join(bin, 'python3'),
+        `#!/usr/bin/env node\nrequire('node:fs').writeFileSync(${JSON.stringify(pidFile)}, String(process.pid));\nsetInterval(() => undefined, 1000);\n`,
+        { mode: 0o755 },
+      );
+      const finishRouting = Promise.withResolvers<undefined>();
+      let computing = false;
+      let clientDisconnected = false;
+      let requests = 0;
+      const server = createServer((request, response) => {
+        requests += 1;
+        request.resume();
+        response.on('close', () => {
+          clientDisconnected = true;
+        });
+        computing = true;
+        void finishRouting.promise.then(() => {
+          computing = false;
+          if (!response.destroyed)
+            response.end('{"sources_to_targets":[[{"distance":0.5,"time":400}]]}');
+        });
+      });
+      const routerUrl = await listenTestRouter(server);
+      const { worker, exited, earlyExit, shutdownConfirmed } = launchWorker({
+        PATH: [bin, process.env.PATH ?? ''].join(delimiter),
+        SNAPSHOT_TEST_ROUTER_URL: routerUrl,
+        SNAPSHOT_TEST_R5: graceful ? '1' : undefined,
+      });
+      let snapshotId: string | undefined;
+      worker.on('message', (message: unknown) => {
+        if (typeof message === 'string') {
+          snapshotId = message;
+          created.push(message);
+        }
+      });
+      const retry = createSnapshotSql(databaseUrl ?? '');
+      let childPid: number | undefined;
+      try {
+        await Promise.race([expect.poll(() => computing).toBe(true), earlyExit()]);
+        if (!snapshotId) throw new Error('Missing interrupted snapshot ID');
+        await expect(startSnapshot(retry, '2026-11-01')).rejects.toMatchObject({
+          message: 'snapshot_already_building',
+        });
+        if (graceful) {
+          await expect.poll(() => readFile(pidFile, 'utf8')).toMatch(/^\d+$/);
+          const pid = Number(await readFile(pidFile, 'utf8'));
+          childPid = pid;
+          expect(processRunning(pid)).toBe(true);
+          expect(worker.kill('SIGTERM')).toBe(true);
+          await expect.poll(() => processRunning(pid)).toBe(false);
+          await expect.poll(snapshotSessionCount).toBe(1);
+          expect(computing).toBe(true);
+          expect(clientDisconnected).toBe(false);
+          await expect(startSnapshot(retry, '2026-11-01')).rejects.toMatchObject({
+            message: 'snapshot_already_building',
+          });
+          if (outcome === 'confirmed') {
+            finishRouting.resolve(undefined);
+            expect(await exited).toEqual({ code: 1, signal: null });
+            expect(shutdownConfirmed()).toBe(true);
+            expect(requests).toBe(1);
+            expect(computing).toBe(false);
+            const replacement = await startSnapshot(retry, '2026-11-01');
+            created.push(replacement.snapshotId);
+            const [state] = await sql<{ status: string; routing_pending: boolean }[]>`
+              select status, routing_pending from public.score_snapshots where id = ${snapshotId}
+            `;
+            expect(state).toEqual({ status: 'failed', routing_pending: false });
+            expect(await publishedScores()).toEqual(published);
+            return;
+          }
+          expect(await Promise.race([exited.then(() => 'exited'), delay(150, 'deadline')])).toBe(
+            'deadline',
+          );
+        }
+        expect(worker.kill('SIGKILL')).toBe(true);
+        expect(await exited).toEqual({ code: null, signal: 'SIGKILL' });
+        expect(shutdownConfirmed()).toBe(false);
+        await expect.poll(() => clientDisconnected).toBe(true);
+        expect(computing).toBe(true);
+        await expect.poll(snapshotSessionCount).toBe(0);
+        await expect(startSnapshot(retry, '2026-11-01')).rejects.toMatchObject({
+          message: 'snapshot_routing_unconfirmed',
+        });
+        finishRouting.resolve(undefined);
+        await expect.poll(() => computing).toBe(false);
+        await expect(startSnapshot(retry, '2026-11-01')).rejects.toMatchObject({
+          message: 'snapshot_routing_unconfirmed',
+        });
+        expect(requests).toBe(1);
+        expect(await publishedScores()).toEqual(published);
+      } finally {
+        worker.kill('SIGKILL');
+        if (childPid !== undefined && processRunning(childPid)) process.kill(childPid, 'SIGKILL');
+        finishRouting.resolve(undefined);
+        server.closeAllConnections();
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+        await exited;
+        await retry.end({ timeout: 5 });
+        if (snapshotId) await sql`delete from public.score_snapshots where id = ${snapshotId}`;
+      }
+    },
+  );
+
+  it.skipIf(process.platform === 'win32').each(['SIGTERM', 'both SQL sessions'])(
+    'stops osmium and preserves the published scores after %s',
+    async (interruption) => {
+      const published = await publishedScoreFixture();
+      const bin = join(sourcesDir, `osmium-${interruption}`);
+      const pidFile = join(bin, 'osmium.pid');
+      const commands = join(bin, 'commands');
+      await mkdir(bin, { recursive: true });
+      await writeFile(
+        join(bin, 'osmium'),
+        `#!/usr/bin/env node\nconst fs = require('node:fs');\nfs.appendFileSync(${JSON.stringify(commands)}, process.argv[2] + '\\n');\nfs.writeFileSync(${JSON.stringify(pidFile)}, String(process.pid));\nsetInterval(() => undefined, 1000);\n`,
+        { mode: 0o755 },
+      );
+      const { worker, exited, earlyExit, shutdownConfirmed } = launchWorker(
+        { PATH: [bin, process.env.PATH ?? ''].join(delimiter) },
+        ['build-snapshot', '--period', '2026-11', '--city', 'sibiu'],
+      );
+      let childPid: number | undefined;
+      let snapshotId: string | undefined;
+      const retry = createSnapshotSql(databaseUrl ?? '');
+      try {
+        await Promise.race([
+          expect.poll(() => readFile(pidFile, 'utf8'), { timeout: 5000 }).toMatch(/^\d+$/),
+          earlyExit(),
+        ]);
+        const pid = Number(await readFile(pidFile, 'utf8'));
+        childPid = pid;
+        expect(processRunning(pid)).toBe(true);
+        const [active] = await sql<{ id: string; routing_pending: boolean }[]>`
+          select id, routing_pending from public.score_snapshots where status = 'building'
+        `;
+        if (!active) throw new Error('Missing interrupted snapshot');
+        snapshotId = active.id;
+        expect(active.routing_pending).toBe(true);
+        if (interruption === 'SIGTERM') {
+          expect(worker.kill('SIGTERM')).toBe(true);
+        } else {
+          expect(worker.kill('SIGSTOP')).toBe(true);
+          const terminated = await sql<{ ok: boolean }[]>`
+            select pg_terminate_backend(holder.pid, 5000) as ok
+            from private.score_snapshot_lock_holders() holder(pid)
+          `;
+          expect(terminated).toEqual([{ ok: true }, { ok: true }]);
+          expect(processRunning(pid)).toBe(true);
+          await expect(startSnapshot(retry, '2026-11-01')).rejects.toMatchObject({
+            message: 'snapshot_routing_unconfirmed',
+          });
+          expect(worker.kill('SIGCONT')).toBe(true);
+        }
+        expect(await exited).toEqual({ code: 1, signal: null });
+        expect(shutdownConfirmed()).toBe(interruption === 'SIGTERM');
+        expect(processRunning(pid)).toBe(false);
+        expect(await readFile(commands, 'utf8')).toBe('extract\n');
+        const replacement = await startSnapshot(retry, '2026-11-01');
+        created.push(replacement.snapshotId);
+        expect(await publishedScores()).toEqual(published);
+      } finally {
+        worker.kill('SIGKILL');
+        if (childPid !== undefined && processRunning(childPid)) process.kill(childPid, 'SIGKILL');
+        await exited;
+        await retry.end({ timeout: 5 });
+        if (snapshotId) await sql`delete from public.score_snapshots where id = ${snapshotId}`;
       }
     },
   );

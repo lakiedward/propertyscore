@@ -137,6 +137,7 @@ async function importCityPois(
     geometryTypes: ['point', 'polygon'],
     workDir: join(context.sourcesDir, 'work', context.snapshotId, 'fifteen_minute'),
     name: city.slug,
+    signal: context.signal,
   });
   const matchers = buildMatchers(params.categories);
   let inserted = 0;
@@ -181,6 +182,7 @@ export const fifteenMinuteModule: ScoreModule = {
       context.osmExtract,
       context.sourcesDir,
       context.period,
+      context.signal,
     );
     const targets = walkTargets(params);
     const poiCategories = targets.map((target) => target.key);
@@ -222,7 +224,7 @@ export const fifteenMinuteModule: ScoreModule = {
     }
 
     const sourceDates: Record<string, string> = {
-      osm: await osmExtractDate(extractPath, context.period),
+      osm: await osmExtractDate(extractPath, context.period, context.signal),
     };
     const graphDate = router ? await router.tilesetDate() : null;
     if (graphDate) sourceDates.walk_routing = graphDate;
