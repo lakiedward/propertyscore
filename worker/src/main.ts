@@ -291,13 +291,22 @@ async function runCheckpointedSnapshot(
   const abort = new AbortController();
   const requestStop = () =>
     abort.abort(new WorkerError('snapshot_stopped', 'Smart Check checkpoint execution stopped'));
-  const sql = createSnapshotResumeConnection(settings.SNAPSHOT_SESSION_DATABASE_URL, requestStop);
+  const sql = createSql(settings.SNAPSHOT_SESSION_DATABASE_URL);
+  const journalSql = createSnapshotResumeConnection(
+    settings.SNAPSHOT_SESSION_DATABASE_URL,
+    requestStop,
+  );
+  const closeWork = () => {
+    void sql.end({ timeout: 0 }).catch(() => undefined);
+  };
+  abort.signal.addEventListener('abort', closeWork, { once: true });
   process.on('SIGINT', requestStop);
   process.on('SIGTERM', requestStop);
   try {
     return await buildCheckpointedSnapshot({
       ...options,
       sql,
+      journalSql,
       resumeId,
       settings,
       signal: abort.signal,
@@ -311,7 +320,8 @@ async function runCheckpointedSnapshot(
   } finally {
     process.off('SIGINT', requestStop);
     process.off('SIGTERM', requestStop);
-    await sql.end({ timeout: 5 });
+    abort.signal.removeEventListener('abort', closeWork);
+    await Promise.all([sql.end({ timeout: 5 }), journalSql.end({ timeout: 5 })]);
   }
 }
 

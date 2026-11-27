@@ -36,6 +36,7 @@ import { runMissingSnapshotSteps, type StepJournal } from './resume-steps.ts';
 import { prepareCityCells } from './snapshot.db.ts';
 
 type Options = Omit<BuildSnapshotOptions, 'router'> & {
+  journalSql: Sql;
   resumeId: string | null;
   settings: ResumeSettings;
   sourceConfiguration: readonly (string | undefined)[];
@@ -101,7 +102,7 @@ async function reconcileAds(
 }
 
 export async function buildCheckpointedSnapshot(options: Options): Promise<BuildSnapshotResult> {
-  const { sql, logger, settings, resumeId, signal } = options;
+  const { journalSql: sql, logger, settings, resumeId, signal } = options;
   if (options.allowPartialCities || options.citySlugs.length || options.scoreKeys.length) {
     throw new WorkerError(
       'invalid_snapshot_resume',
@@ -289,7 +290,7 @@ export async function buildCheckpointedSnapshot(options: Options): Promise<Build
               { journal: stepJournal, step, signal: stepSignal, directory: sourceArtifacts },
               () =>
                 module.run({
-                  sql,
+                  sql: options.sql,
                   snapshotId,
                   period: inputs.period,
                   cellSizeM: params.data.cell_size_m,

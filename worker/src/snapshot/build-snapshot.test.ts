@@ -249,15 +249,21 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
           destination: { lat: 45.8, lng: 24.13 },
           costing: 'auto' as const,
         };
-        expect(
-          await Promise.all([context.router?.route(route), context.router?.route(route)]),
-        ).toEqual(
-          Array.from({ length: 2 }, () => ({
-            meters: 100,
-            seconds: 12,
-            polyline6: 'test-polyline',
-          })),
-        );
+        await context.sql.begin(async (tx) => {
+          for await (const rows of tx`select n from generate_series(1, 2) as n`.cursor(1)) {
+            expect(rows).toHaveLength(1);
+            expect(
+              await Promise.all([context.router?.route(route), context.router?.route(route)]),
+            ).toEqual(
+              Array.from({ length: 2 }, () => ({
+                meters: 100,
+                seconds: 12,
+                polyline6: 'test-polyline',
+              })),
+            );
+            expect(await context.sql`select 1 as value`).toEqual([{ value: 1 }]);
+          }
+        });
         expect(context.camsCheckpoint).toBeDefined();
         expect(
           await listStationFiles({
@@ -317,7 +323,12 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
     const run = async (resumeId: string | null) => {
       const connection = createSnapshotResumeConnection(database, () => undefined);
       try {
-        return await buildCheckpointedSnapshot({ ...options, resumeId, sql: connection });
+        return await buildCheckpointedSnapshot({
+          ...options,
+          resumeId,
+          sql,
+          journalSql: connection,
+        });
       } finally {
         await connection.end({ timeout: 0 });
       }
