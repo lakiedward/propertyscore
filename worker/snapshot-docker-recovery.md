@@ -30,7 +30,7 @@ python3 scripts/snapshot-runner.py --state "$REGISTRY" launch \
   "$CACHED_IMAGE" node src/main.ts build-snapshot --resume "$SNAPSHOT_ID"
 ```
 
-Use the exact execution ID recorded in the journal, not a container name, a snapshot ID, or elapsed time. The launcher injects the execution and replica IDs into the worker. The operator confirms the PID namespace exited, removes the exact container, and only then records retirement. An unknown run, lost verifier, unavailable engine, or unremoved container cannot authorize a takeover. Valhalla drain, ADS reconciliation and verified artifacts remain separate prerequisites. Use `inspect-snapshot-progress` with the dedicated database reader for journal status; it cannot operate Docker.
+Use the exact execution ID recorded in the journal, not a container name, a snapshot ID, or elapsed time. The launcher injects the execution and replica IDs into the worker. The operator durably records exit of the exact container's PID namespace before removal. Only after the recorded Docker engine confirms absence does the operator record retirement. If the operator is interrupted, retry `retire` with the same ID and registry: absence without an exact durable stop record is not proof, and the reader refuses takeover until retirement is recorded. Valhalla drain, ADS reconciliation and verified artifacts remain separate prerequisites. Use `inspect-snapshot-progress` with the dedicated database reader for journal status; it cannot operate Docker.
 
 ## Next isolated probe
 

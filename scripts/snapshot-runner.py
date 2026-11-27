@@ -54,6 +54,12 @@ def store(args, read_only=False):
                         retired integer not null default 0
                     )
                 """)
+                db.execute("""
+                    create table if not exists stopped_runs (
+                        run_id text primary key, replica_id text not null,
+                        engine text not null, container_id text not null
+                    )
+                """)
             yield db
     finally:
         db.close()
@@ -104,6 +110,10 @@ def lookup(db, run):
     return db.execute("select * from runs where run_id = ?", (run,)).fetchone()
 
 
+def exact_identity(row):
+    return tuple(row[key] for key in ("run_id", "replica_id", "engine", "container_id"))
+
+
 def stopped_state(args, row):
     fmt = ' '.join([
         '{{.Id}}', '{{.HostConfig.PidMode}}', '{{.HostConfig.RestartPolicy.Name}}',
@@ -120,7 +130,9 @@ def stopped_state(args, row):
     return result[7:] == ["exited", "0"]
 
 
-def is_retired(args, row):
+def container_absent(args, row):
+    if not re.fullmatch(CONTAINER_ID, row["container_id"] or ""):
+        raise Unconfirmed("Container identity is unknown")
     if engine(args) != row["engine"]:
         raise Unconfirmed("Docker engine identity differs")
     present = docker(
@@ -134,17 +146,40 @@ def retire(args):
     with store(args) as db:
         db.execute("begin immediate")
         row = lookup(db, args.run)
-        if not row or not row["container_id"] or engine(args) != row["engine"]:
-            raise Unconfirmed("Run or Docker engine identity is unknown")
+        if not row:
+            raise Unconfirmed("Run or container identity is unknown")
+        absent = container_absent(args, row)
         if row["retired"]:
-            if not is_retired(args, row):
+            if not absent:
                 raise Unconfirmed("Previously retired container exists")
             return
-        if not stopped_state(args, row):
-            docker(args, "stop", "--timeout", "5", row["container_id"])
-        if not stopped_state(args, row):
-            raise Unconfirmed("PID namespace exit was not confirmed")
-        if docker(args, "rm", "--volumes", row["container_id"]) != row["container_id"] or not is_retired(args, row):
+        if not absent:
+            if not stopped_state(args, row):
+                docker(args, "stop", "--timeout", "5", row["container_id"])
+            if not stopped_state(args, row) or engine(args) != row["engine"]:
+                raise Unconfirmed("PID namespace exit was not confirmed on the recorded engine")
+            db.execute(
+                "insert or replace into stopped_runs (run_id, replica_id, engine, container_id) values (?, ?, ?, ?)",
+                exact_identity(row),
+            )
+        db.commit()
+
+        db.execute("begin immediate")
+        row = lookup(db, args.run)
+        if not row:
+            raise Unconfirmed("Run or container identity is unknown")
+        proof = db.execute("""
+            select 1 from stopped_runs
+            where run_id = ? and replica_id = ? and engine = ? and container_id = ?
+        """, exact_identity(row)).fetchone()
+        if not proof:
+            raise Unconfirmed("No durable stop proof for this exact container")
+        if not container_absent(args, row):
+            if not stopped_state(args, row) or engine(args) != row["engine"]:
+                raise Unconfirmed("PID namespace exit was not confirmed on the recorded engine")
+            if docker(args, "rm", "--volumes", row["container_id"]) != row["container_id"]:
+                raise Unconfirmed("Container removal was not confirmed")
+        if not container_absent(args, row):
             raise Unconfirmed("Container removal was not confirmed")
         db.execute("update runs set retired = 1 where run_id = ?", (args.run,))
 
@@ -163,7 +198,7 @@ def verify(args):
             try:
                 with store(args, read_only=True) as db:
                     row = lookup(db, run)
-                    if row and row["retired"] and row["container_id"] and is_retired(args, row):
+                    if row and row["retired"] and row["container_id"] and container_absent(args, row):
                         status = 200
                         data = {
                             "run_id": run, "replica_id": row["replica_id"], "state": "stopped",

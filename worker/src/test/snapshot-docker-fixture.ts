@@ -1,6 +1,6 @@
 import { execFile, spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdtemp, readFile, rm, symlink, unlink } from 'node:fs/promises';
+import { copyFile, mkdtemp, readFile, rm, symlink, unlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline';
@@ -151,6 +151,36 @@ export async function launchSnapshotDockerFixture(image: string, token: string) 
       },
       async retire() {
         await observerCommand('retire', identity.run_id);
+      },
+      async retireInterruptedAfterRemoval() {
+        await exec(
+          'python3',
+          [
+            '-c',
+            `import os, runpy, signal, subprocess, sys
+original_run = subprocess.run
+def interrupt_after_removal(command, *args, **kwargs):
+    result = original_run(command, *args, **kwargs)
+    if command[3:4] == ["rm"]:
+        os.kill(os.getpid(), signal.SIGKILL)
+    return result
+subprocess.run = interrupt_after_removal
+sys.argv.pop(0)
+runpy.run_path(sys.argv[0], run_name="__main__")`,
+            ...options,
+            'retire',
+            identity.run_id,
+          ],
+          { timeout: 20_000 },
+        );
+      },
+      async saveRegistryBeforeRetirement() {
+        const copy = join(directory, 'before.sqlite');
+        await copyFile(state, copy);
+        return () =>
+          exec('python3', [runner, '--state', copy, '--socket', link, 'retire', identity.run_id], {
+            timeout: 20_000,
+          });
       },
       restartRunner: () => docker('start', containerName),
       disconnectEngine,

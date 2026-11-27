@@ -421,8 +421,15 @@ describe.skipIf(!databaseUrl || !hasOsmium())('buildSnapshot against the local d
         await expect(docker.retire()).rejects.toThrow('Docker did not confirm the operation');
         await expectBlocked();
         await docker.restoreEngine();
-        await docker.retire();
+        const retireWithoutProof = await docker.saveRegistryBeforeRetirement();
+        await expect(docker.retireInterruptedAfterRemoval()).rejects.toMatchObject({
+          signal: 'SIGKILL',
+        });
         await expect(docker.restartRunner()).rejects.toThrow('No such container');
+        await expectBlocked();
+        await expect(retireWithoutProof()).rejects.toThrow('No durable stop proof');
+        await docker.retire();
+        await docker.retire();
         await docker.disconnectEngine();
         await expectBlocked();
         await docker.restoreEngine();
